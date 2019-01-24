@@ -10,7 +10,6 @@ export declare class ZBWorker {
     private pollInterval;
     private errored;
     private onConnectionErrorHandler?;
-    private acquiringJobs;
     constructor(gRPCClient: any, id: string, taskType: string, taskHandler: ZB.taskHandlerFn, options?: ZB.ZBWorkerOptions, onConnectionError?: ZB.ConnectionErrorHandler);
     work: () => void;
     completeJob(completeJobRequest: ZB.CompleteJobRequest): Promise<void>;

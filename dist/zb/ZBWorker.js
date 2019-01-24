@@ -1,14 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const chalk_1 = require("chalk");
+const debug = require("debug");
 const uuid = require("uuid");
 const lib_1 = require("../lib");
+const log = debug("zeebe-node:worker");
 class ZBWorker {
     constructor(gRPCClient, id, taskType, taskHandler, options = {}, onConnectionError) {
         this.activeJobs = 0;
         this.id = uuid.v4();
         this.errored = false;
-        this.acquiringJobs = false;
         this.work = () => {
             this.log(chalk_1.default.yellow(this.id))(chalk_1.default.green(`Ready for `) + chalk_1.default.yellow(`${this.taskType}...`));
             this.activateJobs();
@@ -17,7 +18,6 @@ class ZBWorker {
         // tslint:disable-next-line:no-console
         this.log = (ns) => (msg) => console.log(`${ns}:`, msg);
         this.handleGrpcError = (err) => {
-            this.acquiringJobs = false;
             if (!this.errored) {
                 if (this.onConnectionErrorHandler) {
                     this.onConnectionErrorHandler(err);
@@ -53,13 +53,16 @@ class ZBWorker {
         this.onConnectionErrorHandler = handler;
     }
     activateJobs() {
+        /**
+         * It would be good to use a mutex to prevent multiple overlapping polling invocations.
+         * However, the stream.on("data") is only called when there are jobs, so it there isn't an obvious (to me)
+         * way to release the mutex.
+         */
         let stream;
-        // Prevent over capacity
-        if (this.acquiringJobs || this.activeJobs >= this.maxActiveJobs) {
+        if (this.activeJobs >= this.maxActiveJobs) {
+            log(`Polling cancelled - ${this.taskType} has ${this.activeJobs} and a capacity of ${this.maxActiveJobs}.`);
             return;
         }
-        // Prevent simultaneous in-flight requests
-        this.acquiringJobs = true;
         const amount = this.maxActiveJobs - this.activeJobs;
         const activateJobsRequest = {
             amount,
@@ -71,24 +74,26 @@ class ZBWorker {
             stream = this.gRPCClient.activateJobsStream(activateJobsRequest);
         }
         catch (err) {
-            this.acquiringJobs = false;
             return this.handleGrpcError(err);
         }
         const taskHandler = this.taskHandler;
         stream.on("data", (res) => {
             const parsedPayloads = res.jobs.map(lib_1.parsePayload);
             this.activeJobs += parsedPayloads.length;
-            // We got jobs and updated the activeJob count - allow further polling
-            this.acquiringJobs = false;
             // Call task handler for each new job
             parsedPayloads.forEach((job) => {
                 const customHeaders = JSON.parse(job.customHeaders || "{}");
-                // Client-side timeout handler - removes jobs from the active count if timed out,
-                // prevents diminished capacity due to handler misbehaviour.
+                /**
+                 * Client-side timeout handler - removes jobs from the activeJobs count if timed out,
+                 * prevents diminished capacity of this worker due to handler misbehaviour.
+                 */
                 let taskTimedout = false;
+                const taskId = uuid.v4();
+                log(`Setting ${this.taskType} task timeout for ${taskId} to ${this.timeout}`);
                 const timeoutCancel = setTimeout(() => {
                     taskTimedout = true;
                     this.activeJobs--;
+                    log(`Timed out task ${taskId} for ${this.taskType}`);
                 }, this.timeout);
                 taskHandler(Object.assign({}, job, { customHeaders }), (completedPayload) => {
                     this.completeJob({
@@ -98,6 +103,10 @@ class ZBWorker {
                     clearInterval(timeoutCancel);
                     if (!taskTimedout) {
                         this.activeJobs--;
+                        log(`Completed task ${taskId} for ${this.taskType}`);
+                    }
+                    else {
+                        log(`Completed task ${taskId} for ${this.taskType}, however it had timed out.`);
                     }
                 }, this);
             });
