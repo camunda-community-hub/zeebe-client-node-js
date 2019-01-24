@@ -197,6 +197,16 @@ export enum MessageName = {
 
 ```
 
+## Debugging
+
+Enable debug output for the client library using the [debug](https://www.npmjs.com/package/debug) module by setting the environnment variable `DEBUG` to include `zeebe-node:*`.
+
+For example:
+
+```
+DEBUG=zeebe-node:* node app.js
+```
+
 ## Developing
 
 The source is written in TypeScript in `src`, and compiled to ES6 in the `dist` directory.
