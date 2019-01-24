@@ -1,6 +1,6 @@
 {
     "name": "zeebe-node",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "A Node.js client library for the Zeebe Microservices Orchestration Engine.",
     "keywords": [
         "zeebe",
@@ -12,13 +12,13 @@
         "camunda",
         "Netflix"
     ],
-    "homepage": "https://creditsenseau.github.io/zeebe-node/",
+    "homepage": "https://creditsenseau.github.io/zeebe-client-node-js/",
     "bugs": {
-        "url": "https://github.com/CreditSenseAU/zeebe-node/issues"
+        "url": "https://github.com/CreditSenseAU/zeebe-client-node-js/issues"
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/CreditSenseAU/zeebe-node"
+        "url": "https://github.com/CreditSenseAU/zeebe-client-node-js"
     },
     "main": "dist/index.js",
     "scripts": {
