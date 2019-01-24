@@ -1,6 +1,6 @@
 {
-    "name": "@coreapps/zeebe-node",
-    "version": "1.0.13",
+    "name": "zeebe-node",
+    "version": "1.0.0",
     "main": "dist/index.js",
     "scripts": {
         "build": "tsc",
@@ -38,8 +38,5 @@
         "name": "Josh Wulf",
         "email": "jwulf@creditsense.com.au"
     },
-    "publishConfig": {
-        "access": "restricted"
-    },
-    "license": "UNLICENSED"
+    "license": "Apache-2.0"
 }
