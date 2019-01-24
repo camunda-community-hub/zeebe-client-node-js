@@ -137,10 +137,11 @@
 <span class="hljs-keyword">const</span> workerOptions = {
     <span class="hljs-attr">maxActiveJobs</span>: <span class="hljs-number">32</span>, <span class="hljs-comment">// the number of simultaneous tasks this worker can handle</span>
     timeout: <span class="hljs-number">1000</span>, <span class="hljs-comment">// the maximum amount of time the broker should allow this worker to complete a task</span>
-    onConnectionError: <span class="hljs-function">(<span class="hljs-params">err</span>) =&gt;</span> <span class="hljs-built_in">console</span>.log(err) <span class="hljs-comment">// Called when the connection to the broker cannot be established, or fails</span>
 }
 
-<span class="hljs-keyword">const</span> zbWorker = zbc.createWorker(<span class="hljs-string">"test-worker"</span>, <span class="hljs-string">"demo-service"</span>, handler, workerOptions);
+<span class="hljs-keyword">const</span> onConnectionError = <span class="hljs-function">(<span class="hljs-params">err</span>) =&gt;</span> <span class="hljs-built_in">console</span>.log(err) <span class="hljs-comment">// Called when the connection to the broker cannot be established, or fails</span>
+
+<span class="hljs-keyword">const</span> zbWorker = zbc.createWorker(<span class="hljs-string">"test-worker"</span>, <span class="hljs-string">"demo-service"</span>, handler, workerOptions, onConnectionError);
 </code></pre>
 				<h3 id="start-a-workflow-instance">Start a Workflow Instance</h3>
 				<pre><code class="language-javascript">
@@ -338,6 +339,9 @@
 					</li>
 					<li class=" tsd-kind-type-alias">
 						<a href="globals.html#taskhandlerfnshort" class="tsd-kind-icon">task<wbr>Handler<wbr>FnShort</a>
+					</li>
+					<li class=" tsd-kind-variable tsd-is-not-exported">
+						<a href="globals.html#log" class="tsd-kind-icon">log</a>
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="globals.html#parsepayload" class="tsd-kind-icon">parse<wbr>Payload</a>
