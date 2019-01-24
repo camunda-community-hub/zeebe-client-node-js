@@ -98,10 +98,11 @@ The worker can be configured with options. Shown below are the defaults that app
 const workerOptions = {
     maxActiveJobs: 32, // the number of simultaneous tasks this worker can handle
     timeout: 1000, // the maximum amount of time the broker should allow this worker to complete a task
-    onConnectionError: (err) => console.log(err) // Called when the connection to the broker cannot be established, or fails
 }
 
-const zbWorker = zbc.createWorker("test-worker", "demo-service", handler, workerOptions);
+const onConnectionError = (err) => console.log(err) // Called when the connection to the broker cannot be established, or fails
+
+const zbWorker = zbc.createWorker("test-worker", "demo-service", handler, workerOptions, onConnectionError);
 
 ```
 
