@@ -1,12 +1,17 @@
+import { Chalk } from "chalk";
 import { ZBWorker } from "../zb/ZBWorker";
 
 export type Payload = any;
 
 export type completeFn = (updatedPayload?: any) => void;
-export type taskHandlerFnShort = (payload: Job, complete: completeFn) => void;
-export type taskHandlerFnLong = (payload: Job, complete: completeFn, worker: ZBWorker) => void;
-export type taskHandlerFn = taskHandlerFnShort | taskHandlerFnLong;
-
+export type ZBTaskWorkerHandlerMinimal = (payload: Job, complete: completeFn) => void;
+export type ZBWorkerTaskHandlerWithWorker = (payload: Job, complete: completeFn, worker: ZBWorker) => void;
+export type ZBWorkerTaskHandler = ZBTaskWorkerHandlerMinimal | ZBWorkerTaskHandlerWithWorker;
+export interface ZBWorkerLoggerOptions {
+    level?: string;
+    color?: Chalk;
+    namespace?: string | string[];
+}
 export type ConnectionErrorHandler = (error: any) => void;
 
 export interface ActivateJobsResponse {
@@ -26,7 +31,7 @@ export interface ActivateJobsRequest {
 
 export interface ActivatedJob {
     key: string;
-    type: string ;
+    type: string;
     jobHeaders: JobHeaders;
     /**
      * JSON object as a string
@@ -46,7 +51,7 @@ export interface ActivatedJob {
 
 export interface Job {
     key: string;
-    type: string ;
+    type: string;
     jobHeaders: JobHeaders;
     customHeaders: Payload;
     worker: string;
@@ -58,10 +63,10 @@ export interface Job {
 
 export interface JobHeaders {
     workflowInstanceKey: string;
-    bpmnProcessId: string ;
+    bpmnProcessId: string;
     workflowDefinitionVersion: number;
     workflowKey: string;
-    elementId: string ;
+    elementId: string;
     elementInstanceKey: string;
 }
 

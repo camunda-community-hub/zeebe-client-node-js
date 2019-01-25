@@ -1,8 +1,12 @@
-import chalk from "chalk";
+import chalk, { Chalk } from "chalk";
+
 import debug = require("debug");
 import * as uuid from "uuid";
 import { parsePayload, stringifyPayload } from "../lib";
 import * as ZB from "../lib/interfaces";
+import { ZBWorkerLogger } from "../lib/ZBWorkerLogger";
+// tslint:disable-next-line
+require("console-stamp")(console, "[HH:MM:ss.l]");
 
 const log = debug("zeebe-node:worker");
 
@@ -13,18 +17,20 @@ export class ZBWorker {
     public maxActiveJobs: number;
     public timeout: number;
 
-    private taskHandler: ZB.taskHandlerFn;
+    private taskHandler: ZB.ZBWorkerTaskHandler;
     private id = uuid.v4();
     private pollInterval: number;
     private errored = false;
     private onConnectionErrorHandler?: ZB.ConnectionErrorHandler;
+    private defaultLogger: ZBWorkerLogger;
 
     constructor(
         gRPCClient: any,
         id: string,
         taskType: string,
-        taskHandler: ZB.taskHandlerFn,
+        taskHandler: ZB.ZBWorkerTaskHandler,
         options: ZB.ZBWorkerOptions = {},
+        idColor: Chalk,
         onConnectionError?: ZB.ConnectionErrorHandler,
     ) {
         if (!taskType) {
@@ -41,25 +47,36 @@ export class ZBWorker {
         this.id = id || uuid.v4();
         this.gRPCClient = gRPCClient;
         this.onConnectionErrorHandler = onConnectionError;
+        this.defaultLogger = new ZBWorkerLogger({ color: idColor }, { id: this.id, taskType: this.taskType });
         this.work();
     }
 
     public work = () => {
-        this.log(chalk.yellow(this.id))(chalk.green(`Ready for `) + chalk.yellow(`${this.taskType}...`));
+        this.defaultLogger.log(`Ready for ${this.taskType}...`);
         this.activateJobs();
         setInterval(() => this.activateJobs(), this.pollInterval);
     }
 
     public completeJob(completeJobRequest: ZB.CompleteJobRequest): Promise<void> {
-        return this.gRPCClient.completeJobSync(stringifyPayload(completeJobRequest));
+        const withStringifiedPayload = stringifyPayload(completeJobRequest);
+        log(withStringifiedPayload);
+        return this.gRPCClient.completeJobSync(withStringifiedPayload);
     }
 
     public onConnectionError(handler: (error: any) => void) {
         this.onConnectionErrorHandler = handler;
     }
 
+    public log(msg: any) {
+        this.defaultLogger.log(msg);
+    }
+
+    public getNewLogger(options: ZB.ZBWorkerLoggerOptions) {
+        return new ZBWorkerLogger(options, { id: this.id, taskType: this.taskType });
+    }
+
     // tslint:disable-next-line:no-console
-    private log = (ns: string) => (msg: any) => console.log(`${ns}:`, msg);
+    private internalLog = (ns: string) => (msg: any) => console.log(`${ns}:`, msg);
 
     private handleGrpcError = (err: any) => {
         if (!this.errored) {
@@ -67,7 +84,7 @@ export class ZBWorker {
                 this.onConnectionErrorHandler(err);
                 this.errored = true;
             } else {
-                this.log(
+                this.internalLog(
                     chalk.red(`ERROR: `) +
                     chalk.yellow(`${this.id} - ${this.taskType}`))(
                         chalk.red(err.details));

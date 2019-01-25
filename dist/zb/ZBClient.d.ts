@@ -3,6 +3,7 @@ import { ZBWorker } from "./ZBWorker";
 export declare class ZBClient {
     brokerAddress: string;
     private gRPCClient;
+    private workerCount;
     constructor(brokerAddress: string);
     /**
      *
@@ -11,7 +12,7 @@ export declare class ZBClient {
      * @param taskHandler - A handler for activated jobs.
      * @param options - Configuration options for the worker.
      */
-    createWorker(id: string, taskType: string, taskHandler: ZB.taskHandlerFn, options?: ZB.ZBWorkerOptions): ZBWorker;
+    createWorker(id: string, taskType: string, taskHandler: ZB.ZBWorkerTaskHandler, options?: ZB.ZBWorkerOptions, onConnectionError?: ZB.ConnectionErrorHandler): ZBWorker;
     /**
      * Return the broker cluster topology
      */

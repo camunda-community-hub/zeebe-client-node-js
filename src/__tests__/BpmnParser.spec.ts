@@ -1,4 +1,4 @@
-import {BpmnParser} from "..";
+import { BpmnParser } from "..";
 
 const testBpmnFile = __dirname + "/testdata/msg-start.bpmn";
 const simpleTestBpmnFile = __dirname + "/testdata/msg-start-simple.bpmn";
@@ -42,7 +42,7 @@ describe("parseBpmn", () => {
             expect(constants
                 .split(" ").join("")
                 .split("\n").join("")
-                .indexOf(`exportenumMessageName={MSG_EMIT_FRAME="MSG-EMIT_FRAME",MSG_EMIT_FRAME_1="MSG-EMIT_FRAME`))
+                .indexOf(`exportenumMessageName{MSG_EMIT_FRAME="MSG-EMIT_FRAME",MSG_EMIT_FRAME_1="MSG-EMIT_FRAME`))
                 .not
                 .toBe(-1);
         });

@@ -1,10 +1,16 @@
 /// <reference types="node" />
+import { Chalk } from "chalk";
 import { ZBWorker } from "../zb/ZBWorker";
 export declare type Payload = any;
 export declare type completeFn = (updatedPayload?: any) => void;
-export declare type taskHandlerFnShort = (payload: Job, complete: completeFn) => void;
-export declare type taskHandlerFnLong = (payload: Job, complete: completeFn, worker: ZBWorker) => void;
-export declare type taskHandlerFn = taskHandlerFnShort | taskHandlerFnLong;
+export declare type ZBTaskWorkerHandlerMinimal = (payload: Job, complete: completeFn) => void;
+export declare type ZBWorkerTaskHandlerWithWorker = (payload: Job, complete: completeFn, worker: ZBWorker) => void;
+export declare type ZBWorkerTaskHandler = ZBTaskWorkerHandlerMinimal | ZBWorkerTaskHandlerWithWorker;
+export interface ZBWorkerLoggerOptions {
+    level?: string;
+    color?: Chalk;
+    namespace?: string | string[];
+}
 export declare type ConnectionErrorHandler = (error: any) => void;
 export interface ActivateJobsResponse {
     jobs: ActivatedJob[];
