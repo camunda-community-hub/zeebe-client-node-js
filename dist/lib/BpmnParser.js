@@ -54,12 +54,12 @@ class BpmnParser {
 export enum TaskType {
     ${taskEnumMembers}
 
-};
+}
 
 export enum MessageName {
     ${messageEnumMembers}
 
-};
+}
 
 `;
     }

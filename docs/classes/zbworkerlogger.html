@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>CreateWorkflowInstanceResponse | zeebe-node</title>
+	<title>ZBWorkerLogger | zeebe-node</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -56,10 +56,10 @@
 					<a href="../globals.html">Globals</a>
 				</li>
 				<li>
-					<a href="createworkflowinstanceresponse.html">CreateWorkflowInstanceResponse</a>
+					<a href="zbworkerlogger.html">ZBWorkerLogger</a>
 				</li>
 			</ul>
-			<h1>Interface CreateWorkflowInstanceResponse</h1>
+			<h1>Class ZBWorkerLogger</h1>
 		</div>
 	</div>
 </header>
@@ -70,7 +70,7 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">CreateWorkflowInstanceResponse</span>
+						<span class="target">ZBWorkerLogger</span>
 					</li>
 				</ul>
 			</section>
@@ -79,58 +79,111 @@
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
+							<h3>Constructors</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-constructor tsd-parent-kind-class"><a href="zbworkerlogger.html#constructor" class="tsd-kind-icon">constructor</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="createworkflowinstanceresponse.html#bpmnprocessid" class="tsd-kind-icon">bpmn<wbr>Process<wbr>Id</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="createworkflowinstanceresponse.html#version" class="tsd-kind-icon">version</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="createworkflowinstanceresponse.html#workflowinstancekey" class="tsd-kind-icon">workflow<wbr>Instance<wbr>Key</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="createworkflowinstanceresponse.html#workflowkey" class="tsd-kind-icon">workflow<wbr>Key</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="zbworkerlogger.html#level" class="tsd-kind-icon">level</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
+							<h3>Methods</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="zbworkerlogger.html#log" class="tsd-kind-icon">log</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Constructors</h2>
+				<section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class">
+					<a name="constructor" class="tsd-anchor"></a>
+					<h3>constructor</h3>
+					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">new ZBWorker<wbr>Logger<span class="tsd-signature-symbol">(</span>__namedParameters<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">object</span>, __namedParameters<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="zbworkerlogger.html" class="tsd-signature-type">ZBWorkerLogger</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in lib/ZBWorkerLogger.ts:10</li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> __namedParameters: <span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> =&nbsp;{}</span></h5>
+									<ul class="tsd-parameters">
+										<li class="tsd-parameter">
+											<h5>color<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Chalk</span></h5>
+										</li>
+										<li class="tsd-parameter">
+											<h5>level<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h5>
+										</li>
+										<li class="tsd-parameter">
+											<h5>namespace<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
+										</li>
+									</ul>
+								</li>
+								<li>
+									<h5>__namedParameters: <span class="tsd-signature-type">object</span></h5>
+									<ul class="tsd-parameters">
+										<li class="tsd-parameter">
+											<h5>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>
+										</li>
+										<li class="tsd-parameter">
+											<h5>task<wbr>Type<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>
+										</li>
+									</ul>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="zbworkerlogger.html" class="tsd-signature-type">ZBWorkerLogger</a></h4>
+						</li>
+					</ul>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="bpmnprocessid" class="tsd-anchor"></a>
-					<h3>bpmn<wbr>Process<wbr>Id</h3>
-					<div class="tsd-signature tsd-kind-icon">bpmn<wbr>Process<wbr>Id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="level" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> level</h3>
+					<div class="tsd-signature tsd-kind-icon">level<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-node/blob/d909d0d/src/lib/interfaces.ts#L104">lib/interfaces.ts:104</a></li>
+							<li>Defined in lib/ZBWorkerLogger.ts:5</li>
 						</ul>
 					</aside>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="version" class="tsd-anchor"></a>
-					<h3>version</h3>
-					<div class="tsd-signature tsd-kind-icon">version<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-node/blob/d909d0d/src/lib/interfaces.ts#L105">lib/interfaces.ts:105</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="workflowinstancekey" class="tsd-anchor"></a>
-					<h3>workflow<wbr>Instance<wbr>Key</h3>
-					<div class="tsd-signature tsd-kind-icon">workflow<wbr>Instance<wbr>Key<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-node/blob/d909d0d/src/lib/interfaces.ts#L106">lib/interfaces.ts:106</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="workflowkey" class="tsd-anchor"></a>
-					<h3>workflow<wbr>Key</h3>
-					<div class="tsd-signature tsd-kind-icon">workflow<wbr>Key<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-node/blob/d909d0d/src/lib/interfaces.ts#L103">lib/interfaces.ts:103</a></li>
-						</ul>
-					</aside>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Methods</h2>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="log" class="tsd-anchor"></a>
+					<h3>log</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">log<span class="tsd-signature-symbol">(</span>message<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in lib/ZBWorkerLogger.ts:29</li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>message: <span class="tsd-signature-type">any</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
 				</section>
 			</section>
 		</div>
@@ -146,20 +199,17 @@
 				<ul class="before-current">
 				</ul>
 				<ul class="current">
-					<li class="current tsd-kind-interface">
-						<a href="createworkflowinstanceresponse.html" class="tsd-kind-icon">Create<wbr>Workflow<wbr>Instance<wbr>Response</a>
+					<li class="current tsd-kind-class">
+						<a href="zbworkerlogger.html" class="tsd-kind-icon">ZBWorker<wbr>Logger</a>
 						<ul>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="createworkflowinstanceresponse.html#bpmnprocessid" class="tsd-kind-icon">bpmn<wbr>Process<wbr>Id</a>
+							<li class=" tsd-kind-constructor tsd-parent-kind-class">
+								<a href="zbworkerlogger.html#constructor" class="tsd-kind-icon">constructor</a>
 							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="createworkflowinstanceresponse.html#version" class="tsd-kind-icon">version</a>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="zbworkerlogger.html#level" class="tsd-kind-icon">level</a>
 							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="createworkflowinstanceresponse.html#workflowinstancekey" class="tsd-kind-icon">workflow<wbr>Instance<wbr>Key</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="createworkflowinstanceresponse.html#workflowkey" class="tsd-kind-icon">workflow<wbr>Key</a>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="zbworkerlogger.html#log" class="tsd-kind-icon">log</a>
 							</li>
 						</ul>
 					</li>

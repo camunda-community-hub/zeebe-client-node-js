@@ -98,6 +98,8 @@
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="zbworker.html#completejob" class="tsd-kind-icon">complete<wbr>Job</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="zbworker.html#getnewlogger" class="tsd-kind-icon">get<wbr>New<wbr>Logger</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="zbworker.html#log" class="tsd-kind-icon">log</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="zbworker.html#onconnectionerror" class="tsd-kind-icon">on<wbr>Connection<wbr>Error</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="zbworker.html#work" class="tsd-kind-icon">work</a></li>
 							</ul>
@@ -111,13 +113,13 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">new ZBWorker<span class="tsd-signature-symbol">(</span>gRPCClient<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, taskType<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, taskHandler<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ZB.taskHandlerFn</span>, options<span class="tsd-signature-symbol">?: </span><a href="../interfaces/zbworkeroptions.html" class="tsd-signature-type">ZBWorkerOptions</a>, onConnectionError<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">ZB.ConnectionErrorHandler</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="zbworker.html" class="tsd-signature-type">ZBWorker</a></li>
+						<li class="tsd-signature tsd-kind-icon">new ZBWorker<span class="tsd-signature-symbol">(</span>gRPCClient<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, taskType<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, taskHandler<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ZB.ZBWorkerTaskHandler</span>, options<span class="tsd-signature-symbol">?: </span><a href="../interfaces/zbworkeroptions.html" class="tsd-signature-type">ZBWorkerOptions</a>, idColor<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Chalk</span>, onConnectionError<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">ZB.ConnectionErrorHandler</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="zbworker.html" class="tsd-signature-type">ZBWorker</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in zb/ZBWorker.ts:20</li>
+									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-node/blob/d909d0d/src/zb/ZBWorker.ts#L25">zb/ZBWorker.ts:25</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -132,10 +134,13 @@
 									<h5>taskType: <span class="tsd-signature-type">string</span></h5>
 								</li>
 								<li>
-									<h5>taskHandler: <span class="tsd-signature-type">ZB.taskHandlerFn</span></h5>
+									<h5>taskHandler: <span class="tsd-signature-type">ZB.ZBWorkerTaskHandler</span></h5>
 								</li>
 								<li>
 									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> options: <a href="../interfaces/zbworkeroptions.html" class="tsd-signature-type">ZBWorkerOptions</a><span class="tsd-signature-symbol"> =&nbsp;{}</span></h5>
+								</li>
+								<li>
+									<h5>idColor: <span class="tsd-signature-type">Chalk</span></h5>
 								</li>
 								<li>
 									<h5><span class="tsd-flag ts-flagOptional">Optional</span> onConnectionError: <span class="tsd-signature-type">ZB.ConnectionErrorHandler</span></h5>
@@ -154,7 +159,7 @@
 					<div class="tsd-signature tsd-kind-icon">active<wbr>Jobs<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;0</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in zb/ZBWorker.ts:11</li>
+							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-node/blob/d909d0d/src/zb/ZBWorker.ts#L15">zb/ZBWorker.ts:15</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -164,7 +169,7 @@
 					<div class="tsd-signature tsd-kind-icon">gRPCClient<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in zb/ZBWorker.ts:10</li>
+							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-node/blob/d909d0d/src/zb/ZBWorker.ts#L14">zb/ZBWorker.ts:14</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -174,7 +179,7 @@
 					<div class="tsd-signature tsd-kind-icon">max<wbr>Active<wbr>Jobs<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in zb/ZBWorker.ts:13</li>
+							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-node/blob/d909d0d/src/zb/ZBWorker.ts#L17">zb/ZBWorker.ts:17</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -184,7 +189,7 @@
 					<div class="tsd-signature tsd-kind-icon">task<wbr>Type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in zb/ZBWorker.ts:12</li>
+							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-node/blob/d909d0d/src/zb/ZBWorker.ts#L16">zb/ZBWorker.ts:16</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -194,7 +199,7 @@
 					<div class="tsd-signature tsd-kind-icon">timeout<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in zb/ZBWorker.ts:14</li>
+							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-node/blob/d909d0d/src/zb/ZBWorker.ts#L18">zb/ZBWorker.ts:18</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -211,7 +216,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in zb/ZBWorker.ts:53</li>
+									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-node/blob/d909d0d/src/zb/ZBWorker.ts#L60">zb/ZBWorker.ts:60</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -225,6 +230,52 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="getnewlogger" class="tsd-anchor"></a>
+					<h3>get<wbr>New<wbr>Logger</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>New<wbr>Logger<span class="tsd-signature-symbol">(</span>options<span class="tsd-signature-symbol">: </span><a href="../interfaces/zbworkerloggeroptions.html" class="tsd-signature-type">ZBWorkerLoggerOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="zbworkerlogger.html" class="tsd-signature-type">ZBWorkerLogger</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-node/blob/d909d0d/src/zb/ZBWorker.ts#L74">zb/ZBWorker.ts:74</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>options: <a href="../interfaces/zbworkerloggeroptions.html" class="tsd-signature-type">ZBWorkerLoggerOptions</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="zbworkerlogger.html" class="tsd-signature-type">ZBWorkerLogger</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="log" class="tsd-anchor"></a>
+					<h3>log</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">log<span class="tsd-signature-symbol">(</span>msg<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-node/blob/d909d0d/src/zb/ZBWorker.ts#L70">zb/ZBWorker.ts:70</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>msg: <span class="tsd-signature-type">any</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="onconnectionerror" class="tsd-anchor"></a>
 					<h3>on<wbr>Connection<wbr>Error</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -234,7 +285,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in zb/ZBWorker.ts:57</li>
+									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-node/blob/d909d0d/src/zb/ZBWorker.ts#L66">zb/ZBWorker.ts:66</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -275,7 +326,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in zb/ZBWorker.ts:47</li>
+									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-node/blob/d909d0d/src/zb/ZBWorker.ts#L54">zb/ZBWorker.ts:54</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -294,18 +345,6 @@
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
-					<li class=" tsd-kind-enum">
-						<a href="../enums/partitionbrokerrole.html" class="tsd-kind-icon">Partition<wbr>Broker<wbr>Role</a>
-					</li>
-					<li class=" tsd-kind-enum">
-						<a href="../enums/resourcetype.html" class="tsd-kind-icon">Resource<wbr>Type</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="bpmnparser.html" class="tsd-kind-icon">Bpmn<wbr>Parser</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="zbclient.html" class="tsd-kind-icon">ZBClient</a>
-					</li>
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-class">
@@ -333,6 +372,12 @@
 								<a href="zbworker.html#completejob" class="tsd-kind-icon">complete<wbr>Job</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="zbworker.html#getnewlogger" class="tsd-kind-icon">get<wbr>New<wbr>Logger</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="zbworker.html#log" class="tsd-kind-icon">log</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="zbworker.html#onconnectionerror" class="tsd-kind-icon">on<wbr>Connection<wbr>Error</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
@@ -342,111 +387,6 @@
 					</li>
 				</ul>
 				<ul class="after-current">
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/activatejobsrequest.html" class="tsd-kind-icon">Activate<wbr>Jobs<wbr>Request</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/activatejobsresponse.html" class="tsd-kind-icon">Activate<wbr>Jobs<wbr>Response</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/activatedjob.html" class="tsd-kind-icon">Activated<wbr>Job</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/brokerinfo.html" class="tsd-kind-icon">Broker<wbr>Info</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/completejobrequest.html" class="tsd-kind-icon">Complete<wbr>Job<wbr>Request</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/createworkflowinstancerequest.html" class="tsd-kind-icon">Create<wbr>Workflow<wbr>Instance<wbr>Request</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/createworkflowinstanceresponse.html" class="tsd-kind-icon">Create<wbr>Workflow<wbr>Instance<wbr>Response</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/deployworkflowrequest.html" class="tsd-kind-icon">Deploy<wbr>Workflow<wbr>Request</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/deployworkflowresponse.html" class="tsd-kind-icon">Deploy<wbr>Workflow<wbr>Response</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/failjobrequest.html" class="tsd-kind-icon">Fail<wbr>Job<wbr>Request</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/getworkflowrequestwithbpmnprocessid.html" class="tsd-kind-icon">Get<wbr>Workflow<wbr>Request<wbr>With<wbr>Bpmn<wbr>Process<wbr>Id</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/getworkflowrequestwithworkflowkey.html" class="tsd-kind-icon">Get<wbr>Workflow<wbr>Request<wbr>With<wbr>Workflow<wbr>Key</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/getworkflowresponse.html" class="tsd-kind-icon">Get<wbr>Workflow<wbr>Response</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/job.html" class="tsd-kind-icon">Job</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/jobheaders.html" class="tsd-kind-icon">Job<wbr>Headers</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/listworkflowresponse.html" class="tsd-kind-icon">List<wbr>Workflow<wbr>Response</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/partition.html" class="tsd-kind-icon">Partition</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/publishmessagerequest.html" class="tsd-kind-icon">Publish<wbr>Message<wbr>Request</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/publishstartmessagerequest.html" class="tsd-kind-icon">Publish<wbr>Start<wbr>Message<wbr>Request</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/topologyresponse.html" class="tsd-kind-icon">Topology<wbr>Response</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/updatejobretriesrequest.html" class="tsd-kind-icon">Update<wbr>Job<wbr>Retries<wbr>Request</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/updateworkflowinstancepayloadrequest.html" class="tsd-kind-icon">Update<wbr>Workflow<wbr>Instance<wbr>Payload<wbr>Request</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/workflowmetadata.html" class="tsd-kind-icon">Workflow<wbr>Metadata</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/workflowrequestobject.html" class="tsd-kind-icon">Workflow<wbr>Request<wbr>Object</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="../interfaces/zbworkeroptions.html" class="tsd-kind-icon">ZBWorker<wbr>Options</a>
-					</li>
-					<li class=" tsd-kind-type-alias">
-						<a href="../globals.html#connectionerrorhandler" class="tsd-kind-icon">Connection<wbr>Error<wbr>Handler</a>
-					</li>
-					<li class=" tsd-kind-type-alias">
-						<a href="../globals.html#getworkflowrequest" class="tsd-kind-icon">Get<wbr>Workflow<wbr>Request</a>
-					</li>
-					<li class=" tsd-kind-type-alias">
-						<a href="../globals.html#payload" class="tsd-kind-icon">Payload</a>
-					</li>
-					<li class=" tsd-kind-type-alias">
-						<a href="../globals.html#completefn" class="tsd-kind-icon">complete<wbr>Fn</a>
-					</li>
-					<li class=" tsd-kind-type-alias">
-						<a href="../globals.html#taskhandlerfn" class="tsd-kind-icon">task<wbr>Handler<wbr>Fn</a>
-					</li>
-					<li class=" tsd-kind-type-alias">
-						<a href="../globals.html#taskhandlerfnlong" class="tsd-kind-icon">task<wbr>Handler<wbr>FnLong</a>
-					</li>
-					<li class=" tsd-kind-type-alias">
-						<a href="../globals.html#taskhandlerfnshort" class="tsd-kind-icon">task<wbr>Handler<wbr>FnShort</a>
-					</li>
-					<li class=" tsd-kind-variable tsd-is-not-exported">
-						<a href="../globals.html#log" class="tsd-kind-icon">log</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="../globals.html#parsepayload" class="tsd-kind-icon">parse<wbr>Payload</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="../globals.html#stringifypayload" class="tsd-kind-icon">stringify<wbr>Payload</a>
-					</li>
 				</ul>
 			</nav>
 		</div>
