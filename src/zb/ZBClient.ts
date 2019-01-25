@@ -1,10 +1,10 @@
+import chalk from "chalk";
 import * as fs from "fs";
 import * as GRPCClient from "node-grpc-client";
 import * as path from "path";
 import { BpmnParser, stringifyPayload } from "../lib";
 import * as ZB from "../lib/interfaces";
 import { ZBWorker } from "./ZBWorker";
-import chalk from "chalk";
 
 const idColors = [
     chalk.yellow,
@@ -12,7 +12,8 @@ const idColors = [
     chalk.cyan,
     chalk.magenta,
     chalk.blue,
-]
+];
+
 export class ZBClient {
     public brokerAddress: string;
     private gRPCClient: any;
