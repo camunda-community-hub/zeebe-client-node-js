@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const chalk_1 = require("chalk");
 const fs = require("fs");
 const GRPCClient = require("node-grpc-client");
 const path = require("path");
 const lib_1 = require("../lib");
 const ZBWorker_1 = require("./ZBWorker");
-const chalk_1 = require("chalk");
 const idColors = [
     chalk_1.default.yellow,
     chalk_1.default.green,
