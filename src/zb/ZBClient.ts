@@ -1,3 +1,4 @@
+import chalk from "chalk";
 import * as fs from "fs";
 import * as GRPCClient from "node-grpc-client";
 import * as path from "path";
@@ -5,9 +6,18 @@ import { BpmnParser, stringifyPayload } from "../lib";
 import * as ZB from "../lib/interfaces";
 import { ZBWorker } from "./ZBWorker";
 
+const idColors = [
+    chalk.yellow,
+    chalk.green,
+    chalk.cyan,
+    chalk.magenta,
+    chalk.blue,
+];
+
 export class ZBClient {
     public brokerAddress: string;
     private gRPCClient: any;
+    private workerCount = 0;
 
     constructor(brokerAddress: string) {
         if (!brokerAddress) {
@@ -21,7 +31,7 @@ export class ZBClient {
         this.brokerAddress = brokerAddress;
 
         this.gRPCClient = new GRPCClient(
-            path.join( __dirname, "../../proto/zeebe.proto"),
+            path.join(__dirname, "../../proto/zeebe.proto"),
             "gateway_protocol",
             "Gateway",
             brokerAddress,
@@ -35,8 +45,15 @@ export class ZBClient {
      * @param taskHandler - A handler for activated jobs.
      * @param options - Configuration options for the worker.
      */
-    public createWorker(id: string, taskType: string, taskHandler: ZB.taskHandlerFn, options: ZB.ZBWorkerOptions = {}) {
-        return new ZBWorker(this.gRPCClient, id, taskType, taskHandler, options);
+    public createWorker(
+        id: string,
+        taskType: string,
+        taskHandler: ZB.ZBWorkerTaskHandler,
+        options: ZB.ZBWorkerOptions = {},
+        onConnectionError?: ZB.ConnectionErrorHandler,
+    ) {
+        const idColor = idColors[this.workerCount++ % idColors.length];
+        return new ZBWorker(this.gRPCClient, id, taskType, taskHandler, options, idColor, onConnectionError);
     }
 
     /**
@@ -52,7 +69,7 @@ export class ZBClient {
      * @param {redeploy?: boolean} - Redeploy workflow. Defaults to true.
      * If set false, will not redeploy a workflow that exists.
      */
-    public async deployWorkflow(workflow: string | string[], {redeploy = true} = {}):
+    public async deployWorkflow(workflow: string | string[], { redeploy = true } = {}):
         Promise<ZB.DeployWorkflowResponse> {
         const workflows = Array.isArray(workflow) ? workflow : [workflow];
         let deployedWorkflows: any[] = [];
@@ -67,7 +84,7 @@ export class ZBClient {
             }))
             .filter((wfr) => !deployedWorkflows.includes(BpmnParser.getProcessId(wfr.definition.toString())));
         if (workFlowRequests.length > 0) {
-            return this.gRPCClient.deployWorkflowSync({workflows: workFlowRequests});
+            return this.gRPCClient.deployWorkflowSync({ workflows: workFlowRequests });
         } else {
             return {
                 key: -1,
@@ -148,7 +165,7 @@ export class ZBClient {
     }
 
     public listWorkflows(bpmnProcessId?: string): Promise<ZB.ListWorkflowResponse> {
-        return this.gRPCClient.listWorkflowsSync({bpmnProcessId});
+        return this.gRPCClient.listWorkflowsSync({ bpmnProcessId });
     }
 
     public getWorkflow(getWorkflowRequest: ZB.GetWorkflowRequest): Promise<ZB.GetWorkflowResponse> {

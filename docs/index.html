@@ -208,7 +208,10 @@
 
 };
 </code></pre>
-				<h2 id="developing">Developing</h2>
+				<h2 id="debugging">Debugging</h2>
+				<p>Enable debug output for the client library using the <a href="https://www.npmjs.com/package/debug">debug</a> module by setting the environnment variable <code>DEBUG</code> to include <code>zeebe-node:*</code>.</p>
+				<p>For example:</p>
+				<pre><code><span class="hljs-attr">DEBUG=</span>zeebe-<span class="hljs-keyword">node</span><span class="hljs-title">:* node</span> app.js</code></pre><h2 id="developing">Developing</h2>
 				<p>The source is written in TypeScript in <code>src</code>, and compiled to ES6 in the <code>dist</code> directory.</p>
 				<p>To build:</p>
 				<pre><code class="language-bash">npm run build</code></pre>
@@ -243,6 +246,9 @@
 					</li>
 					<li class=" tsd-kind-class">
 						<a href="classes/zbworker.html" class="tsd-kind-icon">ZBWorker</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/zbworkerlogger.html" class="tsd-kind-icon">ZBWorker<wbr>Logger</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/activatejobsrequest.html" class="tsd-kind-icon">Activate<wbr>Jobs<wbr>Request</a>
@@ -317,6 +323,9 @@
 						<a href="interfaces/workflowrequestobject.html" class="tsd-kind-icon">Workflow<wbr>Request<wbr>Object</a>
 					</li>
 					<li class=" tsd-kind-interface">
+						<a href="interfaces/zbworkerloggeroptions.html" class="tsd-kind-icon">ZBWorker<wbr>Logger<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface">
 						<a href="interfaces/zbworkeroptions.html" class="tsd-kind-icon">ZBWorker<wbr>Options</a>
 					</li>
 					<li class=" tsd-kind-type-alias">
@@ -329,16 +338,19 @@
 						<a href="globals.html#payload" class="tsd-kind-icon">Payload</a>
 					</li>
 					<li class=" tsd-kind-type-alias">
+						<a href="globals.html#zbtaskworkerhandlerminimal" class="tsd-kind-icon">ZBTask<wbr>Worker<wbr>Handler<wbr>Minimal</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="globals.html#zbworkertaskhandler" class="tsd-kind-icon">ZBWorker<wbr>Task<wbr>Handler</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="globals.html#zbworkertaskhandlerwithworker" class="tsd-kind-icon">ZBWorker<wbr>Task<wbr>Handler<wbr>With<wbr>Worker</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
 						<a href="globals.html#completefn" class="tsd-kind-icon">complete<wbr>Fn</a>
 					</li>
-					<li class=" tsd-kind-type-alias">
-						<a href="globals.html#taskhandlerfn" class="tsd-kind-icon">task<wbr>Handler<wbr>Fn</a>
-					</li>
-					<li class=" tsd-kind-type-alias">
-						<a href="globals.html#taskhandlerfnlong" class="tsd-kind-icon">task<wbr>Handler<wbr>FnLong</a>
-					</li>
-					<li class=" tsd-kind-type-alias">
-						<a href="globals.html#taskhandlerfnshort" class="tsd-kind-icon">task<wbr>Handler<wbr>FnShort</a>
+					<li class=" tsd-kind-variable tsd-is-not-exported">
+						<a href="globals.html#idcolors" class="tsd-kind-icon">id<wbr>Colors</a>
 					</li>
 					<li class=" tsd-kind-variable tsd-is-not-exported">
 						<a href="globals.html#log" class="tsd-kind-icon">log</a>

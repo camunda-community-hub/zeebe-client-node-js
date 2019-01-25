@@ -1,4 +1,6 @@
+import { Chalk } from "chalk";
 import * as ZB from "../lib/interfaces";
+import { ZBWorkerLogger } from "../lib/ZBWorkerLogger";
 export declare class ZBWorker {
     gRPCClient: any;
     activeJobs: number;
@@ -10,11 +12,14 @@ export declare class ZBWorker {
     private pollInterval;
     private errored;
     private onConnectionErrorHandler?;
-    constructor(gRPCClient: any, id: string, taskType: string, taskHandler: ZB.taskHandlerFn, options?: ZB.ZBWorkerOptions, onConnectionError?: ZB.ConnectionErrorHandler);
+    private defaultLogger;
+    constructor(gRPCClient: any, id: string, taskType: string, taskHandler: ZB.ZBWorkerTaskHandler, options: ZB.ZBWorkerOptions | undefined, idColor: Chalk, onConnectionError?: ZB.ConnectionErrorHandler);
     work: () => void;
     completeJob(completeJobRequest: ZB.CompleteJobRequest): Promise<void>;
     onConnectionError(handler: (error: any) => void): void;
-    private log;
+    log(msg: any): void;
+    getNewLogger(options: ZB.ZBWorkerLoggerOptions): ZBWorkerLogger;
+    private internalLog;
     private handleGrpcError;
     private activateJobs;
 }
