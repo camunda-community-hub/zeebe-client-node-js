@@ -4,7 +4,7 @@
 
 This is a Node.js gRPC client for [Zeebe](https://zeebe.io). It is written in TypeScript and transpiled to JavaScript in the `dist` directory.
 
-Comprehensive API documentation is available [online](https://creditsenseau.github.io/zeebe-node/) and in the `docs` subdirectory.
+Comprehensive API documentation is available [online](https://creditsenseau.github.io/zeebe-client-node-js/) and in the `docs` subdirectory.
 
 ## Example Use
 
