@@ -1,21 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const chalk_1 = require("chalk");
 const fs = require("fs");
 const GRPCClient = require("node-grpc-client");
 const path = require("path");
 const lib_1 = require("../lib");
-const ZBWorker_1 = require("./ZBWorker");
-const idColors = [
-    chalk_1.default.yellow,
-    chalk_1.default.green,
-    chalk_1.default.cyan,
-    chalk_1.default.magenta,
-    chalk_1.default.blue,
-];
+const worker_1 = require("./worker");
 class ZBClient {
     constructor(brokerAddress) {
-        this.workerCount = 0;
         if (!brokerAddress) {
             throw new Error("Must provide a broker address string to constructor");
         }
@@ -32,9 +23,8 @@ class ZBClient {
      * @param taskHandler - A handler for activated jobs.
      * @param options - Configuration options for the worker.
      */
-    createWorker(id, taskType, taskHandler, options = {}, onConnectionError) {
-        const idColor = idColors[this.workerCount++ % idColors.length];
-        return new ZBWorker_1.ZBWorker(this.gRPCClient, id, taskType, taskHandler, options, idColor, onConnectionError);
+    createWorker(id, taskType, taskHandler, options = {}) {
+        return new worker_1.ZBWorker(this.gRPCClient, id, taskType, taskHandler, options);
     }
     /**
      * Return the broker cluster topology
@@ -143,4 +133,4 @@ class ZBClient {
     }
 }
 exports.ZBClient = ZBClient;
-//# sourceMappingURL=ZBClient.js.map
+//# sourceMappingURL=zbClient.js.map
