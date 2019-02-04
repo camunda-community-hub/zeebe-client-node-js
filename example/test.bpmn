@@ -22,7 +22,7 @@
       <bpmn:incoming>SequenceFlow_0813z63</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_0dssivi</bpmn:outgoing>
       <bpmn:timerEventDefinition>
-        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PTS5</bpmn:timeDuration>
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT5S</bpmn:timeDuration>
       </bpmn:timerEventDefinition>
     </bpmn:intermediateCatchEvent>
     <bpmn:sequenceFlow id="SequenceFlow_0813z63" sourceRef="ExclusiveGateway_0wne7eb" targetRef="IntermediateCatchEvent_04zcf15" />
