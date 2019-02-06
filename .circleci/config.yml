@@ -34,7 +34,7 @@ jobs:
       - checkout
       - setup_remote_docker:
           docker_layer_caching: true
-           - restore_cache:
+      - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
       - run:
           name: install-npm-wee
