@@ -29,7 +29,7 @@ jobs:
           command: npm test
       - run:
           name: build-typescript
-          command: npm build
+          command: npm run build
   build:
     docker:
       - image: circleci/node
@@ -51,7 +51,7 @@ jobs:
           command: npm test
       - run:
           name: build
-          command: npm build
+          command: npm run build
 
 workflows:
   version: 2
