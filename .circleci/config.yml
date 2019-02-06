@@ -18,7 +18,7 @@ jobs:
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
       - run:
-          name: install-npm-wee
+          name: npm-install
           command: npm install
       - save_cache:
           key: dependency-cache-{{ checksum "package.json" }}
@@ -27,6 +27,9 @@ jobs:
       - run:
           name: test
           command: npm test
+      - run:
+          name: build-typescript
+          command: npm build
   build:
     docker:
       - image: circleci/node
@@ -37,7 +40,7 @@ jobs:
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
       - run:
-          name: install-npm-wee
+          name: npm-install
           command: npm install
       - save_cache:
           key: dependency-cache-{{ checksum "package.json" }}
