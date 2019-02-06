@@ -18,7 +18,7 @@ jobs:
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
       - run:
-          name: install-npm-wee
+          name: npm-install
           command: npm install
       - save_cache:
           key: dependency-cache-{{ checksum "package.json" }}
@@ -27,6 +27,9 @@ jobs:
       - run:
           name: test
           command: npm test
+      - run:
+          name: build-typescript
+          command: npm run build
   build:
     docker:
       - image: circleci/node
@@ -34,10 +37,10 @@ jobs:
       - checkout
       - setup_remote_docker:
           docker_layer_caching: true
-           - restore_cache:
+      - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
       - run:
-          name: install-npm-wee
+          name: npm-install
           command: npm install
       - save_cache:
           key: dependency-cache-{{ checksum "package.json" }}
@@ -48,7 +51,7 @@ jobs:
           command: npm test
       - run:
           name: build
-          command: npm build
+          command: npm run build
 
 workflows:
   version: 2
