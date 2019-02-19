@@ -1,0 +1,69 @@
+version: 2
+
+prod_filters: &prod_filters # ignore any commit on any branch by default
+  branches:
+    ignore: /.*/
+  # only act on version tags
+  tags:
+    only:
+      - /^[0-9]+\.[0-9]+\.[0-9]+$/
+
+jobs:
+  test:
+    docker:
+      - image: circleci/node
+    working_directory: ~/zeebe-client-node-js
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: npm-install
+          command: npm install
+      - save_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - ./node_modules
+      - run:
+          name: test
+          command: npm test
+      - run:
+          name: build-typescript
+          command: npm run build
+  build:
+    docker:
+      - image: circleci/node
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: npm-install
+          command: npm install
+      - save_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - ./node_modules
+      - run:
+          name: test
+          command: npm test
+      - run:
+          name: build
+          command: npm run build
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - test
+  build-master:
+    jobs:
+      - test:
+          filters: *prod_filters
+      - build:
+          requires:
+            - test
+          filters: *prod_filters
+          context: Docker
