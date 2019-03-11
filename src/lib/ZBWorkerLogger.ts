@@ -33,8 +33,8 @@ export class ZBWorkerLogger {
         // tslint:disable-next-line
         console.log(
             this.color(
-                this.getMetadataString() + " > " + this.stringifyJSON(message)
-            )
+                this.getMetadataString() + " > " + this.stringifyJSON(message),
+            ),
         );
     }
 

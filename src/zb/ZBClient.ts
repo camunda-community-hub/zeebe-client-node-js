@@ -18,6 +18,8 @@ export class ZBClient {
     public brokerAddress: string;
     private gRPCClient: any;
     private workerCount = 0;
+    private workers: ZBWorker[] = [];
+    private closing = false;
 
     constructor(brokerAddress: string) {
         if (!brokerAddress) {
@@ -52,8 +54,53 @@ export class ZBClient {
         options: ZB.ZBWorkerOptions = {},
         onConnectionError?: ZB.ConnectionErrorHandler,
     ) {
+        if (this.closing) {
+            throw new Error("Client is closing. No worker creation allowed!");
+        }
         const idColor = idColors[this.workerCount++ % idColors.length];
-        return new ZBWorker(this.gRPCClient, id, taskType, taskHandler, options, idColor, onConnectionError);
+        const worker = new ZBWorker(this.gRPCClient, id, taskType, taskHandler, options, idColor, onConnectionError);
+        this.workers.push(worker);
+        return worker;
+    }
+
+    /**
+     * Gracefully shut down all workers, draining existing tasks, and return when it is safe to exit.
+     * Will reject if called more than once.
+     * @param {number} [timeout] -- Optional timeout in milliseconds
+     * @returns Promise
+     * @memberof ZBClient
+     */
+    public close(timeout?: number) {
+        if (this.closing) {
+            return Promise.reject();
+        }
+        this.closing = true;
+        // If a timeout is passed in, we have two exit conditions: (1) timeout exceeded, (2) all workers are drained.
+        if (timeout) {
+            let settled = false;
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    if (settled) {
+                        return;
+                    } else {
+                        settled = true;
+                        resolve();
+                    }
+                }, timeout);
+                Promise.all(this.workers.map((w) => w.close()))
+                    .then(() => {
+                        if (settled) {
+                            return;
+                        } else {
+                            settled = true;
+                            resolve();
+                        }
+                    });
+            });
+        } else {
+            // if no timeout is passed in, then there is only one exit condition - all workers are drained.
+            return Promise.all(this.workers.map((w) => w.close()));
+        }
     }
 
     /**

@@ -164,6 +164,17 @@ You can use the `publishStartMessage()` method to publish a message with no corr
 
 ```
 
+### Graceful Shutdown
+
+To drain workers, call the `close()` method of the ZBClient. This causes all workers using that client to stop polling for jobs, and returns a Promise that resolves when all active jobs have either finished or timed out.
+
+```javascript
+
+    console.log('Closing client...');
+    zbc.close().then(() => console.log('All workers closed'));
+
+```
+
 ### Generating TypeScript constants for BPMN Processes
 
 Message names and Task Types are untyped magic strings. The `BpmnParser` class provides a static method `generateConstantsForBpmnFiles()`.
