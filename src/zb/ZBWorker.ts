@@ -18,7 +18,9 @@ export class ZBWorker {
 	public timeout: number
 
 	private closeCallback?: () => void
+	private closePromise?: Promise<undefined>
 	private closing = false
+	private closed = false
 	private defaultLogger: ZBWorkerLogger
 	private errored = false
 	private id = uuid.v4()
@@ -62,31 +64,33 @@ export class ZBWorker {
 	 * has drained all current active tasks. Will reject if you try to call it more than once.
 	 */
 	public close() {
-		if (this.closing) {
-			return Promise.reject()
+		if (this.closePromise) {
+			return this.closePromise
 		}
-		return new Promise(resolve => {
+		this.closePromise = new Promise(resolve => {
 			// this.closing prevents the worker from starting work on any new tasks
 			this.closing = true
-			// We will resolve the Promise in any case at two seconds over the worker timeout period.
-			// This deals with phantom tasks, which will have timed out on the server in any case.
-			const closeTimeout = setTimeout(resolve, this.timeout + 2000)
 			if (this.pollHandle) {
 				// Stop polling for jobs
 				clearInterval(this.pollHandle)
 			}
+			// We will resolve the Promise in any case at two seconds over the worker timeout period.
+			// This deals with phantom tasks, which will have timed out on the server.
+			const closeTimeout = setTimeout(resolve, this.timeout + 2000)
 			// If we have no active tasks right now, resolve immediately.
 			// There could be a race condition here if we just polled the server and it is about to return jobs.
 			// In any case, we do not start working on those jobs, so they will time out on the server.
-			if (this.activeJobs === 0) {
+			if (this.activeJobs <= 0) {
 				resolve()
 			}
 			// When this.activeJobs reaches 0, this will resolve the promise to close. Called in this.drainOne().
 			this.closeCallback = () => {
 				clearTimeout(closeTimeout)
+				this.closed = true
 				resolve()
 			}
 		})
+		return this.closePromise
 	}
 
 	public work = () => {
@@ -121,8 +125,8 @@ export class ZBWorker {
 		})
 	}
 
+	// tslint:disable-next-line:no-console
 	private internalLog = (ns: string) => (msg: any) =>
-		// tslint:disable-next-line:no-console
 		console.log(`${ns}:`, msg)
 
 	private handleGrpcError = (err: any) => {
@@ -203,9 +207,7 @@ export class ZBWorker {
 				// The task timeout handler above will deal with it.
 				try {
 					taskHandler(
-						Object.assign({}, job as any, {
-							customHeaders,
-						}),
+						Object.assign({}, job as any, { customHeaders }),
 						completedPayload => {
 							this.completeJob({
 								jobKey: job.key,
@@ -241,8 +243,8 @@ export class ZBWorker {
 	private drainOne() {
 		this.activeJobs--
 		// If we are closing and hit zero active jobs, resolve the closing promise.
-		if (this.activeJobs === 0 && this.closing) {
-			if (this.closeCallback) {
+		if (this.activeJobs <= 0 && this.closing) {
+			if (this.closeCallback && !this.closed) {
 				this.closeCallback()
 			}
 		}

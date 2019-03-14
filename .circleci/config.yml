@@ -11,7 +11,7 @@ prod_filters: &prod_filters # ignore any commit on any branch by default
 jobs:
   test:
     docker:
-      - image: circleci/node
+      - image: circleci/node:11.10.1
       - image: camunda/zeebe:latest
     working_directory: ~/zeebe-client-node-js
     steps:
@@ -43,7 +43,7 @@ jobs:
           command: npm run build
   build:
     docker:
-      - image: circleci/node
+      - image: circleci/node:11.10.1
     steps:
       - checkout
       - setup_remote_docker:

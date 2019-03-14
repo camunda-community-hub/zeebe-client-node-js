@@ -19,6 +19,7 @@ export class ZBClient {
 	private gRPCClient: any
 	private workerCount = 0
 	private workers: ZBWorker[] = []
+	private closePromise?: Promise<any>
 	private closing = false
 
 	constructor(brokerAddress: string) {
@@ -75,41 +76,17 @@ export class ZBClient {
 
 	/**
 	 * Gracefully shut down all workers, draining existing tasks, and return when it is safe to exit.
-	 * Will reject if called more than once.
-	 * @param {number} [timeout] -- Optional timeout in milliseconds
 	 * @returns Promise
 	 * @memberof ZBClient
 	 */
-	public close(timeout?: number) {
-		if (this.closing) {
-			return Promise.reject()
+	public close() {
+		if (this.closePromise) {
+			return this.closePromise
 		}
+		// Prevent the creation of more workers
 		this.closing = true
-		// If a timeout is passed in, we have two exit conditions: (1) timeout exceeded, (2) all workers are drained.
-		if (timeout) {
-			let settled = false
-			return new Promise(resolve => {
-				setTimeout(() => {
-					if (settled) {
-						return
-					} else {
-						settled = true
-						resolve()
-					}
-				}, timeout)
-				Promise.all(this.workers.map(w => w.close())).then(() => {
-					if (settled) {
-						return
-					} else {
-						settled = true
-						resolve()
-					}
-				})
-			})
-		} else {
-			// if no timeout is passed in, then there is only one exit condition - all workers are drained.
-			return Promise.all(this.workers.map(w => w.close()))
-		}
+		this.closePromise = Promise.all(this.workers.map(w => w.close()))
+		return this.closePromise
 	}
 
 	/**
