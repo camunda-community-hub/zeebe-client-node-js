@@ -30,7 +30,7 @@ jobs:
           command: |
             for i in `seq 1 10`;
             do
-              nc -z localhst 26500 && echo success && exit 0
+              nc -z localhost 26500 && echo success && exit 0
               echo -n .
               sleep 1
             done
