@@ -37,7 +37,7 @@ jobs:
             echo Failed waiting for Zeebe && exit 1
       - run:
           name: test
-          command: npm test:integration
+          command: npm run test:integration
       - run:
           name: build-typescript
           command: npm run build
