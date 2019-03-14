@@ -97,6 +97,7 @@
 						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="zbworker.html#close" class="tsd-kind-icon">close</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="zbworker.html#completejob" class="tsd-kind-icon">complete<wbr>Job</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="zbworker.html#getnewlogger" class="tsd-kind-icon">get<wbr>New<wbr>Logger</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="zbworker.html#log" class="tsd-kind-icon">log</a></li>
@@ -119,7 +120,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-node/blob/d909d0d/src/zb/ZBWorker.ts#L25">zb/ZBWorker.ts:25</a></li>
+									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/zb/ZBWorker.ts#L28">zb/ZBWorker.ts:28</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -159,7 +160,7 @@
 					<div class="tsd-signature tsd-kind-icon">active<wbr>Jobs<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> =&nbsp;0</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-node/blob/d909d0d/src/zb/ZBWorker.ts#L15">zb/ZBWorker.ts:15</a></li>
+							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/zb/ZBWorker.ts#L14">zb/ZBWorker.ts:14</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -169,7 +170,7 @@
 					<div class="tsd-signature tsd-kind-icon">gRPCClient<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-node/blob/d909d0d/src/zb/ZBWorker.ts#L14">zb/ZBWorker.ts:14</a></li>
+							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/zb/ZBWorker.ts#L15">zb/ZBWorker.ts:15</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -179,7 +180,7 @@
 					<div class="tsd-signature tsd-kind-icon">max<wbr>Active<wbr>Jobs<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-node/blob/d909d0d/src/zb/ZBWorker.ts#L17">zb/ZBWorker.ts:17</a></li>
+							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/zb/ZBWorker.ts#L16">zb/ZBWorker.ts:16</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -189,7 +190,7 @@
 					<div class="tsd-signature tsd-kind-icon">task<wbr>Type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-node/blob/d909d0d/src/zb/ZBWorker.ts#L16">zb/ZBWorker.ts:16</a></li>
+							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/zb/ZBWorker.ts#L17">zb/ZBWorker.ts:17</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -199,13 +200,36 @@
 					<div class="tsd-signature tsd-kind-icon">timeout<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-node/blob/d909d0d/src/zb/ZBWorker.ts#L18">zb/ZBWorker.ts:18</a></li>
+							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/zb/ZBWorker.ts#L18">zb/ZBWorker.ts:18</a></li>
 						</ul>
 					</aside>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Methods</h2>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="close" class="tsd-anchor"></a>
+					<h3>close</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">close<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Object</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/zb/ZBWorker.ts#L64">zb/ZBWorker.ts:64</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Returns a promise that the worker has stopped accepting tasks and
+									has drained all current active tasks. Will reject if you try to call it more than once.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Object</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="completejob" class="tsd-anchor"></a>
 					<h3>complete<wbr>Job</h3>
@@ -216,7 +240,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-node/blob/d909d0d/src/zb/ZBWorker.ts#L60">zb/ZBWorker.ts:60</a></li>
+									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/zb/ZBWorker.ts#L101">zb/ZBWorker.ts:101</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -239,7 +263,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-node/blob/d909d0d/src/zb/ZBWorker.ts#L74">zb/ZBWorker.ts:74</a></li>
+									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/zb/ZBWorker.ts#L117">zb/ZBWorker.ts:117</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -262,7 +286,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-node/blob/d909d0d/src/zb/ZBWorker.ts#L70">zb/ZBWorker.ts:70</a></li>
+									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/zb/ZBWorker.ts#L113">zb/ZBWorker.ts:113</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -285,7 +309,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-node/blob/d909d0d/src/zb/ZBWorker.ts#L66">zb/ZBWorker.ts:66</a></li>
+									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/zb/ZBWorker.ts#L109">zb/ZBWorker.ts:109</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -326,7 +350,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-node/blob/d909d0d/src/zb/ZBWorker.ts#L54">zb/ZBWorker.ts:54</a></li>
+									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/zb/ZBWorker.ts#L92">zb/ZBWorker.ts:92</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -367,6 +391,9 @@
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
 								<a href="zbworker.html#timeout" class="tsd-kind-icon">timeout</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="zbworker.html#close" class="tsd-kind-icon">close</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="zbworker.html#completejob" class="tsd-kind-icon">complete<wbr>Job</a>

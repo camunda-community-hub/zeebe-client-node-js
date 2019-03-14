@@ -65,9 +65,10 @@
 		<div class="col-8 col-content">
 			<div class="tsd-panel tsd-typography">
 				<h1 id="zeebe-node-js-client">Zeebe Node.js Client</h1>
-				<p><a href="https://opensource.org/licenses/Apache-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License"></a></p>
+				<p><a href="https://opensource.org/licenses/Apache-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License"></a>
+				<a href="https://circleci.com/gh/CreditSenseAU/zeebe-client-node-js/tree/master"><img src="https://circleci.com/gh/CreditSenseAU/zeebe-client-node-js/tree/master.svg?style=svg" alt="CircleCI"></a></p>
 				<p>This is a Node.js gRPC client for <a href="https://zeebe.io">Zeebe</a>. It is written in TypeScript and transpiled to JavaScript in the <code>dist</code> directory.</p>
-				<p>Comprehensive API documentation is available <a href="https://creditsenseau.github.io/zeebe-node/">online</a> and in the <code>docs</code> subdirectory.</p>
+				<p>Comprehensive API documentation is available <a href="https://creditsenseau.github.io/zeebe-client-node-js/">online</a> and in the <code>docs</code> subdirectory.</p>
 				<h2 id="example-use">Example Use</h2>
 				<h3 id="add-the-library-to-your-project">Add the Library to your Project</h3>
 				<pre><code class="language-bash">npm i zeebe-node</code></pre>
@@ -182,6 +183,12 @@
             <span class="hljs-attr">payload</span>: {<span class="hljs-attr">initialWorkflowPayloadValue</span>: <span class="hljs-string">"here"</span>},
             <span class="hljs-attr">timeToLive</span>: <span class="hljs-number">10000</span>
         });
+</code></pre>
+				<h3 id="graceful-shutdown">Graceful Shutdown</h3>
+				<p>To drain workers, call the <code>close()</code> method of the ZBClient. This causes all workers using that client to stop polling for jobs, and returns a Promise that resolves when all active jobs have either finished or timed out.</p>
+				<pre><code class="language-javascript">
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Closing client...'</span>);
+    zbc.close().then(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'All workers closed'</span>));
 </code></pre>
 				<h3 id="generating-typescript-constants-for-bpmn-processes">Generating TypeScript constants for BPMN Processes</h3>
 				<p>Message names and Task Types are untyped magic strings. The <code>BpmnParser</code> class provides a static method <code>generateConstantsForBpmnFiles()</code>.
