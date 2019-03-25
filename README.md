@@ -235,8 +235,23 @@ Tests are written in Jest, and live in the `src/__tests__` directory. To run the
 npm t
 ```
 
-Integration tests require a Zeebe broker to run. You can run them using the [Circle CI CLI](https://circleci.com/docs/2.0/local-cli/):
+Integration tests are in the `src/__tests__/integration` directory.
+
+They require a Zeebe broker to run. You can run them using the [Circle CI CLI](https://circleci.com/docs/2.0/local-cli/):
 
 ```bash
 circleci local execute -c .circleci/config-local.yml --job test
+```
+
+Or you can start a dockerised broker:
+
+```bash
+cd docker
+docker-compose up
+```
+
+And then run them manually:
+
+```bash
+npm run test:integration
 ```
