@@ -17,23 +17,3 @@ describe('ZBClient constructor', () => {
 		expect(() => new (ZBClient as any)()()).toThrow()
 	})
 })
-
-describe('ZBClient.deployWorkflow()', () => {
-	beforeAll(() => {
-		return null
-	})
-
-	it('deploys a single workflow', async () => {
-		const zbc = new ZBClient('localhost')
-		const res = await zbc.deployWorkflow('./test/hello-world.bpmn')
-		expect(res.workflows.length).toBe(1)
-	})
-	it('by default, it deploys a single workflow when that workflow is already deployed', () => {
-		// const zbc = new ZBClient("localhost");
-		expect(true).toBe(true)
-	})
-	it('with {redeploy: false} it will not redeploy an existing workflow', () => {
-		// const zbc = new ZBClient("localhost");
-		expect(true).toBe(true)
-	})
-})

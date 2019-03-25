@@ -1,10 +1,10 @@
 import chalk, { Chalk } from 'chalk'
-
-import debug = require('debug')
 import * as uuid from 'uuid'
 import { parsePayload, stringifyPayload } from '../lib'
 import * as ZB from '../lib/interfaces'
 import { ZBWorkerLogger } from '../lib/ZBWorkerLogger'
+
+import debug = require('debug')
 // tslint:disable-next-line
 require('console-stamp')(console, '[HH:MM:ss.l]')
 
@@ -125,8 +125,8 @@ export class ZBWorker {
 		})
 	}
 
-	// tslint:disable-next-line:no-console
 	private internalLog = (ns: string) => (msg: any) =>
+		// tslint:disable-next-line:no-console
 		console.log(`${ns}:`, msg)
 
 	private handleGrpcError = (err: any) => {
