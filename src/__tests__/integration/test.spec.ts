@@ -1,4 +1,5 @@
 import { ZBClient } from '../../index'
+jest.unmock('node-grpc-client')
 
 describe('ZBClient', () => {
 	it('deploys a workflow', async () => {
