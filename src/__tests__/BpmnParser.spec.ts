@@ -15,14 +15,14 @@ describe('parseBpmn', () => {
 	describe('getTaskTypes', () => {
 		it('gets a unique list of task types when passed an object', async () => {
 			const taskTypes = await BpmnParser.getTaskTypes(parsed)
-			expect(taskTypes.length).toBe(1)
+			expect(taskTypes.length).toBe(2)
 		})
 		it('gets a list of unique task types when passed an array', async () => {
 			const taskTypes = await BpmnParser.getTaskTypes([
 				parsed,
 				parsedSimple,
 			])
-			expect(taskTypes.length).toBe(2)
+			expect(taskTypes.length).toBe(3)
 		})
 	})
 	describe('getMessageNames', () => {
