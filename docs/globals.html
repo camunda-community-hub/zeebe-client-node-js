@@ -79,8 +79,8 @@
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-class"><a href="classes/bpmnparser.html" class="tsd-kind-icon">Bpmn<wbr>Parser</a></li>
 								<li class="tsd-kind-class"><a href="classes/zbclient.html" class="tsd-kind-icon">ZBClient</a></li>
+								<li class="tsd-kind-class"><a href="classes/zblogger.html" class="tsd-kind-icon">ZBLogger</a></li>
 								<li class="tsd-kind-class"><a href="classes/zbworker.html" class="tsd-kind-icon">ZBWorker</a></li>
-								<li class="tsd-kind-class"><a href="classes/zbworkerlogger.html" class="tsd-kind-icon">ZBWorker<wbr>Logger</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
@@ -110,6 +110,7 @@
 								<li class="tsd-kind-interface"><a href="interfaces/updateworkflowinstancepayloadrequest.html" class="tsd-kind-icon">Update<wbr>Workflow<wbr>Instance<wbr>Payload<wbr>Request</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/workflowmetadata.html" class="tsd-kind-icon">Workflow<wbr>Metadata</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/workflowrequestobject.html" class="tsd-kind-icon">Workflow<wbr>Request<wbr>Object</a></li>
+								<li class="tsd-kind-interface"><a href="interfaces/zbclientoptions.html" class="tsd-kind-icon">ZBClient<wbr>Options</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/zbworkerloggeroptions.html" class="tsd-kind-icon">ZBWorker<wbr>Logger<wbr>Options</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/zbworkeroptions.html" class="tsd-kind-icon">ZBWorker<wbr>Options</a></li>
 							</ul>
@@ -119,6 +120,7 @@
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-type-alias"><a href="globals.html#connectionerrorhandler" class="tsd-kind-icon">Connection<wbr>Error<wbr>Handler</a></li>
 								<li class="tsd-kind-type-alias"><a href="globals.html#getworkflowrequest" class="tsd-kind-icon">Get<wbr>Workflow<wbr>Request</a></li>
+								<li class="tsd-kind-type-alias"><a href="globals.html#loglevel" class="tsd-kind-icon">Loglevel</a></li>
 								<li class="tsd-kind-type-alias"><a href="globals.html#payload" class="tsd-kind-icon">Payload</a></li>
 								<li class="tsd-kind-type-alias"><a href="globals.html#zbtaskworkerhandlerminimal" class="tsd-kind-icon">ZBTask<wbr>Worker<wbr>Handler<wbr>Minimal</a></li>
 								<li class="tsd-kind-type-alias"><a href="globals.html#zbworkertaskhandler" class="tsd-kind-icon">ZBWorker<wbr>Task<wbr>Handler</a></li>
@@ -130,7 +132,6 @@
 							<h3>Variables</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-variable tsd-is-not-exported"><a href="globals.html#idcolors" class="tsd-kind-icon">id<wbr>Colors</a></li>
-								<li class="tsd-kind-variable tsd-is-not-exported"><a href="globals.html#log" class="tsd-kind-icon">log</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
@@ -151,7 +152,7 @@
 					<div class="tsd-signature tsd-kind-icon">Connection<wbr>Error<wbr>Handler<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/lib/interfaces.ts#L24">lib/interfaces.ts:24</a></li>
+							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/lib/interfaces.ts#L30">lib/interfaces.ts:30</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-type-declaration">
@@ -182,7 +183,17 @@
 					<div class="tsd-signature tsd-kind-icon">Get<wbr>Workflow<wbr>Request<span class="tsd-signature-symbol">:</span> <a href="interfaces/getworkflowrequestwithbpmnprocessid.html" class="tsd-signature-type">GetWorkflowRequestWithBpmnProcessId</a><span class="tsd-signature-symbol"> | </span><a href="interfaces/getworkflowrequestwithworkflowkey.html" class="tsd-signature-type">GetWorkflowRequestWithWorkflowKey</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/lib/interfaces.ts#L217">lib/interfaces.ts:217</a></li>
+							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/lib/interfaces.ts#L227">lib/interfaces.ts:227</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-type-alias">
+					<a name="loglevel" class="tsd-anchor"></a>
+					<h3>Loglevel</h3>
+					<div class="tsd-signature tsd-kind-icon">Loglevel<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">"INFO"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"DEBUG"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"NONE"</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">"ERROR"</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/lib/interfaces.ts#L5">lib/interfaces.ts:5</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -192,7 +203,7 @@
 					<div class="tsd-signature tsd-kind-icon">Payload<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/lib/interfaces.ts#L4">lib/interfaces.ts:4</a></li>
+							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/lib/interfaces.ts#L4">lib/interfaces.ts:4</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -202,7 +213,7 @@
 					<div class="tsd-signature tsd-kind-icon">ZBTask<wbr>Worker<wbr>Handler<wbr>Minimal<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/lib/interfaces.ts#L7">lib/interfaces.ts:7</a></li>
+							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/lib/interfaces.ts#L8">lib/interfaces.ts:8</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-type-declaration">
@@ -236,7 +247,7 @@
 					<div class="tsd-signature tsd-kind-icon">ZBWorker<wbr>Task<wbr>Handler<span class="tsd-signature-symbol">:</span> <a href="globals.html#zbtaskworkerhandlerminimal" class="tsd-signature-type">ZBTaskWorkerHandlerMinimal</a><span class="tsd-signature-symbol"> | </span><a href="globals.html#zbworkertaskhandlerwithworker" class="tsd-signature-type">ZBWorkerTaskHandlerWithWorker</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/lib/interfaces.ts#L16">lib/interfaces.ts:16</a></li>
+							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/lib/interfaces.ts#L19">lib/interfaces.ts:19</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -246,7 +257,7 @@
 					<div class="tsd-signature tsd-kind-icon">ZBWorker<wbr>Task<wbr>Handler<wbr>With<wbr>Worker<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/lib/interfaces.ts#L11">lib/interfaces.ts:11</a></li>
+							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/lib/interfaces.ts#L13">lib/interfaces.ts:13</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-type-declaration">
@@ -283,7 +294,7 @@
 					<div class="tsd-signature tsd-kind-icon">complete<wbr>Fn<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">function</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/lib/interfaces.ts#L6">lib/interfaces.ts:6</a></li>
+							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/lib/interfaces.ts#L7">lib/interfaces.ts:7</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-type-declaration">
@@ -317,17 +328,7 @@
 					<div class="tsd-signature tsd-kind-icon">id<wbr>Colors<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-type">Chalk</span><span class="tsd-signature-symbol"> &amp; </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> =&nbsp;[chalk.yellow,chalk.green,chalk.cyan,chalk.magenta,chalk.blue,]</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/zb/ZBClient.ts#L9">zb/ZBClient.ts:9</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-variable tsd-is-not-exported">
-					<a name="log" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagConst">Const</span> log</h3>
-					<div class="tsd-signature tsd-kind-icon">log<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">IDebugger</span><span class="tsd-signature-symbol"> =&nbsp;debug(&#x27;zeebe-node:worker&#x27;)</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/zb/ZBWorker.ts#L11">zb/ZBWorker.ts:11</a></li>
+							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/zb/ZBClient.ts#L9">zb/ZBClient.ts:9</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -344,7 +345,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/lib/stringifyPayload.ts#L6">lib/stringifyPayload.ts:6</a></li>
+									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/lib/stringifyPayload.ts#L6">lib/stringifyPayload.ts:6</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -367,7 +368,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/lib/stringifyPayload.ts#L1">lib/stringifyPayload.ts:1</a></li>
+									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/lib/stringifyPayload.ts#L1">lib/stringifyPayload.ts:1</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -405,10 +406,10 @@
 						<a href="classes/zbclient.html" class="tsd-kind-icon">ZBClient</a>
 					</li>
 					<li class=" tsd-kind-class">
-						<a href="classes/zbworker.html" class="tsd-kind-icon">ZBWorker</a>
+						<a href="classes/zblogger.html" class="tsd-kind-icon">ZBLogger</a>
 					</li>
 					<li class=" tsd-kind-class">
-						<a href="classes/zbworkerlogger.html" class="tsd-kind-icon">ZBWorker<wbr>Logger</a>
+						<a href="classes/zbworker.html" class="tsd-kind-icon">ZBWorker</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/activatejobsrequest.html" class="tsd-kind-icon">Activate<wbr>Jobs<wbr>Request</a>
@@ -483,6 +484,9 @@
 						<a href="interfaces/workflowrequestobject.html" class="tsd-kind-icon">Workflow<wbr>Request<wbr>Object</a>
 					</li>
 					<li class=" tsd-kind-interface">
+						<a href="interfaces/zbclientoptions.html" class="tsd-kind-icon">ZBClient<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface">
 						<a href="interfaces/zbworkerloggeroptions.html" class="tsd-kind-icon">ZBWorker<wbr>Logger<wbr>Options</a>
 					</li>
 					<li class=" tsd-kind-interface">
@@ -493,6 +497,9 @@
 					</li>
 					<li class=" tsd-kind-type-alias">
 						<a href="globals.html#getworkflowrequest" class="tsd-kind-icon">Get<wbr>Workflow<wbr>Request</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="globals.html#loglevel" class="tsd-kind-icon">Loglevel</a>
 					</li>
 					<li class=" tsd-kind-type-alias">
 						<a href="globals.html#payload" class="tsd-kind-icon">Payload</a>
@@ -511,9 +518,6 @@
 					</li>
 					<li class=" tsd-kind-variable tsd-is-not-exported">
 						<a href="globals.html#idcolors" class="tsd-kind-icon">id<wbr>Colors</a>
-					</li>
-					<li class=" tsd-kind-variable tsd-is-not-exported">
-						<a href="globals.html#log" class="tsd-kind-icon">log</a>
 					</li>
 					<li class=" tsd-kind-function">
 						<a href="globals.html#parsepayload" class="tsd-kind-icon">parse<wbr>Payload</a>

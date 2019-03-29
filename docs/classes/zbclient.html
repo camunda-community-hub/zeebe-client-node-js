@@ -119,19 +119,22 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">new ZBClient<span class="tsd-signature-symbol">(</span>brokerAddress<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="zbclient.html" class="tsd-signature-type">ZBClient</a></li>
+						<li class="tsd-signature tsd-kind-icon">new ZBClient<span class="tsd-signature-symbol">(</span>brokerAddress<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, options<span class="tsd-signature-symbol">?: </span><a href="../interfaces/zbclientoptions.html" class="tsd-signature-type">ZBClientOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="zbclient.html" class="tsd-signature-type">ZBClient</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/zb/ZBClient.ts#L22">zb/ZBClient.ts:22</a></li>
+									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/zb/ZBClient.ts#L24">zb/ZBClient.ts:24</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>brokerAddress: <span class="tsd-signature-type">string</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> options: <a href="../interfaces/zbclientoptions.html" class="tsd-signature-type">ZBClientOptions</a><span class="tsd-signature-symbol"> =&nbsp;{}</span></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="zbclient.html" class="tsd-signature-type">ZBClient</a></h4>
@@ -147,7 +150,7 @@
 					<div class="tsd-signature tsd-kind-icon">broker<wbr>Address<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/zb/ZBClient.ts#L18">zb/ZBClient.ts:18</a></li>
+							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/zb/ZBClient.ts#L18">zb/ZBClient.ts:18</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -164,7 +167,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/zb/ZBClient.ts#L238">zb/ZBClient.ts:238</a></li>
+									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/zb/ZBClient.ts#L222">zb/ZBClient.ts:222</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -181,19 +184,18 @@
 					<a name="close" class="tsd-anchor"></a>
 					<h3>close</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">close<span class="tsd-signature-symbol">(</span>timeout<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Object</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">close<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/zb/ZBClient.ts#L83">zb/ZBClient.ts:83</a></li>
+									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/zb/ZBClient.ts#L89">zb/ZBClient.ts:89</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Gracefully shut down all workers, draining existing tasks, and return when it is safe to exit.
-									Will reject if called more than once.</p>
+									<p>Gracefully shut down all workers, draining existing tasks, and return when it is safe to exit.</p>
 								</div>
 								<dl class="tsd-comment-tags">
 									<dt>memberof</dt>
@@ -201,13 +203,7 @@
 									</dd>
 								</dl>
 							</div>
-							<h4 class="tsd-parameters-title">Parameters</h4>
-							<ul class="tsd-parameters">
-								<li>
-									<h5><span class="tsd-flag ts-flagOptional">Optional</span> timeout: <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></h5>
-								</li>
-							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Object</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h4>
 							<p>Promise</p>
 						</li>
 					</ul>
@@ -216,13 +212,13 @@
 					<a name="createworker" class="tsd-anchor"></a>
 					<h3>create<wbr>Worker</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">create<wbr>Worker<span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, taskType<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, taskHandler<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ZB.ZBWorkerTaskHandler</span>, options<span class="tsd-signature-symbol">?: </span><a href="../interfaces/zbworkeroptions.html" class="tsd-signature-type">ZBWorkerOptions</a>, onConnectionError<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">ZB.ConnectionErrorHandler</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="zbworker.html" class="tsd-signature-type">ZBWorker</a></li>
+						<li class="tsd-signature tsd-kind-icon">create<wbr>Worker<span class="tsd-signature-symbol">(</span>id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, taskType<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, taskHandler<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ZB.ZBWorkerTaskHandler</span>, options<span class="tsd-signature-symbol">?: </span><a href="../interfaces/zbworkeroptions.html" class="tsd-signature-type">ZBWorkerOptions</a><span class="tsd-signature-symbol"> &amp; </span><a href="../interfaces/zbclientoptions.html" class="tsd-signature-type">ZBClientOptions</a>, onConnectionError<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">ZB.ConnectionErrorHandler</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="zbworker.html" class="tsd-signature-type">ZBWorker</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/zb/ZBClient.ts#L52">zb/ZBClient.ts:52</a></li>
+									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/zb/ZBClient.ts#L59">zb/ZBClient.ts:59</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -248,13 +244,13 @@
 									</div>
 								</li>
 								<li>
-									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> options: <a href="../interfaces/zbworkeroptions.html" class="tsd-signature-type">ZBWorkerOptions</a><span class="tsd-signature-symbol"> =&nbsp;{}</span></h5>
+									<h5><span class="tsd-flag ts-flagDefault value">Default value</span> options: <a href="../interfaces/zbworkeroptions.html" class="tsd-signature-type">ZBWorkerOptions</a><span class="tsd-signature-symbol"> &amp; </span><a href="../interfaces/zbclientoptions.html" class="tsd-signature-type">ZBClientOptions</a><span class="tsd-signature-symbol"> =&nbsp;{}</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>Configuration options for the worker.</p>
 									</div>
 								</li>
 								<li>
-									<h5><span class="tsd-flag ts-flagOptional">Optional</span> onConnectionError: <span class="tsd-signature-type">ZB.ConnectionErrorHandler</span></h5>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> onConnectionError: <span class="tsd-signature-type">ZB.ConnectionErrorHandler</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="zbworker.html" class="tsd-signature-type">ZBWorker</a></h4>
@@ -271,7 +267,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/zb/ZBClient.ts#L221">zb/ZBClient.ts:221</a></li>
+									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/zb/ZBClient.ts#L205">zb/ZBClient.ts:205</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -313,7 +309,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/zb/ZBClient.ts#L128">zb/ZBClient.ts:128</a></li>
+									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/zb/ZBClient.ts#L112">zb/ZBClient.ts:112</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -349,7 +345,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/zb/ZBClient.ts#L208">zb/ZBClient.ts:208</a></li>
+									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/zb/ZBClient.ts#L192">zb/ZBClient.ts:192</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -372,7 +368,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/zb/ZBClient.ts#L167">zb/ZBClient.ts:167</a></li>
+									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/zb/ZBClient.ts#L151">zb/ZBClient.ts:151</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -400,7 +396,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/zb/ZBClient.ts#L256">zb/ZBClient.ts:256</a></li>
+									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/zb/ZBClient.ts#L244">zb/ZBClient.ts:244</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -423,7 +419,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/zb/ZBClient.ts#L250">zb/ZBClient.ts:250</a></li>
+									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/zb/ZBClient.ts#L238">zb/ZBClient.ts:238</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -446,7 +442,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/zb/ZBClient.ts#L178">zb/ZBClient.ts:178</a></li>
+									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/zb/ZBClient.ts#L162">zb/ZBClient.ts:162</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -477,7 +473,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/zb/ZBClient.ts#L190">zb/ZBClient.ts:190</a></li>
+									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/zb/ZBClient.ts#L174">zb/ZBClient.ts:174</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -508,7 +504,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/zb/ZBClient.ts#L265">zb/ZBClient.ts:265</a></li>
+									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/zb/ZBClient.ts#L253">zb/ZBClient.ts:253</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -531,7 +527,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/zb/ZBClient.ts#L118">zb/ZBClient.ts:118</a></li>
+									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/zb/ZBClient.ts#L102">zb/ZBClient.ts:102</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -553,7 +549,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/zb/ZBClient.ts#L202">zb/ZBClient.ts:202</a></li>
+									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/zb/ZBClient.ts#L186">zb/ZBClient.ts:186</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -576,7 +572,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/zb/ZBClient.ts#L242">zb/ZBClient.ts:242</a></li>
+									<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/zb/ZBClient.ts#L230">zb/ZBClient.ts:230</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>

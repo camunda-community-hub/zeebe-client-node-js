@@ -81,6 +81,7 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="zbworkeroptions.html#failworkflowonexception" class="tsd-kind-icon">fail<wbr>Workflow<wbr>OnException</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="zbworkeroptions.html#fetchvariables" class="tsd-kind-icon">fetch<wbr>Variables</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="zbworkeroptions.html#maxactivejobs" class="tsd-kind-icon">max<wbr>Active<wbr>Jobs</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="zbworkeroptions.html#onconnectionerrorhandler" class="tsd-kind-icon">on<wbr>Connection<wbr>Error<wbr>Handler</a></li>
@@ -94,12 +95,27 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="failworkflowonexception" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> fail<wbr>Workflow<wbr>OnException</h3>
+					<div class="tsd-signature tsd-kind-icon">fail<wbr>Workflow<wbr>OnException<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">false</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">true</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/lib/interfaces.ts#L112">lib/interfaces.ts:112</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>If a handler throws an unhandled exception, if this is set true, the workflow will be failed. Defaults to false.</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 					<a name="fetchvariables" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagOptional">Optional</span> fetch<wbr>Variables</h3>
 					<div class="tsd-signature tsd-kind-icon">fetch<wbr>Variables<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/lib/interfaces.ts#L98">lib/interfaces.ts:98</a></li>
+							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/lib/interfaces.ts#L104">lib/interfaces.ts:104</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -114,7 +130,7 @@
 					<div class="tsd-signature tsd-kind-icon">max<wbr>Active<wbr>Jobs<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/lib/interfaces.ts#L86">lib/interfaces.ts:86</a></li>
+							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/lib/interfaces.ts#L92">lib/interfaces.ts:92</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -129,7 +145,7 @@
 					<div class="tsd-signature tsd-kind-icon">on<wbr>Connection<wbr>Error<wbr>Handler<span class="tsd-signature-symbol">:</span> <a href="../globals.html#connectionerrorhandler" class="tsd-signature-type">ConnectionErrorHandler</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/lib/interfaces.ts#L102">lib/interfaces.ts:102</a></li>
+							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/lib/interfaces.ts#L108">lib/interfaces.ts:108</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -144,7 +160,7 @@
 					<div class="tsd-signature tsd-kind-icon">poll<wbr>Interval<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/lib/interfaces.ts#L94">lib/interfaces.ts:94</a></li>
+							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/lib/interfaces.ts#L100">lib/interfaces.ts:100</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -159,7 +175,7 @@
 					<div class="tsd-signature tsd-kind-icon">timeout<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/f360ade/src/lib/interfaces.ts#L90">lib/interfaces.ts:90</a></li>
+							<li>Defined in <a href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/lib/interfaces.ts#L96">lib/interfaces.ts:96</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -185,6 +201,9 @@
 					<li class="current tsd-kind-interface">
 						<a href="zbworkeroptions.html" class="tsd-kind-icon">ZBWorker<wbr>Options</a>
 						<ul>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="zbworkeroptions.html#failworkflowonexception" class="tsd-kind-icon">fail<wbr>Workflow<wbr>OnException</a>
+							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
 								<a href="zbworkeroptions.html#fetchvariables" class="tsd-kind-icon">fetch<wbr>Variables</a>
 							</li>
