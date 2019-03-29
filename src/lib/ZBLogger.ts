@@ -7,7 +7,6 @@ export class ZBLogger {
 	private namespace?: string
 	private taskType?: string
 	private id?: string
-	private enabled = true
 	private stdout: any
 	private colorise: boolean
 
@@ -41,30 +40,18 @@ export class ZBLogger {
 		this.colorise = colorise !== false
 	}
 
-	public info(message: any, ...optionalParameters: any[]) {
+	public info(message: any, ...optionalParameters) {
 		this.log(message, optionalParameters)
-	}
-
-	public log(message: any, ...optionalParameters: any[]) {
-		if (this.loglevel === 'NONE' || this.loglevel === 'ERROR') {
-			return
-		}
-		const method =
-			(this.stdout && this.stdout && this.stdout.log) || console.log // tslint:disable-line
-
-		this._log(method, message, optionalParameters)
 	}
 
 	public error(message, ...optionalParameters: any[]) {
 		if (this.loglevel === 'NONE') {
 			return
 		}
-		const method =
-			(this.stdout && this.stdout && this.stdout.error) || console.error // tslint:disable-line
 		if (optionalParameters.length > 0) {
-			return method(message, optionalParameters)
+			return this.stdout.error(message, optionalParameters)
 		} else {
-			return method(message)
+			return this.stdout.error(message)
 		}
 	}
 
@@ -72,30 +59,31 @@ export class ZBLogger {
 		if (this.loglevel !== 'DEBUG') {
 			return
 		}
-		const method =
-			(this.stdout && this.stdout && this.stdout.log) || console.log // tslint:disable-line
-
-		this._log(method, message, optionalParameters)
+		this.log(message, optionalParameters)
 	}
 
-	private _log(logMethod, message: any, ...optionalParameters: any[]) {
-		if (!this.enabled || this.loglevel === 'NONE') {
+	public log(message: any, ...optionalParameters: any[]) {
+		if (this.loglevel === 'NONE' || this.loglevel === 'ERROR') {
 			return
 		}
 		if (this.stdout === console) {
-			logMethod(
-				this._colorise(
+			let msg
+			if (this.colorise) {
+				msg =
 					this.getMetadataString() +
-						' > ' +
-						this.stringifyJSON(message) +
+					' > ' +
+					this.stringifyJSON(message)
+				if (optionalParameters) {
+					msg +=
 						' ' +
-						optionalParameters[0]
+						optionalParameters
 							.map(o => this.stringifyJSON(o))
 							.join(' ')
-				)
-			)
+				}
+			}
+			this.stdout.info(this._colorise(msg))
 		} else {
-			logMethod(message, optionalParameters)
+			this.stdout.info(message, optionalParameters)
 		}
 	}
 

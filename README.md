@@ -107,6 +107,16 @@ const zbWorker = zbc.createWorker(
 )
 ```
 
+#### Unhandled Exceptions in Task Handlers
+
+When a task handler throws an unhandled exception, the library will fail the job. Zeebe will then retry the job according to the retry settings of the task. Sometimes you want to halt the entire workflow so you can investigate. To have the library cancel the workflow on an unhandled exception, pass in `{failWorkflowOnException: true}` to the `createWorker` call:
+
+```typescript
+zbc.createWorker('test-worker', 'console-log', maybeFaultyHandler, {
+	failWorkflowOnException: true,
+})
+```
+
 ### Start a Workflow Instance
 
 ```javascript
@@ -201,14 +211,25 @@ export enum MessageName = {
 
 ```
 
-## Debugging
+## Logging
 
-Enable debug output for the client library using the [debug](https://www.npmjs.com/package/debug) module by setting the environnment variable `DEBUG` to include `zeebe-node:*`.
+Control the log output for the client library by setting the ZBClient log level. Valid log levels are `NONE` (supress all logging), `ERROR` (log only exceptions), `INFO` (general logging), or `DEBUG` (verbose logging). You can set this in the client constructor:
 
-For example:
-
+```typescript
+const zbc = new ZBClient('localhost', { loglevel: 'DEBUG' })
 ```
-DEBUG=zeebe-node:* node app.js
+
+And also via the environment:
+
+```bash
+ZB_NODE_LOG_LEVEL='ERROR' node start.js
+```
+
+By default the library uses `console.info` and `console.error` for logging. You can also pass in a custom logger, such as [pino](https://github.com/pinojs/pino):
+
+```typescript
+const logger = require('pino')()
+const zbc = new ZBClient('0.0.0.0:26500', { stdout: logger })
 ```
 
 ## Developing
