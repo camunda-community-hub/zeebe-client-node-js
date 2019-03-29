@@ -1,6 +1,6 @@
 {
 	"name": "zeebe-node",
-	"version": "1.0.7",
+	"version": "1.2.0",
 	"description": "A Node.js client library for the Zeebe Microservices Orchestration Engine.",
 	"keywords": [
 		"zeebe",
@@ -26,7 +26,7 @@
 		"watch": "tsc -w",
 		"prepare": "tsc",
 		"test": "jest --testPathIgnorePatterns integration",
-		"test:integration": "jest",
+		"test:integration": "jest --runInBand --verbose true --detectOpenHandles",
 		"test&docs": "npm test && npm run docs",
 		"dev": "tsc-watch --onSuccess \"npm run test&docs\" -p tsconfig.json --outDir dist",
 		"docs": "typedoc --out ./docs --tsconfig ./tsconfig.json --excludePrivate --mode file"

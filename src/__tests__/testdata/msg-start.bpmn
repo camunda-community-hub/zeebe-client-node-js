@@ -18,7 +18,7 @@
   <bpmn:process id="msg-start-process" name="Message Start" isExecutable="true">
     <bpmn:serviceTask id="ServiceTask_0f6zc7d" name="log">
       <bpmn:extensionElements>
-        <zeebe:taskDefinition type="console-log-msg" />
+        <zeebe:taskDefinition type="console-log-msg" retries="5" />
         <zeebe:taskHeaders>
           <zeebe:header key="message" value="Workflow started via MSG-START in" />
         </zeebe:taskHeaders>

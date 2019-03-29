@@ -2,25 +2,31 @@ import { Chalk } from 'chalk'
 import { ZBWorker } from '../zb/ZBWorker'
 
 export type Payload = any
+export type Loglevel = 'INFO' | 'DEBUG' | 'NONE' | 'ERROR'
 
 export type completeFn = (updatedPayload?: any) => void
 export type ZBTaskWorkerHandlerMinimal = (
 	payload: Job,
 	complete: completeFn
 ) => void
+
 export type ZBWorkerTaskHandlerWithWorker = (
 	payload: Job,
 	complete: completeFn,
 	worker: ZBWorker
 ) => void
+
 export type ZBWorkerTaskHandler =
 	| ZBTaskWorkerHandlerMinimal
 	| ZBWorkerTaskHandlerWithWorker
+
 export interface ZBWorkerLoggerOptions {
-	level?: string
+	loglevel: Loglevel
+	stdout?: any
 	color?: Chalk
 	namespace?: string | string[]
 }
+
 export type ConnectionErrorHandler = (error: any) => void
 
 export interface ActivateJobsResponse {
@@ -100,6 +106,10 @@ export interface ZBWorkerOptions {
 	 * This handler is called when the worker cannot connect to the broker, or loses its connection.
 	 */
 	onConnectionErrorHandler?: ConnectionErrorHandler
+	/**
+	 * If a handler throws an unhandled exception, if this is set true, the workflow will be failed. Defaults to false.
+	 */
+	failWorkflowOnException?: boolean
 }
 
 export interface CreateWorkflowInstanceRequest {
@@ -234,4 +244,9 @@ export interface GetWorkflowResponse {
 	bpmnProcessId: string
 	resourceName: string
 	bpmnXml: string
+}
+
+export interface ZBClientOptions {
+	loglevel?: Loglevel
+	stdout?: any
 }

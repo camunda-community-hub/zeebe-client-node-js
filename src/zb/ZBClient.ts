@@ -16,18 +16,24 @@ const idColors = [
 
 export class ZBClient {
 	public brokerAddress: string
-	private gRPCClient: any
-	private workerCount = 0
-	private workers: ZBWorker[] = []
 	private closePromise?: Promise<any>
 	private closing = false
+	private gRPCClient: any
+	private options: ZB.ZBClientOptions
+	private workerCount = 0
+	private workers: ZBWorker[] = []
 
-	constructor(brokerAddress: string) {
+	constructor(brokerAddress: string, options: ZB.ZBClientOptions = {}) {
 		if (!brokerAddress) {
 			throw new Error(
 				'Must provide a broker address string to constructor'
 			)
 		}
+		this.options = options || {}
+		this.options.loglevel =
+			options.loglevel ||
+			(process.env.ZB_NODE_LOG_LEVEL as ZB.Loglevel) ||
+			'INFO'
 
 		if (brokerAddress.indexOf(':') === -1) {
 			brokerAddress += ':26500'
@@ -54,22 +60,23 @@ export class ZBClient {
 		id: string,
 		taskType: string,
 		taskHandler: ZB.ZBWorkerTaskHandler,
-		options: ZB.ZBWorkerOptions = {},
-		onConnectionError?: ZB.ConnectionErrorHandler
+		options: ZB.ZBWorkerOptions & ZB.ZBClientOptions = {},
+		onConnectionError?: ZB.ConnectionErrorHandler | undefined
 	) {
 		if (this.closing) {
 			throw new Error('Client is closing. No worker creation allowed!')
 		}
 		const idColor = idColors[this.workerCount++ % idColors.length]
-		const worker = new ZBWorker(
-			this.gRPCClient,
+		const worker = new ZBWorker({
+			gRPCClient: this.gRPCClient,
 			id,
-			taskType,
-			taskHandler,
-			options,
 			idColor,
-			onConnectionError
-		)
+			onConnectionError,
+			options: { ...this.options, ...options },
+			taskHandler,
+			taskType,
+			zbClient: this,
+		})
 		this.workers.push(worker)
 		return worker
 	}
@@ -212,8 +219,12 @@ export class ZBClient {
 		)
 	}
 
-	public cancelWorkflowInstance(workflowInstanceKey: string): Promise<void> {
-		return this.gRPCClient.cancelWorkflowInstanceSync(workflowInstanceKey)
+	public async cancelWorkflowInstance(
+		workflowInstanceKey: string
+	): Promise<void> {
+		return this.gRPCClient.cancelWorkflowInstanceSync({
+			workflowInstanceKey,
+		})
 	}
 
 	public updateWorkflowInstancePayload(

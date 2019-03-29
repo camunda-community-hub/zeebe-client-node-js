@@ -2,13 +2,8 @@ import chalk, { Chalk } from 'chalk'
 import * as uuid from 'uuid'
 import { parsePayload, stringifyPayload } from '../lib'
 import * as ZB from '../lib/interfaces'
-import { ZBWorkerLogger } from '../lib/ZBWorkerLogger'
-
-import debug = require('debug')
-// tslint:disable-next-line
-require('console-stamp')(console, '[HH:MM:ss.l]')
-
-const log = debug('zeebe-node:worker')
+import { ZBLogger } from '../lib/ZBLogger'
+import { ZBClient } from './ZBClient'
 
 export class ZBWorker {
 	public activeJobs = 0
@@ -21,23 +16,36 @@ export class ZBWorker {
 	private closePromise?: Promise<undefined>
 	private closing = false
 	private closed = false
-	private defaultLogger: ZBWorkerLogger
 	private errored = false
 	private id = uuid.v4()
 	private onConnectionErrorHandler?: ZB.ConnectionErrorHandler
 	private pollHandle?: NodeJS.Timeout
 	private pollInterval: number
 	private taskHandler: ZB.ZBWorkerTaskHandler
+	private cancelWorkflowOnException = false
+	private zbClient: ZBClient
+	private logger: ZBLogger
 
-	constructor(
-		gRPCClient: any,
-		id: string,
-		taskType: string,
-		taskHandler: ZB.ZBWorkerTaskHandler,
-		options: ZB.ZBWorkerOptions = {},
-		idColor: Chalk,
-		onConnectionError?: ZB.ConnectionErrorHandler
-	) {
+	constructor({
+		gRPCClient,
+		id,
+		idColor,
+		onConnectionError,
+		options,
+		taskHandler,
+		taskType,
+		zbClient,
+	}: {
+		gRPCClient: any
+		id: string
+		taskType: string
+		taskHandler: ZB.ZBWorkerTaskHandler
+		options: ZB.ZBWorkerOptions & ZB.ZBClientOptions
+		idColor: Chalk
+		onConnectionError: ZB.ConnectionErrorHandler | undefined
+		zbClient: ZBClient
+	}) {
+		options = options || {}
 		if (!taskType) {
 			throw new Error('Missing taskType')
 		}
@@ -52,10 +60,18 @@ export class ZBWorker {
 		this.id = id || uuid.v4()
 		this.gRPCClient = gRPCClient
 		this.onConnectionErrorHandler = onConnectionError
-		this.defaultLogger = new ZBWorkerLogger(
-			{ color: idColor },
-			{ id: this.id, taskType: this.taskType }
-		)
+		const loglevel = options.loglevel || 'INFO'
+		this.cancelWorkflowOnException =
+			options.failWorkflowOnException || false
+		this.zbClient = zbClient
+		this.logger = new ZBLogger({
+			color: idColor,
+			id: this.id,
+			loglevel,
+			namespace: 'ZBWorker',
+			stdout: options.stdout || console,
+			taskType: this.taskType,
+		})
 		this.work()
 	}
 
@@ -94,7 +110,7 @@ export class ZBWorker {
 	}
 
 	public work = () => {
-		this.defaultLogger.log(`Ready for ${this.taskType}...`)
+		this.logger.log(`Ready for ${this.taskType}...`)
 		this.activateJobs()
 		this.pollHandle = setInterval(
 			() => this.activateJobs(),
@@ -106,7 +122,7 @@ export class ZBWorker {
 		completeJobRequest: ZB.CompleteJobRequest
 	): Promise<void> {
 		const withStringifiedPayload = stringifyPayload(completeJobRequest)
-		log(withStringifiedPayload)
+		this.logger.debug(withStringifiedPayload)
 		return this.gRPCClient.completeJobSync(withStringifiedPayload)
 	}
 
@@ -115,11 +131,12 @@ export class ZBWorker {
 	}
 
 	public log(msg: any) {
-		this.defaultLogger.log(msg)
+		this.logger.log(msg)
 	}
 
 	public getNewLogger(options: ZB.ZBWorkerLoggerOptions) {
-		return new ZBWorkerLogger(options, {
+		return new ZBLogger({
+			...options,
 			id: this.id,
 			taskType: this.taskType,
 		})
@@ -152,7 +169,7 @@ export class ZBWorker {
 		 */
 		let stream: any
 		if (this.activeJobs >= this.maxActiveJobs) {
-			log(
+			this.logger.log(
 				`Polling cancelled - ${this.taskType} has ${
 					this.activeJobs
 				} and a capacity of ${this.maxActiveJobs}.`
@@ -184,7 +201,7 @@ export class ZBWorker {
 			const parsedPayloads = res.jobs.map(parsePayload)
 			this.activeJobs += parsedPayloads.length
 			// Call task handler for each new job
-			parsedPayloads.forEach((job: ZB.ActivatedJob) => {
+			parsedPayloads.forEach(async (job: ZB.ActivatedJob) => {
 				const customHeaders = JSON.parse(job.customHeaders || '{}')
 				/**
 				 * Client-side timeout handler - removes jobs from the activeJobs count if timed out,
@@ -192,7 +209,7 @@ export class ZBWorker {
 				 */
 				let taskTimedout = false
 				const taskId = uuid.v4()
-				log(
+				this.logger.debug(
 					`Setting ${this.taskType} task timeout for ${taskId} to ${
 						this.timeout
 					}`
@@ -200,13 +217,15 @@ export class ZBWorker {
 				const timeoutCancel = setTimeout(() => {
 					taskTimedout = true
 					this.drainOne()
-					log(`Timed out task ${taskId} for ${this.taskType}`)
+					this.logger.log(
+						`Timed out task ${taskId} for ${this.taskType}`
+					)
 				}, this.timeout)
 
 				// Any unhandled exception thrown by the user-supplied code will bubble up and throw here.
 				// The task timeout handler above will deal with it.
 				try {
-					taskHandler(
+					await taskHandler(
 						Object.assign({}, job as any, { customHeaders }),
 						completedPayload => {
 							this.completeJob({
@@ -216,13 +235,13 @@ export class ZBWorker {
 							clearInterval(timeoutCancel)
 							if (!taskTimedout) {
 								this.drainOne()
-								log(
+								this.logger.debug(
 									`Completed task ${taskId} for ${
 										this.taskType
 									}`
 								)
 							} else {
-								log(
+								this.logger.debug(
 									`Completed task ${taskId} for ${
 										this.taskType
 									}, however it had timed out.`
@@ -232,8 +251,37 @@ export class ZBWorker {
 						this
 					)
 				} catch (e) {
-					// tslint:disable-next-line
-					console.log(e)
+					this.logger.error(
+						'Caught an unhandled exception in a task handler:'
+					)
+					this.logger.error(e)
+					this.logger.info(`Failing job ${job.key}`)
+					const retries = job.retries - 1
+					this.zbClient.failJob({
+						errorMessage: `Unhandled exception in task handler ${e}`,
+						jobKey: job.key,
+						retries,
+					})
+
+					if (this.cancelWorkflowOnException) {
+						const workflowInstanceKey =
+							job.jobHeaders.workflowInstanceKey
+						this.logger.debug(
+							`Cancelling workflow ${workflowInstanceKey}`
+						)
+						this.drainOne()
+						this.zbClient.cancelWorkflowInstance(
+							workflowInstanceKey
+						)
+					} else {
+						if (retries > 0) {
+							this.logger.debug(
+								`The Zeebe engine will handle the retry. Retries left: ${retries}`
+							)
+						} else {
+							this.logger.debug('No retries left for this task')
+						}
+					}
 				}
 			})
 		})

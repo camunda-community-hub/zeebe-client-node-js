@@ -1,5 +1,7 @@
 import { ZBClient } from '..'
 
+process.env.ZB_NODE_LOG_LEVEL = process.env.ZB_NODE_LOG_LEVEL || 'NONE'
+
 describe('ZBClient constructor', () => {
 	it('creates a new ZBClient', () => {
 		const zbc = new ZBClient('localhost')
