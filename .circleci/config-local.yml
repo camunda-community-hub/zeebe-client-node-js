@@ -1,13 +1,10 @@
 version: 2
-
-prod_filters: &prod_filters # ignore any commit on any branch by default
+prod_filters:
   branches:
     ignore: /.*/
-  # only act on version tags
   tags:
     only:
       - /^[0-9]+\.[0-9]+\.[0-9]+$/
-
 jobs:
   test:
     docker:
@@ -63,7 +60,6 @@ jobs:
       - run:
           name: build
           command: npm run build
-
 workflows:
   version: 2
   test:
@@ -72,9 +68,19 @@ workflows:
   build-master:
     jobs:
       - test:
-          filters: *prod_filters
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only:
+                - /^[0-9]+\.[0-9]+\.[0-9]+$/
       - build:
           requires:
             - test
-          filters: *prod_filters
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only:
+                - /^[0-9]+\.[0-9]+\.[0-9]+$/
           context: Docker

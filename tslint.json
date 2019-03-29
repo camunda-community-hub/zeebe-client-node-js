@@ -1,11 +1,14 @@
 {
-    "defaultSeverity": "error",
-    "extends": [
-        "tslint:recommended"
-    ],
-    "jsRules": {},
-    "rules": {
-        "interface-name": false
-    },
-    "rulesDirectory": []
+	"defaultSeverity": "error",
+	"extends": ["tslint:recommended"],
+	"jsRules": {},
+	"rules": {
+		"interface-name": false,
+		"indent": [true, "tabs", 4],
+		"semicolon": false,
+		"quotemark": false,
+		"trailing-comma": false,
+		"arrow-parens": false
+	},
+	"rulesDirectory": []
 }

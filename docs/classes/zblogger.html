@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="utf-8" />
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-		<title>ZBWorker | zeebe-node</title>
+		<title>ZBLogger | zeebe-node</title>
 		<meta name="description" content="" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="stylesheet" href="../assets/css/main.css" />
@@ -114,10 +114,10 @@
 							<a href="../globals.html">Globals</a>
 						</li>
 						<li>
-							<a href="zbworker.html">ZBWorker</a>
+							<a href="zblogger.html">ZBLogger</a>
 						</li>
 					</ul>
-					<h1>Class ZBWorker</h1>
+					<h1>Class ZBLogger</h1>
 				</div>
 			</div>
 		</header>
@@ -128,7 +128,7 @@
 						<h3>Hierarchy</h3>
 						<ul class="tsd-hierarchy">
 							<li>
-								<span class="target">ZBWorker</span>
+								<span class="target">ZBLogger</span>
 							</li>
 						</ul>
 					</section>
@@ -143,7 +143,7 @@
 											class="tsd-kind-constructor tsd-parent-kind-class"
 										>
 											<a
-												href="zbworker.html#constructor"
+												href="zblogger.html#constructor"
 												class="tsd-kind-icon"
 												>constructor</a
 											>
@@ -157,45 +157,9 @@
 											class="tsd-kind-property tsd-parent-kind-class"
 										>
 											<a
-												href="zbworker.html#activejobs"
+												href="zblogger.html#loglevel"
 												class="tsd-kind-icon"
-												>active<wbr />Jobs</a
-											>
-										</li>
-										<li
-											class="tsd-kind-property tsd-parent-kind-class"
-										>
-											<a
-												href="zbworker.html#grpcclient"
-												class="tsd-kind-icon"
-												>gRPCClient</a
-											>
-										</li>
-										<li
-											class="tsd-kind-property tsd-parent-kind-class"
-										>
-											<a
-												href="zbworker.html#maxactivejobs"
-												class="tsd-kind-icon"
-												>max<wbr />Active<wbr />Jobs</a
-											>
-										</li>
-										<li
-											class="tsd-kind-property tsd-parent-kind-class"
-										>
-											<a
-												href="zbworker.html#tasktype"
-												class="tsd-kind-icon"
-												>task<wbr />Type</a
-											>
-										</li>
-										<li
-											class="tsd-kind-property tsd-parent-kind-class"
-										>
-											<a
-												href="zbworker.html#timeout"
-												class="tsd-kind-icon"
-												>timeout</a
+												>loglevel</a
 											>
 										</li>
 									</ul>
@@ -207,54 +171,36 @@
 											class="tsd-kind-method tsd-parent-kind-class"
 										>
 											<a
-												href="zbworker.html#close"
+												href="zblogger.html#debug"
 												class="tsd-kind-icon"
-												>close</a
+												>debug</a
 											>
 										</li>
 										<li
 											class="tsd-kind-method tsd-parent-kind-class"
 										>
 											<a
-												href="zbworker.html#completejob"
+												href="zblogger.html#error"
 												class="tsd-kind-icon"
-												>complete<wbr />Job</a
+												>error</a
 											>
 										</li>
 										<li
 											class="tsd-kind-method tsd-parent-kind-class"
 										>
 											<a
-												href="zbworker.html#getnewlogger"
+												href="zblogger.html#info"
 												class="tsd-kind-icon"
-												>get<wbr />New<wbr />Logger</a
+												>info</a
 											>
 										</li>
 										<li
 											class="tsd-kind-method tsd-parent-kind-class"
 										>
 											<a
-												href="zbworker.html#log"
+												href="zblogger.html#log"
 												class="tsd-kind-icon"
 												>log</a
-											>
-										</li>
-										<li
-											class="tsd-kind-method tsd-parent-kind-class"
-										>
-											<a
-												href="zbworker.html#onconnectionerror"
-												class="tsd-kind-icon"
-												>on<wbr />Connection<wbr />Error</a
-											>
-										</li>
-										<li
-											class="tsd-kind-method tsd-parent-kind-class"
-										>
-											<a
-												href="zbworker.html#work"
-												class="tsd-kind-icon"
-												>work</a
 											>
 										</li>
 									</ul>
@@ -273,457 +219,14 @@
 								class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class"
 							>
 								<li class="tsd-signature tsd-kind-icon">
-									new ZBWorker<span
+									new ZBLogger<span
 										class="tsd-signature-symbol"
 										>(</span
 									>__namedParameters<span
 										class="tsd-signature-symbol"
-										>: </span
+										>?: </span
 									><span class="tsd-signature-type"
 										>object</span
-									><span class="tsd-signature-symbol">)</span
-									><span class="tsd-signature-symbol">: </span
-									><a
-										href="zbworker.html"
-										class="tsd-signature-type"
-										>ZBWorker</a
-									>
-								</li>
-							</ul>
-							<ul class="tsd-descriptions">
-								<li class="tsd-description">
-									<aside class="tsd-sources">
-										<ul>
-											<li>
-												Defined in
-												<a
-													href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/zb/ZBWorker.ts#L27"
-													>zb/ZBWorker.ts:27</a
-												>
-											</li>
-										</ul>
-									</aside>
-									<h4 class="tsd-parameters-title">
-										Parameters
-									</h4>
-									<ul class="tsd-parameters">
-										<li>
-											<h5>
-												__namedParameters:
-												<span class="tsd-signature-type"
-													>object</span
-												>
-											</h5>
-											<ul class="tsd-parameters">
-												<li class="tsd-parameter">
-													<h5>
-														gRPCClient<span
-															class="tsd-signature-symbol"
-															>: </span
-														><span
-															class="tsd-signature-type"
-															>any</span
-														>
-													</h5>
-												</li>
-												<li class="tsd-parameter">
-													<h5>
-														id<span
-															class="tsd-signature-symbol"
-															>: </span
-														><span
-															class="tsd-signature-type"
-															>string</span
-														>
-													</h5>
-												</li>
-												<li class="tsd-parameter">
-													<h5>
-														id<wbr />Color<span
-															class="tsd-signature-symbol"
-															>: </span
-														><span
-															class="tsd-signature-type"
-															>Chalk</span
-														>
-													</h5>
-												</li>
-												<li class="tsd-parameter">
-													<h5>
-														on<wbr />Connection<wbr />Error<span
-															class="tsd-signature-symbol"
-															>: </span
-														><span
-															class="tsd-signature-type"
-															>undefined</span
-														><span
-															class="tsd-signature-symbol"
-														>
-															| </span
-														><span
-															class="tsd-signature-type"
-															>function</span
-														>
-													</h5>
-												</li>
-												<li class="tsd-parameter">
-													<h5>
-														options<span
-															class="tsd-signature-symbol"
-															>: </span
-														><a
-															href="../interfaces/zbworkeroptions.html"
-															class="tsd-signature-type"
-															>ZBWorkerOptions</a
-														><span
-															class="tsd-signature-symbol"
-														>
-															&amp; </span
-														><a
-															href="../interfaces/zbclientoptions.html"
-															class="tsd-signature-type"
-															>ZBClientOptions</a
-														>
-													</h5>
-												</li>
-												<li class="tsd-parameter">
-													<h5>
-														task<wbr />Handler<span
-															class="tsd-signature-symbol"
-															>: </span
-														><span
-															class="tsd-signature-type"
-															>function</span
-														><span
-															class="tsd-signature-symbol"
-														>
-															| </span
-														><span
-															class="tsd-signature-type"
-															>function</span
-														>
-													</h5>
-												</li>
-												<li class="tsd-parameter">
-													<h5>
-														task<wbr />Type<span
-															class="tsd-signature-symbol"
-															>: </span
-														><span
-															class="tsd-signature-type"
-															>string</span
-														>
-													</h5>
-												</li>
-												<li class="tsd-parameter">
-													<h5>
-														zb<wbr />Client<span
-															class="tsd-signature-symbol"
-															>: </span
-														><a
-															href="zbclient.html"
-															class="tsd-signature-type"
-															>ZBClient</a
-														>
-													</h5>
-												</li>
-											</ul>
-										</li>
-									</ul>
-									<h4 class="tsd-returns-title">
-										Returns
-										<a
-											href="zbworker.html"
-											class="tsd-signature-type"
-											>ZBWorker</a
-										>
-									</h4>
-								</li>
-							</ul>
-						</section>
-					</section>
-					<section class="tsd-panel-group tsd-member-group ">
-						<h2>Properties</h2>
-						<section
-							class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class"
-						>
-							<a name="activejobs" class="tsd-anchor"></a>
-							<h3>active<wbr />Jobs</h3>
-							<div class="tsd-signature tsd-kind-icon">
-								active<wbr />Jobs<span
-									class="tsd-signature-symbol"
-									>:</span
-								>
-								<span class="tsd-signature-type">number</span
-								><span class="tsd-signature-symbol">
-									=&nbsp;0</span
-								>
-							</div>
-							<aside class="tsd-sources">
-								<ul>
-									<li>
-										Defined in
-										<a
-											href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/zb/ZBWorker.ts#L9"
-											>zb/ZBWorker.ts:9</a
-										>
-									</li>
-								</ul>
-							</aside>
-						</section>
-						<section
-							class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class"
-						>
-							<a name="grpcclient" class="tsd-anchor"></a>
-							<h3>gRPCClient</h3>
-							<div class="tsd-signature tsd-kind-icon">
-								gRPCClient<span class="tsd-signature-symbol"
-									>:</span
-								>
-								<span class="tsd-signature-type">any</span>
-							</div>
-							<aside class="tsd-sources">
-								<ul>
-									<li>
-										Defined in
-										<a
-											href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/zb/ZBWorker.ts#L10"
-											>zb/ZBWorker.ts:10</a
-										>
-									</li>
-								</ul>
-							</aside>
-						</section>
-						<section
-							class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class"
-						>
-							<a name="maxactivejobs" class="tsd-anchor"></a>
-							<h3>max<wbr />Active<wbr />Jobs</h3>
-							<div class="tsd-signature tsd-kind-icon">
-								max<wbr />Active<wbr />Jobs<span
-									class="tsd-signature-symbol"
-									>:</span
-								>
-								<span class="tsd-signature-type">number</span>
-							</div>
-							<aside class="tsd-sources">
-								<ul>
-									<li>
-										Defined in
-										<a
-											href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/zb/ZBWorker.ts#L11"
-											>zb/ZBWorker.ts:11</a
-										>
-									</li>
-								</ul>
-							</aside>
-						</section>
-						<section
-							class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class"
-						>
-							<a name="tasktype" class="tsd-anchor"></a>
-							<h3>task<wbr />Type</h3>
-							<div class="tsd-signature tsd-kind-icon">
-								task<wbr />Type<span
-									class="tsd-signature-symbol"
-									>:</span
-								>
-								<span class="tsd-signature-type">string</span>
-							</div>
-							<aside class="tsd-sources">
-								<ul>
-									<li>
-										Defined in
-										<a
-											href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/zb/ZBWorker.ts#L12"
-											>zb/ZBWorker.ts:12</a
-										>
-									</li>
-								</ul>
-							</aside>
-						</section>
-						<section
-							class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class"
-						>
-							<a name="timeout" class="tsd-anchor"></a>
-							<h3>timeout</h3>
-							<div class="tsd-signature tsd-kind-icon">
-								timeout<span class="tsd-signature-symbol"
-									>:</span
-								>
-								<span class="tsd-signature-type">number</span>
-							</div>
-							<aside class="tsd-sources">
-								<ul>
-									<li>
-										Defined in
-										<a
-											href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/zb/ZBWorker.ts#L13"
-											>zb/ZBWorker.ts:13</a
-										>
-									</li>
-								</ul>
-							</aside>
-						</section>
-					</section>
-					<section class="tsd-panel-group tsd-member-group ">
-						<h2>Methods</h2>
-						<section
-							class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"
-						>
-							<a name="close" class="tsd-anchor"></a>
-							<h3>close</h3>
-							<ul
-								class="tsd-signatures tsd-kind-method tsd-parent-kind-class"
-							>
-								<li class="tsd-signature tsd-kind-icon">
-									close<span class="tsd-signature-symbol"
-										>(</span
-									><span class="tsd-signature-symbol">)</span
-									><span class="tsd-signature-symbol">: </span
-									><span class="tsd-signature-type"
-										>Promise</span
-									><span class="tsd-signature-symbol"
-										>&lt;</span
-									><span class="tsd-signature-type"
-										>undefined</span
-									><span class="tsd-signature-symbol"
-										>&gt;</span
-									>
-								</li>
-							</ul>
-							<ul class="tsd-descriptions">
-								<li class="tsd-description">
-									<aside class="tsd-sources">
-										<ul>
-											<li>
-												Defined in
-												<a
-													href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/zb/ZBWorker.ts#L82"
-													>zb/ZBWorker.ts:82</a
-												>
-											</li>
-										</ul>
-									</aside>
-									<div class="tsd-comment tsd-typography">
-										<div class="lead">
-											<p>
-												Returns a promise that the
-												worker has stopped accepting
-												tasks and has drained all
-												current active tasks. Will
-												reject if you try to call it
-												more than once.
-											</p>
-										</div>
-									</div>
-									<h4 class="tsd-returns-title">
-										Returns
-										<span class="tsd-signature-type"
-											>Promise</span
-										><span class="tsd-signature-symbol"
-											>&lt;</span
-										><span class="tsd-signature-type"
-											>undefined</span
-										><span class="tsd-signature-symbol"
-											>&gt;</span
-										>
-									</h4>
-								</li>
-							</ul>
-						</section>
-						<section
-							class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"
-						>
-							<a name="completejob" class="tsd-anchor"></a>
-							<h3>complete<wbr />Job</h3>
-							<ul
-								class="tsd-signatures tsd-kind-method tsd-parent-kind-class"
-							>
-								<li class="tsd-signature tsd-kind-icon">
-									complete<wbr />Job<span
-										class="tsd-signature-symbol"
-										>(</span
-									>completeJobRequest<span
-										class="tsd-signature-symbol"
-										>: </span
-									><a
-										href="../interfaces/completejobrequest.html"
-										class="tsd-signature-type"
-										>CompleteJobRequest</a
-									><span class="tsd-signature-symbol">)</span
-									><span class="tsd-signature-symbol">: </span
-									><span class="tsd-signature-type"
-										>Promise</span
-									><span class="tsd-signature-symbol"
-										>&lt;</span
-									><span class="tsd-signature-type">void</span
-									><span class="tsd-signature-symbol"
-										>&gt;</span
-									>
-								</li>
-							</ul>
-							<ul class="tsd-descriptions">
-								<li class="tsd-description">
-									<aside class="tsd-sources">
-										<ul>
-											<li>
-												Defined in
-												<a
-													href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/zb/ZBWorker.ts#L121"
-													>zb/ZBWorker.ts:121</a
-												>
-											</li>
-										</ul>
-									</aside>
-									<h4 class="tsd-parameters-title">
-										Parameters
-									</h4>
-									<ul class="tsd-parameters">
-										<li>
-											<h5>
-												completeJobRequest:
-												<a
-													href="../interfaces/completejobrequest.html"
-													class="tsd-signature-type"
-													>CompleteJobRequest</a
-												>
-											</h5>
-										</li>
-									</ul>
-									<h4 class="tsd-returns-title">
-										Returns
-										<span class="tsd-signature-type"
-											>Promise</span
-										><span class="tsd-signature-symbol"
-											>&lt;</span
-										><span class="tsd-signature-type"
-											>void</span
-										><span class="tsd-signature-symbol"
-											>&gt;</span
-										>
-									</h4>
-								</li>
-							</ul>
-						</section>
-						<section
-							class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"
-						>
-							<a name="getnewlogger" class="tsd-anchor"></a>
-							<h3>get<wbr />New<wbr />Logger</h3>
-							<ul
-								class="tsd-signatures tsd-kind-method tsd-parent-kind-class"
-							>
-								<li class="tsd-signature tsd-kind-icon">
-									get<wbr />New<wbr />Logger<span
-										class="tsd-signature-symbol"
-										>(</span
-									>options<span class="tsd-signature-symbol"
-										>: </span
-									><a
-										href="../interfaces/zbworkerloggeroptions.html"
-										class="tsd-signature-type"
-										>ZBWorkerLoggerOptions</a
 									><span class="tsd-signature-symbol">)</span
 									><span class="tsd-signature-symbol">: </span
 									><a
@@ -740,8 +243,8 @@
 											<li>
 												Defined in
 												<a
-													href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/zb/ZBWorker.ts#L137"
-													>zb/ZBWorker.ts:137</a
+													href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/lib/ZBLogger.ts#L11"
+													>lib/ZBLogger.ts:11</a
 												>
 											</li>
 										</ul>
@@ -752,13 +255,172 @@
 									<ul class="tsd-parameters">
 										<li>
 											<h5>
-												options:
-												<a
-													href="../interfaces/zbworkerloggeroptions.html"
-													class="tsd-signature-type"
-													>ZBWorkerLoggerOptions</a
+												<span
+													class="tsd-flag ts-flagDefault value"
+													>Default value</span
+												>
+												__namedParameters:
+												<span class="tsd-signature-type"
+													>object</span
+												><span
+													class="tsd-signature-symbol"
+												>
+													=&nbsp;{ loglevel:
+													&#x27;INFO&#x27; }</span
 												>
 											</h5>
+											<ul class="tsd-parameters">
+												<li class="tsd-parameter">
+													<h5>
+														color<span
+															class="tsd-signature-symbol"
+															>: </span
+														><span
+															class="tsd-signature-type"
+															>undefined</span
+														><span
+															class="tsd-signature-symbol"
+														>
+															| </span
+														><span
+															class="tsd-signature-type"
+															>Chalk</span
+														>
+													</h5>
+												</li>
+												<li class="tsd-parameter">
+													<h5>
+														colorise<span
+															class="tsd-signature-symbol"
+															>: </span
+														><span
+															class="tsd-signature-type"
+															>undefined</span
+														><span
+															class="tsd-signature-symbol"
+														>
+															| </span
+														><span
+															class="tsd-signature-type"
+															>false</span
+														><span
+															class="tsd-signature-symbol"
+														>
+															| </span
+														><span
+															class="tsd-signature-type"
+															>true</span
+														>
+													</h5>
+												</li>
+												<li class="tsd-parameter">
+													<h5>
+														id<span
+															class="tsd-signature-symbol"
+															>: </span
+														><span
+															class="tsd-signature-type"
+															>undefined</span
+														><span
+															class="tsd-signature-symbol"
+														>
+															| </span
+														><span
+															class="tsd-signature-type"
+															>string</span
+														>
+													</h5>
+												</li>
+												<li class="tsd-parameter">
+													<h5>
+														loglevel<span
+															class="tsd-signature-symbol"
+															>: </span
+														><span
+															class="tsd-signature-type"
+															>"INFO"</span
+														><span
+															class="tsd-signature-symbol"
+														>
+															| </span
+														><span
+															class="tsd-signature-type"
+															>"DEBUG"</span
+														><span
+															class="tsd-signature-symbol"
+														>
+															| </span
+														><span
+															class="tsd-signature-type"
+															>"NONE"</span
+														><span
+															class="tsd-signature-symbol"
+														>
+															| </span
+														><span
+															class="tsd-signature-type"
+															>"ERROR"</span
+														>
+													</h5>
+												</li>
+												<li class="tsd-parameter">
+													<h5>
+														namespace<span
+															class="tsd-signature-symbol"
+															>: </span
+														><span
+															class="tsd-signature-type"
+															>undefined</span
+														><span
+															class="tsd-signature-symbol"
+														>
+															| </span
+														><span
+															class="tsd-signature-type"
+															>string</span
+														><span
+															class="tsd-signature-symbol"
+														>
+															| </span
+														><span
+															class="tsd-signature-type"
+															>string</span
+														><span
+															class="tsd-signature-symbol"
+															>[]</span
+														>
+													</h5>
+												</li>
+												<li class="tsd-parameter">
+													<h5>
+														stdout<span
+															class="tsd-signature-symbol"
+															>: </span
+														><span
+															class="tsd-signature-type"
+															>any</span
+														>
+													</h5>
+												</li>
+												<li class="tsd-parameter">
+													<h5>
+														task<wbr />Type<span
+															class="tsd-signature-symbol"
+															>: </span
+														><span
+															class="tsd-signature-type"
+															>undefined</span
+														><span
+															class="tsd-signature-symbol"
+														>
+															| </span
+														><span
+															class="tsd-signature-type"
+															>string</span
+														>
+													</h5>
+												</li>
+											</ul>
 										</li>
 									</ul>
 									<h4 class="tsd-returns-title">
@@ -767,6 +429,280 @@
 											href="zblogger.html"
 											class="tsd-signature-type"
 											>ZBLogger</a
+										>
+									</h4>
+								</li>
+							</ul>
+						</section>
+					</section>
+					<section class="tsd-panel-group tsd-member-group ">
+						<h2>Properties</h2>
+						<section
+							class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class"
+						>
+							<a name="loglevel" class="tsd-anchor"></a>
+							<h3>loglevel</h3>
+							<div class="tsd-signature tsd-kind-icon">
+								loglevel<span class="tsd-signature-symbol"
+									>:</span
+								>
+								<a
+									href="../globals.html#loglevel"
+									class="tsd-signature-type"
+									>Loglevel</a
+								>
+							</div>
+							<aside class="tsd-sources">
+								<ul>
+									<li>
+										Defined in
+										<a
+											href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/lib/ZBLogger.ts#L5"
+											>lib/ZBLogger.ts:5</a
+										>
+									</li>
+								</ul>
+							</aside>
+						</section>
+					</section>
+					<section class="tsd-panel-group tsd-member-group ">
+						<h2>Methods</h2>
+						<section
+							class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"
+						>
+							<a name="debug" class="tsd-anchor"></a>
+							<h3>debug</h3>
+							<ul
+								class="tsd-signatures tsd-kind-method tsd-parent-kind-class"
+							>
+								<li class="tsd-signature tsd-kind-icon">
+									debug<span class="tsd-signature-symbol"
+										>(</span
+									>message<span class="tsd-signature-symbol"
+										>: </span
+									><span class="tsd-signature-type">any</span
+									>,
+									<span class="tsd-signature-symbol">...</span
+									>optionalParameters<span
+										class="tsd-signature-symbol"
+										>: </span
+									><span class="tsd-signature-type">any</span
+									><span class="tsd-signature-symbol">[]</span
+									><span class="tsd-signature-symbol">)</span
+									><span class="tsd-signature-symbol">: </span
+									><span class="tsd-signature-type"
+										>void</span
+									>
+								</li>
+							</ul>
+							<ul class="tsd-descriptions">
+								<li class="tsd-description">
+									<aside class="tsd-sources">
+										<ul>
+											<li>
+												Defined in
+												<a
+													href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/lib/ZBLogger.ts#L58"
+													>lib/ZBLogger.ts:58</a
+												>
+											</li>
+										</ul>
+									</aside>
+									<h4 class="tsd-parameters-title">
+										Parameters
+									</h4>
+									<ul class="tsd-parameters">
+										<li>
+											<h5>
+												message:
+												<span class="tsd-signature-type"
+													>any</span
+												>
+											</h5>
+										</li>
+										<li>
+											<h5>
+												<span
+													class="tsd-flag ts-flagRest"
+													>Rest</span
+												>
+												<span
+													class="tsd-signature-symbol"
+													>...</span
+												>optionalParameters:
+												<span class="tsd-signature-type"
+													>any</span
+												><span
+													class="tsd-signature-symbol"
+													>[]</span
+												>
+											</h5>
+										</li>
+									</ul>
+									<h4 class="tsd-returns-title">
+										Returns
+										<span class="tsd-signature-type"
+											>void</span
+										>
+									</h4>
+								</li>
+							</ul>
+						</section>
+						<section
+							class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"
+						>
+							<a name="error" class="tsd-anchor"></a>
+							<h3>error</h3>
+							<ul
+								class="tsd-signatures tsd-kind-method tsd-parent-kind-class"
+							>
+								<li class="tsd-signature tsd-kind-icon">
+									error<span class="tsd-signature-symbol"
+										>(</span
+									>message<span class="tsd-signature-symbol"
+										>: </span
+									><span class="tsd-signature-type">any</span
+									>,
+									<span class="tsd-signature-symbol">...</span
+									>optionalParameters<span
+										class="tsd-signature-symbol"
+										>: </span
+									><span class="tsd-signature-type">any</span
+									><span class="tsd-signature-symbol">[]</span
+									><span class="tsd-signature-symbol">)</span
+									><span class="tsd-signature-symbol">: </span
+									><span class="tsd-signature-type">any</span>
+								</li>
+							</ul>
+							<ul class="tsd-descriptions">
+								<li class="tsd-description">
+									<aside class="tsd-sources">
+										<ul>
+											<li>
+												Defined in
+												<a
+													href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/lib/ZBLogger.ts#L47"
+													>lib/ZBLogger.ts:47</a
+												>
+											</li>
+										</ul>
+									</aside>
+									<h4 class="tsd-parameters-title">
+										Parameters
+									</h4>
+									<ul class="tsd-parameters">
+										<li>
+											<h5>
+												message:
+												<span class="tsd-signature-type"
+													>any</span
+												>
+											</h5>
+										</li>
+										<li>
+											<h5>
+												<span
+													class="tsd-flag ts-flagRest"
+													>Rest</span
+												>
+												<span
+													class="tsd-signature-symbol"
+													>...</span
+												>optionalParameters:
+												<span class="tsd-signature-type"
+													>any</span
+												><span
+													class="tsd-signature-symbol"
+													>[]</span
+												>
+											</h5>
+										</li>
+									</ul>
+									<h4 class="tsd-returns-title">
+										Returns
+										<span class="tsd-signature-type"
+											>any</span
+										>
+									</h4>
+								</li>
+							</ul>
+						</section>
+						<section
+							class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"
+						>
+							<a name="info" class="tsd-anchor"></a>
+							<h3>info</h3>
+							<ul
+								class="tsd-signatures tsd-kind-method tsd-parent-kind-class"
+							>
+								<li class="tsd-signature tsd-kind-icon">
+									info<span class="tsd-signature-symbol"
+										>(</span
+									>message<span class="tsd-signature-symbol"
+										>: </span
+									><span class="tsd-signature-type">any</span
+									>,
+									<span class="tsd-signature-symbol">...</span
+									>optionalParameters<span
+										class="tsd-signature-symbol"
+										>: </span
+									><span class="tsd-signature-type">any</span
+									><span class="tsd-signature-symbol">[]</span
+									><span class="tsd-signature-symbol">)</span
+									><span class="tsd-signature-symbol">: </span
+									><span class="tsd-signature-type"
+										>void</span
+									>
+								</li>
+							</ul>
+							<ul class="tsd-descriptions">
+								<li class="tsd-description">
+									<aside class="tsd-sources">
+										<ul>
+											<li>
+												Defined in
+												<a
+													href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/lib/ZBLogger.ts#L43"
+													>lib/ZBLogger.ts:43</a
+												>
+											</li>
+										</ul>
+									</aside>
+									<h4 class="tsd-parameters-title">
+										Parameters
+									</h4>
+									<ul class="tsd-parameters">
+										<li>
+											<h5>
+												message:
+												<span class="tsd-signature-type"
+													>any</span
+												>
+											</h5>
+										</li>
+										<li>
+											<h5>
+												<span
+													class="tsd-flag ts-flagRest"
+													>Rest</span
+												>
+												<span
+													class="tsd-signature-symbol"
+													>...</span
+												>optionalParameters:
+												<span class="tsd-signature-type"
+													>any</span
+												><span
+													class="tsd-signature-symbol"
+													>[]</span
+												>
+											</h5>
+										</li>
+									</ul>
+									<h4 class="tsd-returns-title">
+										Returns
+										<span class="tsd-signature-type"
+											>void</span
 										>
 									</h4>
 								</li>
@@ -783,9 +719,16 @@
 								<li class="tsd-signature tsd-kind-icon">
 									log<span class="tsd-signature-symbol"
 										>(</span
-									>msg<span class="tsd-signature-symbol"
+									>message<span class="tsd-signature-symbol"
 										>: </span
 									><span class="tsd-signature-type">any</span
+									>,
+									<span class="tsd-signature-symbol">...</span
+									>optionalParameters<span
+										class="tsd-signature-symbol"
+										>: </span
+									><span class="tsd-signature-type">any</span
+									><span class="tsd-signature-symbol">[]</span
 									><span class="tsd-signature-symbol">)</span
 									><span class="tsd-signature-symbol">: </span
 									><span class="tsd-signature-type"
@@ -800,8 +743,8 @@
 											<li>
 												Defined in
 												<a
-													href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/zb/ZBWorker.ts#L133"
-													>zb/ZBWorker.ts:133</a
+													href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/lib/ZBLogger.ts#L65"
+													>lib/ZBLogger.ts:65</a
 												>
 											</li>
 										</ul>
@@ -812,179 +755,31 @@
 									<ul class="tsd-parameters">
 										<li>
 											<h5>
-												msg:
+												message:
 												<span class="tsd-signature-type"
 													>any</span
 												>
 											</h5>
 										</li>
-									</ul>
-									<h4 class="tsd-returns-title">
-										Returns
-										<span class="tsd-signature-type"
-											>void</span
-										>
-									</h4>
-								</li>
-							</ul>
-						</section>
-						<section
-							class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"
-						>
-							<a name="onconnectionerror" class="tsd-anchor"></a>
-							<h3>on<wbr />Connection<wbr />Error</h3>
-							<ul
-								class="tsd-signatures tsd-kind-method tsd-parent-kind-class"
-							>
-								<li class="tsd-signature tsd-kind-icon">
-									on<wbr />Connection<wbr />Error<span
-										class="tsd-signature-symbol"
-										>(</span
-									>handler<span class="tsd-signature-symbol"
-										>: </span
-									><span class="tsd-signature-type"
-										>function</span
-									><span class="tsd-signature-symbol">)</span
-									><span class="tsd-signature-symbol">: </span
-									><span class="tsd-signature-type"
-										>void</span
-									>
-								</li>
-							</ul>
-							<ul class="tsd-descriptions">
-								<li class="tsd-description">
-									<aside class="tsd-sources">
-										<ul>
-											<li>
-												Defined in
-												<a
-													href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/zb/ZBWorker.ts#L129"
-													>zb/ZBWorker.ts:129</a
-												>
-											</li>
-										</ul>
-									</aside>
-									<h4 class="tsd-parameters-title">
-										Parameters
-									</h4>
-									<ul class="tsd-parameters">
 										<li>
 											<h5>
-												handler:
+												<span
+													class="tsd-flag ts-flagRest"
+													>Rest</span
+												>
+												<span
+													class="tsd-signature-symbol"
+													>...</span
+												>optionalParameters:
 												<span class="tsd-signature-type"
-													>function</span
+													>any</span
+												><span
+													class="tsd-signature-symbol"
+													>[]</span
 												>
 											</h5>
-											<ul class="tsd-parameters">
-												<li
-													class="tsd-parameter-siganture"
-												>
-													<ul
-														class="tsd-signatures tsd-kind-type-literal tsd-is-not-exported"
-													>
-														<li
-															class="tsd-signature tsd-kind-icon"
-														>
-															<span
-																class="tsd-signature-symbol"
-																>(</span
-															>error<span
-																class="tsd-signature-symbol"
-																>: </span
-															><span
-																class="tsd-signature-type"
-																>any</span
-															><span
-																class="tsd-signature-symbol"
-																>)</span
-															><span
-																class="tsd-signature-symbol"
-																>: </span
-															><span
-																class="tsd-signature-type"
-																>void</span
-															>
-														</li>
-													</ul>
-													<ul
-														class="tsd-descriptions"
-													>
-														<li
-															class="tsd-description"
-														>
-															<h4
-																class="tsd-parameters-title"
-															>
-																Parameters
-															</h4>
-															<ul
-																class="tsd-parameters"
-															>
-																<li>
-																	<h5>
-																		error:
-																		<span
-																			class="tsd-signature-type"
-																			>any</span
-																		>
-																	</h5>
-																</li>
-															</ul>
-															<h4
-																class="tsd-returns-title"
-															>
-																Returns
-																<span
-																	class="tsd-signature-type"
-																	>void</span
-																>
-															</h4>
-														</li>
-													</ul>
-												</li>
-											</ul>
 										</li>
 									</ul>
-									<h4 class="tsd-returns-title">
-										Returns
-										<span class="tsd-signature-type"
-											>void</span
-										>
-									</h4>
-								</li>
-							</ul>
-						</section>
-						<section
-							class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"
-						>
-							<a name="work" class="tsd-anchor"></a>
-							<h3>work</h3>
-							<ul
-								class="tsd-signatures tsd-kind-method tsd-parent-kind-class"
-							>
-								<li class="tsd-signature tsd-kind-icon">
-									work<span class="tsd-signature-symbol"
-										>(</span
-									><span class="tsd-signature-symbol">)</span
-									><span class="tsd-signature-symbol">: </span
-									><span class="tsd-signature-type"
-										>void</span
-									>
-								</li>
-							</ul>
-							<ul class="tsd-descriptions">
-								<li class="tsd-description">
-									<aside class="tsd-sources">
-										<ul>
-											<li>
-												Defined in
-												<a
-													href="https://github.com/CreditSenseAU/zeebe-client-node-js/blob/46ff7a6/src/zb/ZBWorker.ts#L112"
-													>zb/ZBWorker.ts:112</a
-												>
-											</li>
-										</ul>
-									</aside>
 									<h4 class="tsd-returns-title">
 										Returns
 										<span class="tsd-signature-type"
@@ -1008,15 +803,15 @@
 						<ul class="before-current"></ul>
 						<ul class="current">
 							<li class="current tsd-kind-class">
-								<a href="zbworker.html" class="tsd-kind-icon"
-									>ZBWorker</a
+								<a href="zblogger.html" class="tsd-kind-icon"
+									>ZBLogger</a
 								>
 								<ul>
 									<li
 										class=" tsd-kind-constructor tsd-parent-kind-class"
 									>
 										<a
-											href="zbworker.html#constructor"
+											href="zblogger.html#constructor"
 											class="tsd-kind-icon"
 											>constructor</a
 										>
@@ -1025,99 +820,45 @@
 										class=" tsd-kind-property tsd-parent-kind-class"
 									>
 										<a
-											href="zbworker.html#activejobs"
+											href="zblogger.html#loglevel"
 											class="tsd-kind-icon"
-											>active<wbr />Jobs</a
-										>
-									</li>
-									<li
-										class=" tsd-kind-property tsd-parent-kind-class"
-									>
-										<a
-											href="zbworker.html#grpcclient"
-											class="tsd-kind-icon"
-											>gRPCClient</a
-										>
-									</li>
-									<li
-										class=" tsd-kind-property tsd-parent-kind-class"
-									>
-										<a
-											href="zbworker.html#maxactivejobs"
-											class="tsd-kind-icon"
-											>max<wbr />Active<wbr />Jobs</a
-										>
-									</li>
-									<li
-										class=" tsd-kind-property tsd-parent-kind-class"
-									>
-										<a
-											href="zbworker.html#tasktype"
-											class="tsd-kind-icon"
-											>task<wbr />Type</a
-										>
-									</li>
-									<li
-										class=" tsd-kind-property tsd-parent-kind-class"
-									>
-										<a
-											href="zbworker.html#timeout"
-											class="tsd-kind-icon"
-											>timeout</a
+											>loglevel</a
 										>
 									</li>
 									<li
 										class=" tsd-kind-method tsd-parent-kind-class"
 									>
 										<a
-											href="zbworker.html#close"
+											href="zblogger.html#debug"
 											class="tsd-kind-icon"
-											>close</a
+											>debug</a
 										>
 									</li>
 									<li
 										class=" tsd-kind-method tsd-parent-kind-class"
 									>
 										<a
-											href="zbworker.html#completejob"
+											href="zblogger.html#error"
 											class="tsd-kind-icon"
-											>complete<wbr />Job</a
+											>error</a
 										>
 									</li>
 									<li
 										class=" tsd-kind-method tsd-parent-kind-class"
 									>
 										<a
-											href="zbworker.html#getnewlogger"
+											href="zblogger.html#info"
 											class="tsd-kind-icon"
-											>get<wbr />New<wbr />Logger</a
+											>info</a
 										>
 									</li>
 									<li
 										class=" tsd-kind-method tsd-parent-kind-class"
 									>
 										<a
-											href="zbworker.html#log"
+											href="zblogger.html#log"
 											class="tsd-kind-icon"
 											>log</a
-										>
-									</li>
-									<li
-										class=" tsd-kind-method tsd-parent-kind-class"
-									>
-										<a
-											href="zbworker.html#onconnectionerror"
-											class="tsd-kind-icon"
-											>on<wbr />Connection<wbr />Error</a
-										>
-									</li>
-									<li
-										class=" tsd-kind-method tsd-parent-kind-class"
-									>
-										<a
-											href="zbworker.html#work"
-											class="tsd-kind-icon"
-											>work</a
 										>
 									</li>
 								</ul>

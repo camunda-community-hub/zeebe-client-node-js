@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" id="Definitions_1vwghmj" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Zeebe Modeler" exporterVersion="0.5.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" id="Definitions_1vwghmj" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Zeebe Modeler" exporterVersion="0.6.2">
   <bpmn:process id="hello-world" name="Hello World" isExecutable="true">
     <bpmn:startEvent id="StartEvent_1" name="Start&#10;&#10;">
       <bpmn:outgoing>SequenceFlow_0fp53hs</bpmn:outgoing>
     </bpmn:startEvent>
     <bpmn:serviceTask id="ServiceTask_0g6tf5f" name="Say Hello World">
       <bpmn:extensionElements>
-        <zeebe:taskDefinition type="console-log" />
+        <zeebe:taskDefinition type="console-log" retries="100" />
         <zeebe:taskHeaders>
           <zeebe:header key="message" value="Hello World" />
         </zeebe:taskHeaders>
