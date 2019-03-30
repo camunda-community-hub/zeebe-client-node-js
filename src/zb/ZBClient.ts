@@ -31,8 +31,8 @@ export class ZBClient {
 		}
 		this.options = options || {}
 		this.options.loglevel =
-			options.loglevel ||
 			(process.env.ZB_NODE_LOG_LEVEL as ZB.Loglevel) ||
+			options.loglevel ||
 			'INFO'
 
 		if (brokerAddress.indexOf(':') === -1) {
