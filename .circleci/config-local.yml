@@ -1,0 +1,86 @@
+version: 2
+prod_filters:
+  branches:
+    ignore: /.*/
+  tags:
+    only:
+      - /^[0-9]+\.[0-9]+\.[0-9]+$/
+jobs:
+  test:
+    docker:
+      - image: circleci/node:11.10.1
+      - image: camunda/zeebe:latest
+    working_directory: ~/zeebe-client-node-js
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: npm-install
+          command: npm install
+      - save_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - ./node_modules
+      - run:
+          name: Waiting for Zeebe to be ready
+          command: |
+            for i in `seq 1 10`;
+            do
+              nc -z localhost 26500 && echo success && exit 0
+              echo -n .
+              sleep 1
+            done
+            echo Failed waiting for Zeebe && exit 1
+      - run:
+          name: test
+          command: npm run test:integration
+      - run:
+          name: build-typescript
+          command: npm run build
+  build:
+    docker:
+      - image: circleci/node:11.10.1
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: npm-install
+          command: npm install
+      - save_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - ./node_modules
+      - run:
+          name: test
+          command: npm test
+      - run:
+          name: build
+          command: npm run build
+workflows:
+  version: 2
+  test:
+    jobs:
+      - test
+  build-master:
+    jobs:
+      - test:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only:
+                - /^[0-9]+\.[0-9]+\.[0-9]+$/
+      - build:
+          requires:
+            - test
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only:
+                - /^[0-9]+\.[0-9]+\.[0-9]+$/
+          context: Docker

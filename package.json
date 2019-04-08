@@ -1,64 +1,87 @@
 {
-    "name": "zeebe-node",
-    "version": "1.0.4",
-    "description": "A Node.js client library for the Zeebe Microservices Orchestration Engine.",
-    "keywords": [
-        "zeebe",
-        "zeebe.io",
-        "microservices",
-        "orchestration",
-        "bpmn",
-        "conductor",
-        "camunda",
-        "Netflix"
-    ],
-    "homepage": "https://creditsenseau.github.io/zeebe-client-node-js/",
-    "bugs": {
-        "url": "https://github.com/CreditSenseAU/zeebe-client-node-js/issues"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/CreditSenseAU/zeebe-client-node-js"
-    },
-    "main": "dist/index.js",
-    "scripts": {
-        "build": "tsc",
-        "watch": "tsc -w",
-        "prepare": "tsc",
-        "test": "jest",
-        "test&docs": "npm test && npm run docs",
-        "dev": "tsc-watch --onSuccess \"npm run test&docs\" -p tsconfig.json --outDir dist",
-        "docs": "typedoc --out ./docs --tsconfig ./tsconfig.json --excludePrivate --mode file"
-    },
-    "husky": {
-        "hooks": {
-            "pre-commit": "npm test && npm run-script build",
-            "pre-push": "npm test && npm run-script build"
-        }
-    },
-    "dependencies": {
-        "chalk": "^2.4.2",
-        "console-stamp": "^0.2.7",
-        "debug": "^4.1.1",
-        "fast-xml-parser": "^3.12.12",
-        "node-grpc-client": "^1.3.0",
-        "uuid": "^3.3.2"
-    },
-    "devDependencies": {
-        "@types/debug": "0.0.31",
-        "@types/jest": "^23.3.12",
-        "@types/node": "^10.12.18",
-        "@types/uuid": "^3.4.4",
-        "husky": "^1.3.1",
-        "jest": "^23.6.0",
-        "ts-jest": "^23.10.5",
-        "tsc-watch": "^1.0.31",
-        "typedoc": "^0.14.2",
-        "typescript": "^3.2.2"
-    },
-    "author": {
-        "name": "Josh Wulf",
-        "email": "jwulf@creditsense.com.au"
-    },
-    "license": "Apache-2.0"
+	"name": "zeebe-node",
+	"version": "1.2.0",
+	"description": "A Node.js client library for the Zeebe Microservices Orchestration Engine.",
+	"keywords": [
+		"zeebe",
+		"zeebe.io",
+		"microservices",
+		"orchestration",
+		"bpmn",
+		"conductor",
+		"camunda",
+		"Netflix"
+	],
+	"homepage": "https://creditsenseau.github.io/zeebe-client-node-js/",
+	"bugs": {
+		"url": "https://github.com/CreditSenseAU/zeebe-client-node-js/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/CreditSenseAU/zeebe-client-node-js"
+	},
+	"main": "dist/index.js",
+	"scripts": {
+		"build": "tsc",
+		"watch": "tsc -w",
+		"prepare": "tsc",
+		"test": "jest --testPathIgnorePatterns integration",
+		"test:integration": "jest --runInBand --verbose true --detectOpenHandles",
+		"test&docs": "npm test && npm run docs",
+		"dev": "tsc-watch --onSuccess \"npm run test&docs\" -p tsconfig.json --outDir dist",
+		"docs": "typedoc --out ./docs --tsconfig ./tsconfig.json --excludePrivate --mode file"
+	},
+	"husky": {
+		"hooks": {
+			"pre-commit": "npm test && npm run-script build && lint-staged",
+			"pre-push": "npm test && npm run-script build"
+		}
+	},
+	"lint-staged": {
+		"*.{md,markdown}": [
+			"prettier --write",
+			"remark",
+			"git add"
+		],
+		"*.{json,css,html,yaml,yml}": [
+			"prettier --write",
+			"git add"
+		],
+		"*.{ts,tsx,js,jsx}": [
+			"prettier --write",
+			"tslint -c tslint.json --fix",
+			"git add"
+		]
+	},
+	"dependencies": {
+		"chalk": "^2.4.2",
+		"console-stamp": "^0.2.7",
+		"debug": "^4.1.1",
+		"fast-xml-parser": "^3.12.12",
+		"node-grpc-client": "^1.3.0",
+		"uuid": "^3.3.2"
+	},
+	"devDependencies": {
+		"@types/debug": "0.0.31",
+		"@types/jest": "^23.3.12",
+		"@types/node": "^10.12.18",
+		"@types/uuid": "^3.4.4",
+		"husky": "^1.3.1",
+		"jest": "^23.6.0",
+		"lint-staged": "^8.1.5",
+		"prettier": "^1.16.4",
+		"remark": "^10.0.1",
+		"remark-cli": "^6.0.1",
+		"remark-lint": "^6.0.4",
+		"remark-preset-lint-recommended": "^3.0.2",
+		"ts-jest": "^23.10.5",
+		"tsc-watch": "^1.0.31",
+		"typedoc": "^0.14.2",
+		"typescript": "^3.2.2"
+	},
+	"author": {
+		"name": "Josh Wulf",
+		"email": "jwulf@creditsense.com.au"
+	},
+	"license": "Apache-2.0"
 }

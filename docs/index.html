@@ -1,122 +1,204 @@
-<!doctype html>
+<!DOCTYPE html>
 <html class="default no-js">
-<head>
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>zeebe-node</title>
-	<meta name="description" content="">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="stylesheet" href="assets/css/main.css">
-</head>
-<body>
-<header>
-	<div class="tsd-page-toolbar">
-		<div class="container">
-			<div class="table-wrap">
-				<div class="table-cell" id="tsd-search" data-index="assets/js/search.js" data-base=".">
-					<div class="field">
-						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
-						<input id="tsd-search-field" type="text" />
-					</div>
-					<ul class="results">
-						<li class="state loading">Preparing search index...</li>
-						<li class="state failure">The search index is not available</li>
-					</ul>
-					<a href="index.html" class="title">zeebe-node</a>
-				</div>
-				<div class="table-cell" id="tsd-widgets">
-					<div id="tsd-filter">
-						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
-						<div class="tsd-filter-group">
-							<div class="tsd-select" id="tsd-filter-visibility">
-								<span class="tsd-select-label">All</span>
-								<ul class="tsd-select-list">
-									<li data-value="public">Public</li>
-									<li data-value="protected">Public/Protected</li>
-									<li data-value="private" class="selected">All</li>
-								</ul>
+	<head>
+		<meta charset="utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<title>zeebe-node</title>
+		<meta name="description" content="" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+	</head>
+	<body>
+		<header>
+			<div class="tsd-page-toolbar">
+				<div class="container">
+					<div class="table-wrap">
+						<div
+							class="table-cell"
+							id="tsd-search"
+							data-index="assets/js/search.js"
+							data-base="."
+						>
+							<div class="field">
+								<label
+									for="tsd-search-field"
+									class="tsd-widget search no-caption"
+									>Search</label
+								>
+								<input id="tsd-search-field" type="text" />
 							</div>
-							<input type="checkbox" id="tsd-filter-inherited" checked />
-							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
-							<input type="checkbox" id="tsd-filter-externals" checked />
-							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
-							<input type="checkbox" id="tsd-filter-only-exported" />
-							<label class="tsd-widget" for="tsd-filter-only-exported">Only exported</label>
+							<ul class="results">
+								<li class="state loading">
+									Preparing search index...
+								</li>
+								<li class="state failure">
+									The search index is not available
+								</li>
+							</ul>
+							<a href="index.html" class="title">zeebe-node</a>
+						</div>
+						<div class="table-cell" id="tsd-widgets">
+							<div id="tsd-filter">
+								<a
+									href="#"
+									class="tsd-widget options no-caption"
+									data-toggle="options"
+									>Options</a
+								>
+								<div class="tsd-filter-group">
+									<div
+										class="tsd-select"
+										id="tsd-filter-visibility"
+									>
+										<span class="tsd-select-label"
+											>All</span
+										>
+										<ul class="tsd-select-list">
+											<li data-value="public">Public</li>
+											<li data-value="protected">
+												Public/Protected
+											</li>
+											<li
+												data-value="private"
+												class="selected"
+											>
+												All
+											</li>
+										</ul>
+									</div>
+									<input
+										type="checkbox"
+										id="tsd-filter-inherited"
+										checked
+									/>
+									<label
+										class="tsd-widget"
+										for="tsd-filter-inherited"
+										>Inherited</label
+									>
+									<input
+										type="checkbox"
+										id="tsd-filter-externals"
+										checked
+									/>
+									<label
+										class="tsd-widget"
+										for="tsd-filter-externals"
+										>Externals</label
+									>
+									<input
+										type="checkbox"
+										id="tsd-filter-only-exported"
+									/>
+									<label
+										class="tsd-widget"
+										for="tsd-filter-only-exported"
+										>Only exported</label
+									>
+								</div>
+							</div>
+							<a
+								href="#"
+								class="tsd-widget menu no-caption"
+								data-toggle="menu"
+								>Menu</a
+							>
 						</div>
 					</div>
-					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
 				</div>
 			</div>
-		</div>
-	</div>
-	<div class="tsd-page-title">
-		<div class="container">
-			<ul class="tsd-breadcrumb">
-				<li>
-					<a href="globals.html">Globals</a>
-				</li>
-			</ul>
-			<h1> zeebe-node</h1>
-		</div>
-	</div>
-</header>
-<div class="container container-main">
-	<div class="row">
-		<div class="col-8 col-content">
-			<div class="tsd-panel tsd-typography">
-				<h1 id="zeebe-node-js-client">Zeebe Node.js Client</h1>
-				<p><a href="https://opensource.org/licenses/Apache-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License"></a></p>
-				<p>This is a Node.js gRPC client for <a href="https://zeebe.io">Zeebe</a>. It is written in TypeScript and transpiled to JavaScript in the <code>dist</code> directory.</p>
-				<p>Comprehensive API documentation is available <a href="https://creditsenseau.github.io/zeebe-node/">online</a> and in the <code>docs</code> subdirectory.</p>
-				<h2 id="example-use">Example Use</h2>
-				<h3 id="add-the-library-to-your-project">Add the Library to your Project</h3>
-				<pre><code class="language-bash">npm i zeebe-node</code></pre>
-				<h3 id="get-broker-topology-and-list-workflows">Get Broker Topology and List Workflows</h3>
-				<pre><code class="language-javascript">
- <span class="hljs-keyword">const</span> ZB = <span class="hljs-built_in">require</span>(<span class="hljs-string">'zeebe-node'</span>);
+			<div class="tsd-page-title">
+				<div class="container">
+					<ul class="tsd-breadcrumb">
+						<li>
+							<a href="globals.html">Globals</a>
+						</li>
+					</ul>
+					<h1>zeebe-node</h1>
+				</div>
+			</div>
+		</header>
+		<div class="container container-main">
+			<div class="row">
+				<div class="col-8 col-content">
+					<div class="tsd-panel tsd-typography">
+						<h1 id="zeebe-node-js-client">Zeebe Node.js Client</h1>
+						<p>
+							<a href="https://opensource.org/licenses/Apache-2.0"
+								><img
+									src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"
+									alt="License"
+							/></a>
+							<a
+								href="https://circleci.com/gh/CreditSenseAU/zeebe-client-node-js/tree/master"
+								><img
+									src="https://circleci.com/gh/CreditSenseAU/zeebe-client-node-js/tree/master.svg?style=svg"
+									alt="CircleCI"
+							/></a>
+						</p>
+						<p>
+							This is a Node.js gRPC client for
+							<a href="https://zeebe.io">Zeebe</a>. It is written
+							in TypeScript and transpiled to JavaScript in the
+							<code>dist</code> directory.
+						</p>
+						<p>
+							Comprehensive API documentation is available
+							<a
+								href="https://creditsenseau.github.io/zeebe-client-node-js/"
+								>online</a
+							>
+							and in the <code>docs</code> subdirectory.
+						</p>
+						<h2 id="example-use">Example Use</h2>
+						<h3 id="add-the-library-to-your-project">
+							Add the Library to your Project
+						</h3>
+						<pre><code class="language-bash">npm i zeebe-node</code></pre>
+						<h3 id="get-broker-topology-and-list-workflows">
+							Get Broker Topology and List Workflows
+						</h3>
+						<pre><code class="language-javascript"><span class="hljs-keyword">const</span> ZB = <span class="hljs-built_in">require</span>(<span class="hljs-string">'zeebe-node'</span>)
 
-<span class="hljs-function">(<span class="hljs-params"><span class="hljs-keyword">async</span>(</span>) =&gt;</span> {
-    <span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZB.ZBClient(<span class="hljs-string">"localhost:26500"</span>);
-    <span class="hljs-keyword">const</span> topology = <span class="hljs-keyword">await</span> zbc.topology();
-    <span class="hljs-built_in">console</span>.log(<span class="hljs-built_in">JSON</span>.stringify(topology, <span class="hljs-literal">null</span>, <span class="hljs-number">2</span>));
+;<span class="hljs-function">(<span class="hljs-params"><span class="hljs-keyword">async</span> (</span>) =&gt;</span> {
+    <span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZB.ZBClient(<span class="hljs-string">'localhost:26500'</span>)
+    <span class="hljs-keyword">const</span> topology = <span class="hljs-keyword">await</span> zbc.topology()
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-built_in">JSON</span>.stringify(topology, <span class="hljs-literal">null</span>, <span class="hljs-number">2</span>))
 
-    <span class="hljs-keyword">let</span> workflows = <span class="hljs-keyword">await</span> zbc.listWorkflows();
-    <span class="hljs-built_in">console</span>.log(workflows);
-})();
-</code></pre>
-				<h3 id="deploy-a-workflow">Deploy a workflow</h3>
-				<pre><code class="language-javascript">
- <span class="hljs-keyword">const</span> ZB = <span class="hljs-built_in">require</span>(<span class="hljs-string">'zeebe-node'</span>);
+    <span class="hljs-keyword">let</span> workflows = <span class="hljs-keyword">await</span> zbc.listWorkflows()
+    <span class="hljs-built_in">console</span>.log(workflows)
+})()</code></pre>
+						<h3 id="deploy-a-workflow">Deploy a workflow</h3>
+						<pre><code class="language-javascript"><span class="hljs-keyword">const</span> ZB = <span class="hljs-built_in">require</span>(<span class="hljs-string">'zeebe-node'</span>)
 
-<span class="hljs-function">(<span class="hljs-params"><span class="hljs-keyword">async</span>(</span>) =&gt;</span> {
-    <span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZB.ZBClient(<span class="hljs-string">"localhost:26500"</span>);
+;<span class="hljs-function">(<span class="hljs-params"><span class="hljs-keyword">async</span> (</span>) =&gt;</span> {
+    <span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZB.ZBClient(<span class="hljs-string">'localhost:26500'</span>)
 
-    <span class="hljs-keyword">const</span> res = <span class="hljs-keyword">await</span> zbc.deployWorkflow(<span class="hljs-string">"./domain-mutation.bpmn"</span>);
+    <span class="hljs-keyword">const</span> res = <span class="hljs-keyword">await</span> zbc.deployWorkflow(<span class="hljs-string">'./domain-mutation.bpmn'</span>)
 
-    <span class="hljs-built_in">console</span>.log(res);
-})();
-</code></pre>
-				<h3 id="create-a-task-worker">Create a Task Worker</h3>
-				<pre><code class="language-javascript">
-<span class="hljs-keyword">const</span> ZB = <span class="hljs-built_in">require</span>(<span class="hljs-string">'zeebe-node'</span>);
+    <span class="hljs-built_in">console</span>.log(res)
+})()</code></pre>
+						<h3 id="create-a-task-worker">Create a Task Worker</h3>
+						<pre><code class="language-javascript"><span class="hljs-keyword">const</span> ZB = <span class="hljs-built_in">require</span>(<span class="hljs-string">'zeebe-node'</span>)
 
-<span class="hljs-function">(<span class="hljs-params"><span class="hljs-keyword">async</span>(</span>) =&gt;</span> {
-    <span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZB.ZBClient(<span class="hljs-string">"localhost:26500"</span>);
+;<span class="hljs-function">(<span class="hljs-params"><span class="hljs-keyword">async</span> (</span>) =&gt;</span> {
+    <span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZB.ZBClient(<span class="hljs-string">'localhost:26500'</span>)
 
-    <span class="hljs-keyword">const</span> zbWorker = zbc.createWorker(<span class="hljs-string">"test-worker"</span>, <span class="hljs-string">"demo-service"</span>, handler);
-})();
+    <span class="hljs-keyword">const</span> zbWorker = zbc.createWorker(<span class="hljs-string">'test-worker'</span>, <span class="hljs-string">'demo-service'</span>, handler)
+})()
 
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">handler</span>(<span class="hljs-params">job, complete</span>)</span>{
-    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Task payload"</span>, job.payload);
-    <span class="hljs-keyword">let</span> updatedPayload = <span class="hljs-built_in">Object</span>.assign({}, job.payload, {<span class="hljs-attr">updatedProperty</span>: <span class="hljs-string">"newValue"</span>});
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">handler</span>(<span class="hljs-params">job, complete</span>) </span>{
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Task payload'</span>, job.payload)
+    <span class="hljs-keyword">let</span> updatedPayload = <span class="hljs-built_in">Object</span>.assign({}, job.payload, {
+        <span class="hljs-attr">updatedProperty</span>: <span class="hljs-string">'newValue'</span>,
+    })
 
     <span class="hljs-comment">// Task worker business logic goes here</span>
 
-    complete(updatedPayload);
-}
-</code></pre>
-				<p>Here is an example payload:</p>
-				<pre><code class="language-javascript">
+    complete(updatedPayload)
+}</code></pre>
+						<p>Here is an example payload:</p>
+						<pre><code class="language-javascript">
 { <span class="hljs-attr">key</span>: <span class="hljs-string">'578'</span>,
   <span class="hljs-attr">type</span>: <span class="hljs-string">'demo-service'</span>,
   <span class="hljs-attr">jobHeaders</span>:
@@ -132,68 +214,123 @@
   <span class="hljs-attr">deadline</span>: <span class="hljs-string">'1546915422636'</span>,
   <span class="hljs-attr">payload</span>: { <span class="hljs-attr">testData</span>: <span class="hljs-string">'something'</span> } }
 </code></pre>
-				<p>The worker can be configured with options. Shown below are the defaults that apply if you don&#39;t supply them:</p>
-				<pre><code class="language-javascript">
-<span class="hljs-keyword">const</span> workerOptions = {
+						<p>
+							The worker can be configured with options. Shown
+							below are the defaults that apply if you don&#39;t
+							supply them:
+						</p>
+						<pre><code class="language-javascript"><span class="hljs-keyword">const</span> workerOptions = {
     <span class="hljs-attr">maxActiveJobs</span>: <span class="hljs-number">32</span>, <span class="hljs-comment">// the number of simultaneous tasks this worker can handle</span>
     timeout: <span class="hljs-number">1000</span>, <span class="hljs-comment">// the maximum amount of time the broker should allow this worker to complete a task</span>
 }
 
-<span class="hljs-keyword">const</span> onConnectionError = <span class="hljs-function">(<span class="hljs-params">err</span>) =&gt;</span> <span class="hljs-built_in">console</span>.log(err) <span class="hljs-comment">// Called when the connection to the broker cannot be established, or fails</span>
+<span class="hljs-keyword">const</span> onConnectionError = <span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(err) <span class="hljs-comment">// Called when the connection to the broker cannot be established, or fails</span>
 
-<span class="hljs-keyword">const</span> zbWorker = zbc.createWorker(<span class="hljs-string">"test-worker"</span>, <span class="hljs-string">"demo-service"</span>, handler, workerOptions, onConnectionError);
-</code></pre>
-				<h3 id="start-a-workflow-instance">Start a Workflow Instance</h3>
-				<pre><code class="language-javascript">
-<span class="hljs-keyword">const</span> ZB = <span class="hljs-built_in">require</span>(<span class="hljs-string">"zeebe-node"</span>);
+<span class="hljs-keyword">const</span> zbWorker = zbc.createWorker(
+    <span class="hljs-string">'test-worker'</span>,
+    <span class="hljs-string">'demo-service'</span>,
+    handler,
+    workerOptions,
+    onConnectionError
+)</code></pre>
+						<h4 id="unhandled-exceptions-in-task-handlers">
+							Unhandled Exceptions in Task Handlers
+						</h4>
+						<p>
+							When a task handler throws an unhandled exception,
+							the library will fail the job. Zeebe will then retry
+							the job according to the retry settings of the task.
+							Sometimes you want to halt the entire workflow so
+							you can investigate. To have the library cancel the
+							workflow on an unhandled exception, pass in
+							<code>{failWorkflowOnException: true}</code> to the
+							<code>createWorker</code> call:
+						</p>
+						<pre><code class="language-typescript">zbc.createWorker(<span class="hljs-string">'test-worker'</span>, <span class="hljs-string">'console-log'</span>, maybeFaultyHandler, {
+    failWorkflowOnException: <span class="hljs-literal">true</span>,
+})</code></pre>
+						<h3 id="start-a-workflow-instance">
+							Start a Workflow Instance
+						</h3>
+						<pre><code class="language-javascript"><span class="hljs-keyword">const</span> ZB = <span class="hljs-built_in">require</span>(<span class="hljs-string">'zeebe-node'</span>)
 
-<span class="hljs-function">(<span class="hljs-params"><span class="hljs-keyword">async</span>(</span>) =&gt;</span> {
-    <span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZB.ZBClient(<span class="hljs-string">"localhost:26500"</span>);
-    <span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> zbc.createWorkflowInstance(<span class="hljs-string">"test-process"</span>, {<span class="hljs-attr">testData</span>: <span class="hljs-string">"something"</span>});
-    <span class="hljs-built_in">console</span>.log(result);
-})();
-</code></pre>
-				<p>Example output:</p>
-				<pre><code class="language-javascript">
+;<span class="hljs-function">(<span class="hljs-params"><span class="hljs-keyword">async</span> (</span>) =&gt;</span> {
+    <span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZB.ZBClient(<span class="hljs-string">'localhost:26500'</span>)
+    <span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> zbc.createWorkflowInstance(<span class="hljs-string">'test-process'</span>, {
+        <span class="hljs-attr">testData</span>: <span class="hljs-string">'something'</span>,
+    })
+    <span class="hljs-built_in">console</span>.log(result)
+})()</code></pre>
+						<p>Example output:</p>
+						<pre><code class="language-javascript">
 { <span class="hljs-attr">workflowKey</span>: <span class="hljs-string">'3'</span>,
   <span class="hljs-attr">bpmnProcessId</span>: <span class="hljs-string">'test-process'</span>,
   <span class="hljs-attr">version</span>: <span class="hljs-number">1</span>,
   <span class="hljs-attr">workflowInstanceKey</span>: <span class="hljs-string">'569'</span> }
 </code></pre>
-				<h3 id="publish-a-message">Publish a Message</h3>
-				<pre><code class="language-javascript">
-    <span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZB.ZBClient(<span class="hljs-string">"localhost:26500"</span>);
-    zbc.publishMessage({
-            <span class="hljs-attr">correlationKey</span>: <span class="hljs-string">"value-to-correlate-with-workflow-payload"</span>,
-            <span class="hljs-attr">messageId</span>: uuid.v4(),
-            <span class="hljs-attr">name</span>: <span class="hljs-string">"message-name"</span>,
-            <span class="hljs-attr">payload</span>: {<span class="hljs-attr">valueToAddToWorkflowPayload</span>: <span class="hljs-string">"here"</span>, <span class="hljs-attr">status</span>: <span class="hljs-string">"PROCESSED"</span>},
-            <span class="hljs-attr">timeToLive</span>: <span class="hljs-number">10000</span>
-        });
-</code></pre>
-				<p>You can also publish a message targeting a <a href="https://github.com/zeebe-io/zeebe/issues/1858">Message Start Event</a>.
-				In this case, there is no correlation key, and all Message Start events that match the <code>name</code> property will receive the message.</p>
-				<p>You can use the <code>publishStartMessage()</code> method to publish a message with no correlation key (it will be set to <code>__MESSAGE_START_EVENT__</code> in the background):</p>
-				<pre><code class="language-javascript">
-    <span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZB.ZBClient(<span class="hljs-string">"localhost:26500"</span>);
-    zbc.publishStartMessage({
-            <span class="hljs-attr">messageId</span>: uuid.v4(),
-            <span class="hljs-attr">name</span>: <span class="hljs-string">"message-name"</span>,
-            <span class="hljs-attr">payload</span>: {<span class="hljs-attr">initialWorkflowPayloadValue</span>: <span class="hljs-string">"here"</span>},
-            <span class="hljs-attr">timeToLive</span>: <span class="hljs-number">10000</span>
-        });
-</code></pre>
-				<h3 id="generating-typescript-constants-for-bpmn-processes">Generating TypeScript constants for BPMN Processes</h3>
-				<p>Message names and Task Types are untyped magic strings. The <code>BpmnParser</code> class provides a static method <code>generateConstantsForBpmnFiles()</code>.
-				This method takes a filepath and returns TypeScript definitions that you can use to avoid typos in your code, and to reason about the completeness of your task worker coverage.</p>
-				<pre><code class="language-javascript">
-<span class="hljs-keyword">const</span> ZB = <span class="hljs-built_in">require</span>(<span class="hljs-string">'zeebe-node'</span>);
-<span class="hljs-function">(<span class="hljs-params"><span class="hljs-keyword">async</span> (</span>) =&gt;</span> {
-    <span class="hljs-built_in">console</span>.log(<span class="hljs-keyword">await</span> ZB.BpmnParser.generateConstantsForBpmnFiles(workflowFile));
-})();
-</code></pre>
-				<p>This will produce output similar to:</p>
-				<pre><code class="language-typescript"><span class="hljs-comment">// Autogenerated constants for msg-start.bpmn</span>
+						<h3 id="publish-a-message">Publish a Message</h3>
+						<pre><code class="language-javascript"><span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZB.ZBClient(<span class="hljs-string">'localhost:26500'</span>)
+zbc.publishMessage({
+    <span class="hljs-attr">correlationKey</span>: <span class="hljs-string">'value-to-correlate-with-workflow-payload'</span>,
+    <span class="hljs-attr">messageId</span>: uuid.v4(),
+    <span class="hljs-attr">name</span>: <span class="hljs-string">'message-name'</span>,
+    <span class="hljs-attr">payload</span>: { <span class="hljs-attr">valueToAddToWorkflowPayload</span>: <span class="hljs-string">'here'</span>, <span class="hljs-attr">status</span>: <span class="hljs-string">'PROCESSED'</span> },
+    <span class="hljs-attr">timeToLive</span>: <span class="hljs-number">10000</span>,
+})</code></pre>
+						<p>
+							You can also publish a message targeting a
+							<a
+								href="https://github.com/zeebe-io/zeebe/issues/1858"
+								>Message Start Event</a
+							>. In this case, there is no correlation key, and
+							all Message Start events that match the
+							<code>name</code> property will receive the message.
+						</p>
+						<p>
+							You can use the
+							<code>publishStartMessage()</code> method to publish
+							a message with no correlation key (it will be set to
+							<code>__MESSAGE_START_EVENT__</code> in the
+							background):
+						</p>
+						<pre><code class="language-javascript"><span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZB.ZBClient(<span class="hljs-string">'localhost:26500'</span>)
+zbc.publishStartMessage({
+    <span class="hljs-attr">messageId</span>: uuid.v4(),
+    <span class="hljs-attr">name</span>: <span class="hljs-string">'message-name'</span>,
+    <span class="hljs-attr">payload</span>: { <span class="hljs-attr">initialWorkflowPayloadValue</span>: <span class="hljs-string">'here'</span> },
+    <span class="hljs-attr">timeToLive</span>: <span class="hljs-number">10000</span>,
+})</code></pre>
+						<h3 id="graceful-shutdown">Graceful Shutdown</h3>
+						<p>
+							To drain workers, call the
+							<code>close()</code> method of the ZBClient. This
+							causes all workers using that client to stop polling
+							for jobs, and returns a Promise that resolves when
+							all active jobs have either finished or timed out.
+						</p>
+						<pre><code class="language-javascript"><span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Closing client...'</span>)
+zbc.close().then(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'All workers closed'</span>))</code></pre>
+						<h3
+							id="generating-typescript-constants-for-bpmn-processes"
+						>
+							Generating TypeScript constants for BPMN Processes
+						</h3>
+						<p>
+							Message names and Task Types are untyped magic
+							strings. The <code>BpmnParser</code> class provides
+							a static method
+							<code>generateConstantsForBpmnFiles()</code>. This
+							method takes a filepath and returns TypeScript
+							definitions that you can use to avoid typos in your
+							code, and to reason about the completeness of your
+							task worker coverage.
+						</p>
+						<pre><code class="language-javascript"><span class="hljs-keyword">const</span> ZB = <span class="hljs-built_in">require</span>(<span class="hljs-string">'zeebe-node'</span>)
+;<span class="hljs-function">(<span class="hljs-params"><span class="hljs-keyword">async</span> (</span>) =&gt;</span> {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-keyword">await</span> ZB.BpmnParser.generateConstantsForBpmnFiles(workflowFile))
+})()</code></pre>
+						<p>This will produce output similar to:</p>
+						<pre><code class="language-typescript"><span class="hljs-comment">// Autogenerated constants for msg-start.bpmn</span>
 
 <span class="hljs-keyword">export</span> <span class="hljs-keyword">enum</span> TaskType = {
 
@@ -208,228 +345,582 @@
 
 };
 </code></pre>
-				<h2 id="debugging">Debugging</h2>
-				<p>Enable debug output for the client library using the <a href="https://www.npmjs.com/package/debug">debug</a> module by setting the environnment variable <code>DEBUG</code> to include <code>zeebe-node:*</code>.</p>
-				<p>For example:</p>
-				<pre><code><span class="hljs-attr">DEBUG=</span>zeebe-<span class="hljs-keyword">node</span><span class="hljs-title">:* node</span> app.js</code></pre><h2 id="developing">Developing</h2>
-				<p>The source is written in TypeScript in <code>src</code>, and compiled to ES6 in the <code>dist</code> directory.</p>
-				<p>To build:</p>
-				<pre><code class="language-bash">npm run build</code></pre>
-				<p>To start a watcher to build the source and API docs while you are developing:</p>
-				<pre><code class="language-bash">npm run dev</code></pre>
-				<h3 id="tests">Tests</h3>
-				<p>Tests are written in Jest, and live in the <code>src/__tests__</code> directory. To run the tests:</p>
-				<pre><code class="language-bash">npm t</code></pre>
+						<h2 id="logging">Logging</h2>
+						<p>
+							Control the log output for the client library by
+							setting the ZBClient log level. Valid log levels are
+							<code>NONE</code> (supress all logging),
+							<code>ERROR</code> (log only exceptions),
+							<code>INFO</code> (general logging), or
+							<code>DEBUG</code> (verbose logging). You can set
+							this in the client constructor:
+						</p>
+						<pre><code class="language-typescript"><span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZBClient(<span class="hljs-string">'localhost'</span>, { loglevel: <span class="hljs-string">'DEBUG'</span> })</code></pre>
+						<p>And also via the environment:</p>
+						<pre><code class="language-bash">ZB_NODE_LOG_LEVEL=<span class="hljs-string">'ERROR'</span> node start.js</code></pre>
+						<p>
+							By default the library uses
+							<code>console.info</code> and
+							<code>console.error</code> for logging. You can also
+							pass in a custom logger, such as
+							<a href="https://github.com/pinojs/pino">pino</a>:
+						</p>
+						<pre><code class="language-typescript"><span class="hljs-keyword">const</span> logger = <span class="hljs-built_in">require</span>(<span class="hljs-string">'pino'</span>)()
+<span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZBClient(<span class="hljs-string">'0.0.0.0:26500'</span>, { stdout: logger })</code></pre>
+						<h2 id="developing">Developing</h2>
+						<p>
+							The source is written in TypeScript in
+							<code>src</code>, and compiled to ES6 in the
+							<code>dist</code> directory.
+						</p>
+						<p>To build:</p>
+						<pre><code class="language-bash">npm run build</code></pre>
+						<p>
+							To start a watcher to build the source and API docs
+							while you are developing:
+						</p>
+						<pre><code class="language-bash">npm run dev</code></pre>
+						<h3 id="tests">Tests</h3>
+						<p>
+							Tests are written in Jest, and live in the
+							<code>src/__tests__</code> directory. To run the
+							unit tests:
+						</p>
+						<pre><code class="language-bash">npm t</code></pre>
+						<p>
+							Integration tests are in the
+							<code>src/__tests__/integration</code> directory.
+						</p>
+						<p>
+							They require a Zeebe broker to run. You can run them
+							using the
+							<a href="https://circleci.com/docs/2.0/local-cli/"
+								>Circle CI CLI</a
+							>:
+						</p>
+						<pre><code class="language-bash">circleci <span class="hljs-built_in">local</span> execute -c .circleci/config-local.yml --job <span class="hljs-built_in">test</span></code></pre>
+						<p>Or you can start a dockerised broker:</p>
+						<pre><code class="language-bash"><span class="hljs-built_in">cd</span> docker
+docker-compose up</code></pre>
+						<p>And then run them manually:</p>
+						<pre><code class="language-bash">npm run <span class="hljs-built_in">test</span>:integration</code></pre>
+					</div>
+				</div>
+				<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+					<nav class="tsd-navigation primary">
+						<ul>
+							<li class="globals  ">
+								<a href="globals.html"><em>Globals</em></a>
+							</li>
+						</ul>
+					</nav>
+					<nav class="tsd-navigation secondary menu-sticky">
+						<ul class="before-current">
+							<li class=" tsd-kind-enum">
+								<a
+									href="enums/partitionbrokerrole.html"
+									class="tsd-kind-icon"
+									>Partition<wbr />Broker<wbr />Role</a
+								>
+							</li>
+							<li class=" tsd-kind-enum">
+								<a
+									href="enums/resourcetype.html"
+									class="tsd-kind-icon"
+									>Resource<wbr />Type</a
+								>
+							</li>
+							<li class=" tsd-kind-class">
+								<a
+									href="classes/bpmnparser.html"
+									class="tsd-kind-icon"
+									>Bpmn<wbr />Parser</a
+								>
+							</li>
+							<li class=" tsd-kind-class">
+								<a
+									href="classes/zbclient.html"
+									class="tsd-kind-icon"
+									>ZBClient</a
+								>
+							</li>
+							<li class=" tsd-kind-class">
+								<a
+									href="classes/zblogger.html"
+									class="tsd-kind-icon"
+									>ZBLogger</a
+								>
+							</li>
+							<li class=" tsd-kind-class">
+								<a
+									href="classes/zbworker.html"
+									class="tsd-kind-icon"
+									>ZBWorker</a
+								>
+							</li>
+							<li class=" tsd-kind-interface">
+								<a
+									href="interfaces/activatejobsrequest.html"
+									class="tsd-kind-icon"
+									>Activate<wbr />Jobs<wbr />Request</a
+								>
+							</li>
+							<li class=" tsd-kind-interface">
+								<a
+									href="interfaces/activatejobsresponse.html"
+									class="tsd-kind-icon"
+									>Activate<wbr />Jobs<wbr />Response</a
+								>
+							</li>
+							<li class=" tsd-kind-interface">
+								<a
+									href="interfaces/activatedjob.html"
+									class="tsd-kind-icon"
+									>Activated<wbr />Job</a
+								>
+							</li>
+							<li class=" tsd-kind-interface">
+								<a
+									href="interfaces/brokerinfo.html"
+									class="tsd-kind-icon"
+									>Broker<wbr />Info</a
+								>
+							</li>
+							<li class=" tsd-kind-interface">
+								<a
+									href="interfaces/completejobrequest.html"
+									class="tsd-kind-icon"
+									>Complete<wbr />Job<wbr />Request</a
+								>
+							</li>
+							<li class=" tsd-kind-interface">
+								<a
+									href="interfaces/createworkflowinstancerequest.html"
+									class="tsd-kind-icon"
+									>Create<wbr />Workflow<wbr />Instance<wbr />Request</a
+								>
+							</li>
+							<li class=" tsd-kind-interface">
+								<a
+									href="interfaces/createworkflowinstanceresponse.html"
+									class="tsd-kind-icon"
+									>Create<wbr />Workflow<wbr />Instance<wbr />Response</a
+								>
+							</li>
+							<li class=" tsd-kind-interface">
+								<a
+									href="interfaces/deployworkflowrequest.html"
+									class="tsd-kind-icon"
+									>Deploy<wbr />Workflow<wbr />Request</a
+								>
+							</li>
+							<li class=" tsd-kind-interface">
+								<a
+									href="interfaces/deployworkflowresponse.html"
+									class="tsd-kind-icon"
+									>Deploy<wbr />Workflow<wbr />Response</a
+								>
+							</li>
+							<li class=" tsd-kind-interface">
+								<a
+									href="interfaces/failjobrequest.html"
+									class="tsd-kind-icon"
+									>Fail<wbr />Job<wbr />Request</a
+								>
+							</li>
+							<li class=" tsd-kind-interface">
+								<a
+									href="interfaces/getworkflowrequestwithbpmnprocessid.html"
+									class="tsd-kind-icon"
+									>Get<wbr />Workflow<wbr />Request<wbr />With<wbr />Bpmn<wbr />Process<wbr />Id</a
+								>
+							</li>
+							<li class=" tsd-kind-interface">
+								<a
+									href="interfaces/getworkflowrequestwithworkflowkey.html"
+									class="tsd-kind-icon"
+									>Get<wbr />Workflow<wbr />Request<wbr />With<wbr />Workflow<wbr />Key</a
+								>
+							</li>
+							<li class=" tsd-kind-interface">
+								<a
+									href="interfaces/getworkflowresponse.html"
+									class="tsd-kind-icon"
+									>Get<wbr />Workflow<wbr />Response</a
+								>
+							</li>
+							<li class=" tsd-kind-interface">
+								<a
+									href="interfaces/job.html"
+									class="tsd-kind-icon"
+									>Job</a
+								>
+							</li>
+							<li class=" tsd-kind-interface">
+								<a
+									href="interfaces/jobheaders.html"
+									class="tsd-kind-icon"
+									>Job<wbr />Headers</a
+								>
+							</li>
+							<li class=" tsd-kind-interface">
+								<a
+									href="interfaces/listworkflowresponse.html"
+									class="tsd-kind-icon"
+									>List<wbr />Workflow<wbr />Response</a
+								>
+							</li>
+							<li class=" tsd-kind-interface">
+								<a
+									href="interfaces/partition.html"
+									class="tsd-kind-icon"
+									>Partition</a
+								>
+							</li>
+							<li class=" tsd-kind-interface">
+								<a
+									href="interfaces/publishmessagerequest.html"
+									class="tsd-kind-icon"
+									>Publish<wbr />Message<wbr />Request</a
+								>
+							</li>
+							<li class=" tsd-kind-interface">
+								<a
+									href="interfaces/publishstartmessagerequest.html"
+									class="tsd-kind-icon"
+									>Publish<wbr />Start<wbr />Message<wbr />Request</a
+								>
+							</li>
+							<li class=" tsd-kind-interface">
+								<a
+									href="interfaces/topologyresponse.html"
+									class="tsd-kind-icon"
+									>Topology<wbr />Response</a
+								>
+							</li>
+							<li class=" tsd-kind-interface">
+								<a
+									href="interfaces/updatejobretriesrequest.html"
+									class="tsd-kind-icon"
+									>Update<wbr />Job<wbr />Retries<wbr />Request</a
+								>
+							</li>
+							<li class=" tsd-kind-interface">
+								<a
+									href="interfaces/updateworkflowinstancepayloadrequest.html"
+									class="tsd-kind-icon"
+									>Update<wbr />Workflow<wbr />Instance<wbr />Payload<wbr />Request</a
+								>
+							</li>
+							<li class=" tsd-kind-interface">
+								<a
+									href="interfaces/workflowmetadata.html"
+									class="tsd-kind-icon"
+									>Workflow<wbr />Metadata</a
+								>
+							</li>
+							<li class=" tsd-kind-interface">
+								<a
+									href="interfaces/workflowrequestobject.html"
+									class="tsd-kind-icon"
+									>Workflow<wbr />Request<wbr />Object</a
+								>
+							</li>
+							<li class=" tsd-kind-interface">
+								<a
+									href="interfaces/zbclientoptions.html"
+									class="tsd-kind-icon"
+									>ZBClient<wbr />Options</a
+								>
+							</li>
+							<li class=" tsd-kind-interface">
+								<a
+									href="interfaces/zbworkerloggeroptions.html"
+									class="tsd-kind-icon"
+									>ZBWorker<wbr />Logger<wbr />Options</a
+								>
+							</li>
+							<li class=" tsd-kind-interface">
+								<a
+									href="interfaces/zbworkeroptions.html"
+									class="tsd-kind-icon"
+									>ZBWorker<wbr />Options</a
+								>
+							</li>
+							<li class=" tsd-kind-type-alias">
+								<a
+									href="globals.html#connectionerrorhandler"
+									class="tsd-kind-icon"
+									>Connection<wbr />Error<wbr />Handler</a
+								>
+							</li>
+							<li class=" tsd-kind-type-alias">
+								<a
+									href="globals.html#getworkflowrequest"
+									class="tsd-kind-icon"
+									>Get<wbr />Workflow<wbr />Request</a
+								>
+							</li>
+							<li class=" tsd-kind-type-alias">
+								<a
+									href="globals.html#loglevel"
+									class="tsd-kind-icon"
+									>Loglevel</a
+								>
+							</li>
+							<li class=" tsd-kind-type-alias">
+								<a
+									href="globals.html#payload"
+									class="tsd-kind-icon"
+									>Payload</a
+								>
+							</li>
+							<li class=" tsd-kind-type-alias">
+								<a
+									href="globals.html#zbtaskworkerhandlerminimal"
+									class="tsd-kind-icon"
+									>ZBTask<wbr />Worker<wbr />Handler<wbr />Minimal</a
+								>
+							</li>
+							<li class=" tsd-kind-type-alias">
+								<a
+									href="globals.html#zbworkertaskhandler"
+									class="tsd-kind-icon"
+									>ZBWorker<wbr />Task<wbr />Handler</a
+								>
+							</li>
+							<li class=" tsd-kind-type-alias">
+								<a
+									href="globals.html#zbworkertaskhandlerwithworker"
+									class="tsd-kind-icon"
+									>ZBWorker<wbr />Task<wbr />Handler<wbr />With<wbr />Worker</a
+								>
+							</li>
+							<li class=" tsd-kind-type-alias">
+								<a
+									href="globals.html#completefn"
+									class="tsd-kind-icon"
+									>complete<wbr />Fn</a
+								>
+							</li>
+							<li class=" tsd-kind-variable tsd-is-not-exported">
+								<a
+									href="globals.html#idcolors"
+									class="tsd-kind-icon"
+									>id<wbr />Colors</a
+								>
+							</li>
+							<li class=" tsd-kind-function">
+								<a
+									href="globals.html#parsepayload"
+									class="tsd-kind-icon"
+									>parse<wbr />Payload</a
+								>
+							</li>
+							<li class=" tsd-kind-function">
+								<a
+									href="globals.html#stringifypayload"
+									class="tsd-kind-icon"
+									>stringify<wbr />Payload</a
+								>
+							</li>
+						</ul>
+					</nav>
+				</div>
 			</div>
 		</div>
-		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
-			<nav class="tsd-navigation primary">
-				<ul>
-					<li class="globals  ">
-						<a href="globals.html"><em>Globals</em></a>
-					</li>
-				</ul>
-			</nav>
-			<nav class="tsd-navigation secondary menu-sticky">
-				<ul class="before-current">
-					<li class=" tsd-kind-enum">
-						<a href="enums/partitionbrokerrole.html" class="tsd-kind-icon">Partition<wbr>Broker<wbr>Role</a>
-					</li>
-					<li class=" tsd-kind-enum">
-						<a href="enums/resourcetype.html" class="tsd-kind-icon">Resource<wbr>Type</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="classes/bpmnparser.html" class="tsd-kind-icon">Bpmn<wbr>Parser</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="classes/zbclient.html" class="tsd-kind-icon">ZBClient</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="classes/zbworker.html" class="tsd-kind-icon">ZBWorker</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="classes/zbworkerlogger.html" class="tsd-kind-icon">ZBWorker<wbr>Logger</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/activatejobsrequest.html" class="tsd-kind-icon">Activate<wbr>Jobs<wbr>Request</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/activatejobsresponse.html" class="tsd-kind-icon">Activate<wbr>Jobs<wbr>Response</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/activatedjob.html" class="tsd-kind-icon">Activated<wbr>Job</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/brokerinfo.html" class="tsd-kind-icon">Broker<wbr>Info</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/completejobrequest.html" class="tsd-kind-icon">Complete<wbr>Job<wbr>Request</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/createworkflowinstancerequest.html" class="tsd-kind-icon">Create<wbr>Workflow<wbr>Instance<wbr>Request</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/createworkflowinstanceresponse.html" class="tsd-kind-icon">Create<wbr>Workflow<wbr>Instance<wbr>Response</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/deployworkflowrequest.html" class="tsd-kind-icon">Deploy<wbr>Workflow<wbr>Request</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/deployworkflowresponse.html" class="tsd-kind-icon">Deploy<wbr>Workflow<wbr>Response</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/failjobrequest.html" class="tsd-kind-icon">Fail<wbr>Job<wbr>Request</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/getworkflowrequestwithbpmnprocessid.html" class="tsd-kind-icon">Get<wbr>Workflow<wbr>Request<wbr>With<wbr>Bpmn<wbr>Process<wbr>Id</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/getworkflowrequestwithworkflowkey.html" class="tsd-kind-icon">Get<wbr>Workflow<wbr>Request<wbr>With<wbr>Workflow<wbr>Key</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/getworkflowresponse.html" class="tsd-kind-icon">Get<wbr>Workflow<wbr>Response</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/job.html" class="tsd-kind-icon">Job</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/jobheaders.html" class="tsd-kind-icon">Job<wbr>Headers</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/listworkflowresponse.html" class="tsd-kind-icon">List<wbr>Workflow<wbr>Response</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/partition.html" class="tsd-kind-icon">Partition</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/publishmessagerequest.html" class="tsd-kind-icon">Publish<wbr>Message<wbr>Request</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/publishstartmessagerequest.html" class="tsd-kind-icon">Publish<wbr>Start<wbr>Message<wbr>Request</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/topologyresponse.html" class="tsd-kind-icon">Topology<wbr>Response</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/updatejobretriesrequest.html" class="tsd-kind-icon">Update<wbr>Job<wbr>Retries<wbr>Request</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/updateworkflowinstancepayloadrequest.html" class="tsd-kind-icon">Update<wbr>Workflow<wbr>Instance<wbr>Payload<wbr>Request</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/workflowmetadata.html" class="tsd-kind-icon">Workflow<wbr>Metadata</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/workflowrequestobject.html" class="tsd-kind-icon">Workflow<wbr>Request<wbr>Object</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/zbworkerloggeroptions.html" class="tsd-kind-icon">ZBWorker<wbr>Logger<wbr>Options</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/zbworkeroptions.html" class="tsd-kind-icon">ZBWorker<wbr>Options</a>
-					</li>
-					<li class=" tsd-kind-type-alias">
-						<a href="globals.html#connectionerrorhandler" class="tsd-kind-icon">Connection<wbr>Error<wbr>Handler</a>
-					</li>
-					<li class=" tsd-kind-type-alias">
-						<a href="globals.html#getworkflowrequest" class="tsd-kind-icon">Get<wbr>Workflow<wbr>Request</a>
-					</li>
-					<li class=" tsd-kind-type-alias">
-						<a href="globals.html#payload" class="tsd-kind-icon">Payload</a>
-					</li>
-					<li class=" tsd-kind-type-alias">
-						<a href="globals.html#zbtaskworkerhandlerminimal" class="tsd-kind-icon">ZBTask<wbr>Worker<wbr>Handler<wbr>Minimal</a>
-					</li>
-					<li class=" tsd-kind-type-alias">
-						<a href="globals.html#zbworkertaskhandler" class="tsd-kind-icon">ZBWorker<wbr>Task<wbr>Handler</a>
-					</li>
-					<li class=" tsd-kind-type-alias">
-						<a href="globals.html#zbworkertaskhandlerwithworker" class="tsd-kind-icon">ZBWorker<wbr>Task<wbr>Handler<wbr>With<wbr>Worker</a>
-					</li>
-					<li class=" tsd-kind-type-alias">
-						<a href="globals.html#completefn" class="tsd-kind-icon">complete<wbr>Fn</a>
-					</li>
-					<li class=" tsd-kind-variable tsd-is-not-exported">
-						<a href="globals.html#idcolors" class="tsd-kind-icon">id<wbr>Colors</a>
-					</li>
-					<li class=" tsd-kind-variable tsd-is-not-exported">
-						<a href="globals.html#log" class="tsd-kind-icon">log</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="globals.html#parsepayload" class="tsd-kind-icon">parse<wbr>Payload</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="globals.html#stringifypayload" class="tsd-kind-icon">stringify<wbr>Payload</a>
-					</li>
-				</ul>
-			</nav>
+		<footer class="with-border-bottom">
+			<div class="container">
+				<h2>Legend</h2>
+				<div class="tsd-legend-group">
+					<ul class="tsd-legend">
+						<li class="tsd-kind-module">
+							<span class="tsd-kind-icon">Module</span>
+						</li>
+						<li class="tsd-kind-object-literal">
+							<span class="tsd-kind-icon">Object literal</span>
+						</li>
+						<li class="tsd-kind-variable">
+							<span class="tsd-kind-icon">Variable</span>
+						</li>
+						<li class="tsd-kind-function">
+							<span class="tsd-kind-icon">Function</span>
+						</li>
+						<li class="tsd-kind-function tsd-has-type-parameter">
+							<span class="tsd-kind-icon"
+								>Function with type parameter</span
+							>
+						</li>
+						<li class="tsd-kind-index-signature">
+							<span class="tsd-kind-icon">Index signature</span>
+						</li>
+						<li class="tsd-kind-type-alias">
+							<span class="tsd-kind-icon">Type alias</span>
+						</li>
+					</ul>
+					<ul class="tsd-legend">
+						<li class="tsd-kind-enum">
+							<span class="tsd-kind-icon">Enumeration</span>
+						</li>
+						<li class="tsd-kind-enum-member">
+							<span class="tsd-kind-icon"
+								>Enumeration member</span
+							>
+						</li>
+						<li class="tsd-kind-property tsd-parent-kind-enum">
+							<span class="tsd-kind-icon">Property</span>
+						</li>
+						<li class="tsd-kind-method tsd-parent-kind-enum">
+							<span class="tsd-kind-icon">Method</span>
+						</li>
+					</ul>
+					<ul class="tsd-legend">
+						<li class="tsd-kind-interface">
+							<span class="tsd-kind-icon">Interface</span>
+						</li>
+						<li class="tsd-kind-interface tsd-has-type-parameter">
+							<span class="tsd-kind-icon"
+								>Interface with type parameter</span
+							>
+						</li>
+						<li
+							class="tsd-kind-constructor tsd-parent-kind-interface"
+						>
+							<span class="tsd-kind-icon">Constructor</span>
+						</li>
+						<li class="tsd-kind-property tsd-parent-kind-interface">
+							<span class="tsd-kind-icon">Property</span>
+						</li>
+						<li class="tsd-kind-method tsd-parent-kind-interface">
+							<span class="tsd-kind-icon">Method</span>
+						</li>
+						<li
+							class="tsd-kind-index-signature tsd-parent-kind-interface"
+						>
+							<span class="tsd-kind-icon">Index signature</span>
+						</li>
+					</ul>
+					<ul class="tsd-legend">
+						<li class="tsd-kind-class">
+							<span class="tsd-kind-icon">Class</span>
+						</li>
+						<li class="tsd-kind-class tsd-has-type-parameter">
+							<span class="tsd-kind-icon"
+								>Class with type parameter</span
+							>
+						</li>
+						<li class="tsd-kind-constructor tsd-parent-kind-class">
+							<span class="tsd-kind-icon">Constructor</span>
+						</li>
+						<li class="tsd-kind-property tsd-parent-kind-class">
+							<span class="tsd-kind-icon">Property</span>
+						</li>
+						<li class="tsd-kind-method tsd-parent-kind-class">
+							<span class="tsd-kind-icon">Method</span>
+						</li>
+						<li class="tsd-kind-accessor tsd-parent-kind-class">
+							<span class="tsd-kind-icon">Accessor</span>
+						</li>
+						<li
+							class="tsd-kind-index-signature tsd-parent-kind-class"
+						>
+							<span class="tsd-kind-icon">Index signature</span>
+						</li>
+					</ul>
+					<ul class="tsd-legend">
+						<li
+							class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"
+						>
+							<span class="tsd-kind-icon"
+								>Inherited constructor</span
+							>
+						</li>
+						<li
+							class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"
+						>
+							<span class="tsd-kind-icon"
+								>Inherited property</span
+							>
+						</li>
+						<li
+							class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"
+						>
+							<span class="tsd-kind-icon">Inherited method</span>
+						</li>
+						<li
+							class="tsd-kind-accessor tsd-parent-kind-class tsd-is-inherited"
+						>
+							<span class="tsd-kind-icon"
+								>Inherited accessor</span
+							>
+						</li>
+					</ul>
+					<ul class="tsd-legend">
+						<li
+							class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"
+						>
+							<span class="tsd-kind-icon"
+								>Protected property</span
+							>
+						</li>
+						<li
+							class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"
+						>
+							<span class="tsd-kind-icon">Protected method</span>
+						</li>
+						<li
+							class="tsd-kind-accessor tsd-parent-kind-class tsd-is-protected"
+						>
+							<span class="tsd-kind-icon"
+								>Protected accessor</span
+							>
+						</li>
+					</ul>
+					<ul class="tsd-legend">
+						<li
+							class="tsd-kind-property tsd-parent-kind-class tsd-is-private"
+						>
+							<span class="tsd-kind-icon">Private property</span>
+						</li>
+						<li
+							class="tsd-kind-method tsd-parent-kind-class tsd-is-private"
+						>
+							<span class="tsd-kind-icon">Private method</span>
+						</li>
+						<li
+							class="tsd-kind-accessor tsd-parent-kind-class tsd-is-private"
+						>
+							<span class="tsd-kind-icon">Private accessor</span>
+						</li>
+					</ul>
+					<ul class="tsd-legend">
+						<li
+							class="tsd-kind-property tsd-parent-kind-class tsd-is-static"
+						>
+							<span class="tsd-kind-icon">Static property</span>
+						</li>
+						<li
+							class="tsd-kind-call-signature tsd-parent-kind-class tsd-is-static"
+						>
+							<span class="tsd-kind-icon">Static method</span>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</footer>
+		<div class="container tsd-generator">
+			<p>
+				Generated using
+				<a href="http://typedoc.org/" target="_blank">TypeDoc</a>
+			</p>
 		</div>
-	</div>
-</div>
-<footer class="with-border-bottom">
-	<div class="container">
-		<h2>Legend</h2>
-		<div class="tsd-legend-group">
-			<ul class="tsd-legend">
-				<li class="tsd-kind-module"><span class="tsd-kind-icon">Module</span></li>
-				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
-				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
-				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
-				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
-				<li class="tsd-kind-index-signature"><span class="tsd-kind-icon">Index signature</span></li>
-				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
-				<li class="tsd-kind-enum-member"><span class="tsd-kind-icon">Enumeration member</span></li>
-				<li class="tsd-kind-property tsd-parent-kind-enum"><span class="tsd-kind-icon">Property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-enum"><span class="tsd-kind-icon">Method</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
-				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
-				<li class="tsd-kind-constructor tsd-parent-kind-interface"><span class="tsd-kind-icon">Constructor</span></li>
-				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
-				<li class="tsd-kind-index-signature tsd-parent-kind-interface"><span class="tsd-kind-icon">Index signature</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
-				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
-				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
-				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
-				<li class="tsd-kind-accessor tsd-parent-kind-class"><span class="tsd-kind-icon">Accessor</span></li>
-				<li class="tsd-kind-index-signature tsd-parent-kind-class"><span class="tsd-kind-icon">Index signature</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
-				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
-				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited accessor</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
-				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected accessor</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
-				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private accessor</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static property</span></li>
-				<li class="tsd-kind-call-signature tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
-			</ul>
-		</div>
-	</div>
-</footer>
-<div class="container tsd-generator">
-	<p>Generated using <a href="http://typedoc.org/" target="_blank">TypeDoc</a></p>
-</div>
-<div class="overlay"></div>
-<script src="assets/js/main.js"></script>
-<script>if (location.protocol == 'file:') document.write('<script src="assets/js/search.js"><' + '/script>');</script>
-</body>
+		<div class="overlay"></div>
+		<script src="assets/js/main.js"></script>
+		<script>
+			if (location.protocol == 'file:')
+				document.write(
+					'<script src="assets/js/search.js"><' + '/script>'
+				)
+		</script>
+	</body>
 </html>

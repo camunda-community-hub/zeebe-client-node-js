@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" id="Definitions_062ls39" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="2.2.4">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" id="Definitions_062ls39" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Zeebe Modeler" exporterVersion="0.6.2">
   <bpmn:message id="Message_1ubabn2" name="MSG-START_JOB">
     <bpmn:extensionElements>
       <zeebe:subscription correlationKey="$.__ignored__" />
@@ -18,7 +18,7 @@
   <bpmn:process id="msg-start-process" name="Message Start" isExecutable="true">
     <bpmn:serviceTask id="ServiceTask_0f6zc7d" name="log">
       <bpmn:extensionElements>
-        <zeebe:taskDefinition type="console-log" />
+        <zeebe:taskDefinition type="console-log-msg" retries="5" />
         <zeebe:taskHeaders>
           <zeebe:header key="message" value="Workflow started via MSG-START in" />
         </zeebe:taskHeaders>
@@ -33,8 +33,8 @@
       <bpmn:outgoing>SequenceFlow_0zsfuju</bpmn:outgoing>
       <bpmn:messageEventDefinition messageRef="Message_1ubabn2" />
     </bpmn:startEvent>
-    <bpmn:sequenceFlow id="SequenceFlow_0zsfuju" sourceRef="StartEvent_MSG-START" targetRef="ServiceTask_0f6zc7d" />
     <bpmn:sequenceFlow id="SequenceFlow_0edv85p" sourceRef="ServiceTask_0f6zc7d" targetRef="EndEvent_115574o" />
+    <bpmn:sequenceFlow id="SequenceFlow_0zsfuju" sourceRef="StartEvent_MSG-START" targetRef="ServiceTask_0f6zc7d" />
   </bpmn:process>
   <bpmn:process id="emit-frame-process" name="emit-frame-process" isExecutable="true">
     <bpmn:endEvent id="EndEvent_1tvtelu">
@@ -66,79 +66,79 @@
       </bpmn:endEvent>
       <bpmn:sequenceFlow id="SequenceFlow_1qa9tch" sourceRef="ServiceTask_13pzxjs" targetRef="EndEvent_1d327ip" />
     </bpmn:subProcess>
-    <bpmn:sequenceFlow id="SequenceFlow_0gwlzcl" sourceRef="SubProcess_04tyi1y" targetRef="EndEvent_1tvtelu" />
     <bpmn:sequenceFlow id="SequenceFlow_0yjyjoj" sourceRef="StartEvent_MSG-EMIT_FRAME" targetRef="SubProcess_04tyi1y" />
+    <bpmn:sequenceFlow id="SequenceFlow_0gwlzcl" sourceRef="SubProcess_04tyi1y" targetRef="EndEvent_1tvtelu" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="msg-start-pools">
       <bpmndi:BPMNShape id="ServiceTask_13pzxjs_di" bpmnElement="ServiceTask_13pzxjs">
-        <dc:Bounds x="430" y="239" width="100" height="80" />
+        <dc:Bounds x="430" y="362" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="StartEvent_1ho7gkw_di" bpmnElement="StartEvent_1ho7gkw">
-        <dc:Bounds x="332" y="261" width="36" height="36" />
+        <dc:Bounds x="332" y="384" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="SequenceFlow_130e2t5_di" bpmnElement="SequenceFlow_130e2t5">
-        <di:waypoint x="368" y="279" />
-        <di:waypoint x="430" y="279" />
+        <di:waypoint x="368" y="402" />
+        <di:waypoint x="430" y="402" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="EndEvent_1d327ip_di" bpmnElement="EndEvent_1d327ip">
-        <dc:Bounds x="592" y="261" width="36" height="36" />
+        <dc:Bounds x="592" y="384" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="SequenceFlow_1qa9tch_di" bpmnElement="SequenceFlow_1qa9tch">
-        <di:waypoint x="530" y="279" />
-        <di:waypoint x="592" y="279" />
+        <di:waypoint x="530" y="402" />
+        <di:waypoint x="592" y="402" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNShape id="Participant_0xk48ct_di" bpmnElement="Start_Job_Pool">
-        <dc:Bounds x="123" y="-42" width="614" height="174" />
+      <bpmndi:BPMNShape id="Participant_0xk48ct_di" bpmnElement="Start_Job_Pool" isHorizontal="true">
+        <dc:Bounds x="123" y="81" width="614" height="174" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="ServiceTask_0f6zc7d_di" bpmnElement="ServiceTask_0f6zc7d">
-        <dc:Bounds x="270" y="-3" width="100" height="80" />
+        <dc:Bounds x="270" y="120" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="EndEvent_115574o_di" bpmnElement="EndEvent_115574o">
-        <dc:Bounds x="420" y="19" width="36" height="36" />
+        <dc:Bounds x="420" y="142" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="StartEvent_1ei0ip2_di" bpmnElement="StartEvent_MSG-START">
-        <dc:Bounds x="184" y="19" width="36" height="36" />
+        <dc:Bounds x="184" y="142" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="173" y="62" width="63" height="27" />
+          <dc:Bounds x="173" y="185" width="63" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="EndEvent_1tvtelu_di" bpmnElement="EndEvent_1tvtelu">
-        <dc:Bounds x="737" y="258" width="36" height="36" />
+        <dc:Bounds x="737" y="381" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="StartEvent_0u7gidm_di" bpmnElement="StartEvent_MSG-EMIT_FRAME">
-        <dc:Bounds x="184" y="258" width="36" height="36" />
+        <dc:Bounds x="184" y="381" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="166" y="304" width="71" height="40" />
+          <dc:Bounds x="166" y="427" width="71" height="40" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="SubProcess_04tyi1y_di" bpmnElement="SubProcess_04tyi1y" isExpanded="true">
-        <dc:Bounds x="293" y="176" width="350" height="200" />
+        <dc:Bounds x="293" y="299" width="350" height="200" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="SequenceFlow_0gwlzcl_di" bpmnElement="SequenceFlow_0gwlzcl">
-        <di:waypoint x="643" y="276" />
-        <di:waypoint x="737" y="276" />
+        <di:waypoint x="643" y="399" />
+        <di:waypoint x="737" y="399" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="SequenceFlow_0yjyjoj_di" bpmnElement="SequenceFlow_0yjyjoj">
-        <di:waypoint x="220" y="276" />
-        <di:waypoint x="293" y="276" />
+        <di:waypoint x="220" y="399" />
+        <di:waypoint x="293" y="399" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="SequenceFlow_0edv85p_di" bpmnElement="SequenceFlow_0edv85p">
-        <di:waypoint x="370" y="37" />
-        <di:waypoint x="420" y="37" />
+        <di:waypoint x="370" y="160" />
+        <di:waypoint x="420" y="160" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="SequenceFlow_0zsfuju_di" bpmnElement="SequenceFlow_0zsfuju">
-        <di:waypoint x="220" y="37" />
-        <di:waypoint x="270" y="37" />
+        <di:waypoint x="220" y="160" />
+        <di:waypoint x="270" y="160" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNShape id="Participant_0xydl31_di" bpmnElement="Emit_Frame_Process">
-        <dc:Bounds x="123" y="139" width="717" height="269" />
+      <bpmndi:BPMNShape id="Participant_0xydl31_di" bpmnElement="Emit_Frame_Process" isHorizontal="true">
+        <dc:Bounds x="123" y="262" width="717" height="269" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="MessageFlow_0e26doe_di" bpmnElement="MessageFlow_0e26doe">
-        <di:waypoint x="348" y="77" />
-        <di:waypoint x="348" y="150" />
-        <di:waypoint x="202" y="150" />
-        <di:waypoint x="202" y="258" />
+        <di:waypoint x="348" y="200" />
+        <di:waypoint x="348" y="273" />
+        <di:waypoint x="202" y="273" />
+        <di:waypoint x="202" y="381" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
