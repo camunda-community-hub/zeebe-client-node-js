@@ -155,7 +155,6 @@ describe('ZBClient.deployWorkflow()', () => {
 
 	it('can update workflow variables', async done => {
 		const zbc = new ZBClient('0.0.0.0:26500')
-
 		const res = await zbc.deployWorkflow('./test/conditional-pathway.bpmn')
 		expect(res.workflows.length).toBe(1)
 		expect(res.workflows[0].bpmnProcessId).toBe('condition-test')
@@ -172,7 +171,7 @@ describe('ZBClient.deployWorkflow()', () => {
 			},
 		})
 		await zbc.createWorker('test2', 'pathA', async (job, complete) => {
-			complete(job)
+			complete(job.variables)
 			expect(job.variables.conditionVariable).toBe(false)
 			await closeConnection(zbc)
 			done()

@@ -213,6 +213,10 @@ export interface CompleteJobRequest {
 }
 
 export interface SetVariablesRequest {
+	/** the unique identifier of a particular element; can be the workflow instance key (as
+	 * obtained during instance creation), or a given element, such as a service task (see
+	 *  elementInstanceKey on the JobHeaders message)
+	 */
 	elementInstanceKey: string
 	variables: Variables
 	local: boolean
