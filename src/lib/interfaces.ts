@@ -1,17 +1,19 @@
 import { Chalk } from 'chalk'
 import { ZBWorker } from '../zb/ZBWorker'
 
-export type Payload = any
+export interface Variables {
+	[index: string]: any
+}
 export type Loglevel = 'INFO' | 'DEBUG' | 'NONE' | 'ERROR'
 
-export type completeFn = (updatedPayload?: any) => void
+export type completeFn = (updatedVariables?: any) => void
 export type ZBTaskWorkerHandlerMinimal = (
-	payload: Job,
+	job: Job,
 	complete: completeFn
 ) => void
 
 export type ZBWorkerTaskHandlerWithWorker = (
-	payload: Job,
+	job: Job,
 	complete: completeFn,
 	worker: ZBWorker
 ) => void
@@ -40,7 +42,7 @@ export interface ActivateJobsRequest {
 	type: string
 	worker: string
 	timeout: number
-	amount: number
+	maxJobsToActivate: number
 	fetchVariable?: string[]
 }
 
@@ -61,19 +63,19 @@ export interface ActivatedJob {
 	/**
 	 * JSON object as a string
 	 */
-	payload: string
+	variables: string
 }
 
 export interface Job {
 	key: string
 	type: string
 	jobHeaders: JobHeaders
-	customHeaders: Payload
+	customHeaders: Variables
 	worker: string
 	retries: number
 	// epoch milliseconds
 	deadline: string
-	payload: Payload
+	variables: Variables
 }
 
 export interface JobHeaders {
@@ -89,7 +91,7 @@ export interface ZBWorkerOptions {
 	/**
 	 * Max concurrent tasks for this worker. Default 32.
 	 */
-	maxActiveJobs?: number
+	maxJobsToActivate?: number
 	/**
 	 * Max ms to allow before time out of a task given to this worker. Default: 1000ms.
 	 */
@@ -101,7 +103,7 @@ export interface ZBWorkerOptions {
 	/**
 	 * Constrain payload to these keys only.
 	 */
-	fetchVariables?: string[]
+	fetchVariable?: string[]
 	/**
 	 * This handler is called when the worker cannot connect to the broker, or loses its connection.
 	 */
@@ -115,7 +117,7 @@ export interface ZBWorkerOptions {
 export interface CreateWorkflowInstanceRequest {
 	bpmnProcessId: string
 	version?: number
-	payload: Payload
+	variables: Variables
 }
 
 export interface CreateWorkflowInstanceResponse {
@@ -190,7 +192,7 @@ export interface PublishMessageRequest {
 	timeToLive: number
 	/** Unique ID for this message */
 	messageId?: string
-	payload: Payload
+	variables: Variables
 }
 
 export interface PublishStartMessageRequest {
@@ -199,7 +201,7 @@ export interface PublishStartMessageRequest {
 	timeToLive: number
 	/** Unique ID for this message */
 	messageId?: string
-	payload: Payload
+	variables: Variables
 }
 
 export interface UpdateJobRetriesRequest {
@@ -215,12 +217,13 @@ export interface FailJobRequest {
 
 export interface CompleteJobRequest {
 	jobKey: string
-	payload: Payload
+	variables: Variables
 }
 
-export interface UpdateWorkflowInstancePayloadRequest {
+export interface SetVariablesRequest {
 	elementInstanceKey: string
-	payload: Payload
+	variables: Variables
+	local: boolean
 }
 
 /* either workflow key or bpmn process id and version has to be specified*/

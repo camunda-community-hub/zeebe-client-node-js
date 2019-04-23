@@ -59,8 +59,8 @@ describe('ZBClient.deployWorkflow()', () => {
 		const worker = zbc.createWorker(
 			'test',
 			'TASK_TYPE',
-			(payload, complete) => {
-				complete(payload)
+			(job, complete) => {
+				complete(job)
 			}
 		)
 		expect(worker).toBeTruthy()
@@ -72,10 +72,7 @@ describe('ZBClient.deployWorkflow()', () => {
 		const res = await zbc.deployWorkflow('./test/hello-world.bpmn')
 		expect(res.workflows.length).toBe(1)
 		expect(res.workflows[0].version > 1).toBe(true)
-		const wfi = await zbc.createWorkflowInstance(
-			res.workflows[0].bpmnProcessId,
-			{}
-		)
+		const wfi = await zbc.createWorkflowInstance('hello-world', {})
 		expect(wfi.bpmnProcessId).toBe('hello-world')
 		expect(wfi.workflowInstanceKey).toBeTruthy()
 		await closeConnection(zbc)
@@ -85,10 +82,9 @@ describe('ZBClient.deployWorkflow()', () => {
 		const res = await zbc.deployWorkflow('./test/hello-world.bpmn')
 		expect(res.workflows.length).toBe(1)
 		expect(res.workflows[0].version > 1).toBe(true)
-		await zbc.createWorkflowInstance(res.workflows[0].bpmnProcessId, {})
-
-		zbc.createWorker('test', 'console-log', async (payload, complete) => {
-			complete(payload)
+		await zbc.createWorkflowInstance('hello-world', {})
+		zbc.createWorker('test', 'console-log', async (job, complete) => {
+			complete(job.variables)
 			await closeConnection(zbc)
 			done()
 		})
@@ -100,23 +96,19 @@ describe('ZBClient.deployWorkflow()', () => {
 			'./src/__tests__/testdata/msg-start.bpmn'
 		)
 		expect(deploy.key).toBeTruthy()
-		await zbc.createWorker(
-			'test2',
-			'console-log-msg',
-			(payload, complete) => {
-				complete(payload)
-				expect(
-					payload.customHeaders.message.indexOf('Workflow') !== -1
-				).toBe(true)
-				done()
-			}
-		)
+		await zbc.createWorker('test2', 'console-log-msg', (job, complete) => {
+			complete(job.variables)
+			expect(job.customHeaders.message.indexOf('Workflow') !== -1).toBe(
+				true
+			)
+			done()
+		})
 		await zbc.publishStartMessage({
 			name: 'MSG-START_JOB',
-			payload: {
+			timeToLive: 1000,
+			variables: {
 				testKey: 'OHAI',
 			},
-			timeToLive: 1000,
 		})
 		await closeConnection(zbc)
 	})
@@ -135,5 +127,48 @@ describe('ZBClient.deployWorkflow()', () => {
 		} catch (e) {
 			done()
 		}
+	})
+
+	it('correctly branches on variables', async done => {
+		const zbc = new ZBClient('0.0.0.0:26500')
+
+		const res = await zbc.deployWorkflow('./test/conditional-pathway.bpmn')
+		expect(res.workflows.length).toBe(1)
+		expect(res.workflows[0].bpmnProcessId).toBe('condition-test')
+		const wf = await zbc.createWorkflowInstance('condition-test', {
+			conditionVariable: true,
+		})
+		const wfi = wf.workflowInstanceKey
+		expect(wfi).toBeTruthy()
+		await zbc.createWorker('test2', 'pathA', (job, complete) => {
+			complete(job)
+			expect(job.variables.conditionVariable).toBe(true)
+			done()
+		})
+	})
+
+	it('can update workflow variables', async done => {
+		const zbc = new ZBClient('0.0.0.0:26500')
+
+		const res = await zbc.deployWorkflow('./test/conditional-pathway.bpmn')
+		expect(res.workflows.length).toBe(1)
+		expect(res.workflows[0].bpmnProcessId).toBe('condition-test')
+		const wf = await zbc.createWorkflowInstance('condition-test', {
+			conditionVariable: true,
+		})
+		const wfi = wf.workflowInstanceKey
+		expect(wfi).toBeTruthy()
+		await zbc.setVariables({
+			elementInstanceKey: wfi,
+			local: false,
+			variables: {
+				conditionVariable: false,
+			},
+		})
+		await zbc.createWorker('test2', 'pathA', (job, complete) => {
+			complete(job)
+			expect(job.variables.conditionVariable).toBe(false)
+			done()
+		})
 	})
 })

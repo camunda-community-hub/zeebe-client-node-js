@@ -1,4 +1,4 @@
-import { parsePayload, stringifyPayload } from '../lib/stringifyPayload'
+import { parseVariables, stringifyVariables } from '../lib/stringifyVariables'
 
 // tslint:disable:object-literal-sort-keys
 const jobObject = {
@@ -15,7 +15,7 @@ const jobObject = {
 	worker: '26fe8907-f518-4f8d-bd75-06acaec3c154',
 	retries: 3,
 	deadline: '1547595187455',
-	payload: {
+	variables: {
 		jobId: '7ead71d8-30c9-4eda-81e7-f2ada6d7d0da',
 		subtaskCount: 200,
 		tasksCompleted: null,
@@ -23,7 +23,7 @@ const jobObject = {
 	type: 'sub-task',
 }
 
-const expectedStringifiedPayload =
+const expectedStringifiedVariables =
 	'{"jobId":"7ead71d8-30c9-4eda-81e7-f2ada6d7d0da","subtaskCount":200,"tasksCompleted":null}'
 
 const jobDictionary = {
@@ -32,44 +32,44 @@ const jobDictionary = {
 	worker: '26fe8907-f518-4f8d-bd75-06acaec3c154',
 	retries: 3,
 	deadline: '1547595187455',
-	payload:
+	variables:
 		'{"jobId":"7ead71d8-30c9-4eda-81e7-f2ada6d7d0da","subtaskCount":200,"tasksCompleted":null}',
 	type: 'sub-task',
 }
 
-describe('stringifyPayload', () => {
+describe('stringifyVariables', () => {
 	it('returns a new object', () => {
-		expect(stringifyPayload(jobObject)).not.toEqual(jobObject)
+		expect(stringifyVariables(jobObject)).not.toEqual(jobObject)
 	})
 
-	it('stringifies the payload key of a job object', () => {
-		const stringified = stringifyPayload(jobObject)
-		expect(typeof stringified.payload).toBe('string')
-		expect(stringified.payload).toBe(expectedStringifiedPayload)
+	it('stringifies the variables key of a job object', () => {
+		const stringified = stringifyVariables(jobObject)
+		expect(typeof stringified.variables).toBe('string')
+		expect(stringified.variables).toBe(expectedStringifiedVariables)
 	})
 })
 
-describe('parsePayload', () => {
+describe('parseVariables', () => {
 	it('returns a new object', () => {
-		expect(parsePayload(jobDictionary)).not.toEqual(jobDictionary)
+		expect(parseVariables(jobDictionary)).not.toEqual(jobDictionary)
 	})
 
 	it('parses the payload key of a job object to JSON', () => {
-		expect(typeof parsePayload(jobDictionary).payload).toBe('object')
+		expect(typeof parseVariables(jobDictionary).variables).toBe('object')
 	})
 
 	it('correctly parses the payload string', () => {
-		const parsed = parsePayload(jobDictionary)
-		expect(parsed.payload.jobId).toEqual(
+		const parsed = parseVariables(jobDictionary)
+		expect(parsed.variables.jobId).toEqual(
 			'7ead71d8-30c9-4eda-81e7-f2ada6d7d0da'
 		)
-		expect(parsed.payload.subtaskCount).toEqual(200)
-		expect(parsed.payload.tasksCompleted).toBeNull()
-		expect(Object.keys(parsed.payload).length).toBe(3)
+		expect(parsed.variables.subtaskCount).toEqual(200)
+		expect(parsed.variables.tasksCompleted).toBeNull()
+		expect(Object.keys(parsed.variables).length).toBe(3)
 	})
 
 	it('returns an object with all the keys of the original', () => {
-		const parsed = parsePayload(jobDictionary)
+		const parsed = parseVariables(jobDictionary)
 		expect(Object.keys(parsed).length).toBe(7)
 		expect(parsed.key).toBe('37274')
 		expect(parsed.worker).toBe('26fe8907-f518-4f8d-bd75-06acaec3c154')
