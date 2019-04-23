@@ -96,13 +96,18 @@ describe('ZBClient.deployWorkflow()', () => {
 			'./src/__tests__/testdata/msg-start.bpmn'
 		)
 		expect(deploy.key).toBeTruthy()
-		await zbc.createWorker('test2', 'console-log-msg', (job, complete) => {
-			complete(job.variables)
-			expect(job.customHeaders.message.indexOf('Workflow') !== -1).toBe(
-				true
-			)
-			done()
-		})
+		await zbc.createWorker(
+			'test2',
+			'console-log-msg',
+			async (job, complete) => {
+				complete(job.variables)
+				expect(
+					job.customHeaders.message.indexOf('Workflow') !== -1
+				).toBe(true)
+				await closeConnection(zbc)
+				done()
+			}
+		)
 		await zbc.publishStartMessage({
 			name: 'MSG-START_JOB',
 			timeToLive: 1000,
@@ -110,7 +115,6 @@ describe('ZBClient.deployWorkflow()', () => {
 				testKey: 'OHAI',
 			},
 		})
-		await closeConnection(zbc)
 	})
 	it('can cancel a workflow', async done => {
 		const zbc = new ZBClient('0.0.0.0:26500')
@@ -125,6 +129,7 @@ describe('ZBClient.deployWorkflow()', () => {
 		try {
 			await zbc.cancelWorkflowInstance(wfi) // a call to cancel a workflow that doesn't exist should throw
 		} catch (e) {
+			await closeConnection(zbc)
 			done()
 		}
 	})
@@ -140,9 +145,10 @@ describe('ZBClient.deployWorkflow()', () => {
 		})
 		const wfi = wf.workflowInstanceKey
 		expect(wfi).toBeTruthy()
-		await zbc.createWorker('test2', 'pathA', (job, complete) => {
+		await zbc.createWorker('test2', 'pathA', async (job, complete) => {
 			complete(job)
 			expect(job.variables.conditionVariable).toBe(true)
+			await closeConnection(zbc)
 			done()
 		})
 	})
@@ -165,9 +171,10 @@ describe('ZBClient.deployWorkflow()', () => {
 				conditionVariable: false,
 			},
 		})
-		await zbc.createWorker('test2', 'pathA', (job, complete) => {
+		await zbc.createWorker('test2', 'pathA', async (job, complete) => {
 			complete(job)
 			expect(job.variables.conditionVariable).toBe(false)
+			await closeConnection(zbc)
 			done()
 		})
 	})

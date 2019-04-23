@@ -64,7 +64,7 @@ describe('ZBWorker', () => {
 					return
 				}
 				alreadyFailed = true
-				testWorkflowInstanceExists() // waits 700ms then checks
+				testWorkflowInstanceExists() // waits 1000ms then checks
 				throw new Error(
 					'Unhandled exception in task handler for test purposes'
 				) // Will be caught in the library
