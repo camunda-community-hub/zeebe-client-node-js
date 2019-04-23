@@ -7,20 +7,12 @@ export interface Variables {
 export type Loglevel = 'INFO' | 'DEBUG' | 'NONE' | 'ERROR'
 
 export type completeFn = (updatedVariables?: any) => void
-export type ZBTaskWorkerHandlerMinimal = (
-	job: Job,
-	complete: completeFn
-) => void
 
-export type ZBWorkerTaskHandlerWithWorker = (
+export type ZBWorkerTaskHandler = (
 	job: Job,
 	complete: completeFn,
-	worker: ZBWorker
+	worker?: ZBWorker
 ) => void
-
-export type ZBWorkerTaskHandler =
-	| ZBTaskWorkerHandlerMinimal
-	| ZBWorkerTaskHandlerWithWorker
 
 export interface ZBWorkerLoggerOptions {
 	loglevel: Loglevel
