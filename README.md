@@ -7,6 +7,12 @@ This is a Node.js gRPC client for [Zeebe](https://zeebe.io). It is written in Ty
 
 Comprehensive API documentation is available [online](https://creditsenseau.github.io/zeebe-client-node-js/) and in the `docs` subdirectory.
 
+## Versioning
+
+NPM Package version 1.x.x supports Zeebe 0.15/0.16.
+
+NPM Package version 2.x.x supports Zeebe 0.17.
+
 ## Example Use
 
 ### Add the Library to your Project
