@@ -3,7 +3,7 @@ jest.unmock('node-grpc-client')
 
 process.env.ZB_NODE_LOG_LEVEL = process.env.ZB_NODE_LOG_LEVEL || 'NONE'
 
-function closeConnection(zbc: ZBClient) {
+function closeConnectionAfterOneSecond(zbc: ZBClient) {
 	return new Promise(resolve => {
 		setTimeout(() => {
 			zbc.close()
@@ -11,13 +11,23 @@ function closeConnection(zbc: ZBClient) {
 		}, 1000)
 	})
 }
+
+function closeConnectionNow(zbc: ZBClient) {
+	return new Promise(resolve => {
+		zbc.close()
+		setTimeout(() => {
+			resolve()
+		}, 100)
+	})
+}
+
 describe('ZBClient.deployWorkflow()', () => {
 	it('can get the broker topology', async () => {
 		const zbc = new ZBClient('0.0.0.0:26500')
 
 		const res = await zbc.topology()
 		expect(res.brokers).toBeTruthy()
-		await closeConnection(zbc)
+		await closeConnectionAfterOneSecond(zbc)
 	})
 	it('deploys a single workflow', async () => {
 		const zbc = new ZBClient('0.0.0.0:26500')
@@ -25,7 +35,7 @@ describe('ZBClient.deployWorkflow()', () => {
 		const res = await zbc.deployWorkflow('./test/hello-world.bpmn')
 		expect(res.workflows.length).toBe(1)
 		expect(res.workflows[0].bpmnProcessId).toBe('hello-world')
-		await closeConnection(zbc)
+		await closeConnectionAfterOneSecond(zbc)
 	})
 	it('by default, it deploys a single workflow when that workflow is already deployed', async () => {
 		const zbc = new ZBClient('0.0.0.0:26500')
@@ -33,7 +43,7 @@ describe('ZBClient.deployWorkflow()', () => {
 		const res = await zbc.deployWorkflow('./test/hello-world.bpmn')
 		expect(res.workflows.length).toBe(1)
 		expect(res.workflows[0].version > 1).toBe(true)
-		await closeConnection(zbc)
+		await closeConnectionAfterOneSecond(zbc)
 	})
 	it('with {redeploy: false} it will not redeploy an existing workflow', async () => {
 		const zbc = new ZBClient('0.0.0.0:26500')
@@ -42,7 +52,7 @@ describe('ZBClient.deployWorkflow()', () => {
 			redeploy: false,
 		})
 		expect(res.key).toBe(-1)
-		await closeConnection(zbc)
+		await closeConnectionAfterOneSecond(zbc)
 	})
 
 	it('lists workflows', async () => {
@@ -50,7 +60,7 @@ describe('ZBClient.deployWorkflow()', () => {
 
 		const res = await zbc.listWorkflows()
 		expect(res.workflows).toBeTruthy()
-		await closeConnection(zbc)
+		await closeConnectionAfterOneSecond(zbc)
 	})
 
 	it('can create a worker', () => {
@@ -75,7 +85,7 @@ describe('ZBClient.deployWorkflow()', () => {
 		const wfi = await zbc.createWorkflowInstance('hello-world', {})
 		expect(wfi.bpmnProcessId).toBe('hello-world')
 		expect(wfi.workflowInstanceKey).toBeTruthy()
-		await closeConnection(zbc)
+		await closeConnectionAfterOneSecond(zbc)
 	})
 	it('can service a task', async done => {
 		const zbc = new ZBClient('0.0.0.0:26500')
@@ -85,7 +95,7 @@ describe('ZBClient.deployWorkflow()', () => {
 		await zbc.createWorkflowInstance('hello-world', {})
 		zbc.createWorker('test', 'console-log', async (job, complete) => {
 			complete(job.variables)
-			await closeConnection(zbc)
+			await closeConnectionAfterOneSecond(zbc)
 			done()
 		})
 	})
@@ -104,7 +114,7 @@ describe('ZBClient.deployWorkflow()', () => {
 				expect(
 					job.customHeaders.message.indexOf('Workflow') !== -1
 				).toBe(true)
-				await closeConnection(zbc)
+				await closeConnectionAfterOneSecond(zbc)
 				done()
 			}
 		)
@@ -129,7 +139,7 @@ describe('ZBClient.deployWorkflow()', () => {
 		try {
 			await zbc.cancelWorkflowInstance(wfi) // a call to cancel a workflow that doesn't exist should throw
 		} catch (e) {
-			await closeConnection(zbc)
+			await closeConnectionAfterOneSecond(zbc)
 			done()
 		}
 	})
@@ -148,7 +158,7 @@ describe('ZBClient.deployWorkflow()', () => {
 		await zbc.createWorker('test2', 'pathA', async (job, complete) => {
 			complete(job)
 			expect(job.variables.conditionVariable).toBe(true)
-			await closeConnection(zbc)
+			await closeConnectionAfterOneSecond(zbc)
 			done()
 		})
 	})
@@ -173,7 +183,7 @@ describe('ZBClient.deployWorkflow()', () => {
 		await zbc.createWorker('test2', 'pathA', async (job, complete) => {
 			complete(job.variables)
 			expect(job.variables.conditionVariable).toBe(false)
-			await closeConnection(zbc)
+			await closeConnectionNow(zbc)
 			done()
 		})
 	})
