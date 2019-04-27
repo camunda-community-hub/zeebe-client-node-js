@@ -11,7 +11,7 @@ export type completeFn = (updatedVariables?: any) => void
 export type ZBWorkerTaskHandler = (
 	job: Job,
 	complete: completeFn,
-	worker?: ZBWorker
+	worker: ZBWorker
 ) => void
 
 export interface ZBWorkerLoggerOptions {
