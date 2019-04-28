@@ -29,7 +29,7 @@
 		"test:integration": "jest --runInBand --verbose true --detectOpenHandles",
 		"test&docs": "npm test && npm run docs",
 		"dev": "tsc-watch --onSuccess \"npm run test&docs\" -p tsconfig.json --outDir dist",
-		"docs": "typedoc --out ./docs --tsconfig ./tsconfig.json --excludePrivate --mode file --sourcefile-url-prefix \"https://github.org/CreditSenseAU/\""
+		"docs": "typedoc --out ./docs --tsconfig ./tsconfig.json --excludePrivate --mode file --sourcefile-url-prefix \"https://github.com/CreditSenseAU/\""
 	},
 	"husky": {
 		"hooks": {
