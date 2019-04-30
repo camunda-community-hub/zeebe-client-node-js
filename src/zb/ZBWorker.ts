@@ -1,6 +1,6 @@
 import chalk, { Chalk } from 'chalk'
 import * as uuid from 'uuid'
-import { parsePayload, stringifyPayload } from '../lib'
+import { parseVariables, stringifyVariables } from '../lib'
 import * as ZB from '../lib/interfaces'
 import { ZBLogger } from '../lib/ZBLogger'
 import { ZBClient } from './ZBClient'
@@ -66,7 +66,7 @@ export class ZBWorker<
 		}
 		this.taskHandler = taskHandler
 		this.taskType = taskType
-		this.maxActiveJobs = options.maxActiveJobs || 32
+		this.maxActiveJobs = options.maxJobsToActivate || 32
 		this.timeout = options.timeout || 1000
 		this.pollInterval = options.pollInterval || 100
 		this.id = id || uuid.v4()
@@ -133,9 +133,9 @@ export class ZBWorker<
 	public completeJob(
 		completeJobRequest: ZB.CompleteJobRequest
 	): Promise<void> {
-		const withStringifiedPayload = stringifyPayload(completeJobRequest)
-		this.logger.debug(withStringifiedPayload)
-		return this.gRPCClient.completeJobSync(withStringifiedPayload)
+		const withStringifiedVariables = stringifyVariables(completeJobRequest)
+		this.logger.debug(withStringifiedVariables)
+		return this.gRPCClient.completeJobSync(withStringifiedVariables)
 	}
 
 	public onConnectionError(handler: (error: any) => void) {
@@ -192,7 +192,7 @@ export class ZBWorker<
 		const amount = this.maxActiveJobs - this.activeJobs
 
 		const activateJobsRequest: ZB.ActivateJobsRequest = {
-			amount,
+			maxJobsToActivate: amount,
 			timeout: this.timeout,
 			type: this.taskType,
 			worker: this.id,
@@ -210,10 +210,10 @@ export class ZBWorker<
 			if (this.closing) {
 				return
 			}
-			const parsedPayloads = res.jobs.map(parsePayload)
-			this.activeJobs += parsedPayloads.length
+			const parsedVariables = res.jobs.map(parseVariables)
+			this.activeJobs += parsedVariables.length
 			// Call task handler for each new job
-			parsedPayloads.forEach(async (job: ZB.ActivatedJob) => {
+			parsedVariables.forEach(async (job: ZB.ActivatedJob) => {
 				const customHeaders = JSON.parse(job.customHeaders || '{}')
 				/**
 				 * Client-side timeout handler - removes jobs from the activeJobs count if timed out,
@@ -242,7 +242,7 @@ export class ZBWorker<
 						(completedVariables = {}) => {
 							this.completeJob({
 								jobKey: job.key,
-								payload: completedPayload,
+								variables: completedVariables,
 							})
 							clearInterval(timeoutCancel)
 							if (!taskTimedout) {

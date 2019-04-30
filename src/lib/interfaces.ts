@@ -44,7 +44,7 @@ export interface ActivateJobsRequest {
 	type: string
 	worker: string
 	timeout: number
-	amount: number
+	maxJobsToActivate: number
 	fetchVariable?: string[]
 }
 
@@ -65,22 +65,19 @@ export interface ActivatedJob {
 	/**
 	 * JSON object as a string
 	 */
-	payload: string
+	variables: string
 }
 
-export interface Job<
-	VariableShape = KeyedObject,
-	CustomHeaderShape = KeyedObject
-> {
+export interface Job<Variables = KeyedObject, CustomHeaders = KeyedObject> {
 	key: string
 	type: string
 	jobHeaders: JobHeaders
-	customHeaders: CustomHeaderShape
+	customHeaders: CustomHeaders
 	worker: string
 	retries: number
 	// epoch milliseconds
 	deadline: string
-	variables: VariableShape
+	variables: Variables
 }
 
 export interface JobHeaders {
@@ -96,7 +93,7 @@ export interface ZBWorkerOptions {
 	/**
 	 * Max concurrent tasks for this worker. Default 32.
 	 */
-	maxActiveJobs?: number
+	maxJobsToActivate?: number
 	/**
 	 * Max ms to allow before time out of a task given to this worker. Default: 1000ms.
 	 */
@@ -108,7 +105,7 @@ export interface ZBWorkerOptions {
 	/**
 	 * Constrain payload to these keys only.
 	 */
-	fetchVariables?: string[]
+	fetchVariable?: string[]
 	/**
 	 * This handler is called when the worker cannot connect to the broker, or loses its connection.
 	 */
@@ -119,10 +116,10 @@ export interface ZBWorkerOptions {
 	failWorkflowOnException?: boolean
 }
 
-export interface CreateWorkflowInstanceRequest<VariableShape = KeyedObject> {
+export interface CreateWorkflowInstanceRequest<Variables = KeyedObject> {
 	bpmnProcessId: string
 	version?: number
-	variables: VariableShape
+	variables: Variables
 }
 
 export interface CreateWorkflowInstanceResponse {
@@ -189,7 +186,7 @@ export interface ListWorkflowResponse {
 	workflows: WorkflowMetadata[]
 }
 
-export interface PublishMessageRequest<V = KeyedObject> {
+export interface PublishMessageRequest<Variables = KeyedObject> {
 	/** Should match the "Message Name" in a BPMN Message Catch  */
 	name: string
 	/** The value to match with the field specified as "Subscription Correlation Key" in BPMN */
@@ -197,16 +194,16 @@ export interface PublishMessageRequest<V = KeyedObject> {
 	timeToLive: number
 	/** Unique ID for this message */
 	messageId?: string
-	variables: V
+	variables: Variables
 }
 
-export interface PublishStartMessageRequest<V = KeyedObject> {
+export interface PublishStartMessageRequest<Variables = KeyedObject> {
 	/** Should match the "Message Name" in a BPMN Message Catch  */
 	name: string
 	timeToLive: number
 	/** Unique ID for this message */
 	messageId?: string
-	variables: V
+	variables: Variables
 }
 
 export interface UpdateJobRetriesRequest {
@@ -220,18 +217,18 @@ export interface FailJobRequest {
 	errorMessage: string
 }
 
-export interface CompleteJobRequest<V = KeyedObject> {
+export interface CompleteJobRequest<Variables = KeyedObject> {
 	jobKey: string
-	variables: V
+	variables: Variables
 }
 
-export interface SetVariablesRequest<V = KeyedObject> {
+export interface SetVariablesRequest<Variables = KeyedObject> {
 	/** the unique identifier of a particular element; can be the workflow instance key (as
 	 * obtained during instance creation), or a given element, such as a service task (see
 	 *  elementInstanceKey on the JobHeaders message)
 	 */
 	elementInstanceKey: string
-	variables: V
+	variables: Partial<Variables>
 	local: boolean
 }
 
