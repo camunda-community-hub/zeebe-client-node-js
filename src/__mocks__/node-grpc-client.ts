@@ -82,7 +82,7 @@ export = class GRPCClient {
 		return null
 	}
 
-	public updateWorkflowInstancePayloadRequestSync() {
+	public setVariablesSync() {
 		return null
 	}
 }

@@ -7,6 +7,12 @@ This is a Node.js gRPC client for [Zeebe](https://zeebe.io). It is written in Ty
 
 Comprehensive API documentation is available [online](https://creditsenseau.github.io/zeebe-client-node-js/) and in the `docs` subdirectory.
 
+## Versioning
+
+NPM Package version 1.x.x supports Zeebe 0.15/0.16.
+
+NPM Package version 2.x.x supports Zeebe 0.17.
+
 ## Example Use
 
 ### Add the Library to your Project
@@ -56,18 +62,18 @@ const ZB = require('zeebe-node')
 })()
 
 function handler(job, complete) {
-	console.log('Task payload', job.payload)
-	let updatedPayload = Object.assign({}, job.payload, {
+	console.log('Task variables', job.variables)
+	let updatedVariables = Object.assign({}, job.variables, {
 		updatedProperty: 'newValue',
 	})
 
 	// Task worker business logic goes here
 
-	complete(updatedPayload)
+	complete(updatedVariables)
 }
 ```
 
-Here is an example payload:
+Here is an example job:
 
 ```javascript
 
@@ -84,7 +90,7 @@ Here is an example payload:
   worker: 'test-worker',
   retries: 3,
   deadline: '1546915422636',
-  payload: { testData: 'something' } }
+  variables: { testData: 'something' } }
 
 ```
 
@@ -147,10 +153,10 @@ Example output:
 ```javascript
 const zbc = new ZB.ZBClient('localhost:26500')
 zbc.publishMessage({
-	correlationKey: 'value-to-correlate-with-workflow-payload',
+	correlationKey: 'value-to-correlate-with-workflow-variable',
 	messageId: uuid.v4(),
 	name: 'message-name',
-	payload: { valueToAddToWorkflowPayload: 'here', status: 'PROCESSED' },
+	variables: { valueToAddToWorkflowVariables: 'here', status: 'PROCESSED' },
 	timeToLive: 10000,
 })
 ```
@@ -165,7 +171,7 @@ const zbc = new ZB.ZBClient('localhost:26500')
 zbc.publishStartMessage({
 	messageId: uuid.v4(),
 	name: 'message-name',
-	payload: { initialWorkflowPayloadValue: 'here' },
+	variables: { initialWorkflowVariable: 'here' },
 	timeToLive: 10000,
 })
 ```

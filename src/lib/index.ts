@@ -1,2 +1,2 @@
 export * from './BpmnParser'
-export * from './stringifyPayload'
+export * from './stringifyVariables'
