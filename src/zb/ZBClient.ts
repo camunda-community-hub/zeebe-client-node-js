@@ -2,7 +2,7 @@ import chalk from 'chalk'
 import * as fs from 'fs'
 import * as GRPCClient from 'node-grpc-client'
 import * as path from 'path'
-import { BpmnParser, stringifyPayload } from '../lib'
+import { BpmnParser, stringifyVariables } from '../lib'
 import * as ZB from '../lib/interfaces'
 import { ZBWorker } from './ZBWorker'
 
@@ -31,8 +31,8 @@ export class ZBClient {
 		}
 		this.options = options || {}
 		this.options.loglevel =
-			options.loglevel ||
 			(process.env.ZB_NODE_LOG_LEVEL as ZB.Loglevel) ||
+			options.loglevel ||
 			'INFO'
 
 		if (brokerAddress.indexOf(':') === -1) {
@@ -163,7 +163,7 @@ export class ZBClient {
 		publishMessageRequest: ZB.PublishMessageRequest
 	): Promise<void> {
 		return this.gRPCClient.publishMessageSync(
-			stringifyPayload(publishMessageRequest)
+			stringifyVariables(publishMessageRequest)
 		)
 	}
 
@@ -179,7 +179,7 @@ export class ZBClient {
 			...publishStartMessageRequest,
 		}
 		return this.gRPCClient.publishMessageSync(
-			stringifyPayload(publishMessageRequest)
+			stringifyVariables(publishMessageRequest)
 		)
 	}
 
@@ -197,25 +197,25 @@ export class ZBClient {
 	 *
 	 * Create and start execution of a workflow instance.
 	 * @param {string} bpmnProcessId
-	 * @param {Payload} payload - payload to pass in to the workflow
+	 * @param {Variables} variables - payload to pass in to the workflow
 	 * @param {number} [version] - version of the workflow to run. Optional: defaults to latest if not present
 	 * @returns {Promise<CreateWorkflowInstanceResponse>}
 	 * @memberof ZBClient
 	 */
 	public createWorkflowInstance(
 		bpmnProcessId: string,
-		payload: ZB.Payload,
+		variables: ZB.Variables,
 		version?: number
 	): Promise<ZB.CreateWorkflowInstanceResponse> {
 		version = version || -1
 
 		const createWorkflowInstanceRequest: ZB.CreateWorkflowInstanceRequest = {
 			bpmnProcessId,
-			payload,
+			variables,
 			version,
 		}
 		return this.gRPCClient.createWorkflowInstanceSync(
-			stringifyPayload(createWorkflowInstanceRequest)
+			stringifyVariables(createWorkflowInstanceRequest)
 		)
 	}
 
@@ -227,12 +227,15 @@ export class ZBClient {
 		})
 	}
 
-	public updateWorkflowInstancePayload(
-		request: ZB.UpdateWorkflowInstancePayloadRequest
-	): Promise<void> {
-		return this.gRPCClient.updateWorkflowInstancePayloadRequestSync(
-			stringifyPayload(request)
-		)
+	public setVariables(request: ZB.SetVariablesRequest): Promise<void> {
+		/*
+		We allow developers to interact with variables as a native JS object, but the Zeebe server needs it as a JSON document
+		So we stringify it here.
+		*/
+		if (typeof request.variables === 'object') {
+			request.variables = JSON.stringify(request.variables) as any
+		}
+		return this.gRPCClient.setVariablesSync(request)
 	}
 
 	public listWorkflows(

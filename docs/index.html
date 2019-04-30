@@ -150,6 +150,11 @@
 							>
 							and in the <code>docs</code> subdirectory.
 						</p>
+						<h2 id="versioning">Versioning</h2>
+						<p>
+							NPM Package version 1.x.x supports Zeebe 0.15/0.16.
+						</p>
+						<p>NPM Package version 2.x.x supports Zeebe 0.17.</p>
 						<h2 id="example-use">Example Use</h2>
 						<h3 id="add-the-library-to-your-project">
 							Add the Library to your Project
@@ -188,16 +193,16 @@
 })()
 
 <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">handler</span>(<span class="hljs-params">job, complete</span>) </span>{
-    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Task payload'</span>, job.payload)
-    <span class="hljs-keyword">let</span> updatedPayload = <span class="hljs-built_in">Object</span>.assign({}, job.payload, {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Task variables'</span>, job.variables)
+    <span class="hljs-keyword">let</span> updatedVariables = <span class="hljs-built_in">Object</span>.assign({}, job.variables, {
         <span class="hljs-attr">updatedProperty</span>: <span class="hljs-string">'newValue'</span>,
     })
 
     <span class="hljs-comment">// Task worker business logic goes here</span>
 
-    complete(updatedPayload)
+    complete(updatedVariables)
 }</code></pre>
-						<p>Here is an example payload:</p>
+						<p>Here is an example job:</p>
 						<pre><code class="language-javascript">
 { <span class="hljs-attr">key</span>: <span class="hljs-string">'578'</span>,
   <span class="hljs-attr">type</span>: <span class="hljs-string">'demo-service'</span>,
@@ -212,7 +217,7 @@
   <span class="hljs-attr">worker</span>: <span class="hljs-string">'test-worker'</span>,
   <span class="hljs-attr">retries</span>: <span class="hljs-number">3</span>,
   <span class="hljs-attr">deadline</span>: <span class="hljs-string">'1546915422636'</span>,
-  <span class="hljs-attr">payload</span>: { <span class="hljs-attr">testData</span>: <span class="hljs-string">'something'</span> } }
+  <span class="hljs-attr">variables</span>: { <span class="hljs-attr">testData</span>: <span class="hljs-string">'something'</span> } }
 </code></pre>
 						<p>
 							The worker can be configured with options. Shown
@@ -271,10 +276,10 @@
 						<h3 id="publish-a-message">Publish a Message</h3>
 						<pre><code class="language-javascript"><span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZB.ZBClient(<span class="hljs-string">'localhost:26500'</span>)
 zbc.publishMessage({
-    <span class="hljs-attr">correlationKey</span>: <span class="hljs-string">'value-to-correlate-with-workflow-payload'</span>,
+    <span class="hljs-attr">correlationKey</span>: <span class="hljs-string">'value-to-correlate-with-workflow-variable'</span>,
     <span class="hljs-attr">messageId</span>: uuid.v4(),
     <span class="hljs-attr">name</span>: <span class="hljs-string">'message-name'</span>,
-    <span class="hljs-attr">payload</span>: { <span class="hljs-attr">valueToAddToWorkflowPayload</span>: <span class="hljs-string">'here'</span>, <span class="hljs-attr">status</span>: <span class="hljs-string">'PROCESSED'</span> },
+    <span class="hljs-attr">variables</span>: { <span class="hljs-attr">valueToAddToWorkflowVariables</span>: <span class="hljs-string">'here'</span>, <span class="hljs-attr">status</span>: <span class="hljs-string">'PROCESSED'</span> },
     <span class="hljs-attr">timeToLive</span>: <span class="hljs-number">10000</span>,
 })</code></pre>
 						<p>
@@ -297,7 +302,7 @@ zbc.publishMessage({
 zbc.publishStartMessage({
     <span class="hljs-attr">messageId</span>: uuid.v4(),
     <span class="hljs-attr">name</span>: <span class="hljs-string">'message-name'</span>,
-    <span class="hljs-attr">payload</span>: { <span class="hljs-attr">initialWorkflowPayloadValue</span>: <span class="hljs-string">'here'</span> },
+    <span class="hljs-attr">variables</span>: { <span class="hljs-attr">initialWorkflowVariable</span>: <span class="hljs-string">'here'</span> },
     <span class="hljs-attr">timeToLive</span>: <span class="hljs-number">10000</span>,
 })</code></pre>
 						<h3 id="graceful-shutdown">Graceful Shutdown</h3>
@@ -593,6 +598,13 @@ docker-compose up</code></pre>
 							</li>
 							<li class=" tsd-kind-interface">
 								<a
+									href="interfaces/setvariablesrequest.html"
+									class="tsd-kind-icon"
+									>Set<wbr />Variables<wbr />Request</a
+								>
+							</li>
+							<li class=" tsd-kind-interface">
+								<a
 									href="interfaces/topologyresponse.html"
 									class="tsd-kind-icon"
 									>Topology<wbr />Response</a
@@ -607,9 +619,9 @@ docker-compose up</code></pre>
 							</li>
 							<li class=" tsd-kind-interface">
 								<a
-									href="interfaces/updateworkflowinstancepayloadrequest.html"
+									href="interfaces/variables.html"
 									class="tsd-kind-icon"
-									>Update<wbr />Workflow<wbr />Instance<wbr />Payload<wbr />Request</a
+									>Variables</a
 								>
 							</li>
 							<li class=" tsd-kind-interface">
@@ -670,30 +682,9 @@ docker-compose up</code></pre>
 							</li>
 							<li class=" tsd-kind-type-alias">
 								<a
-									href="globals.html#payload"
-									class="tsd-kind-icon"
-									>Payload</a
-								>
-							</li>
-							<li class=" tsd-kind-type-alias">
-								<a
-									href="globals.html#zbtaskworkerhandlerminimal"
-									class="tsd-kind-icon"
-									>ZBTask<wbr />Worker<wbr />Handler<wbr />Minimal</a
-								>
-							</li>
-							<li class=" tsd-kind-type-alias">
-								<a
 									href="globals.html#zbworkertaskhandler"
 									class="tsd-kind-icon"
 									>ZBWorker<wbr />Task<wbr />Handler</a
-								>
-							</li>
-							<li class=" tsd-kind-type-alias">
-								<a
-									href="globals.html#zbworkertaskhandlerwithworker"
-									class="tsd-kind-icon"
-									>ZBWorker<wbr />Task<wbr />Handler<wbr />With<wbr />Worker</a
 								>
 							</li>
 							<li class=" tsd-kind-type-alias">
@@ -710,18 +701,22 @@ docker-compose up</code></pre>
 									>id<wbr />Colors</a
 								>
 							</li>
-							<li class=" tsd-kind-function">
+							<li
+								class=" tsd-kind-function tsd-has-type-parameter"
+							>
 								<a
-									href="globals.html#parsepayload"
+									href="globals.html#parsevariables"
 									class="tsd-kind-icon"
-									>parse<wbr />Payload</a
+									>parse<wbr />Variables</a
 								>
 							</li>
-							<li class=" tsd-kind-function">
+							<li
+								class=" tsd-kind-function tsd-has-type-parameter"
+							>
 								<a
-									href="globals.html#stringifypayload"
+									href="globals.html#stringifyvariables"
 									class="tsd-kind-icon"
-									>stringify<wbr />Payload</a
+									>stringify<wbr />Variables</a
 								>
 							</li>
 						</ul>
