@@ -5,7 +5,11 @@ import * as ZB from '../lib/interfaces'
 import { ZBLogger } from '../lib/ZBLogger'
 import { ZBClient } from './ZBClient'
 
-export class ZBWorker {
+export class ZBWorker<
+	WorkerInputVariables,
+	CustomHeaderShape,
+	WorkerOutputVariables
+> {
 	public activeJobs = 0
 	public gRPCClient: any
 	public maxActiveJobs: number
@@ -21,7 +25,11 @@ export class ZBWorker {
 	private onConnectionErrorHandler?: ZB.ConnectionErrorHandler
 	private pollHandle?: NodeJS.Timeout
 	private pollInterval: number
-	private taskHandler: ZB.ZBWorkerTaskHandler
+	private taskHandler: ZB.ZBWorkerTaskHandler<
+		WorkerInputVariables,
+		CustomHeaderShape,
+		WorkerOutputVariables
+	>
 	private cancelWorkflowOnException = false
 	private zbClient: ZBClient
 	private logger: ZBLogger
@@ -39,7 +47,11 @@ export class ZBWorker {
 		gRPCClient: any
 		id: string
 		taskType: string
-		taskHandler: ZB.ZBWorkerTaskHandler
+		taskHandler: ZB.ZBWorkerTaskHandler<
+			WorkerInputVariables,
+			CustomHeaderShape,
+			WorkerOutputVariables
+		>
 		options: ZB.ZBWorkerOptions & ZB.ZBClientOptions
 		idColor: Chalk
 		onConnectionError: ZB.ConnectionErrorHandler | undefined
@@ -227,7 +239,7 @@ export class ZBWorker {
 				try {
 					await taskHandler(
 						Object.assign({}, job as any, { customHeaders }),
-						completedPayload => {
+						(completedVariables = {}) => {
 							this.completeJob({
 								jobKey: job.key,
 								payload: completedPayload,

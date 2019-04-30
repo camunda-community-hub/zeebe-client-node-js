@@ -1,24 +1,28 @@
 import { Chalk } from 'chalk'
 import { ZBWorker } from '../zb/ZBWorker'
 
-export type Payload = any
+export interface KeyedObject {
+	[key: string]: any
+}
 export type Loglevel = 'INFO' | 'DEBUG' | 'NONE' | 'ERROR'
 
-export type completeFn = (updatedPayload?: any) => void
-export type ZBTaskWorkerHandlerMinimal = (
-	payload: Job,
-	complete: completeFn
+export type completeFn<WorkerOutputVariables> = (
+	updatedVariables?: Partial<WorkerOutputVariables>
 ) => void
 
-export type ZBWorkerTaskHandlerWithWorker = (
-	payload: Job,
-	complete: completeFn,
-	worker: ZBWorker
+export type ZBWorkerTaskHandler<
+	WorkerInputVariables = KeyedObject,
+	CustomHeaderShape = KeyedObject,
+	WorkerOutputVariables = WorkerInputVariables
+> = (
+	job: Job<WorkerInputVariables, CustomHeaderShape>,
+	complete: completeFn<WorkerOutputVariables>,
+	worker: ZBWorker<
+		WorkerInputVariables,
+		CustomHeaderShape,
+		WorkerOutputVariables
+	>
 ) => void
-
-export type ZBWorkerTaskHandler =
-	| ZBTaskWorkerHandlerMinimal
-	| ZBWorkerTaskHandlerWithWorker
 
 export interface ZBWorkerLoggerOptions {
 	loglevel: Loglevel
@@ -64,16 +68,19 @@ export interface ActivatedJob {
 	payload: string
 }
 
-export interface Job {
+export interface Job<
+	VariableShape = KeyedObject,
+	CustomHeaderShape = KeyedObject
+> {
 	key: string
 	type: string
 	jobHeaders: JobHeaders
-	customHeaders: Payload
+	customHeaders: CustomHeaderShape
 	worker: string
 	retries: number
 	// epoch milliseconds
 	deadline: string
-	payload: Payload
+	variables: VariableShape
 }
 
 export interface JobHeaders {
@@ -112,10 +119,10 @@ export interface ZBWorkerOptions {
 	failWorkflowOnException?: boolean
 }
 
-export interface CreateWorkflowInstanceRequest {
+export interface CreateWorkflowInstanceRequest<VariableShape = KeyedObject> {
 	bpmnProcessId: string
 	version?: number
-	payload: Payload
+	variables: VariableShape
 }
 
 export interface CreateWorkflowInstanceResponse {
@@ -182,7 +189,7 @@ export interface ListWorkflowResponse {
 	workflows: WorkflowMetadata[]
 }
 
-export interface PublishMessageRequest {
+export interface PublishMessageRequest<V = KeyedObject> {
 	/** Should match the "Message Name" in a BPMN Message Catch  */
 	name: string
 	/** The value to match with the field specified as "Subscription Correlation Key" in BPMN */
@@ -190,16 +197,16 @@ export interface PublishMessageRequest {
 	timeToLive: number
 	/** Unique ID for this message */
 	messageId?: string
-	payload: Payload
+	variables: V
 }
 
-export interface PublishStartMessageRequest {
+export interface PublishStartMessageRequest<V = KeyedObject> {
 	/** Should match the "Message Name" in a BPMN Message Catch  */
 	name: string
 	timeToLive: number
 	/** Unique ID for this message */
 	messageId?: string
-	payload: Payload
+	variables: V
 }
 
 export interface UpdateJobRetriesRequest {
@@ -213,14 +220,19 @@ export interface FailJobRequest {
 	errorMessage: string
 }
 
-export interface CompleteJobRequest {
+export interface CompleteJobRequest<V = KeyedObject> {
 	jobKey: string
-	payload: Payload
+	variables: V
 }
 
-export interface UpdateWorkflowInstancePayloadRequest {
+export interface SetVariablesRequest<V = KeyedObject> {
+	/** the unique identifier of a particular element; can be the workflow instance key (as
+	 * obtained during instance creation), or a given element, such as a service task (see
+	 *  elementInstanceKey on the JobHeaders message)
+	 */
 	elementInstanceKey: string
-	payload: Payload
+	variables: V
+	local: boolean
 }
 
 /* either workflow key or bpmn process id and version has to be specified*/

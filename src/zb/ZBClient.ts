@@ -4,6 +4,7 @@ import * as GRPCClient from 'node-grpc-client'
 import * as path from 'path'
 import { BpmnParser, stringifyPayload } from '../lib'
 import * as ZB from '../lib/interfaces'
+import { KeyedObject } from '../lib/interfaces'
 import { ZBWorker } from './ZBWorker'
 
 const idColors = [
@@ -21,7 +22,7 @@ export class ZBClient {
 	private gRPCClient: any
 	private options: ZB.ZBClientOptions
 	private workerCount = 0
-	private workers: ZBWorker[] = []
+	private workers: Array<ZBWorker<any, any, any>> = []
 
 	constructor(brokerAddress: string, options: ZB.ZBClientOptions = {}) {
 		if (!brokerAddress) {
@@ -56,10 +57,18 @@ export class ZBClient {
 	 * @param taskHandler - A handler for activated jobs.
 	 * @param options - Configuration options for the worker.
 	 */
-	public createWorker(
+	public createWorker<
+		WorkerInputVariables = KeyedObject,
+		CustomHeaderShape = KeyedObject,
+		WorkerOutputVariables = WorkerInputVariables
+	>(
 		id: string,
 		taskType: string,
-		taskHandler: ZB.ZBWorkerTaskHandler,
+		taskHandler: ZB.ZBWorkerTaskHandler<
+			WorkerInputVariables,
+			CustomHeaderShape,
+			WorkerOutputVariables
+		>,
 		options: ZB.ZBWorkerOptions & ZB.ZBClientOptions = {},
 		onConnectionError?: ZB.ConnectionErrorHandler | undefined
 	) {
@@ -67,7 +76,11 @@ export class ZBClient {
 			throw new Error('Client is closing. No worker creation allowed!')
 		}
 		const idColor = idColors[this.workerCount++ % idColors.length]
-		const worker = new ZBWorker({
+		const worker = new ZBWorker<
+			WorkerInputVariables,
+			CustomHeaderShape,
+			WorkerOutputVariables
+		>({
 			gRPCClient: this.gRPCClient,
 			id,
 			idColor,
@@ -202,16 +215,16 @@ export class ZBClient {
 	 * @returns {Promise<CreateWorkflowInstanceResponse>}
 	 * @memberof ZBClient
 	 */
-	public createWorkflowInstance(
+	public createWorkflowInstance<VariableShape = KeyedObject>(
 		bpmnProcessId: string,
-		payload: ZB.Payload,
+		variables: VariableShape,
 		version?: number
 	): Promise<ZB.CreateWorkflowInstanceResponse> {
 		version = version || -1
 
 		const createWorkflowInstanceRequest: ZB.CreateWorkflowInstanceRequest = {
 			bpmnProcessId,
-			payload,
+			variables: (variables as unknown) as object,
 			version,
 		}
 		return this.gRPCClient.createWorkflowInstanceSync(
