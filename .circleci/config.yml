@@ -1,14 +1,28 @@
 version: 2
 
-prod_filters: &prod_filters # ignore any commit on any branch by default
+prod_filters: &prod_filters # Ignores any commit on any branch by default
   branches:
     ignore: /.*/
-  # only act on version tags
+
+  # Only act on semver version tags
   tags:
     only:
-      - /^[0-9]+\.[0-9]+\.[0-9]+$/
+      - |
+        (?nx)^
+        (?<Major>0|[1-9]\d*)\.
+        (?<Minor>0|[1-9]\d*)\.
+        (?<Patch>0|[1-9]\d*)
+        (?<PreReleaseTagWithSeparator>
+          -(?<PreReleaseTag>
+            ((0|[1-9]\d*|\d*[A-Z-a-z-][\dA-Za-z-]*))(\.(0|[1-9]\d*|\d*[A-Za-z-][\dA-Za-z-]*))*
+          )
+        )?
+        (?<BuildMetadataTagWithSeparator>
+          \+(?<BuildMetadataTag>[\dA-Za-z-]+(\.[\dA-Za-z-]*)*)
+        )?$
 
 jobs:
+  # Runs the tests, including integration
   test:
     docker:
       - image: circleci/node:11.10.1
@@ -20,7 +34,7 @@ jobs:
           key: dependency-cache-{{ checksum "package.json" }}
       - run:
           name: npm-install
-          command: npm install
+          command: npm ci
       - save_cache:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:
@@ -41,7 +55,9 @@ jobs:
       - run:
           name: build-typescript
           command: npm run build
-  build:
+
+  # Publishes to npm
+  publish:
     docker:
       - image: circleci/node:11.10.1
     steps:
@@ -52,7 +68,7 @@ jobs:
           key: dependency-cache-{{ checksum "package.json" }}
       - run:
           name: npm-install
-          command: npm install
+          command: npm ci
       - save_cache:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:
@@ -63,17 +79,26 @@ jobs:
       - run:
           name: build
           command: npm run build
+      - run:
+        name: publish
+        command: |
+          if grep -qF "\"version\": \"$CIRCLE_TAG\"," package.json;then
+            npm publish
+          else
+            echo "The package.json does not match the Git tag for this release"
+            exit 1;
+          fi
 
 workflows:
   version: 2
   test:
     jobs:
       - test
-  build-master:
+  build-master: # Will only run when a tag is pushed
     jobs:
       - test:
           filters: *prod_filters
-      - build:
+      - publish:
           requires:
             - test
           filters: *prod_filters
