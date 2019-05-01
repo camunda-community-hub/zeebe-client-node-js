@@ -6,19 +6,7 @@ prod_filters: &prod_filters # Ignores any commit on any branch by default
 
   # Only act on semver version tags
   tags:
-    only: >
-      (?nx)^
-      (?<Major>0|[1-9]\d*)\.
-      (?<Minor>0|[1-9]\d*)\.
-      (?<Patch>0|[1-9]\d*)
-      (?<PreReleaseTagWithSeparator>
-        -(?<PreReleaseTag>
-          ((0|[1-9]\d*|\d*[A-Z-a-z-][\dA-Za-z-]*))(\.(0|[1-9]\d*|\d*[A-Za-z-][\dA-Za-z-]*))*
-        )
-      )?
-      (?<BuildMetadataTagWithSeparator>
-        \+(?<BuildMetadataTag>[\dA-Za-z-]+(\.[\dA-Za-z-]*)*)
-      )?$
+    only: /test/
 
 jobs:
   # Runs the tests, including integration
