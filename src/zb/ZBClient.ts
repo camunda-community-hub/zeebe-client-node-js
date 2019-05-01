@@ -172,8 +172,8 @@ export class ZBClient {
 	 * Publish a message to the broker for correlation with a workflow instance.
 	 * @param publishMessageRequest - The message to publish.
 	 */
-	public publishMessage(
-		publishMessageRequest: ZB.PublishMessageRequest
+	public publishMessage<T = KeyedObject>(
+		publishMessageRequest: ZB.PublishMessageRequest<T>
 	): Promise<void> {
 		return this.gRPCClient.publishMessageSync(
 			stringifyVariables(publishMessageRequest)
@@ -184,8 +184,8 @@ export class ZBClient {
 	 * Publish a message to the broker for correlation with a workflow message start event.
 	 * @param publishStartMessageRequest - The message to publish.
 	 */
-	public publishStartMessage(
-		publishStartMessageRequest: ZB.PublishStartMessageRequest
+	public publishStartMessage<T = KeyedObject>(
+		publishStartMessageRequest: ZB.PublishStartMessageRequest<T>
 	): Promise<void> {
 		const publishMessageRequest: ZB.PublishMessageRequest = {
 			correlationKey: '__MESSAGE_START_EVENT__',
