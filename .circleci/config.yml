@@ -71,7 +71,7 @@ jobs:
           name: publish
           command: |
             if grep -qF "\"version\": \"$CIRCLE_TAG\"," package.json;then
-              echo "Publish!"
+              npm publish
             else
               echo "The package.json does not match the Git tag for this release"
               exit 1;
