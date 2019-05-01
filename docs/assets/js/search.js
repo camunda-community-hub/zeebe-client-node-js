@@ -136,7 +136,7 @@ typedoc.search.data = {
 			kind: 128,
 			name: "ZBWorker",
 			url: "classes/zbworker.html",
-			classes: "tsd-kind-class",
+			classes: "tsd-kind-class tsd-has-type-parameter",
 		},
 		{
 			id: 16,
@@ -237,8 +237,8 @@ typedoc.search.data = {
 		{
 			id: 28,
 			kind: 256,
-			name: "Variables",
-			url: "interfaces/variables.html",
+			name: "KeyedObject",
+			url: "interfaces/keyedobject.html",
 			classes: "tsd-kind-interface",
 		},
 		{
@@ -418,7 +418,7 @@ typedoc.search.data = {
 			kind: 256,
 			name: "Job",
 			url: "interfaces/job.html",
-			classes: "tsd-kind-interface",
+			classes: "tsd-kind-interface tsd-has-type-parameter",
 		},
 		{
 			id: 52,
@@ -599,7 +599,7 @@ typedoc.search.data = {
 			kind: 256,
 			name: "CreateWorkflowInstanceRequest",
 			url: "interfaces/createworkflowinstancerequest.html",
-			classes: "tsd-kind-interface",
+			classes: "tsd-kind-interface tsd-has-type-parameter",
 		},
 		{
 			id: 75,
@@ -948,7 +948,7 @@ typedoc.search.data = {
 			kind: 256,
 			name: "PublishMessageRequest",
 			url: "interfaces/publishmessagerequest.html",
-			classes: "tsd-kind-interface",
+			classes: "tsd-kind-interface tsd-has-type-parameter",
 		},
 		{
 			id: 120,
@@ -995,7 +995,7 @@ typedoc.search.data = {
 			kind: 256,
 			name: "PublishStartMessageRequest",
 			url: "interfaces/publishstartmessagerequest.html",
-			classes: "tsd-kind-interface",
+			classes: "tsd-kind-interface tsd-has-type-parameter",
 		},
 		{
 			id: 126,
@@ -1088,7 +1088,7 @@ typedoc.search.data = {
 			kind: 256,
 			name: "CompleteJobRequest",
 			url: "interfaces/completejobrequest.html",
-			classes: "tsd-kind-interface",
+			classes: "tsd-kind-interface tsd-has-type-parameter",
 		},
 		{
 			id: 138,
@@ -1111,7 +1111,7 @@ typedoc.search.data = {
 			kind: 256,
 			name: "SetVariablesRequest",
 			url: "interfaces/setvariablesrequest.html",
-			classes: "tsd-kind-interface",
+			classes: "tsd-kind-interface tsd-has-type-parameter",
 		},
 		{
 			id: 141,
@@ -1259,7 +1259,7 @@ typedoc.search.data = {
 			kind: 4194304,
 			name: "completeFn",
 			url: "globals.html#completefn",
-			classes: "tsd-kind-type-alias",
+			classes: "tsd-kind-type-alias tsd-has-type-parameter",
 		},
 		{
 			id: 160,
@@ -1275,7 +1275,7 @@ typedoc.search.data = {
 			kind: 4194304,
 			name: "ZBWorkerTaskHandler",
 			url: "globals.html#zbworkertaskhandler",
-			classes: "tsd-kind-type-alias",
+			classes: "tsd-kind-type-alias tsd-has-type-parameter",
 		},
 		{
 			id: 162,
@@ -1337,7 +1337,8 @@ typedoc.search.data = {
 			kind: 2048,
 			name: "createWorker",
 			url: "classes/zbclient.html#createworker",
-			classes: "tsd-kind-method tsd-parent-kind-class",
+			classes:
+				"tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter",
 			parent: "ZBClient",
 		},
 		{
@@ -1409,7 +1410,8 @@ typedoc.search.data = {
 			kind: 2048,
 			name: "createWorkflowInstance",
 			url: "classes/zbclient.html#createworkflowinstance",
-			classes: "tsd-kind-method tsd-parent-kind-class",
+			classes:
+				"tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter",
 			parent: "ZBClient",
 		},
 		{
@@ -1425,7 +1427,8 @@ typedoc.search.data = {
 			kind: 2048,
 			name: "setVariables",
 			url: "classes/zbclient.html#setvariables",
-			classes: "tsd-kind-method tsd-parent-kind-class",
+			classes:
+				"tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter",
 			parent: "ZBClient",
 		},
 		{
@@ -1458,6 +1461,20 @@ typedoc.search.data = {
 			name: "idColors",
 			url: "globals.html#idcolors",
 			classes: "tsd-kind-variable tsd-is-not-exported",
+		},
+		{
+			id: 185,
+			kind: 64,
+			name: "stringifyPayload",
+			url: "globals.html#stringifypayload",
+			classes: "tsd-kind-function",
+		},
+		{
+			id: 186,
+			kind: 64,
+			name: "parsePayload",
+			url: "globals.html#parsepayload",
+			classes: "tsd-kind-function",
 		},
 	],
 };

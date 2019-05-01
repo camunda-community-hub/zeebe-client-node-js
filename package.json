@@ -1,6 +1,6 @@
 {
 	"name": "zeebe-node",
-	"version": "2.0.0",
+	"version": "2.0.0-next.0",
 	"description": "A Node.js client library for the Zeebe Microservices Orchestration Engine.",
 	"keywords": [
 		"zeebe",
@@ -74,6 +74,7 @@
 		"remark-cli": "^6.0.1",
 		"remark-lint": "^6.0.4",
 		"remark-preset-lint-recommended": "^3.0.2",
+		"tslint": "^5.16.0",
 		"ts-jest": "^23.10.5",
 		"tsc-watch": "^1.0.31",
 		"typedoc": "^0.14.2",
