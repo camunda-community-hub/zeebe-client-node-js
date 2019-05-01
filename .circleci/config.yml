@@ -68,6 +68,9 @@ jobs:
           name: build
           command: npm run build
       - run:
+          name: npmrc
+          command: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+      - run:
           name: publish
           command: |
             if grep -qF "\"version\": \"$CIRCLE_TAG\"," package.json;then
