@@ -7,19 +7,7 @@ prod_filters: &prod_filters # Ignores any commit on any branch by default
   # Only act on semver version tags
   tags:
     only:
-      - |
-        (?nx)^
-        (?<Major>0|[1-9]\d*)\.
-        (?<Minor>0|[1-9]\d*)\.
-        (?<Patch>0|[1-9]\d*)
-        (?<PreReleaseTagWithSeparator>
-          -(?<PreReleaseTag>
-            ((0|[1-9]\d*|\d*[A-Z-a-z-][\dA-Za-z-]*))(\.(0|[1-9]\d*|\d*[A-Za-z-][\dA-Za-z-]*))*
-          )
-        )?
-        (?<BuildMetadataTagWithSeparator>
-          \+(?<BuildMetadataTag>[\dA-Za-z-]+(\.[\dA-Za-z-]*)*)
-        )?$
+      - /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/
 
 jobs:
   # Runs the tests, including integration
@@ -80,14 +68,17 @@ jobs:
           name: build
           command: npm run build
       - run:
-        name: publish
-        command: |
-          if grep -qF "\"version\": \"$CIRCLE_TAG\"," package.json;then
-            npm publish
-          else
-            echo "The package.json does not match the Git tag for this release"
-            exit 1;
-          fi
+          name: npmrc
+          command: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+      - run:
+          name: publish
+          command: |
+            if grep -qF "\"version\": \"$CIRCLE_TAG\"," package.json;then
+              npm publish
+            else
+              echo "The package.json does not match the Git tag for this release"
+              exit 1;
+            fi
 
 workflows:
   version: 2
