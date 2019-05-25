@@ -12,7 +12,7 @@
     <bpmn:sequenceFlow id="SequenceFlow_1camkmi" sourceRef="StartEvent_1" targetRef="ServiceTask_0cz2k8t" />
     <bpmn:serviceTask id="ServiceTask_18goo5h" name="Path A">
       <bpmn:extensionElements>
-        <zeebe:taskDefinition type="pathA" retries="1" />
+        <zeebe:taskDefinition type="pathA" retries="3" />
       </bpmn:extensionElements>
       <bpmn:incoming>SequenceFlow_0jlw8w3</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_1ixu8oc</bpmn:outgoing>
@@ -22,7 +22,7 @@
     </bpmn:sequenceFlow>
     <bpmn:serviceTask id="ServiceTask_15isvh5" name="Path B">
       <bpmn:extensionElements>
-        <zeebe:taskDefinition type="pathB" retries="1" />
+        <zeebe:taskDefinition type="pathB" retries="3" />
       </bpmn:extensionElements>
       <bpmn:incoming>SequenceFlow_0lsaa01</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_03w4t8z</bpmn:outgoing>
@@ -38,7 +38,7 @@
     <bpmn:sequenceFlow id="SequenceFlow_03w4t8z" sourceRef="ServiceTask_15isvh5" targetRef="EndEvent_1g2ztlo" />
     <bpmn:serviceTask id="ServiceTask_0cz2k8t" name="Wait">
       <bpmn:extensionElements>
-        <zeebe:taskDefinition type="wait" retries="1" />
+        <zeebe:taskDefinition type="wait" retries="3" />
       </bpmn:extensionElements>
       <bpmn:incoming>SequenceFlow_1camkmi</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_188wslq</bpmn:outgoing>

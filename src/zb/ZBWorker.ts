@@ -237,9 +237,24 @@ export class ZBWorker<
 				// Any unhandled exception thrown by the user-supplied code will bubble up and throw here.
 				// The task timeout handler above will deal with it.
 				try {
-					await taskHandler(
-						Object.assign({}, job as any, { customHeaders }),
-						(completedVariables = {}) => {
+					/**
+					 * Construct the backward compatible worker callback
+					 * See https://stackoverflow.com/questions/12766528/build-a-function-object-with-properties-in-typescript
+					 * for an explanation of the pattern used.
+					 *
+					 * It is backward compatible because the old success handler is available as the function:
+					 *  complete(variables?: object).
+					 *
+					 * The new API is available as
+					 * complete.success(variables?: object) and complete.failure(errorMessage: string, retries?: number)
+					 *
+					 * To halt execution of the business process and raise an incident in Operate, call
+					 * complete(errorMessage, 0)
+					 */
+					const workerCallback = (() => {
+						const shadowWorkerCallback = (
+							completedVariables = {}
+						) => {
 							this.completeJob({
 								jobKey: job.key,
 								variables: completedVariables,
@@ -259,7 +274,24 @@ export class ZBWorker<
 									}, however it had timed out.`
 								)
 							}
-						},
+						}
+						shadowWorkerCallback.success = shadowWorkerCallback
+						shadowWorkerCallback.failure = (
+							errorMessage,
+							retries = Math.max(0, job.retries - 1)
+						) => {
+							this.zbClient.failJob({
+								errorMessage,
+								jobKey: job.key,
+								retries,
+							})
+						}
+						return shadowWorkerCallback
+					})()
+
+					await taskHandler(
+						Object.assign({}, job as any, { customHeaders }),
+						workerCallback,
 						this
 					)
 				} catch (e) {

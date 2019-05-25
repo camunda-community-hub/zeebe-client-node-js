@@ -83,6 +83,21 @@ describe('ZBClient.deployWorkflow()', () => {
 		})
 	})
 
+	it('Can service a task with complete.success', async done => {
+		const res = await zbc.deployWorkflow('./test/hello-world.bpmn')
+		expect(res.workflows.length).toBe(1)
+		expect(res.workflows[0].version > 1).toBe(true)
+
+		const wf = await zbc.createWorkflowInstance('hello-world', {})
+		zbc.createWorker('test', 'console-log', async (job, complete) => {
+			expect(job.jobHeaders.workflowInstanceKey).toBe(
+				wf.workflowInstanceKey
+			)
+			complete.success(job.variables)
+			done()
+		})
+	})
+
 	it('Can start a workflow with a message', async done => {
 		const deploy = await zbc.deployWorkflow(
 			'./src/__tests__/testdata/msg-start.bpmn'
@@ -183,6 +198,106 @@ describe('ZBClient.deployWorkflow()', () => {
 			expect(job.jobHeaders.workflowInstanceKey).toBe(wfi)
 			expect(job.variables.conditionVariable).toBe(false)
 			complete(job.variables)
+			done()
+		})
+	})
+
+	it('Can update workflow variables with complete.success()', async done => {
+		const res = await zbc.deployWorkflow('./test/conditional-pathway.bpmn')
+		expect(res.workflows.length).toBe(1)
+		expect(res.workflows[0].bpmnProcessId).toBe('condition-test')
+
+		const wf = await zbc.createWorkflowInstance('condition-test', {
+			conditionVariable: true,
+		})
+		const wfi = wf.workflowInstanceKey
+		expect(wfi).toBeTruthy()
+
+		await zbc.setVariables({
+			elementInstanceKey: wfi,
+			local: false,
+			variables: {
+				conditionVariable: false,
+			},
+		})
+
+		await zbc.createWorker('test2', 'wait', async (job, complete) => {
+			expect(job.jobHeaders.workflowInstanceKey).toBe(wfi)
+			complete.success(job)
+		})
+
+		await zbc.createWorker('test2', 'pathB', async (job, complete) => {
+			expect(job.jobHeaders.workflowInstanceKey).toBe(wfi)
+			expect(job.variables.conditionVariable).toBe(false)
+			complete.success(job.variables)
+			done()
+		})
+	})
+
+	it('Causes a retry with complete.failure()', async done => {
+		let attempts = 0
+		const res = await zbc.deployWorkflow('./test/conditional-pathway.bpmn')
+		expect(res.workflows.length).toBe(1)
+		expect(res.workflows[0].bpmnProcessId).toBe('condition-test')
+
+		const wf = await zbc.createWorkflowInstance('condition-test', {
+			conditionVariable: true,
+		})
+		const wfi = wf.workflowInstanceKey
+		expect(wfi).toBeTruthy()
+
+		await zbc.setVariables({
+			elementInstanceKey: wfi,
+			local: false,
+			variables: {
+				conditionVariable: false,
+			},
+		})
+
+		await zbc.createWorker('test2', 'wait', async (job, complete) => {
+			expect(job.jobHeaders.workflowInstanceKey).toBe(wfi)
+			attempts++
+			// Succeed on the third attempt
+			if (attempts === 3) {
+				return complete()
+			}
+			complete.failure('Triggering a retry')
+			if (attempts === 2) {
+				expect(attempts).toBe(2)
+				done()
+			}
+		})
+	})
+
+	it('Can raise an Operate incident with complete.failure()', async done => {
+		const res = await zbc.deployWorkflow('./test/conditional-pathway.bpmn')
+		expect(res.workflows.length).toBe(1)
+		expect(res.workflows[0].bpmnProcessId).toBe('condition-test')
+
+		const wf = await zbc.createWorkflowInstance('condition-test', {
+			conditionVariable: true,
+		})
+		const wfi = wf.workflowInstanceKey
+		expect(wfi).toBeTruthy()
+
+		await zbc.setVariables({
+			elementInstanceKey: wfi,
+			local: false,
+			variables: {
+				conditionVariable: false,
+			},
+		})
+
+		await zbc.createWorker('test2', 'wait', async (job, complete) => {
+			expect(job.jobHeaders.workflowInstanceKey).toBe(wfi)
+			complete.success(job)
+		})
+
+		await zbc.createWorker('test2', 'pathB', async (job, complete) => {
+			expect(job.jobHeaders.workflowInstanceKey).toBe(wfi)
+			expect(job.variables.conditionVariable).toBe(false)
+			complete.failure('Raise an incident in Operate', 0)
+			// Manually verify that an incident has been raised
 			done()
 		})
 	})
