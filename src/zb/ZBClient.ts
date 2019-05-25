@@ -2,6 +2,7 @@ import chalk from 'chalk'
 import * as fs from 'fs'
 import * as GRPCClient from 'node-grpc-client'
 import * as path from 'path'
+import { v4 as uuid } from 'uuid'
 import { BpmnParser, stringifyVariables } from '../lib'
 import * as ZB from '../lib/interfaces'
 import { KeyedObject } from '../lib/interfaces'
@@ -187,8 +188,19 @@ export class ZBClient {
 	public publishStartMessage<T = KeyedObject>(
 		publishStartMessageRequest: ZB.PublishStartMessageRequest<T>
 	): Promise<void> {
+		/**
+		 * The hash of the correlationKey is used to determine the partition where this workflow will start.
+		 * So we assign a random uuid to balance workflow instances created via start message across partitions.
+		 *
+		 * We make the correlationKey optional, because the caller can specify a correlationKey + messageId
+		 * to guarantee an idempotent message.
+		 *
+		 * Multiple messages with the same correlationKey + messageId combination will only start a workflow once.
+		 * See: https://github.com/zeebe-io/zeebe/issues/1012 and https://github.com/zeebe-io/zeebe/issues/1022
+		 */
+
 		const publishMessageRequest: ZB.PublishMessageRequest = {
-			correlationKey: '__MESSAGE_START_EVENT__',
+			correlationKey: uuid(),
 			...publishStartMessageRequest,
 		}
 		return this.gRPCClient.publishMessageSync(
