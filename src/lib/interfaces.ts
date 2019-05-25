@@ -6,9 +6,11 @@ export interface KeyedObject {
 }
 export type Loglevel = 'INFO' | 'DEBUG' | 'NONE' | 'ERROR'
 
-export type completeFn<WorkerOutputVariables> = (
-	updatedVariables?: Partial<WorkerOutputVariables>
-) => void
+export interface CompleteFn<WorkerOutputVariables> {
+	(updatedVariables?: Partial<WorkerOutputVariables>): void
+	success: (updatedVariables?: Partial<WorkerOutputVariables>) => void
+	failure: (errorMessage: string, retries?: number) => void
+}
 
 export type ZBWorkerTaskHandler<
 	WorkerInputVariables = KeyedObject,
@@ -16,7 +18,7 @@ export type ZBWorkerTaskHandler<
 	WorkerOutputVariables = WorkerInputVariables
 > = (
 	job: Job<WorkerInputVariables, CustomHeaderShape>,
-	complete: completeFn<WorkerOutputVariables>,
+	complete: CompleteFn<WorkerOutputVariables>,
 	worker: ZBWorker<
 		WorkerInputVariables,
 		CustomHeaderShape,

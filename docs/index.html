@@ -150,6 +150,14 @@
 							>
 							and in the <code>docs</code> subdirectory.
 						</p>
+						<p>
+							Docker-compose configurations for Zeebe are
+							available at
+							<a
+								href="https://github.com/zeebe-io/zeebe-docker-compose"
+								>https://github.com/zeebe-io/zeebe-docker-compose</a
+							>.
+						</p>
 						<h2 id="versioning">Versioning</h2>
 						<p>
 							NPM Package version 1.x.x supports Zeebe 0.15/0.16.
@@ -254,6 +262,36 @@
 						<pre><code class="language-typescript">zbc.createWorker(<span class="hljs-string">'test-worker'</span>, <span class="hljs-string">'console-log'</span>, maybeFaultyHandler, {
     failWorkflowOnException: <span class="hljs-literal">true</span>,
 })</code></pre>
+						<h3 id="completing-tasks-with-success-or-failure">
+							Completing tasks with success or failure
+						</h3>
+						<p>
+							To complete a task, the task worker handler function
+							receives a <code>complete</code> method. This method
+							has a <code>success</code> and a
+							<code>failure</code> method (as well as being able
+							to be called directly). Calling the method directly
+							- <code>complete()</code> is the same as calling
+							<code>complete.success()</code>.
+						</p>
+						<p>
+							Call <code>complete.success()</code> (or just
+							<code>complete()</code>) passing in a optional plain
+							old JavaScript object (POJO) - a key:value map.
+							These are variable:value pairs that will be used to
+							update the workflow state in the broker.
+						</p>
+						<p>
+							Call <code>complete.failure()</code> to fail the
+							task. You must pass in a string message describing
+							the failure. The client library decrements the retry
+							count, and ethe broker handles the retry logic. If
+							the failure is a hard failure and should cause an
+							incident to be raised in Operate, then pass in
+							<code>0</code> for the optional second parameter,
+							<code>retries</code>:
+						</p>
+						<pre><code class="language-javascript">complete.failure(<span class="hljs-string">'This is a critical failure and will raise an incident'</span>, <span class="hljs-number">0</span>)</code></pre>
 						<h3 id="start-a-workflow-instance">
 							Start a Workflow Instance
 						</h3>
@@ -287,16 +325,15 @@ zbc.publishMessage({
 							<a
 								href="https://github.com/zeebe-io/zeebe/issues/1858"
 								>Message Start Event</a
-							>. In this case, there is no correlation key, and
-							all Message Start events that match the
+							>. In this case, the correlation key is optional,
+							and all Message Start events that match the
 							<code>name</code> property will receive the message.
 						</p>
 						<p>
 							You can use the
 							<code>publishStartMessage()</code> method to publish
 							a message with no correlation key (it will be set to
-							<code>__MESSAGE_START_EVENT__</code> in the
-							background):
+							a random uuid in the background):
 						</p>
 						<pre><code class="language-javascript"><span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZB.ZBClient(<span class="hljs-string">'localhost:26500'</span>)
 zbc.publishStartMessage({
@@ -305,6 +342,17 @@ zbc.publishStartMessage({
     <span class="hljs-attr">variables</span>: { <span class="hljs-attr">initialWorkflowVariable</span>: <span class="hljs-string">'here'</span> },
     <span class="hljs-attr">timeToLive</span>: <span class="hljs-number">10000</span>,
 })</code></pre>
+						<p>
+							Both normal messages and start messages can be
+							published idempotently by setting both the
+							<code>messageId</code> and the
+							<code>correlationKey</code>. They will only ever be
+							correlated once. See:
+							<a
+								href="https://github.com/zeebe-io/zeebe/issues/1012"
+								>A message can be published idempotent</a
+							>.
+						</p>
 						<h3 id="graceful-shutdown">Graceful Shutdown</h3>
 						<p>
 							To drain workers, call the
@@ -403,12 +451,22 @@ zbc.close().then(<span class="hljs-function"><span class="hljs-params">()</span>
 								>Circle CI CLI</a
 							>:
 						</p>
-						<pre><code class="language-bash">circleci <span class="hljs-built_in">local</span> execute -c .circleci/config-local.yml --job <span class="hljs-built_in">test</span></code></pre>
+						<pre><code class="language-bash">circleci <span class="hljs-built_in">local</span> execute -c .circleci/config.yml --job <span class="hljs-built_in">test</span></code></pre>
 						<p>Or you can start a dockerised broker:</p>
 						<pre><code class="language-bash"><span class="hljs-built_in">cd</span> docker
 docker-compose up</code></pre>
 						<p>And then run them manually:</p>
 						<pre><code class="language-bash">npm run <span class="hljs-built_in">test</span>:integration</code></pre>
+						<p>
+							For the failure test, you need to run Operate (<a
+								href="https://github.com/zeebe-io/zeebe-docker-compose/blob/master/operate/docker-compose.yml"
+								>docker-compose config</a
+							>) and manually verify that an incident has been
+							raised at
+							<a href="http://localhost:8080"
+								>http://localhost:8080</a
+							>.
+						</p>
 					</div>
 				</div>
 				<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
@@ -489,6 +547,15 @@ docker-compose up</code></pre>
 									href="interfaces/brokerinfo.html"
 									class="tsd-kind-icon"
 									>Broker<wbr />Info</a
+								>
+							</li>
+							<li
+								class=" tsd-kind-interface tsd-has-type-parameter"
+							>
+								<a
+									href="interfaces/completefn.html"
+									class="tsd-kind-icon"
+									>Complete<wbr />Fn</a
 								>
 							</li>
 							<li
@@ -699,15 +766,6 @@ docker-compose up</code></pre>
 									href="globals.html#zbworkertaskhandler"
 									class="tsd-kind-icon"
 									>ZBWorker<wbr />Task<wbr />Handler</a
-								>
-							</li>
-							<li
-								class=" tsd-kind-type-alias tsd-has-type-parameter"
-							>
-								<a
-									href="globals.html#completefn"
-									class="tsd-kind-icon"
-									>complete<wbr />Fn</a
 								>
 							</li>
 							<li class=" tsd-kind-variable tsd-is-not-exported">
