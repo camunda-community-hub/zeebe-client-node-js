@@ -203,6 +203,7 @@ export interface PublishStartMessageRequest<Variables = KeyedObject> {
 	timeToLive: number
 	/** Unique ID for this message */
 	messageId?: string
+	correlationKey?: string
 	variables: Variables
 }
 
