@@ -131,7 +131,7 @@ To complete a task, the task worker handler function receives a `complete` metho
 
 Call `complete.success()` (or just `complete()`) passing in a optional plain old JavaScript object (POJO) - a key:value map. These are variable:value pairs that will be used to update the workflow state in the broker.
 
-Call `complete.failure()` to fail the task. You must pass in a string message describing the failure. The client library decrements the retry count, and ethe broker handles the retry logic. If the failure is a hard failure and should cause an incident to be raised in Operate, then pass in `0` for the optional second parameter, `retries`:
+Call `complete.failure()` to fail the task. You must pass in a string message describing the failure. The client library decrements the retry count, and the broker handles the retry logic. If the failure is a hard failure and should cause an incident to be raised in Operate, then pass in `0` for the optional second parameter, `retries`:
 
 ```javascript
 complete.failure('This is a critical failure and will raise an incident', 0)
