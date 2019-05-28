@@ -16,6 +16,10 @@ const idColors = [
 	chalk.blue,
 ]
 
+export interface DeploymentOptions {
+	redeploy: boolean
+}
+
 export class ZBClient {
 	public brokerAddress: string
 	private closePromise?: Promise<any>
@@ -125,7 +129,7 @@ export class ZBClient {
 	 */
 	public async deployWorkflow(
 		workflow: string | string[],
-		{ redeploy = true } = {}
+		{ redeploy = true }: DeploymentOptions = { redeploy: true }
 	): Promise<ZB.DeployWorkflowResponse> {
 		const workflows = Array.isArray(workflow) ? workflow : [workflow]
 		let deployedWorkflows: any[] = []
