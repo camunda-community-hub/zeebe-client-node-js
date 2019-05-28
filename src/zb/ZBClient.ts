@@ -5,7 +5,7 @@ import * as path from 'path'
 import { v4 as uuid } from 'uuid'
 import { BpmnParser, stringifyVariables } from '../lib'
 import * as ZB from '../lib/interfaces'
-import { KeyedObject } from '../lib/interfaces'
+import { DeployWorkflowOptions, KeyedObject } from '../lib/interfaces'
 import { ZBWorker } from './ZBWorker'
 
 const idColors = [
@@ -15,10 +15,6 @@ const idColors = [
 	chalk.magenta,
 	chalk.blue,
 ]
-
-export interface DeploymentOptions {
-	redeploy: boolean
-}
 
 export class ZBClient {
 	public brokerAddress: string
@@ -129,7 +125,7 @@ export class ZBClient {
 	 */
 	public async deployWorkflow(
 		workflow: string | string[],
-		{ redeploy = true }: DeploymentOptions = { redeploy: true }
+		{ redeploy = true }: DeployWorkflowOptions = { redeploy: true }
 	): Promise<ZB.DeployWorkflowResponse> {
 		const workflows = Array.isArray(workflow) ? workflow : [workflow]
 		let deployedWorkflows: any[] = []

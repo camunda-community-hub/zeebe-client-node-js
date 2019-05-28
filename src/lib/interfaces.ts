@@ -6,6 +6,9 @@ export interface KeyedObject {
 }
 export type Loglevel = 'INFO' | 'DEBUG' | 'NONE' | 'ERROR'
 
+export interface DeployWorkflowOptions {
+	redeploy: boolean
+}
 export interface CompleteFn<WorkerOutputVariables> {
 	(updatedVariables?: Partial<WorkerOutputVariables>): void
 	success: (updatedVariables?: Partial<WorkerOutputVariables>) => void
