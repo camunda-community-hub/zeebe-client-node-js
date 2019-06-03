@@ -17,7 +17,7 @@ const idColors = [
 ]
 
 export class ZBClient {
-	public brokerAddress: string
+	public gatewayAddress: string
 	private closePromise?: Promise<any>
 	private closing = false
 	private gRPCClient: any
@@ -25,10 +25,10 @@ export class ZBClient {
 	private workerCount = 0
 	private workers: Array<ZBWorker<any, any, any>> = []
 
-	constructor(brokerAddress: string, options: ZB.ZBClientOptions = {}) {
-		if (!brokerAddress) {
+	constructor(gatewayAddress: string, options: ZB.ZBClientOptions = {}) {
+		if (!gatewayAddress) {
 			throw new Error(
-				'Must provide a broker address string to constructor'
+				'Must provide a gateway address string to constructor'
 			)
 		}
 		this.options = options || {}
@@ -37,17 +37,17 @@ export class ZBClient {
 			options.loglevel ||
 			'INFO'
 
-		if (brokerAddress.indexOf(':') === -1) {
-			brokerAddress += ':26500'
+		if (gatewayAddress.indexOf(':') === -1) {
+			gatewayAddress += ':26500'
 		}
 
-		this.brokerAddress = brokerAddress
+		this.gatewayAddress = gatewayAddress
 
 		this.gRPCClient = new GRPCClient(
 			path.join(__dirname, '../../proto/zeebe.proto'),
 			'gateway_protocol',
 			'Gateway',
-			brokerAddress
+			gatewayAddress
 		)
 	}
 
