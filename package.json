@@ -76,13 +76,15 @@
 		"remark-preset-lint-recommended": "^3.0.2",
 		"ts-jest": "^24.0.2",
 		"tsc-watch": "^1.0.31",
+		"tslint": "^5.16.0",
+		"tslint-config-prettier": "^1.18.0",
 		"typedoc": "^0.14.2",
 		"typedoc-plugin-sourcefile-url": "^1.0.4",
 		"typescript": "^3.2.2"
 	},
 	"author": {
 		"name": "Josh Wulf",
-		"email": "jwulf@creditsense.com.au"
+		"email": "josh@magikcraft.io"
 	},
 	"license": "Apache-2.0"
 }

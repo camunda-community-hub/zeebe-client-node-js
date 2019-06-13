@@ -25,11 +25,7 @@ export class ZBLogger {
 			colorise?: boolean
 		} = { loglevel: 'INFO' }
 	) {
-		if (color) {
-			this.colorFn = color
-		} else {
-			this.colorFn = (m => m) as any
-		}
+		this.colorFn = color || ((m => m) as any)
 		this.taskType = taskType
 		this.id = id
 		if (Array.isArray(namespace)) {

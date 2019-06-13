@@ -157,9 +157,9 @@
 											class="tsd-kind-property tsd-parent-kind-class"
 										>
 											<a
-												href="zbclient.html#brokeraddress"
+												href="zbclient.html#gatewayaddress"
 												class="tsd-kind-icon"
-												>broker<wbr />Address</a
+												>gateway<wbr />Address</a
 											>
 										</li>
 									</ul>
@@ -186,7 +186,7 @@
 											>
 										</li>
 										<li
-											class="tsd-kind-method tsd-parent-kind-class"
+											class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"
 										>
 											<a
 												href="zbclient.html#createworker"
@@ -195,7 +195,7 @@
 											>
 										</li>
 										<li
-											class="tsd-kind-method tsd-parent-kind-class"
+											class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"
 										>
 											<a
 												href="zbclient.html#createworkflowinstance"
@@ -249,7 +249,7 @@
 											>
 										</li>
 										<li
-											class="tsd-kind-method tsd-parent-kind-class"
+											class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"
 										>
 											<a
 												href="zbclient.html#publishmessage"
@@ -258,7 +258,7 @@
 											>
 										</li>
 										<li
-											class="tsd-kind-method tsd-parent-kind-class"
+											class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"
 										>
 											<a
 												href="zbclient.html#publishstartmessage"
@@ -276,7 +276,7 @@
 											>
 										</li>
 										<li
-											class="tsd-kind-method tsd-parent-kind-class"
+											class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"
 										>
 											<a
 												href="zbclient.html#setvariables"
@@ -321,7 +321,7 @@
 									new ZBClient<span
 										class="tsd-signature-symbol"
 										>(</span
-									>brokerAddress<span
+									>gatewayAddress<span
 										class="tsd-signature-symbol"
 										>: </span
 									><span class="tsd-signature-type"
@@ -348,8 +348,8 @@
 											<li>
 												Defined in
 												<a
-													href="https://github.org/CreditSenseAU/zb/ZBClient.ts#L24"
-													>zb/ZBClient.ts:24</a
+													href="https://github.com/CreditSenseAU/zb/ZBClient.ts#L26"
+													>zb/ZBClient.ts:26</a
 												>
 											</li>
 										</ul>
@@ -360,7 +360,7 @@
 									<ul class="tsd-parameters">
 										<li>
 											<h5>
-												brokerAddress:
+												gatewayAddress:
 												<span class="tsd-signature-type"
 													>string</span
 												>
@@ -402,10 +402,10 @@
 						<section
 							class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class"
 						>
-							<a name="brokeraddress" class="tsd-anchor"></a>
-							<h3>broker<wbr />Address</h3>
+							<a name="gatewayaddress" class="tsd-anchor"></a>
+							<h3>gateway<wbr />Address</h3>
 							<div class="tsd-signature tsd-kind-icon">
-								broker<wbr />Address<span
+								gateway<wbr />Address<span
 									class="tsd-signature-symbol"
 									>:</span
 								>
@@ -416,8 +416,8 @@
 									<li>
 										Defined in
 										<a
-											href="https://github.org/CreditSenseAU/zb/ZBClient.ts#L18"
-											>zb/ZBClient.ts:18</a
+											href="https://github.com/CreditSenseAU/zb/ZBClient.ts#L20"
+											>zb/ZBClient.ts:20</a
 										>
 									</li>
 								</ul>
@@ -465,8 +465,8 @@
 											<li>
 												Defined in
 												<a
-													href="https://github.org/CreditSenseAU/zb/ZBClient.ts#L222"
-													>zb/ZBClient.ts:222</a
+													href="https://github.com/CreditSenseAU/zb/ZBClient.ts#L247"
+													>zb/ZBClient.ts:247</a
 												>
 											</li>
 										</ul>
@@ -529,8 +529,8 @@
 											<li>
 												Defined in
 												<a
-													href="https://github.org/CreditSenseAU/zb/ZBClient.ts#L89"
-													>zb/ZBClient.ts:89</a
+													href="https://github.com/CreditSenseAU/zb/ZBClient.ts#L103"
+													>zb/ZBClient.ts:103</a
 												>
 											</li>
 										</ul>
@@ -566,15 +566,17 @@
 							</ul>
 						</section>
 						<section
-							class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"
+							class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"
 						>
 							<a name="createworker" class="tsd-anchor"></a>
 							<h3>create<wbr />Worker</h3>
 							<ul
-								class="tsd-signatures tsd-kind-method tsd-parent-kind-class"
+								class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"
 							>
 								<li class="tsd-signature tsd-kind-icon">
-									create<wbr />Worker<span
+									create<wbr />Worker&lt;WorkerInputVariables,
+									CustomHeaderShape,
+									WorkerOutputVariables&gt;<span
 										class="tsd-signature-symbol"
 										>(</span
 									>id<span class="tsd-signature-symbol"
@@ -591,6 +593,18 @@
 										>: </span
 									><span class="tsd-signature-type"
 										>ZB.ZBWorkerTaskHandler</span
+									><span class="tsd-signature-symbol"
+										>&lt;</span
+									><span class="tsd-signature-type"
+										>WorkerInputVariables</span
+									><span class="tsd-signature-symbol">, </span
+									><span class="tsd-signature-type"
+										>CustomHeaderShape</span
+									><span class="tsd-signature-symbol">, </span
+									><span class="tsd-signature-type"
+										>WorkerOutputVariables</span
+									><span class="tsd-signature-symbol"
+										>&gt;</span
 									>, options<span class="tsd-signature-symbol"
 										>?: </span
 									><a
@@ -618,6 +632,18 @@
 										href="zbworker.html"
 										class="tsd-signature-type"
 										>ZBWorker</a
+									><span class="tsd-signature-symbol"
+										>&lt;</span
+									><span class="tsd-signature-type"
+										>WorkerInputVariables</span
+									><span class="tsd-signature-symbol">, </span
+									><span class="tsd-signature-type"
+										>CustomHeaderShape</span
+									><span class="tsd-signature-symbol">, </span
+									><span class="tsd-signature-type"
+										>WorkerOutputVariables</span
+									><span class="tsd-signature-symbol"
+										>&gt;</span
 									>
 								</li>
 							</ul>
@@ -628,8 +654,8 @@
 											<li>
 												Defined in
 												<a
-													href="https://github.org/CreditSenseAU/zb/ZBClient.ts#L59"
-													>zb/ZBClient.ts:59</a
+													href="https://github.com/CreditSenseAU/zb/ZBClient.ts#L61"
+													>zb/ZBClient.ts:61</a
 												>
 											</li>
 										</ul>
@@ -637,6 +663,20 @@
 									<div
 										class="tsd-comment tsd-typography"
 									></div>
+									<h4 class="tsd-type-parameters-title">
+										Type parameters
+									</h4>
+									<ul class="tsd-type-parameters">
+										<li>
+											<h4>WorkerInputVariables</h4>
+										</li>
+										<li>
+											<h4>CustomHeaderShape</h4>
+										</li>
+										<li>
+											<h4>WorkerOutputVariables</h4>
+										</li>
+									</ul>
 									<h4 class="tsd-parameters-title">
 										Parameters
 									</h4>
@@ -678,6 +718,27 @@
 												taskHandler:
 												<span class="tsd-signature-type"
 													>ZB.ZBWorkerTaskHandler</span
+												><span
+													class="tsd-signature-symbol"
+													>&lt;</span
+												><span
+													class="tsd-signature-type"
+													>WorkerInputVariables</span
+												><span
+													class="tsd-signature-symbol"
+													>, </span
+												><span
+													class="tsd-signature-type"
+													>CustomHeaderShape</span
+												><span
+													class="tsd-signature-symbol"
+													>, </span
+												><span
+													class="tsd-signature-type"
+													>WorkerOutputVariables</span
+												><span
+													class="tsd-signature-symbol"
+													>&gt;</span
 												>
 											</h5>
 											<div
@@ -749,13 +810,27 @@
 											href="zbworker.html"
 											class="tsd-signature-type"
 											>ZBWorker</a
+										><span class="tsd-signature-symbol"
+											>&lt;</span
+										><span class="tsd-signature-type"
+											>WorkerInputVariables</span
+										><span class="tsd-signature-symbol"
+											>, </span
+										><span class="tsd-signature-type"
+											>CustomHeaderShape</span
+										><span class="tsd-signature-symbol"
+											>, </span
+										><span class="tsd-signature-type"
+											>WorkerOutputVariables</span
+										><span class="tsd-signature-symbol"
+											>&gt;</span
 										>
 									</h4>
 								</li>
 							</ul>
 						</section>
 						<section
-							class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"
+							class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"
 						>
 							<a
 								name="createworkflowinstance"
@@ -763,10 +838,10 @@
 							></a>
 							<h3>create<wbr />Workflow<wbr />Instance</h3>
 							<ul
-								class="tsd-signatures tsd-kind-method tsd-parent-kind-class"
+								class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"
 							>
 								<li class="tsd-signature tsd-kind-icon">
-									create<wbr />Workflow<wbr />Instance<span
+									create<wbr />Workflow<wbr />Instance&lt;Variables&gt;<span
 										class="tsd-signature-symbol"
 										>(</span
 									>bpmnProcessId<span
@@ -777,10 +852,8 @@
 									>, variables<span
 										class="tsd-signature-symbol"
 										>: </span
-									><a
-										href="../interfaces/variables.html"
-										class="tsd-signature-type"
-										>Variables</a
+									><span class="tsd-signature-type"
+										>Variables</span
 									>, version<span class="tsd-signature-symbol"
 										>?: </span
 									><span class="tsd-signature-type"
@@ -811,8 +884,8 @@
 											<li>
 												Defined in
 												<a
-													href="https://github.org/CreditSenseAU/zb/ZBClient.ts#L205"
-													>zb/ZBClient.ts:205</a
+													href="https://github.com/CreditSenseAU/zb/ZBClient.ts#L230"
+													>zb/ZBClient.ts:230</a
 												>
 											</li>
 										</ul>
@@ -829,6 +902,14 @@
 											<dd><p>ZBClient</p></dd>
 										</dl>
 									</div>
+									<h4 class="tsd-type-parameters-title">
+										Type parameters
+									</h4>
+									<ul class="tsd-type-parameters">
+										<li>
+											<h4>Variables</h4>
+										</li>
+									</ul>
 									<h4 class="tsd-parameters-title">
 										Parameters
 									</h4>
@@ -844,10 +925,8 @@
 										<li>
 											<h5>
 												variables:
-												<a
-													href="../interfaces/variables.html"
-													class="tsd-signature-type"
-													>Variables</a
+												<span class="tsd-signature-type"
+													>Variables</span
 												>
 											</h5>
 											<div
@@ -944,8 +1023,8 @@
 											<li>
 												Defined in
 												<a
-													href="https://github.org/CreditSenseAU/zb/ZBClient.ts#L112"
-													>zb/ZBClient.ts:112</a
+													href="https://github.com/CreditSenseAU/zb/ZBClient.ts#L126"
+													>zb/ZBClient.ts:126</a
 												>
 											</li>
 										</ul>
@@ -1068,8 +1147,8 @@
 											<li>
 												Defined in
 												<a
-													href="https://github.org/CreditSenseAU/zb/ZBClient.ts#L192"
-													>zb/ZBClient.ts:192</a
+													href="https://github.com/CreditSenseAU/zb/ZBClient.ts#L217"
+													>zb/ZBClient.ts:217</a
 												>
 											</li>
 										</ul>
@@ -1151,8 +1230,8 @@
 											<li>
 												Defined in
 												<a
-													href="https://github.org/CreditSenseAU/zb/ZBClient.ts#L151"
-													>zb/ZBClient.ts:151</a
+													href="https://github.com/CreditSenseAU/zb/ZBClient.ts#L165"
+													>zb/ZBClient.ts:165</a
 												>
 											</li>
 										</ul>
@@ -1244,8 +1323,8 @@
 											<li>
 												Defined in
 												<a
-													href="https://github.org/CreditSenseAU/zb/ZBClient.ts#L247"
-													>zb/ZBClient.ts:247</a
+													href="https://github.com/CreditSenseAU/zb/ZBClient.ts#L274"
+													>zb/ZBClient.ts:274</a
 												>
 											</li>
 										</ul>
@@ -1323,8 +1402,8 @@
 											<li>
 												Defined in
 												<a
-													href="https://github.org/CreditSenseAU/zb/ZBClient.ts#L241"
-													>zb/ZBClient.ts:241</a
+													href="https://github.com/CreditSenseAU/zb/ZBClient.ts#L268"
+													>zb/ZBClient.ts:268</a
 												>
 											</li>
 										</ul>
@@ -1371,15 +1450,15 @@
 							</ul>
 						</section>
 						<section
-							class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"
+							class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"
 						>
 							<a name="publishmessage" class="tsd-anchor"></a>
 							<h3>publish<wbr />Message</h3>
 							<ul
-								class="tsd-signatures tsd-kind-method tsd-parent-kind-class"
+								class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"
 							>
 								<li class="tsd-signature tsd-kind-icon">
-									publish<wbr />Message<span
+									publish<wbr />Message&lt;T&gt;<span
 										class="tsd-signature-symbol"
 										>(</span
 									>publishMessageRequest<span
@@ -1389,6 +1468,11 @@
 										href="../interfaces/publishmessagerequest.html"
 										class="tsd-signature-type"
 										>PublishMessageRequest</a
+									><span class="tsd-signature-symbol"
+										>&lt;</span
+									><span class="tsd-signature-type">T</span
+									><span class="tsd-signature-symbol"
+										>&gt;</span
 									><span class="tsd-signature-symbol">)</span
 									><span class="tsd-signature-symbol">: </span
 									><span class="tsd-signature-type"
@@ -1408,8 +1492,8 @@
 											<li>
 												Defined in
 												<a
-													href="https://github.org/CreditSenseAU/zb/ZBClient.ts#L162"
-													>zb/ZBClient.ts:162</a
+													href="https://github.com/CreditSenseAU/zb/ZBClient.ts#L176"
+													>zb/ZBClient.ts:176</a
 												>
 											</li>
 										</ul>
@@ -1423,6 +1507,14 @@
 											</p>
 										</div>
 									</div>
+									<h4 class="tsd-type-parameters-title">
+										Type parameters
+									</h4>
+									<ul class="tsd-type-parameters">
+										<li>
+											<h4>T</h4>
+										</li>
+									</ul>
 									<h4 class="tsd-parameters-title">
 										Parameters
 									</h4>
@@ -1434,6 +1526,15 @@
 													href="../interfaces/publishmessagerequest.html"
 													class="tsd-signature-type"
 													>PublishMessageRequest</a
+												><span
+													class="tsd-signature-symbol"
+													>&lt;</span
+												><span
+													class="tsd-signature-type"
+													>T</span
+												><span
+													class="tsd-signature-symbol"
+													>&gt;</span
 												>
 											</h5>
 											<div
@@ -1459,7 +1560,7 @@
 							</ul>
 						</section>
 						<section
-							class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"
+							class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"
 						>
 							<a
 								name="publishstartmessage"
@@ -1467,10 +1568,10 @@
 							></a>
 							<h3>publish<wbr />Start<wbr />Message</h3>
 							<ul
-								class="tsd-signatures tsd-kind-method tsd-parent-kind-class"
+								class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"
 							>
 								<li class="tsd-signature tsd-kind-icon">
-									publish<wbr />Start<wbr />Message<span
+									publish<wbr />Start<wbr />Message&lt;T&gt;<span
 										class="tsd-signature-symbol"
 										>(</span
 									>publishStartMessageRequest<span
@@ -1480,6 +1581,11 @@
 										href="../interfaces/publishstartmessagerequest.html"
 										class="tsd-signature-type"
 										>PublishStartMessageRequest</a
+									><span class="tsd-signature-symbol"
+										>&lt;</span
+									><span class="tsd-signature-type">T</span
+									><span class="tsd-signature-symbol"
+										>&gt;</span
 									><span class="tsd-signature-symbol">)</span
 									><span class="tsd-signature-symbol">: </span
 									><span class="tsd-signature-type"
@@ -1499,8 +1605,8 @@
 											<li>
 												Defined in
 												<a
-													href="https://github.org/CreditSenseAU/zb/ZBClient.ts#L174"
-													>zb/ZBClient.ts:174</a
+													href="https://github.com/CreditSenseAU/zb/ZBClient.ts#L188"
+													>zb/ZBClient.ts:188</a
 												>
 											</li>
 										</ul>
@@ -1514,6 +1620,14 @@
 											</p>
 										</div>
 									</div>
+									<h4 class="tsd-type-parameters-title">
+										Type parameters
+									</h4>
+									<ul class="tsd-type-parameters">
+										<li>
+											<h4>T</h4>
+										</li>
+									</ul>
 									<h4 class="tsd-parameters-title">
 										Parameters
 									</h4>
@@ -1525,6 +1639,15 @@
 													href="../interfaces/publishstartmessagerequest.html"
 													class="tsd-signature-type"
 													>PublishStartMessageRequest</a
+												><span
+													class="tsd-signature-symbol"
+													>&lt;</span
+												><span
+													class="tsd-signature-type"
+													>T</span
+												><span
+													class="tsd-signature-symbol"
+													>&gt;</span
 												>
 											</h5>
 											<div
@@ -1585,8 +1708,8 @@
 											<li>
 												Defined in
 												<a
-													href="https://github.org/CreditSenseAU/zb/ZBClient.ts#L256"
-													>zb/ZBClient.ts:256</a
+													href="https://github.com/CreditSenseAU/zb/ZBClient.ts#L283"
+													>zb/ZBClient.ts:283</a
 												>
 											</li>
 										</ul>
@@ -1620,15 +1743,15 @@
 							</ul>
 						</section>
 						<section
-							class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"
+							class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"
 						>
 							<a name="setvariables" class="tsd-anchor"></a>
 							<h3>set<wbr />Variables</h3>
 							<ul
-								class="tsd-signatures tsd-kind-method tsd-parent-kind-class"
+								class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"
 							>
 								<li class="tsd-signature tsd-kind-icon">
-									set<wbr />Variables<span
+									set<wbr />Variables&lt;Variables&gt;<span
 										class="tsd-signature-symbol"
 										>(</span
 									>request<span class="tsd-signature-symbol"
@@ -1637,6 +1760,12 @@
 										href="../interfaces/setvariablesrequest.html"
 										class="tsd-signature-type"
 										>SetVariablesRequest</a
+									><span class="tsd-signature-symbol"
+										>&lt;</span
+									><span class="tsd-signature-type"
+										>Variables</span
+									><span class="tsd-signature-symbol"
+										>&gt;</span
 									><span class="tsd-signature-symbol">)</span
 									><span class="tsd-signature-symbol">: </span
 									><span class="tsd-signature-type"
@@ -1656,12 +1785,20 @@
 											<li>
 												Defined in
 												<a
-													href="https://github.org/CreditSenseAU/zb/ZBClient.ts#L230"
-													>zb/ZBClient.ts:230</a
+													href="https://github.com/CreditSenseAU/zb/ZBClient.ts#L255"
+													>zb/ZBClient.ts:255</a
 												>
 											</li>
 										</ul>
 									</aside>
+									<h4 class="tsd-type-parameters-title">
+										Type parameters
+									</h4>
+									<ul class="tsd-type-parameters">
+										<li>
+											<h4>Variables</h4>
+										</li>
+									</ul>
 									<h4 class="tsd-parameters-title">
 										Parameters
 									</h4>
@@ -1673,6 +1810,15 @@
 													href="../interfaces/setvariablesrequest.html"
 													class="tsd-signature-type"
 													>SetVariablesRequest</a
+												><span
+													class="tsd-signature-symbol"
+													>&lt;</span
+												><span
+													class="tsd-signature-type"
+													>Variables</span
+												><span
+													class="tsd-signature-symbol"
+													>&gt;</span
 												>
 											</h5>
 										</li>
@@ -1725,8 +1871,8 @@
 											<li>
 												Defined in
 												<a
-													href="https://github.org/CreditSenseAU/zb/ZBClient.ts#L102"
-													>zb/ZBClient.ts:102</a
+													href="https://github.com/CreditSenseAU/zb/ZBClient.ts#L116"
+													>zb/ZBClient.ts:116</a
 												>
 											</li>
 										</ul>
@@ -1794,8 +1940,8 @@
 											<li>
 												Defined in
 												<a
-													href="https://github.org/CreditSenseAU/zb/ZBClient.ts#L186"
-													>zb/ZBClient.ts:186</a
+													href="https://github.com/CreditSenseAU/zb/ZBClient.ts#L211"
+													>zb/ZBClient.ts:211</a
 												>
 											</li>
 										</ul>
@@ -1861,9 +2007,9 @@
 										class=" tsd-kind-property tsd-parent-kind-class"
 									>
 										<a
-											href="zbclient.html#brokeraddress"
+											href="zbclient.html#gatewayaddress"
 											class="tsd-kind-icon"
-											>broker<wbr />Address</a
+											>gateway<wbr />Address</a
 										>
 									</li>
 									<li
@@ -1885,7 +2031,7 @@
 										>
 									</li>
 									<li
-										class=" tsd-kind-method tsd-parent-kind-class"
+										class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"
 									>
 										<a
 											href="zbclient.html#createworker"
@@ -1894,7 +2040,7 @@
 										>
 									</li>
 									<li
-										class=" tsd-kind-method tsd-parent-kind-class"
+										class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"
 									>
 										<a
 											href="zbclient.html#createworkflowinstance"
@@ -1948,7 +2094,7 @@
 										>
 									</li>
 									<li
-										class=" tsd-kind-method tsd-parent-kind-class"
+										class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"
 									>
 										<a
 											href="zbclient.html#publishmessage"
@@ -1957,7 +2103,7 @@
 										>
 									</li>
 									<li
-										class=" tsd-kind-method tsd-parent-kind-class"
+										class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"
 									>
 										<a
 											href="zbclient.html#publishstartmessage"
@@ -1975,7 +2121,7 @@
 										>
 									</li>
 									<li
-										class=" tsd-kind-method tsd-parent-kind-class"
+										class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter"
 									>
 										<a
 											href="zbclient.html#setvariables"

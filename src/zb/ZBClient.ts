@@ -2,8 +2,11 @@ import chalk from 'chalk'
 import * as fs from 'fs'
 import * as GRPCClient from 'node-grpc-client'
 import * as path from 'path'
+import { v4 as uuid } from 'uuid'
 import { BpmnParser, stringifyVariables } from '../lib'
 import * as ZB from '../lib/interfaces'
+// tslint:disable-next-line: no-duplicate-imports
+import { KeyedObject } from '../lib/interfaces'
 import { ZBWorker } from './ZBWorker'
 
 const idColors = [
@@ -15,18 +18,18 @@ const idColors = [
 ]
 
 export class ZBClient {
-	public brokerAddress: string
+	public gatewayAddress: string
 	private closePromise?: Promise<any>
 	private closing = false
 	private gRPCClient: any
 	private options: ZB.ZBClientOptions
 	private workerCount = 0
-	private workers: ZBWorker[] = []
+	private workers: Array<ZBWorker<any, any, any>> = []
 
-	constructor(brokerAddress: string, options: ZB.ZBClientOptions = {}) {
-		if (!brokerAddress) {
+	constructor(gatewayAddress: string, options: ZB.ZBClientOptions = {}) {
+		if (!gatewayAddress) {
 			throw new Error(
-				'Must provide a broker address string to constructor'
+				'Must provide a gateway address string to constructor'
 			)
 		}
 		this.options = options || {}
@@ -35,17 +38,17 @@ export class ZBClient {
 			options.loglevel ||
 			'INFO'
 
-		if (brokerAddress.indexOf(':') === -1) {
-			brokerAddress += ':26500'
+		if (gatewayAddress.indexOf(':') === -1) {
+			gatewayAddress += ':26500'
 		}
 
-		this.brokerAddress = brokerAddress
+		this.gatewayAddress = gatewayAddress
 
 		this.gRPCClient = new GRPCClient(
 			path.join(__dirname, '../../proto/zeebe.proto'),
 			'gateway_protocol',
 			'Gateway',
-			brokerAddress
+			gatewayAddress
 		)
 	}
 
@@ -56,10 +59,18 @@ export class ZBClient {
 	 * @param taskHandler - A handler for activated jobs.
 	 * @param options - Configuration options for the worker.
 	 */
-	public createWorker(
+	public createWorker<
+		WorkerInputVariables = KeyedObject,
+		CustomHeaderShape = KeyedObject,
+		WorkerOutputVariables = WorkerInputVariables
+	>(
 		id: string,
 		taskType: string,
-		taskHandler: ZB.ZBWorkerTaskHandler,
+		taskHandler: ZB.ZBWorkerTaskHandler<
+			WorkerInputVariables,
+			CustomHeaderShape,
+			WorkerOutputVariables
+		>,
 		options: ZB.ZBWorkerOptions & ZB.ZBClientOptions = {},
 		onConnectionError?: ZB.ConnectionErrorHandler | undefined
 	) {
@@ -67,7 +78,11 @@ export class ZBClient {
 			throw new Error('Client is closing. No worker creation allowed!')
 		}
 		const idColor = idColors[this.workerCount++ % idColors.length]
-		const worker = new ZBWorker({
+		const worker = new ZBWorker<
+			WorkerInputVariables,
+			CustomHeaderShape,
+			WorkerOutputVariables
+		>({
 			gRPCClient: this.gRPCClient,
 			id,
 			idColor,
@@ -159,8 +174,8 @@ export class ZBClient {
 	 * Publish a message to the broker for correlation with a workflow instance.
 	 * @param publishMessageRequest - The message to publish.
 	 */
-	public publishMessage(
-		publishMessageRequest: ZB.PublishMessageRequest
+	public publishMessage<T = KeyedObject>(
+		publishMessageRequest: ZB.PublishMessageRequest<T>
 	): Promise<void> {
 		return this.gRPCClient.publishMessageSync(
 			stringifyVariables(publishMessageRequest)
@@ -171,11 +186,22 @@ export class ZBClient {
 	 * Publish a message to the broker for correlation with a workflow message start event.
 	 * @param publishStartMessageRequest - The message to publish.
 	 */
-	public publishStartMessage(
-		publishStartMessageRequest: ZB.PublishStartMessageRequest
+	public publishStartMessage<T = KeyedObject>(
+		publishStartMessageRequest: ZB.PublishStartMessageRequest<T>
 	): Promise<void> {
+		/**
+		 * The hash of the correlationKey is used to determine the partition where this workflow will start.
+		 * So we assign a random uuid to balance workflow instances created via start message across partitions.
+		 *
+		 * We make the correlationKey optional, because the caller can specify a correlationKey + messageId
+		 * to guarantee an idempotent message.
+		 *
+		 * Multiple messages with the same correlationKey + messageId combination will only start a workflow once.
+		 * See: https://github.com/zeebe-io/zeebe/issues/1012 and https://github.com/zeebe-io/zeebe/issues/1022
+		 */
+
 		const publishMessageRequest: ZB.PublishMessageRequest = {
-			correlationKey: '__MESSAGE_START_EVENT__',
+			correlationKey: uuid(),
 			...publishStartMessageRequest,
 		}
 		return this.gRPCClient.publishMessageSync(
@@ -202,16 +228,16 @@ export class ZBClient {
 	 * @returns {Promise<CreateWorkflowInstanceResponse>}
 	 * @memberof ZBClient
 	 */
-	public createWorkflowInstance(
+	public createWorkflowInstance<Variables = KeyedObject>(
 		bpmnProcessId: string,
-		variables: ZB.Variables,
+		variables: Variables,
 		version?: number
 	): Promise<ZB.CreateWorkflowInstanceResponse> {
 		version = version || -1
 
 		const createWorkflowInstanceRequest: ZB.CreateWorkflowInstanceRequest = {
 			bpmnProcessId,
-			variables,
+			variables: (variables as unknown) as object,
 			version,
 		}
 		return this.gRPCClient.createWorkflowInstanceSync(
@@ -227,7 +253,9 @@ export class ZBClient {
 		})
 	}
 
-	public setVariables(request: ZB.SetVariablesRequest): Promise<void> {
+	public setVariables<Variables = KeyedObject>(
+		request: ZB.SetVariablesRequest<Variables>
+	): Promise<void> {
 		/*
 		We allow developers to interact with variables as a native JS object, but the Zeebe server needs it as a JSON document
 		So we stringify it here.

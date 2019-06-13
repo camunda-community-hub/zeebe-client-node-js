@@ -7,6 +7,8 @@ This is a Node.js gRPC client for [Zeebe](https://zeebe.io). It is written in Ty
 
 Comprehensive API documentation is available [online](https://creditsenseau.github.io/zeebe-client-node-js/) and in the `docs` subdirectory.
 
+Docker-compose configurations for Zeebe are available at [https://github.com/zeebe-io/zeebe-docker-compose](https://github.com/zeebe-io/zeebe-docker-compose).
+
 ## Versioning
 
 NPM Package version 1.x.x supports Zeebe 0.15/0.16.
@@ -123,6 +125,18 @@ zbc.createWorker('test-worker', 'console-log', maybeFaultyHandler, {
 })
 ```
 
+### Completing tasks with success or failure
+
+To complete a task, the task worker handler function receives a `complete` method. This method has a `success` and a `failure` method (as well as being able to be called directly). Calling the method directly - `complete()` is the same as calling `complete.success()`.
+
+Call `complete.success()` (or just `complete()`) passing in a optional plain old JavaScript object (POJO) - a key:value map. These are variable:value pairs that will be used to update the workflow state in the broker.
+
+Call `complete.failure()` to fail the task. You must pass in a string message describing the failure. The client library decrements the retry count, and the broker handles the retry logic. If the failure is a hard failure and should cause an incident to be raised in Operate, then pass in `0` for the optional second parameter, `retries`:
+
+```javascript
+complete.failure('This is a critical failure and will raise an incident', 0)
+```
+
 ### Start a Workflow Instance
 
 ```javascript
@@ -162,9 +176,9 @@ zbc.publishMessage({
 ```
 
 You can also publish a message targeting a [Message Start Event](https://github.com/zeebe-io/zeebe/issues/1858).
-In this case, there is no correlation key, and all Message Start events that match the `name` property will receive the message.
+In this case, the correlation key is optional, and all Message Start events that match the `name` property will receive the message.
 
-You can use the `publishStartMessage()` method to publish a message with no correlation key (it will be set to `__MESSAGE_START_EVENT__` in the background):
+You can use the `publishStartMessage()` method to publish a message with no correlation key (it will be set to a random uuid in the background):
 
 ```javascript
 const zbc = new ZB.ZBClient('localhost:26500')
@@ -175,6 +189,8 @@ zbc.publishStartMessage({
 	timeToLive: 10000,
 })
 ```
+
+Both normal messages and start messages can be published idempotently by setting both the `messageId` and the `correlationKey`. They will only ever be correlated once. See: [A message can be published idempotent](https://github.com/zeebe-io/zeebe/issues/1012).
 
 ### Graceful Shutdown
 
@@ -267,7 +283,7 @@ Integration tests are in the `src/__tests__/integration` directory.
 They require a Zeebe broker to run. You can run them using the [Circle CI CLI](https://circleci.com/docs/2.0/local-cli/):
 
 ```bash
-circleci local execute -c .circleci/config-local.yml --job test
+circleci local execute -c .circleci/config.yml --job test
 ```
 
 Or you can start a dockerised broker:
@@ -282,3 +298,5 @@ And then run them manually:
 ```bash
 npm run test:integration
 ```
+
+For the failure test, you need to run Operate ([docker-compose config](https://github.com/zeebe-io/zeebe-docker-compose/blob/master/operate/docker-compose.yml)) and manually verify that an incident has been raised at [http://localhost:8080](http://localhost:8080).

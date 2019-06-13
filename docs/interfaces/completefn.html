@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="utf-8" />
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-		<title>DeployWorkflowRequest | zeebe-node</title>
+		<title>CompleteFn | zeebe-node</title>
 		<meta name="description" content="" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="stylesheet" href="../assets/css/main.css" />
@@ -114,25 +114,90 @@
 							<a href="../globals.html">Globals</a>
 						</li>
 						<li>
-							<a href="deployworkflowrequest.html"
-								>DeployWorkflowRequest</a
-							>
+							<a href="completefn.html">CompleteFn</a>
 						</li>
 					</ul>
-					<h1>Interface DeployWorkflowRequest</h1>
+					<h1>Interface CompleteFn&lt;WorkerOutputVariables&gt;</h1>
 				</div>
 			</div>
 		</header>
 		<div class="container container-main">
 			<div class="row">
 				<div class="col-8 col-content">
+					<section class="tsd-panel tsd-type-parameters">
+						<h3>Type parameters</h3>
+						<ul class="tsd-type-parameters">
+							<li>
+								<h4>WorkerOutputVariables</h4>
+							</li>
+						</ul>
+					</section>
 					<section class="tsd-panel tsd-hierarchy">
 						<h3>Hierarchy</h3>
 						<ul class="tsd-hierarchy">
 							<li>
-								<span class="target"
-									>DeployWorkflowRequest</span
-								>
+								<span class="target">CompleteFn</span>
+							</li>
+						</ul>
+					</section>
+					<section class="tsd-panel">
+						<h3 class="tsd-before-signature">Callable</h3>
+						<ul
+							class="tsd-signatures tsd-kind-interface tsd-has-type-parameter"
+						>
+							<li class="tsd-signature tsd-kind-icon">
+								__call<span class="tsd-signature-symbol">(</span
+								>updatedVariables<span
+									class="tsd-signature-symbol"
+									>?: </span
+								><span class="tsd-signature-type">Partial</span
+								><span class="tsd-signature-symbol">&lt;</span
+								><span class="tsd-signature-type"
+									>WorkerOutputVariables</span
+								><span class="tsd-signature-symbol">&gt;</span
+								><span class="tsd-signature-symbol">)</span
+								><span class="tsd-signature-symbol">: </span
+								><span class="tsd-signature-type">void</span>
+							</li>
+						</ul>
+						<ul class="tsd-descriptions">
+							<li class="tsd-description">
+								<aside class="tsd-sources">
+									<ul>
+										<li>
+											Defined in
+											<a
+												href="https://github.com/CreditSenseAU/lib/interfaces.ts#L9"
+												>lib/interfaces.ts:9</a
+											>
+										</li>
+									</ul>
+								</aside>
+								<h4 class="tsd-parameters-title">Parameters</h4>
+								<ul class="tsd-parameters">
+									<li>
+										<h5>
+											<span
+												class="tsd-flag ts-flagOptional"
+												>Optional</span
+											>
+											updatedVariables:
+											<span class="tsd-signature-type"
+												>Partial</span
+											><span class="tsd-signature-symbol"
+												>&lt;</span
+											><span class="tsd-signature-type"
+												>WorkerOutputVariables</span
+											><span class="tsd-signature-symbol"
+												>&gt;</span
+											>
+										</h5>
+									</li>
+								</ul>
+								<h4 class="tsd-returns-title">
+									Returns
+									<span class="tsd-signature-type">void</span>
+								</h4>
 							</li>
 						</ul>
 					</section>
@@ -147,9 +212,18 @@
 											class="tsd-kind-property tsd-parent-kind-interface"
 										>
 											<a
-												href="deployworkflowrequest.html#workflows"
+												href="completefn.html#failure"
 												class="tsd-kind-icon"
-												>workflows</a
+												>failure</a
+											>
+										</li>
+										<li
+											class="tsd-kind-property tsd-parent-kind-interface"
+										>
+											<a
+												href="completefn.html#success"
+												class="tsd-kind-icon"
+												>success</a
 											>
 										</li>
 									</ul>
@@ -162,29 +236,225 @@
 						<section
 							class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"
 						>
-							<a name="workflows" class="tsd-anchor"></a>
-							<h3>workflows</h3>
+							<a name="failure" class="tsd-anchor"></a>
+							<h3>failure</h3>
 							<div class="tsd-signature tsd-kind-icon">
-								workflows<span class="tsd-signature-symbol"
+								failure<span class="tsd-signature-symbol"
 									>:</span
 								>
-								<a
-									href="workflowrequestobject.html"
-									class="tsd-signature-type"
-									>WorkflowRequestObject</a
-								><span class="tsd-signature-symbol">[]</span>
+								<span class="tsd-signature-type">function</span>
 							</div>
 							<aside class="tsd-sources">
 								<ul>
 									<li>
 										Defined in
 										<a
-											href="https://github.com/CreditSenseAU/lib/interfaces.ts#L184"
-											>lib/interfaces.ts:184</a
+											href="https://github.com/CreditSenseAU/lib/interfaces.ts#L12"
+											>lib/interfaces.ts:12</a
 										>
 									</li>
 								</ul>
 							</aside>
+							<div class="tsd-type-declaration">
+								<h4>Type declaration</h4>
+								<ul class="tsd-parameters">
+									<li class="tsd-parameter-siganture">
+										<ul
+											class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-property tsd-is-not-exported"
+										>
+											<li
+												class="tsd-signature tsd-kind-icon"
+											>
+												<span
+													class="tsd-signature-symbol"
+													>(</span
+												>errorMessage<span
+													class="tsd-signature-symbol"
+													>: </span
+												><span
+													class="tsd-signature-type"
+													>string</span
+												>, retries<span
+													class="tsd-signature-symbol"
+													>?: </span
+												><span
+													class="tsd-signature-type"
+													>undefined</span
+												><span
+													class="tsd-signature-symbol"
+												>
+													| </span
+												><span
+													class="tsd-signature-type"
+													>number</span
+												><span
+													class="tsd-signature-symbol"
+													>)</span
+												><span
+													class="tsd-signature-symbol"
+													>: </span
+												><span
+													class="tsd-signature-type"
+													>void</span
+												>
+											</li>
+										</ul>
+										<ul class="tsd-descriptions">
+											<li class="tsd-description">
+												<h4
+													class="tsd-parameters-title"
+												>
+													Parameters
+												</h4>
+												<ul class="tsd-parameters">
+													<li>
+														<h5>
+															errorMessage:
+															<span
+																class="tsd-signature-type"
+																>string</span
+															>
+														</h5>
+													</li>
+													<li>
+														<h5>
+															<span
+																class="tsd-flag ts-flagOptional"
+																>Optional</span
+															>
+															retries:
+															<span
+																class="tsd-signature-type"
+																>undefined</span
+															><span
+																class="tsd-signature-symbol"
+															>
+																| </span
+															><span
+																class="tsd-signature-type"
+																>number</span
+															>
+														</h5>
+													</li>
+												</ul>
+												<h4 class="tsd-returns-title">
+													Returns
+													<span
+														class="tsd-signature-type"
+														>void</span
+													>
+												</h4>
+											</li>
+										</ul>
+									</li>
+								</ul>
+							</div>
+						</section>
+						<section
+							class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"
+						>
+							<a name="success" class="tsd-anchor"></a>
+							<h3>success</h3>
+							<div class="tsd-signature tsd-kind-icon">
+								success<span class="tsd-signature-symbol"
+									>:</span
+								>
+								<span class="tsd-signature-type">function</span>
+							</div>
+							<aside class="tsd-sources">
+								<ul>
+									<li>
+										Defined in
+										<a
+											href="https://github.com/CreditSenseAU/lib/interfaces.ts#L11"
+											>lib/interfaces.ts:11</a
+										>
+									</li>
+								</ul>
+							</aside>
+							<div class="tsd-type-declaration">
+								<h4>Type declaration</h4>
+								<ul class="tsd-parameters">
+									<li class="tsd-parameter-siganture">
+										<ul
+											class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-property tsd-is-not-exported"
+										>
+											<li
+												class="tsd-signature tsd-kind-icon"
+											>
+												<span
+													class="tsd-signature-symbol"
+													>(</span
+												>updatedVariables<span
+													class="tsd-signature-symbol"
+													>?: </span
+												><span
+													class="tsd-signature-type"
+													>Partial</span
+												><span
+													class="tsd-signature-symbol"
+													>&lt;</span
+												><span
+													class="tsd-signature-type"
+													>WorkerOutputVariables</span
+												><span
+													class="tsd-signature-symbol"
+													>&gt;</span
+												><span
+													class="tsd-signature-symbol"
+													>)</span
+												><span
+													class="tsd-signature-symbol"
+													>: </span
+												><span
+													class="tsd-signature-type"
+													>void</span
+												>
+											</li>
+										</ul>
+										<ul class="tsd-descriptions">
+											<li class="tsd-description">
+												<h4
+													class="tsd-parameters-title"
+												>
+													Parameters
+												</h4>
+												<ul class="tsd-parameters">
+													<li>
+														<h5>
+															<span
+																class="tsd-flag ts-flagOptional"
+																>Optional</span
+															>
+															updatedVariables:
+															<span
+																class="tsd-signature-type"
+																>Partial</span
+															><span
+																class="tsd-signature-symbol"
+																>&lt;</span
+															><span
+																class="tsd-signature-type"
+																>WorkerOutputVariables</span
+															><span
+																class="tsd-signature-symbol"
+																>&gt;</span
+															>
+														</h5>
+													</li>
+												</ul>
+												<h4 class="tsd-returns-title">
+													Returns
+													<span
+														class="tsd-signature-type"
+														>void</span
+													>
+												</h4>
+											</li>
+										</ul>
+									</li>
+								</ul>
+							</div>
 						</section>
 					</section>
 				</div>
@@ -199,20 +469,29 @@
 					<nav class="tsd-navigation secondary menu-sticky">
 						<ul class="before-current"></ul>
 						<ul class="current">
-							<li class="current tsd-kind-interface">
-								<a
-									href="deployworkflowrequest.html"
-									class="tsd-kind-icon"
-									>Deploy<wbr />Workflow<wbr />Request</a
+							<li
+								class="current tsd-kind-interface tsd-has-type-parameter"
+							>
+								<a href="completefn.html" class="tsd-kind-icon"
+									>Complete<wbr />Fn</a
 								>
 								<ul>
 									<li
 										class=" tsd-kind-property tsd-parent-kind-interface"
 									>
 										<a
-											href="deployworkflowrequest.html#workflows"
+											href="completefn.html#failure"
 											class="tsd-kind-icon"
-											>workflows</a
+											>failure</a
+										>
+									</li>
+									<li
+										class=" tsd-kind-property tsd-parent-kind-interface"
+									>
+										<a
+											href="completefn.html#success"
+											class="tsd-kind-icon"
+											>success</a
 										>
 									</li>
 								</ul>

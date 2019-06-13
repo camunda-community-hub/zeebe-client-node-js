@@ -1,17 +1,29 @@
 import { Chalk } from 'chalk'
 import { ZBWorker } from '../zb/ZBWorker'
 
-export interface Variables {
-	[index: string]: any
+export interface KeyedObject {
+	[key: string]: any
 }
 export type Loglevel = 'INFO' | 'DEBUG' | 'NONE' | 'ERROR'
 
-export type completeFn = (updatedVariables?: any) => void
+export interface CompleteFn<WorkerOutputVariables> {
+	(updatedVariables?: Partial<WorkerOutputVariables>): void
+	success: (updatedVariables?: Partial<WorkerOutputVariables>) => void
+	failure: (errorMessage: string, retries?: number) => void
+}
 
-export type ZBWorkerTaskHandler = (
-	job: Job,
-	complete: completeFn,
-	worker: ZBWorker
+export type ZBWorkerTaskHandler<
+	WorkerInputVariables = KeyedObject,
+	CustomHeaderShape = KeyedObject,
+	WorkerOutputVariables = WorkerInputVariables
+> = (
+	job: Job<WorkerInputVariables, CustomHeaderShape>,
+	complete: CompleteFn<WorkerOutputVariables>,
+	worker: ZBWorker<
+		WorkerInputVariables,
+		CustomHeaderShape,
+		WorkerOutputVariables
+	>
 ) => void
 
 export interface ZBWorkerLoggerOptions {
@@ -58,11 +70,11 @@ export interface ActivatedJob {
 	variables: string
 }
 
-export interface Job {
+export interface Job<Variables = KeyedObject, CustomHeaders = KeyedObject> {
 	key: string
 	type: string
 	jobHeaders: JobHeaders
-	customHeaders: Variables
+	customHeaders: CustomHeaders
 	worker: string
 	retries: number
 	// epoch milliseconds
@@ -106,7 +118,7 @@ export interface ZBWorkerOptions {
 	failWorkflowOnException?: boolean
 }
 
-export interface CreateWorkflowInstanceRequest {
+export interface CreateWorkflowInstanceRequest<Variables = KeyedObject> {
 	bpmnProcessId: string
 	version?: number
 	variables: Variables
@@ -176,7 +188,7 @@ export interface ListWorkflowResponse {
 	workflows: WorkflowMetadata[]
 }
 
-export interface PublishMessageRequest {
+export interface PublishMessageRequest<Variables = KeyedObject> {
 	/** Should match the "Message Name" in a BPMN Message Catch  */
 	name: string
 	/** The value to match with the field specified as "Subscription Correlation Key" in BPMN */
@@ -187,12 +199,13 @@ export interface PublishMessageRequest {
 	variables: Variables
 }
 
-export interface PublishStartMessageRequest {
+export interface PublishStartMessageRequest<Variables = KeyedObject> {
 	/** Should match the "Message Name" in a BPMN Message Catch  */
 	name: string
 	timeToLive: number
 	/** Unique ID for this message */
 	messageId?: string
+	correlationKey?: string
 	variables: Variables
 }
 
@@ -207,18 +220,19 @@ export interface FailJobRequest {
 	errorMessage: string
 }
 
-export interface CompleteJobRequest {
+export interface CompleteJobRequest<Variables = KeyedObject> {
 	jobKey: string
 	variables: Variables
 }
 
-export interface SetVariablesRequest {
-	/** the unique identifier of a particular element; can be the workflow instance key (as
-	 * obtained during instance creation), or a given element, such as a service task (see
-	 *  elementInstanceKey on the JobHeaders message)
-	 */
+export interface SetVariablesRequest<Variables = KeyedObject> {
+	/*
+	The unique identifier of a particular element; can be the workflow instance key (as
+	obtained during instance creation), or a given element, such as a service task (see
+	elementInstanceKey on the JobHeaders message)
+	*/
 	elementInstanceKey: string
-	variables: Variables
+	variables: Partial<Variables>
 	local: boolean
 }
 

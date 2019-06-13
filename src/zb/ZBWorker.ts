@@ -5,7 +5,11 @@ import * as ZB from '../lib/interfaces'
 import { ZBLogger } from '../lib/ZBLogger'
 import { ZBClient } from './ZBClient'
 
-export class ZBWorker {
+export class ZBWorker<
+	WorkerInputVariables,
+	CustomHeaderShape,
+	WorkerOutputVariables
+> {
 	public activeJobs = 0
 	public gRPCClient: any
 	public maxActiveJobs: number
@@ -21,7 +25,11 @@ export class ZBWorker {
 	private onConnectionErrorHandler?: ZB.ConnectionErrorHandler
 	private pollHandle?: NodeJS.Timeout
 	private pollInterval: number
-	private taskHandler: ZB.ZBWorkerTaskHandler
+	private taskHandler: ZB.ZBWorkerTaskHandler<
+		WorkerInputVariables,
+		CustomHeaderShape,
+		WorkerOutputVariables
+	>
 	private cancelWorkflowOnException = false
 	private zbClient: ZBClient
 	private logger: ZBLogger
@@ -39,7 +47,11 @@ export class ZBWorker {
 		gRPCClient: any
 		id: string
 		taskType: string
-		taskHandler: ZB.ZBWorkerTaskHandler
+		taskHandler: ZB.ZBWorkerTaskHandler<
+			WorkerInputVariables,
+			CustomHeaderShape,
+			WorkerOutputVariables
+		>
 		options: ZB.ZBWorkerOptions & ZB.ZBClientOptions
 		idColor: Chalk
 		onConnectionError: ZB.ConnectionErrorHandler | undefined
@@ -170,9 +182,7 @@ export class ZBWorker {
 		let stream: any
 		if (this.activeJobs >= this.maxActiveJobs) {
 			this.logger.log(
-				`Polling cancelled - ${this.taskType} has ${
-					this.activeJobs
-				} and a capacity of ${this.maxActiveJobs}.`
+				`Polling cancelled - ${this.taskType} has ${this.activeJobs} and a capacity of ${this.maxActiveJobs}.`
 			)
 			return
 		}
@@ -210,9 +220,7 @@ export class ZBWorker {
 				let taskTimedout = false
 				const taskId = uuid.v4()
 				this.logger.debug(
-					`Setting ${this.taskType} task timeout for ${taskId} to ${
-						this.timeout
-					}`
+					`Setting ${this.taskType} task timeout for ${taskId} to ${this.timeout}`
 				)
 				const timeoutCancel = setTimeout(() => {
 					taskTimedout = true
@@ -225,9 +233,24 @@ export class ZBWorker {
 				// Any unhandled exception thrown by the user-supplied code will bubble up and throw here.
 				// The task timeout handler above will deal with it.
 				try {
-					await taskHandler(
-						Object.assign({}, job as any, { customHeaders }),
-						completedVariables => {
+					/**
+					 * Construct the backward compatible worker callback
+					 * See https://stackoverflow.com/questions/12766528/build-a-function-object-with-properties-in-typescript
+					 * for an explanation of the pattern used.
+					 *
+					 * It is backward compatible because the old success handler is available as the function:
+					 *  complete(variables?: object).
+					 *
+					 * The new API is available as
+					 * complete.success(variables?: object) and complete.failure(errorMessage: string, retries?: number)
+					 *
+					 * To halt execution of the business process and raise an incident in Operate, call
+					 * complete(errorMessage, 0)
+					 */
+					const workerCallback = (() => {
+						const shadowWorkerCallback = (
+							completedVariables = {}
+						) => {
 							this.completeJob({
 								jobKey: job.key,
 								variables: completedVariables,
@@ -236,18 +259,31 @@ export class ZBWorker {
 							if (!taskTimedout) {
 								this.drainOne()
 								this.logger.debug(
-									`Completed task ${taskId} for ${
-										this.taskType
-									}`
+									`Completed task ${taskId} for ${this.taskType}`
 								)
 							} else {
 								this.logger.debug(
-									`Completed task ${taskId} for ${
-										this.taskType
-									}, however it had timed out.`
+									`Completed task ${taskId} for ${this.taskType}, however it had timed out.`
 								)
 							}
-						},
+						}
+						shadowWorkerCallback.success = shadowWorkerCallback
+						shadowWorkerCallback.failure = (
+							errorMessage,
+							retries = Math.max(0, job.retries - 1)
+						) => {
+							this.zbClient.failJob({
+								errorMessage,
+								jobKey: job.key,
+								retries,
+							})
+						}
+						return shadowWorkerCallback
+					})()
+
+					await taskHandler(
+						{ ...job, customHeaders: { ...customHeaders } } as any,
+						workerCallback,
 						this
 					)
 				} catch (e) {

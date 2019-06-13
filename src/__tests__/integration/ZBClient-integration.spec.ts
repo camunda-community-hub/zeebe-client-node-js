@@ -1,71 +1,50 @@
+import { v4 as uuid } from 'uuid'
 import { ZBClient } from '../..'
 jest.unmock('node-grpc-client')
 
 process.env.ZB_NODE_LOG_LEVEL = process.env.ZB_NODE_LOG_LEVEL || 'NONE'
 
-function closeConnectionAfterOneSecond(zbc: ZBClient) {
-	return new Promise(resolve => {
-		setTimeout(() => {
-			zbc.close()
-			resolve()
-		}, 1000)
-	})
-}
-
-function closeConnectionNow(zbc: ZBClient) {
-	return new Promise(resolve => {
-		zbc.close()
-		setTimeout(() => {
-			resolve()
-		}, 100)
-	})
-}
-
 describe('ZBClient.deployWorkflow()', () => {
-	it('can get the broker topology', async () => {
-		const zbc = new ZBClient('0.0.0.0:26500')
+	let zbc: ZBClient
 
+	beforeEach(async () => {
+		zbc = new ZBClient('0.0.0.0:26500')
+	})
+
+	afterEach(async () => {
+		await zbc.close() // Makes sure we don't forget to close connection
+	})
+
+	it('Can get the broker topology', async () => {
 		const res = await zbc.topology()
 		expect(res.brokers).toBeTruthy()
-		await closeConnectionAfterOneSecond(zbc)
 	})
-	it('deploys a single workflow', async () => {
-		const zbc = new ZBClient('0.0.0.0:26500')
 
+	it('Deploys a single workflow', async () => {
 		const res = await zbc.deployWorkflow('./test/hello-world.bpmn')
 		expect(res.workflows.length).toBe(1)
 		expect(res.workflows[0].bpmnProcessId).toBe('hello-world')
-		await closeConnectionAfterOneSecond(zbc)
 	})
-	it('by default, it deploys a single workflow when that workflow is already deployed', async () => {
-		const zbc = new ZBClient('0.0.0.0:26500')
 
+	it('By default, it deploys a single workflow when that workflow is already deployed', async () => {
 		const res = await zbc.deployWorkflow('./test/hello-world.bpmn')
 		expect(res.workflows.length).toBe(1)
 		expect(res.workflows[0].version > 1).toBe(true)
-		await closeConnectionAfterOneSecond(zbc)
 	})
-	it('with {redeploy: false} it will not redeploy an existing workflow', async () => {
-		const zbc = new ZBClient('0.0.0.0:26500')
 
+	it('With {redeploy: false} it will not redeploy an existing workflow', async () => {
 		const res = await zbc.deployWorkflow('./test/hello-world.bpmn', {
 			redeploy: false,
 		})
 		expect(res.key).toBe(-1)
-		await closeConnectionAfterOneSecond(zbc)
 	})
 
-	it('lists workflows', async () => {
-		const zbc = new ZBClient('0.0.0.0:26500')
-
+	it('Lists workflows', async () => {
 		const res = await zbc.listWorkflows()
 		expect(res.workflows).toBeTruthy()
-		await closeConnectionAfterOneSecond(zbc)
 	})
 
-	it('can create a worker', () => {
-		const zbc = new ZBClient('0.0.0.0:26500')
-
+	it('Can create a worker', async () => {
 		const worker = zbc.createWorker(
 			'test',
 			'TASK_TYPE',
@@ -74,38 +53,67 @@ describe('ZBClient.deployWorkflow()', () => {
 			}
 		)
 		expect(worker).toBeTruthy()
-		zbc.close()
 	})
-	it('can start a workflow', async () => {
-		const zbc = new ZBClient('0.0.0.0:26500')
 
+	it('Can start a workflow', async () => {
 		const res = await zbc.deployWorkflow('./test/hello-world.bpmn')
 		expect(res.workflows.length).toBe(1)
 		expect(res.workflows[0].version > 1).toBe(true)
-		const wfi = await zbc.createWorkflowInstance('hello-world', {})
-		expect(wfi.bpmnProcessId).toBe('hello-world')
-		expect(wfi.workflowInstanceKey).toBeTruthy()
-		await closeConnectionAfterOneSecond(zbc)
+
+		const workflowInstance = await zbc.createWorkflowInstance(
+			'hello-world',
+			{}
+		)
+		expect(workflowInstance.bpmnProcessId).toBe('hello-world')
+		expect(workflowInstance.workflowInstanceKey).toBeTruthy()
 	})
-	it('can service a task', async done => {
-		const zbc = new ZBClient('0.0.0.0:26500')
+
+	it('Can service a task', async done => {
 		const res = await zbc.deployWorkflow('./test/hello-world.bpmn')
 		expect(res.workflows.length).toBe(1)
 		expect(res.workflows[0].version > 1).toBe(true)
-		await zbc.createWorkflowInstance('hello-world', {})
+
+		const wf = await zbc.createWorkflowInstance('hello-world', {})
 		zbc.createWorker('test', 'console-log', async (job, complete) => {
+			expect(job.jobHeaders.workflowInstanceKey).toBe(
+				wf.workflowInstanceKey
+			)
 			complete(job.variables)
-			await closeConnectionAfterOneSecond(zbc)
 			done()
 		})
 	})
-	it('can start a workflow with a message', async done => {
-		const zbc = new ZBClient('0.0.0.0:26500')
 
+	it('Can service a task with complete.success', async done => {
+		const res = await zbc.deployWorkflow('./test/hello-world.bpmn')
+		expect(res.workflows.length).toBe(1)
+		expect(res.workflows[0].version > 1).toBe(true)
+
+		const wf = await zbc.createWorkflowInstance('hello-world', {})
+		zbc.createWorker('test', 'console-log', async (job, complete) => {
+			expect(job.jobHeaders.workflowInstanceKey).toBe(
+				wf.workflowInstanceKey
+			)
+			complete.success(job.variables)
+			done()
+		})
+	})
+
+	it('Can start a workflow with a message', async done => {
 		const deploy = await zbc.deployWorkflow(
 			'./src/__tests__/testdata/msg-start.bpmn'
 		)
 		expect(deploy.key).toBeTruthy()
+
+		const randomId = uuid()
+
+		await zbc.publishStartMessage({
+			name: 'MSG-START_JOB',
+			timeToLive: 1000,
+			variables: {
+				testKey: randomId,
+			},
+		})
+
 		await zbc.createWorker(
 			'test2',
 			'console-log-msg',
@@ -114,65 +122,65 @@ describe('ZBClient.deployWorkflow()', () => {
 				expect(
 					job.customHeaders.message.indexOf('Workflow') !== -1
 				).toBe(true)
-				await closeConnectionAfterOneSecond(zbc)
+				expect(job.variables.testKey).toBe(randomId) // Makes sure the worker isn't responding to another message
 				done()
 			}
 		)
-		await zbc.publishStartMessage({
-			name: 'MSG-START_JOB',
-			timeToLive: 1000,
-			variables: {
-				testKey: 'OHAI',
-			},
-		})
 	})
-	it('can cancel a workflow', async done => {
-		const zbc = new ZBClient('0.0.0.0:26500')
 
+	it('Can cancel a workflow', async done => {
 		const res = await zbc.deployWorkflow('./test/hello-world.bpmn')
 		expect(res.workflows.length).toBe(1)
 		expect(res.workflows[0].bpmnProcessId).toBe('hello-world')
+
 		const wf = await zbc.createWorkflowInstance('hello-world', {})
 		const wfi = wf.workflowInstanceKey
 		expect(wfi).toBeTruthy()
+
 		await zbc.cancelWorkflowInstance(wfi)
+
 		try {
-			await zbc.cancelWorkflowInstance(wfi) // a call to cancel a workflow that doesn't exist should throw
+			await zbc.cancelWorkflowInstance(wfi) // A call to cancel a workflow that doesn't exist should throw
 		} catch (e) {
-			await closeConnectionAfterOneSecond(zbc)
 			done()
 		}
 	})
 
-	it('correctly branches on variables', async done => {
-		const zbc = new ZBClient('0.0.0.0:26500')
-
+	it('Correctly branches on variables', async done => {
 		const res = await zbc.deployWorkflow('./test/conditional-pathway.bpmn')
 		expect(res.workflows.length).toBe(1)
 		expect(res.workflows[0].bpmnProcessId).toBe('condition-test')
+
 		const wf = await zbc.createWorkflowInstance('condition-test', {
 			conditionVariable: true,
 		})
 		const wfi = wf.workflowInstanceKey
 		expect(wfi).toBeTruthy()
-		await zbc.createWorker('test2', 'pathA', async (job, complete) => {
+
+		await zbc.createWorker('test2', 'wait', async (job, complete) => {
+			expect(job.jobHeaders.workflowInstanceKey).toBe(wfi)
 			complete(job)
+		})
+
+		await zbc.createWorker('test2', 'pathA', async (job, complete) => {
+			expect(job.jobHeaders.workflowInstanceKey).toBe(wfi)
 			expect(job.variables.conditionVariable).toBe(true)
-			await closeConnectionAfterOneSecond(zbc)
+			complete(job)
 			done()
 		})
 	})
 
-	it('can update workflow variables', async done => {
-		const zbc = new ZBClient('0.0.0.0:26500')
+	it('Can update workflow variables', async done => {
 		const res = await zbc.deployWorkflow('./test/conditional-pathway.bpmn')
 		expect(res.workflows.length).toBe(1)
 		expect(res.workflows[0].bpmnProcessId).toBe('condition-test')
+
 		const wf = await zbc.createWorkflowInstance('condition-test', {
 			conditionVariable: true,
 		})
 		const wfi = wf.workflowInstanceKey
 		expect(wfi).toBeTruthy()
+
 		await zbc.setVariables({
 			elementInstanceKey: wfi,
 			local: false,
@@ -180,10 +188,116 @@ describe('ZBClient.deployWorkflow()', () => {
 				conditionVariable: false,
 			},
 		})
-		await zbc.createWorker('test2', 'pathA', async (job, complete) => {
-			complete(job.variables)
+
+		await zbc.createWorker('test2', 'wait', async (job, complete) => {
+			expect(job.jobHeaders.workflowInstanceKey).toBe(wfi)
+			complete(job)
+		})
+
+		await zbc.createWorker('test2', 'pathB', async (job, complete) => {
+			expect(job.jobHeaders.workflowInstanceKey).toBe(wfi)
 			expect(job.variables.conditionVariable).toBe(false)
-			await closeConnectionNow(zbc)
+			complete(job.variables)
+			done()
+		})
+	})
+
+	it('Can update workflow variables with complete.success()', async done => {
+		const res = await zbc.deployWorkflow('./test/conditional-pathway.bpmn')
+		expect(res.workflows.length).toBe(1)
+		expect(res.workflows[0].bpmnProcessId).toBe('condition-test')
+
+		const wf = await zbc.createWorkflowInstance('condition-test', {
+			conditionVariable: true,
+		})
+		const wfi = wf.workflowInstanceKey
+		expect(wfi).toBeTruthy()
+
+		await zbc.setVariables({
+			elementInstanceKey: wfi,
+			local: false,
+			variables: {
+				conditionVariable: false,
+			},
+		})
+
+		await zbc.createWorker('test2', 'wait', async (job, complete) => {
+			expect(job.jobHeaders.workflowInstanceKey).toBe(wfi)
+			complete.success(job)
+		})
+
+		await zbc.createWorker('test2', 'pathB', async (job, complete) => {
+			expect(job.jobHeaders.workflowInstanceKey).toBe(wfi)
+			expect(job.variables.conditionVariable).toBe(false)
+			complete.success(job.variables)
+			done()
+		})
+	})
+
+	it('Causes a retry with complete.failure()', async done => {
+		let attempts = 0
+		const res = await zbc.deployWorkflow('./test/conditional-pathway.bpmn')
+		expect(res.workflows.length).toBe(1)
+		expect(res.workflows[0].bpmnProcessId).toBe('condition-test')
+
+		const wf = await zbc.createWorkflowInstance('condition-test', {
+			conditionVariable: true,
+		})
+		const wfi = wf.workflowInstanceKey
+		expect(wfi).toBeTruthy()
+
+		await zbc.setVariables({
+			elementInstanceKey: wfi,
+			local: false,
+			variables: {
+				conditionVariable: false,
+			},
+		})
+
+		await zbc.createWorker('test2', 'wait', async (job, complete) => {
+			expect(job.jobHeaders.workflowInstanceKey).toBe(wfi)
+			attempts++
+			// Succeed on the third attempt
+			if (attempts === 3) {
+				return complete()
+			}
+			complete.failure('Triggering a retry')
+			if (attempts === 2) {
+				expect(attempts).toBe(2)
+				done()
+			}
+		})
+	})
+
+	it('Can raise an Operate incident with complete.failure()', async done => {
+		const res = await zbc.deployWorkflow('./test/conditional-pathway.bpmn')
+		expect(res.workflows.length).toBe(1)
+		expect(res.workflows[0].bpmnProcessId).toBe('condition-test')
+
+		const wf = await zbc.createWorkflowInstance('condition-test', {
+			conditionVariable: true,
+		})
+		const wfi = wf.workflowInstanceKey
+		expect(wfi).toBeTruthy()
+
+		await zbc.setVariables({
+			elementInstanceKey: wfi,
+			local: false,
+			variables: {
+				conditionVariable: false,
+			},
+		})
+
+		await zbc.createWorker('test2', 'wait', async (job, complete) => {
+			expect(job.jobHeaders.workflowInstanceKey).toBe(wfi)
+			complete.success(job)
+		})
+
+		await zbc.createWorker('test2', 'pathB', async (job, complete) => {
+			expect(job.jobHeaders.workflowInstanceKey).toBe(wfi)
+			expect(job.variables.conditionVariable).toBe(false)
+			complete.failure('Raise an incident in Operate', 0)
+			// Manually verify that an incident has been raised
 			done()
 		})
 	})
