@@ -226,10 +226,11 @@ export interface CompleteJobRequest<Variables = KeyedObject> {
 }
 
 export interface SetVariablesRequest<Variables = KeyedObject> {
-	/** the unique identifier of a particular element; can be the workflow instance key (as
-	 * obtained during instance creation), or a given element, such as a service task (see
-	 *  elementInstanceKey on the JobHeaders message)
-	 */
+	/*
+	The unique identifier of a particular element; can be the workflow instance key (as
+	obtained during instance creation), or a given element, such as a service task (see
+	elementInstanceKey on the JobHeaders message)
+	*/
 	elementInstanceKey: string
 	variables: Partial<Variables>
 	local: boolean

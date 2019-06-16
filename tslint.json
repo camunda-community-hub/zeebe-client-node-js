@@ -1,6 +1,6 @@
 {
 	"defaultSeverity": "error",
-	"extends": ["tslint:recommended"],
+	"extends": ["tslint:latest", "tslint-config-prettier"],
 	"jsRules": {},
 	"rules": {
 		"interface-name": false,
@@ -10,5 +10,13 @@
 		"trailing-comma": false,
 		"arrow-parens": false
 	},
-	"rulesDirectory": []
+	"rulesDirectory": [],
+	"linterOptions": {
+		"exclude": [
+			"./node_modules/**/*",
+			"./dist/**/*",
+			"./example/**/*",
+			"./docs/**/*"
+		]
+	}
 }

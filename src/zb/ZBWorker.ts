@@ -182,9 +182,7 @@ export class ZBWorker<
 		let stream: any
 		if (this.activeJobs >= this.maxActiveJobs) {
 			this.logger.log(
-				`Polling cancelled - ${this.taskType} has ${
-					this.activeJobs
-				} and a capacity of ${this.maxActiveJobs}.`
+				`Polling cancelled - ${this.taskType} has ${this.activeJobs} and a capacity of ${this.maxActiveJobs}.`
 			)
 			return
 		}
@@ -222,9 +220,7 @@ export class ZBWorker<
 				let taskTimedout = false
 				const taskId = uuid.v4()
 				this.logger.debug(
-					`Setting ${this.taskType} task timeout for ${taskId} to ${
-						this.timeout
-					}`
+					`Setting ${this.taskType} task timeout for ${taskId} to ${this.timeout}`
 				)
 				const timeoutCancel = setTimeout(() => {
 					taskTimedout = true
@@ -263,15 +259,11 @@ export class ZBWorker<
 							if (!taskTimedout) {
 								this.drainOne()
 								this.logger.debug(
-									`Completed task ${taskId} for ${
-										this.taskType
-									}`
+									`Completed task ${taskId} for ${this.taskType}`
 								)
 							} else {
 								this.logger.debug(
-									`Completed task ${taskId} for ${
-										this.taskType
-									}, however it had timed out.`
+									`Completed task ${taskId} for ${this.taskType}, however it had timed out.`
 								)
 							}
 						}
@@ -290,7 +282,7 @@ export class ZBWorker<
 					})()
 
 					await taskHandler(
-						Object.assign({}, job as any, { customHeaders }),
+						{ ...job, customHeaders: { ...customHeaders } } as any,
 						workerCallback,
 						this
 					)

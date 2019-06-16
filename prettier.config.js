@@ -1,20 +1,19 @@
 module.exports = {
-	endOfLine: "lf",
-	useTabs: true,
-	tabWidth: 4,
-
-	trailingComma: "es5",
-	semi: false,
-	singleQuote: true,
+	endOfLine: 'lf',
 	jsxSingleQuote: true,
 	overrides: [
 		{
-			files: ["*.yaml", "*.yml"],
+			files: ['*.yaml', '*.yml'],
 			options: {
-				useTabs: false,
+				singleQuote: false,
 				tabWidth: 2,
-				singleQuote: false
-			}
-		}
-	]
-};
+				useTabs: false,
+			},
+		},
+	],
+	semi: false,
+	singleQuote: true,
+	tabWidth: 4,
+	trailingComma: 'es5',
+	useTabs: true,
+}

@@ -5,6 +5,7 @@ import * as path from 'path'
 import { v4 as uuid } from 'uuid'
 import { BpmnParser, stringifyVariables } from '../lib'
 import * as ZB from '../lib/interfaces'
+// tslint:disable-next-line: no-duplicate-imports
 import { KeyedObject } from '../lib/interfaces'
 import { ZBWorker } from './ZBWorker'
 
