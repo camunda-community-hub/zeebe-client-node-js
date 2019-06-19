@@ -57,7 +57,7 @@ If no workers have been started, this can be fatal to the process if it is not h
 
 To mitigate against this, the Node client implements some client-side gRPC operation retry logic by default. This can be configured, including disabled, via configuration in the client constructor.
 
--   Operations retry, but only if the error message starts with '14' - indicating a network error. This can be caused by passing in an unresolvable gateway address (`14: DNS Resolution failed`), or by the gateway not being ready yet (`14: UNAVAILABLE: failed to connect to all addresses`).
+-   Operations retry, but only for [gRPC error code 14](https://github.com/grpc/grpc/blob/master/doc/statuscodes.md) - indicating a transient network failure. This can be caused by passing in an unresolvable gateway address (`14: DNS Resolution failed`), or by the gateway not being ready yet (`14: UNAVAILABLE: failed to connect to all addresses`).
 -   Operations that fail for other reasons, such as deploying an invalid bpmn file or cancelling a workflow that does not exist, do not retry.
 -   Retry is enabled by default, and can be disabled by passing { retry: false } to the client constructor.
 -   `maxRetries` and `maxRetryTimeout` are also configurable through the constructor options. By default, if not supplied, the values are:
