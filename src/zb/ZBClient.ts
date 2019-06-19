@@ -287,8 +287,10 @@ export class ZBClient {
 	}
 
 	/**
-	 * If this.retry is set true, the operation will be wrapped in an infinite retry on exception.
-	 * Otherwise it will be executed with no retry, and the application should handle the exception.
+	 * If this.retry is set true, the operation will be wrapped in an configurable retry on exceptions
+	 * of gRPC error code 14 - Transient Network Failure.
+	 * See: https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
+	 * If this.retry is false, it will be executed with no retry, and the application should handle the exception.
 	 * @param operation A gRPC command operation
 	 */
 	private async executeOperation<T>(operation: () => Promise<T>): Promise<T> {
@@ -297,7 +299,8 @@ export class ZBClient {
 
 	/**
 	 * This function takes a gRPC operation that returns a Promise as a function, and invokes it.
-	 * If the operation throws, this function will continue to try it until it succeeds.
+	 * If the operation throws gRPC error 14, this function will continue to try it until it succeeds
+	 * or retries are exhausted.
 	 * @param operation A gRPC command operation that may fail if the broker is not available
 	 */
 	private async retryOnFailure<T>(operation: () => Promise<T>): Promise<T> {
