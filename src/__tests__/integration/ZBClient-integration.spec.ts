@@ -27,6 +27,7 @@ describe('ZBClient.deployWorkflow()', () => {
 	})
 
 	// Note: this will change in Zeebe 0.19!
+	// See: https://github.com/zeebe-io/zeebe/issues/1159
 	it('By default, it deploys a single workflow when that workflow is already deployed', async () => {
 		const res = await zbc.deployWorkflow('./test/hello-world.bpmn')
 		expect(res.workflows.length).toBe(1)
