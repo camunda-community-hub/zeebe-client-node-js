@@ -15,11 +15,11 @@
 	],
 	"homepage": "https://creditsenseau.github.io/zeebe-client-node-js/",
 	"bugs": {
-		"url": "https://github.com/CreditSenseAU/zeebe-client-node-js/issues"
+		"url": "https://github.com/creditsenseau/zeebe-client-node-js/issues"
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/CreditSenseAU/zeebe-client-node-js"
+		"url": "https://github.com/creditsenseau/zeebe-client-node-js"
 	},
 	"main": "dist/index.js",
 	"scripts": {
@@ -30,7 +30,7 @@
 		"test:integration": "jest --runInBand --verbose true --detectOpenHandles",
 		"test&docs": "npm test && npm run docs",
 		"dev": "tsc-watch --onSuccess \"npm run test&docs\" -p tsconfig.json --outDir dist",
-		"docs": "typedoc --out ./docs --tsconfig ./tsconfig.json --excludePrivate --mode file --sourcefile-url-prefix \"https://github.com/CreditSenseAU/\""
+		"docs": "typedoc --out ./docs --tsconfig ./tsconfig.json --excludePrivate --mode file --sourcefile-url-prefix \"https://github.com/creditsenseau/\""
 	},
 	"husky": {
 		"hooks": {
