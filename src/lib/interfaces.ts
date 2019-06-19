@@ -262,4 +262,7 @@ export interface GetWorkflowResponse {
 export interface ZBClientOptions {
 	loglevel?: Loglevel
 	stdout?: any
+	retry?: boolean
+	maxRetries?: number
+	maxRetryTimeout?: number
 }

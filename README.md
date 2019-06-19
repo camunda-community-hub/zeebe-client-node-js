@@ -13,7 +13,7 @@ Docker-compose configurations for Zeebe are available at [https://github.com/zee
 
 NPM Package version 1.x.x supports Zeebe 0.15/0.16.
 
-NPM Package version 2.x.x supports Zeebe 0.17.
+NPM Package version 2.x.x supports Zeebe 0.18.
 
 ## Example Use
 
@@ -23,7 +23,7 @@ NPM Package version 2.x.x supports Zeebe 0.17.
 npm i zeebe-node
 ```
 
-### Get Broker Topology and List Workflows
+### Get Broker Topology
 
 ```javascript
 const ZB = require('zeebe-node')
@@ -32,9 +32,6 @@ const ZB = require('zeebe-node')
 	const zbc = new ZB.ZBClient('localhost:26500')
 	const topology = await zbc.topology()
 	console.log(JSON.stringify(topology, null, 2))
-
-	let workflows = await zbc.listWorkflows()
-	console.log(workflows)
 })()
 ```
 
@@ -51,6 +48,29 @@ const ZB = require('zeebe-node')
 	console.log(res)
 })()
 ```
+
+### Client-side gRPC retry in ZBClient
+
+If a gRPC command method fails in the ZBClient - such as `ZBClient.deployWorkflow` or `ZBClient.topology()`, the underlying gRPC library will throw an exception.
+
+If no workers have been started, this can be fatal to the process if it is not handled by the application logic. This is especially an issue when a worker container starts before the Zeebe gRPC gateway is available to service requests, and can be inconsistent as this is a race condition.
+
+To mitigate against this, the Node client implements some client-side gRPC operation retry logic by default. This can be configured, including disabled, via configuration in the client constructor.
+
+-   Operations retry, but only if the error message starts with '14' - indicating a network error. This can be caused by passing in an unresolvable gateway address (`14: DNS Resolution failed`), or by the gateway not being ready yet (`14: UNAVAILABLE: failed to connect to all addresses`).
+-   Operations that fail for other reasons, such as deploying an invalid bpmn file or cancelling a workflow that does not exist, do not retry.
+-   Retry is enabled by default, and can be disabled by passing { retry: false } to the client constructor.
+-   `maxRetries` and `maxRetryTimeout` are also configurable through the constructor options. By default, if not supplied, the values are:
+
+```TypeScript
+const zbc = new ZB.ZBClient(gatewayAddress, {
+    retry: true,
+    maxRetries: 50,
+    maxRetryTimeout: 5000
+})
+```
+
+Retry is provided by [promise-retry](https://www.npmjs.com/package/promise-retry), and the back-off strategy is simple ^2.
 
 ### Create a Task Worker
 
