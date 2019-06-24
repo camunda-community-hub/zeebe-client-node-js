@@ -306,7 +306,7 @@ describe('ZBClient.deployWorkflow()', () => {
 		// See: https://github.com/zeebe-io/zeebe/issues/2680
 		// await zbc.cancelWorkflowInstance('123LoL')
 		try {
-			await zbc.cancelWorkflowInstance('2251799813686202')
+			await zbc.cancelWorkflowInstance(2251799813686202)
 		} catch (e) {
 			expect(e.message.indexOf('5 NOT_FOUND:')).toBe(0)
 		}

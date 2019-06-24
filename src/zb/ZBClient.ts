@@ -256,7 +256,7 @@ export class ZBClient {
 	}
 
 	public async cancelWorkflowInstance(
-		workflowInstanceKey: string
+		workflowInstanceKey: number
 	): Promise<void> {
 		return this.executeOperation(() =>
 			this.gRPCClient.cancelWorkflowInstanceSync({

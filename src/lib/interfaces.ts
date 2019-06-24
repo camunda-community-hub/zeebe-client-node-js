@@ -51,7 +51,7 @@ export interface ActivateJobsRequest {
 }
 
 export interface ActivatedJob {
-	key: string
+	key: number
 	type: string
 	jobHeaders: JobHeaders
 	/**
@@ -71,7 +71,7 @@ export interface ActivatedJob {
 }
 
 export interface Job<Variables = KeyedObject, CustomHeaders = KeyedObject> {
-	key: string
+	key: number
 	type: string
 	jobHeaders: JobHeaders
 	customHeaders: CustomHeaders
@@ -83,7 +83,7 @@ export interface Job<Variables = KeyedObject, CustomHeaders = KeyedObject> {
 }
 
 export interface JobHeaders {
-	workflowInstanceKey: string
+	workflowInstanceKey: number
 	bpmnProcessId: string
 	workflowDefinitionVersion: number
 	workflowKey: string
@@ -125,10 +125,10 @@ export interface CreateWorkflowInstanceRequest<Variables = KeyedObject> {
 }
 
 export interface CreateWorkflowInstanceResponse {
-	workflowKey: string
+	workflowKey: number
 	bpmnProcessId: string
 	version: number
-	workflowInstanceKey: string
+	workflowInstanceKey: number
 }
 
 export enum PartitionBrokerRole {
@@ -210,18 +210,18 @@ export interface PublishStartMessageRequest<Variables = KeyedObject> {
 }
 
 export interface UpdateJobRetriesRequest {
-	jobKey: string
+	jobKey: number
 	retries: number
 }
 
 export interface FailJobRequest {
-	jobKey: string
+	jobKey: number
 	retries: number
 	errorMessage: string
 }
 
 export interface CompleteJobRequest<Variables = KeyedObject> {
-	jobKey: string
+	jobKey: number
 	variables: Variables
 }
 
@@ -231,7 +231,7 @@ export interface SetVariablesRequest<Variables = KeyedObject> {
 	obtained during instance creation), or a given element, such as a service task (see
 	elementInstanceKey on the JobHeaders message)
 	*/
-	elementInstanceKey: string
+	elementInstanceKey: number
 	variables: Partial<Variables>
 	local: boolean
 }
@@ -242,7 +242,7 @@ export type GetWorkflowRequest =
 	| GetWorkflowRequestWithWorkflowKey
 
 export interface GetWorkflowRequestWithWorkflowKey {
-	workflowKey: string
+	workflowKey: number
 }
 
 export interface GetWorkflowRequestWithBpmnProcessId {
@@ -252,7 +252,7 @@ export interface GetWorkflowRequestWithBpmnProcessId {
 }
 
 export interface GetWorkflowResponse {
-	workflowKey: string
+	workflowKey: number
 	version: number
 	bpmnProcessId: string
 	resourceName: string
