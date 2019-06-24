@@ -1,7 +1,7 @@
 # Zeebe Node.js Client
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![CircleCI](https://circleci.com/gh/CreditSenseAU/zeebe-client-node-js/tree/master.svg?style=svg)](https://circleci.com/gh/CreditSenseAU/zeebe-client-node-js/tree/master)
+[![CircleCI](https://circleci.com/gh/creditsenseau/zeebe-client-node-js/tree/master.svg?style=svg)](https://circleci.com/gh/creditsenseau/zeebe-client-node-js/tree/master)
 
 This is a Node.js gRPC client for [Zeebe](https://zeebe.io). It is written in TypeScript and transpiled to JavaScript in the `dist` directory.
 
@@ -300,3 +300,11 @@ npm run test:integration
 ```
 
 For the failure test, you need to run Operate ([docker-compose config](https://github.com/zeebe-io/zeebe-docker-compose/blob/master/operate/docker-compose.yml)) and manually verify that an incident has been raised at [http://localhost:8080](http://localhost:8080).
+
+## Contributors
+
+| Name                                              |
+| ------------------------------------------------- |
+| **[Josh Wulf](https://github.com/jwulf)**         |
+| **[Jarred Filmer](https://github.com/BrighTide)** |
+| **[Timothy Colbert](https://github.com/s3than)**  |
