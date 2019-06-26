@@ -87,9 +87,11 @@ jobs:
             git fetch origin
             sed -i '/docs/d' ./.gitignore
             npm run docs
+            rm
             git add .
             git commit -m "docs update $CIRCLE_TAG"
-            git subtree push --prefix docs origin gh-pages
+            git subtree split --prefix docs -b gh-pages
+            git push -f origin gh-pages:gh-pages
 
 workflows:
   version: 2
