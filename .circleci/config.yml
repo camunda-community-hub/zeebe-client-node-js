@@ -50,8 +50,6 @@ jobs:
       - image: circleci/node:11.10.1
     steps:
       - checkout
-      - setup_remote_docker:
-          docker_layer_caching: true
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
       - run:
@@ -79,6 +77,21 @@ jobs:
               echo "The package.json does not match the Git tag for this release"
               exit 1;
             fi
+      - run:
+          name: Publish Docs
+          command: |
+            git config user.name "s3than"
+            git config user.email "admin@tcolbert.net"
+            git remote remove origin
+            git remote add origin https://$GITHUB_API_KEY@github.com/creditsenseau/zeebe-client-node-js.git > /dev/null 2>&1
+            git remote add upstream https://$GITHUB_API_KEY@github.com/creditsenseau/zeebe-client-node-js.git > /dev/null 2>&1
+            git fetch origin
+            git fetch upstream
+            npm run docs
+            git commit -m "docs update $CIRCLE_TAG"
+            git merge upstream/auto-docs --no-edit
+            git push origin HEAD:auto-docs > /dev/null 2>&1
+            git push upstream HEAD:auto-docs > /dev/null 2>&1
 
 workflows:
   version: 2
@@ -93,4 +106,3 @@ workflows:
           requires:
             - test
           filters: *prod_filters
-          context: Docker
