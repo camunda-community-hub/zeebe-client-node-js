@@ -88,8 +88,7 @@ jobs:
             git fetch origin
             git fetch upstream
             npm run docs
-            git commit -m "docs update $CIRCLE_TAG"
-            git merge upstream/auto-docs --no-edit
+            git commit -a -m "docs update $CIRCLE_TAG"
             git push origin HEAD:auto-docs > /dev/null 2>&1
             git push upstream HEAD:auto-docs > /dev/null 2>&1
 
