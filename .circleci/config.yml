@@ -96,11 +96,17 @@ workflows:
   version: 2
   test:
     jobs:
-      - test
+      - test:
+          branches:
+            ignore:
+              - gh-pages
   build-master: # Will only run when a tag is pushed
     jobs:
       - test:
           filters: *prod_filters
+          branches:
+            ignore:
+              - gh-pages
       - publish:
           requires:
             - test
