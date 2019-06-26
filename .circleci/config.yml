@@ -1,5 +1,9 @@
 version: 2
 
+docs_filters: &docs_filters # Ignores any commit on any branch by default
+  branches:
+    ignore: gh-pages
+
 prod_filters: &prod_filters # Ignores any commit on any branch by default
   branches:
     ignore: /.*/
@@ -8,6 +12,21 @@ prod_filters: &prod_filters # Ignores any commit on any branch by default
   tags:
     only:
       - /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - test:
+          filters: *docs_filters
+  build-master: # Will only run when a tag is pushed
+    jobs:
+      - test:
+          filters: *prod_filters
+      - publish:
+          requires:
+            - test
+          filters: *prod_filters
 
 jobs:
   # Runs the tests, including integration
@@ -91,23 +110,3 @@ jobs:
             git commit -m "docs update $CIRCLE_TAG"
             git subtree split --prefix docs -b gh-pages
             git push -f origin gh-pages:gh-pages
-
-workflows:
-  version: 2
-  test:
-    jobs:
-      - test:
-          branches:
-            ignore:
-              - gh-pages
-  build-master: # Will only run when a tag is pushed
-    jobs:
-      - test:
-          filters: *prod_filters
-          branches:
-            ignore:
-              - gh-pages
-      - publish:
-          requires:
-            - test
-          filters: *prod_filters
