@@ -26,22 +26,12 @@ describe('ZBClient.deployWorkflow()', () => {
 		expect(res.workflows[0].bpmnProcessId).toBe('hello-world')
 	})
 
+	// Note: this will change in Zeebe 0.19!
+	// See: https://github.com/zeebe-io/zeebe/issues/1159
 	it('By default, it deploys a single workflow when that workflow is already deployed', async () => {
 		const res = await zbc.deployWorkflow('./test/hello-world.bpmn')
 		expect(res.workflows.length).toBe(1)
 		expect(res.workflows[0].version > 1).toBe(true)
-	})
-
-	it('With {redeploy: false} it will not redeploy an existing workflow', async () => {
-		const res = await zbc.deployWorkflow('./test/hello-world.bpmn', {
-			redeploy: false,
-		})
-		expect(res.key).toBe(-1)
-	})
-
-	it('Lists workflows', async () => {
-		const res = await zbc.listWorkflows()
-		expect(res.workflows).toBeTruthy()
 	})
 
 	it('Can create a worker', async () => {
@@ -300,5 +290,25 @@ describe('ZBClient.deployWorkflow()', () => {
 			// Manually verify that an incident has been raised
 			done()
 		})
+	})
+
+	it('does not retry the deployment of a broken BPMN file', async () => {
+		expect.assertions(1)
+		try {
+			await zbc.deployWorkflow('./test/broken-bpmn.bpmn')
+		} catch (e) {
+			expect(e.message.indexOf('3 INVALID_ARGUMENT:')).toBe(0)
+		}
+	})
+
+	it("does not retry to cancel a workflow instance that doesn't exist", async () => {
+		expect.assertions(1)
+		// See: https://github.com/zeebe-io/zeebe/issues/2680
+		// await zbc.cancelWorkflowInstance('123LoL')
+		try {
+			await zbc.cancelWorkflowInstance(2251799813686202)
+		} catch (e) {
+			expect(e.message.indexOf('5 NOT_FOUND:')).toBe(0)
+		}
 	})
 })
