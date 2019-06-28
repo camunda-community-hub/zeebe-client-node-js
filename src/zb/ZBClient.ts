@@ -1,7 +1,8 @@
 import chalk from 'chalk'
 import * as fs from 'fs'
-import * as GRPCClient from 'node-grpc-client'
+import GRPCClient from 'node-grpc-client'
 import * as path from 'path'
+import promiseRetry from 'promise-retry'
 import { v4 as uuid } from 'uuid'
 import { BpmnParser, stringifyVariables } from '../lib'
 import * as ZB from '../lib/interfaces'
@@ -25,6 +26,9 @@ export class ZBClient {
 	private options: ZB.ZBClientOptions
 	private workerCount = 0
 	private workers: Array<ZBWorker<any, any, any>> = []
+	private retry: boolean
+	private maxRetries: number = 50
+	private maxRetryTimeout: number = 5000
 
 	constructor(gatewayAddress: string, options: ZB.ZBClientOptions = {}) {
 		if (!gatewayAddress) {
@@ -50,6 +54,10 @@ export class ZBClient {
 			'Gateway',
 			gatewayAddress
 		)
+
+		this.retry = options.retry !== false
+		this.maxRetries = options.maxRetries || this.maxRetries
+		this.maxRetryTimeout = options.maxRetryTimeout || this.maxRetryTimeout
 	}
 
 	/**
@@ -115,7 +123,7 @@ export class ZBClient {
 	 * Return the broker cluster topology
 	 */
 	public topology(): Promise<ZB.TopologyResponse> {
-		return this.gRPCClient.topologySync()
+		return this.executeOperation(this.gRPCClient.topologySync)
 	}
 
 	/**
@@ -125,32 +133,24 @@ export class ZBClient {
 	 * If set false, will not redeploy a workflow that exists.
 	 */
 	public async deployWorkflow(
-		workflow: string | string[],
-		{ redeploy = true } = {}
+		workflow: string | string[]
 	): Promise<ZB.DeployWorkflowResponse> {
 		const workflows = Array.isArray(workflow) ? workflow : [workflow]
-		let deployedWorkflows: any[] = []
-		if (!redeploy) {
-			deployedWorkflows = (await this.listWorkflows()).workflows.map(
-				(wf: any) => wf.bpmnProcessId
-			)
-		}
-		const workFlowRequests: ZB.WorkflowRequestObject[] = workflows
-			.map(wf => ({
+
+		const workFlowRequests: ZB.WorkflowRequestObject[] = workflows.map(
+			wf => ({
 				definition: fs.readFileSync(wf),
 				name: path.basename(wf),
 				type: 1,
-			}))
-			.filter(
-				wfr =>
-					!deployedWorkflows.includes(
-						BpmnParser.getProcessId(wfr.definition.toString())
-					)
-			)
-		if (workFlowRequests.length > 0) {
-			return this.gRPCClient.deployWorkflowSync({
-				workflows: workFlowRequests,
 			})
+		)
+
+		if (workFlowRequests.length > 0) {
+			return this.executeOperation(() =>
+				this.gRPCClient.deployWorkflowSync({
+					workflows: workFlowRequests,
+				})
+			)
 		} else {
 			return {
 				key: -1,
@@ -177,8 +177,10 @@ export class ZBClient {
 	public publishMessage<T = KeyedObject>(
 		publishMessageRequest: ZB.PublishMessageRequest<T>
 	): Promise<void> {
-		return this.gRPCClient.publishMessageSync(
-			stringifyVariables(publishMessageRequest)
+		return this.executeOperation(() =>
+			this.gRPCClient.publishMessageSync(
+				stringifyVariables(publishMessageRequest)
+			)
 		)
 	}
 
@@ -204,19 +206,25 @@ export class ZBClient {
 			correlationKey: uuid(),
 			...publishStartMessageRequest,
 		}
-		return this.gRPCClient.publishMessageSync(
-			stringifyVariables(publishMessageRequest)
+		return this.executeOperation(() =>
+			this.gRPCClient.publishMessageSync(
+				stringifyVariables(publishMessageRequest)
+			)
 		)
 	}
 
 	public updateJobRetries(
 		updateJobRetriesRequest: ZB.UpdateJobRetriesRequest
 	): Promise<void> {
-		return this.gRPCClient.updateJobRetriesSync(updateJobRetriesRequest)
+		return this.executeOperation(() =>
+			this.gRPCClient.updateJobRetriesSync(updateJobRetriesRequest)
+		)
 	}
 
 	public failJob(failJobRequest: ZB.FailJobRequest): Promise<void> {
-		return this.gRPCClient.failJobSync(failJobRequest)
+		return this.executeOperation(() =>
+			this.gRPCClient.failJobSync(failJobRequest)
+		)
 	}
 
 	/**
@@ -240,17 +248,21 @@ export class ZBClient {
 			variables: (variables as unknown) as object,
 			version,
 		}
-		return this.gRPCClient.createWorkflowInstanceSync(
-			stringifyVariables(createWorkflowInstanceRequest)
+		return this.executeOperation(() =>
+			this.gRPCClient.createWorkflowInstanceSync(
+				stringifyVariables(createWorkflowInstanceRequest)
+			)
 		)
 	}
 
 	public async cancelWorkflowInstance(
-		workflowInstanceKey: string
+		workflowInstanceKey: number
 	): Promise<void> {
-		return this.gRPCClient.cancelWorkflowInstanceSync({
-			workflowInstanceKey,
-		})
+		return this.executeOperation(() =>
+			this.gRPCClient.cancelWorkflowInstanceSync({
+				workflowInstanceKey,
+			})
+		)
 	}
 
 	public setVariables<Variables = KeyedObject>(
@@ -263,34 +275,60 @@ export class ZBClient {
 		if (typeof request.variables === 'object') {
 			request.variables = JSON.stringify(request.variables) as any
 		}
-		return this.gRPCClient.setVariablesSync(request)
-	}
-
-	public listWorkflows(
-		bpmnProcessId?: string
-	): Promise<ZB.ListWorkflowResponse> {
-		return this.gRPCClient.listWorkflowsSync({ bpmnProcessId })
-	}
-
-	public getWorkflow(
-		getWorkflowRequest: ZB.GetWorkflowRequest
-	): Promise<ZB.GetWorkflowResponse> {
-		if (this.hasBpmnProcessId(getWorkflowRequest)) {
-			getWorkflowRequest.version = getWorkflowRequest.version || -1
-		}
-		return this.gRPCClient.getWorkflowSync(getWorkflowRequest)
+		return this.executeOperation(() =>
+			this.gRPCClient.setVariablesSync(request)
+		)
 	}
 
 	public resolveIncident(incidentKey: string): Promise<void> {
-		return this.gRPCClient.resolveIncidentSync(incidentKey)
+		return this.executeOperation(() =>
+			this.gRPCClient.resolveIncidentSync(incidentKey)
+		)
 	}
 
-	private hasBpmnProcessId(
-		request: ZB.GetWorkflowRequest
-	): request is ZB.GetWorkflowRequestWithBpmnProcessId {
-		return (
-			(request as ZB.GetWorkflowRequestWithBpmnProcessId)
-				.bpmnProcessId !== undefined
+	/**
+	 * If this.retry is set true, the operation will be wrapped in an configurable retry on exceptions
+	 * of gRPC error code 14 - Transient Network Failure.
+	 * See: https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
+	 * If this.retry is false, it will be executed with no retry, and the application should handle the exception.
+	 * @param operation A gRPC command operation
+	 */
+	private async executeOperation<T>(operation: () => Promise<T>): Promise<T> {
+		return this.retry ? this.retryOnFailure(operation) : operation()
+	}
+
+	/**
+	 * This function takes a gRPC operation that returns a Promise as a function, and invokes it.
+	 * If the operation throws gRPC error 14, this function will continue to try it until it succeeds
+	 * or retries are exhausted.
+	 * @param operation A gRPC command operation that may fail if the broker is not available
+	 */
+	private async retryOnFailure<T>(operation: () => Promise<T>): Promise<T> {
+		const c = console
+		return promiseRetry(
+			(retry, n) => {
+				if (this.closing) {
+					return Promise.resolve() as any
+				}
+				if (n > 1) {
+					c.error(
+						`gRPC connection is in failed state. Attempt ${n}. Retrying in 5s...`
+					)
+				}
+				return operation().catch(err => {
+					// This could be DNS resolution, or the gRPC gateway is not reachable yet
+					const isNetworkError = err.message.indexOf('14') === 0
+					if (isNetworkError) {
+						c.error(`${err.message}`)
+						retry(err)
+					}
+					throw err
+				})
+			},
+			{
+				maxTimeout: this.maxRetryTimeout,
+				retries: this.maxRetries,
+			}
 		)
 	}
 }
