@@ -8,6 +8,7 @@ import { BpmnParser, stringifyVariables } from '../lib'
 import * as ZB from '../lib/interfaces'
 // tslint:disable-next-line: no-duplicate-imports
 import { KeyedObject } from '../lib/interfaces'
+import { Utils } from '../lib/utils'
 import { ZBWorker } from './ZBWorker'
 
 const idColors = [
@@ -153,7 +154,7 @@ export class ZBClient {
 			)
 		} else {
 			return {
-				key: -1,
+				key: '-1',
 				workflows: [],
 			}
 		}
@@ -256,8 +257,9 @@ export class ZBClient {
 	}
 
 	public async cancelWorkflowInstance(
-		workflowInstanceKey: number
+		workflowInstanceKey: string | number
 	): Promise<void> {
+		Utils.validateNumber(workflowInstanceKey, 'workflowInstanceKey')
 		return this.executeOperation(() =>
 			this.gRPCClient.cancelWorkflowInstanceSync({
 				workflowInstanceKey,

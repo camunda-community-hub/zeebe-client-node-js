@@ -51,7 +51,7 @@ export interface ActivateJobsRequest {
 }
 
 export interface ActivatedJob {
-	key: number
+	readonly key: string
 	type: string
 	jobHeaders: JobHeaders
 	/**
@@ -71,7 +71,7 @@ export interface ActivatedJob {
 }
 
 export interface Job<Variables = KeyedObject, CustomHeaders = KeyedObject> {
-	key: number
+	readonly key: string
 	type: string
 	jobHeaders: JobHeaders
 	customHeaders: CustomHeaders
@@ -83,12 +83,12 @@ export interface Job<Variables = KeyedObject, CustomHeaders = KeyedObject> {
 }
 
 export interface JobHeaders {
-	workflowInstanceKey: number
+	readonly workflowInstanceKey: string
 	bpmnProcessId: string
 	workflowDefinitionVersion: number
-	workflowKey: string
+	readonly workflowKey: string
 	elementId: string
-	elementInstanceKey: string
+	readonly elementInstanceKey: string
 }
 
 export interface ZBWorkerOptions {
@@ -125,10 +125,10 @@ export interface CreateWorkflowInstanceRequest<Variables = KeyedObject> {
 }
 
 export interface CreateWorkflowInstanceResponse {
-	workflowKey: number
+	readonly workflowKey: string
 	bpmnProcessId: string
 	version: number
-	workflowInstanceKey: number
+	readonly workflowInstanceKey: string
 }
 
 export enum PartitionBrokerRole {
@@ -171,12 +171,12 @@ export interface WorkflowRequestObject {
 export interface WorkflowMetadata {
 	bpmnProcessId: string
 	version: number
-	workflowKey: string
+	readonly workflowKey: string
 	resourceName: string
 }
 
 export interface DeployWorkflowResponse {
-	key: number
+	readonly key: string
 	workflows: WorkflowMetadata[]
 }
 
@@ -210,18 +210,18 @@ export interface PublishStartMessageRequest<Variables = KeyedObject> {
 }
 
 export interface UpdateJobRetriesRequest {
-	jobKey: number
+	readonly jobKey: string
 	retries: number
 }
 
 export interface FailJobRequest {
-	jobKey: number
+	readonly jobKey: string
 	retries: number
 	errorMessage: string
 }
 
 export interface CompleteJobRequest<Variables = KeyedObject> {
-	jobKey: number
+	readonly jobKey: string
 	variables: Variables
 }
 
@@ -231,7 +231,7 @@ export interface SetVariablesRequest<Variables = KeyedObject> {
 	obtained during instance creation), or a given element, such as a service task (see
 	elementInstanceKey on the JobHeaders message)
 	*/
-	elementInstanceKey: number
+	readonly elementInstanceKey: string
 	variables: Partial<Variables>
 	local: boolean
 }
@@ -242,7 +242,7 @@ export type GetWorkflowRequest =
 	| GetWorkflowRequestWithWorkflowKey
 
 export interface GetWorkflowRequestWithWorkflowKey {
-	workflowKey: number
+	readonly workflowKey: string
 }
 
 export interface GetWorkflowRequestWithBpmnProcessId {
@@ -252,7 +252,7 @@ export interface GetWorkflowRequestWithBpmnProcessId {
 }
 
 export interface GetWorkflowResponse {
-	workflowKey: number
+	readonly workflowKey: string
 	version: number
 	bpmnProcessId: string
 	resourceName: string
