@@ -15,6 +15,10 @@ NPM Package version 1.x.x supports Zeebe 0.15/0.16.
 
 NPM Package version 2.x.x supports Zeebe 0.18.
 
+## Type difference from other Zeebe clients
+
+Protobuf fields of type `int64` are serialised as type string in the Node library. These fields are serialised as numbers (long) in the Go and Java client. See [grpc/#7229](https://github.com/grpc/grpc/issues/7229) for why the Node library serialises them as string. The Workflow instance key, and other fields that are of type long in other client libraries, are type string in this library. Fields of type `int32` are serialised as type number in the Node library.
+
 ## Example Use
 
 ### Add the Library to your Project
@@ -29,12 +33,12 @@ npm i zeebe-node
 const ZB = require('zeebe-node')
 
 ;(async () => {
-    const zbc = new ZB.ZBClient('localhost:26500')
-    const topology = await zbc.topology()
-    console.log(JSON.stringify(topology, null, 2))
+	const zbc = new ZB.ZBClient('localhost:26500')
+	const topology = await zbc.topology()
+	console.log(JSON.stringify(topology, null, 2))
 
-    let workflows = await zbc.listWorkflows()
-    console.log(workflows)
+	let workflows = await zbc.listWorkflows()
+	console.log(workflows)
 })()
 ```
 
@@ -44,11 +48,11 @@ const ZB = require('zeebe-node')
 const ZB = require('zeebe-node')
 
 ;(async () => {
-    const zbc = new ZB.ZBClient('localhost:26500')
+	const zbc = new ZB.ZBClient('localhost:26500')
 
-    const res = await zbc.deployWorkflow('./domain-mutation.bpmn')
+	const res = await zbc.deployWorkflow('./domain-mutation.bpmn')
 
-    console.log(res)
+	console.log(res)
 })()
 ```
 
@@ -81,20 +85,20 @@ Retry is provided by [promise-retry](https://www.npmjs.com/package/promise-retry
 const ZB = require('zeebe-node')
 
 ;(async () => {
-    const zbc = new ZB.ZBClient('localhost:26500')
+	const zbc = new ZB.ZBClient('localhost:26500')
 
-    const zbWorker = zbc.createWorker('test-worker', 'demo-service', handler)
+	const zbWorker = zbc.createWorker('test-worker', 'demo-service', handler)
 })()
 
 function handler(job, complete) {
-    console.log('Task variables', job.variables)
-    let updatedVariables = Object.assign({}, job.variables, {
-        updatedProperty: 'newValue',
-    })
+	console.log('Task variables', job.variables)
+	let updatedVariables = Object.assign({}, job.variables, {
+		updatedProperty: 'newValue',
+	})
 
-    // Task worker business logic goes here
+	// Task worker business logic goes here
 
-    complete(updatedVariables)
+	complete(updatedVariables)
 }
 ```
 
@@ -123,18 +127,18 @@ The worker can be configured with options. Shown below are the defaults that app
 
 ```javascript
 const workerOptions = {
-    maxActiveJobs: 32, // the number of simultaneous tasks this worker can handle
-    timeout: 1000, // the maximum amount of time the broker should allow this worker to complete a task
+	maxActiveJobs: 32, // the number of simultaneous tasks this worker can handle
+	timeout: 1000, // the maximum amount of time the broker should allow this worker to complete a task
 }
 
 const onConnectionError = err => console.log(err) // Called when the connection to the broker cannot be established, or fails
 
 const zbWorker = zbc.createWorker(
-    'test-worker',
-    'demo-service',
-    handler,
-    workerOptions,
-    onConnectionError
+	'test-worker',
+	'demo-service',
+	handler,
+	workerOptions,
+	onConnectionError
 )
 ```
 
@@ -144,7 +148,7 @@ When a task handler throws an unhandled exception, the library will fail the job
 
 ```typescript
 zbc.createWorker('test-worker', 'console-log', maybeFaultyHandler, {
-    failWorkflowOnException: true,
+	failWorkflowOnException: true,
 })
 ```
 
@@ -166,11 +170,11 @@ complete.failure('This is a critical failure and will raise an incident', 0)
 const ZB = require('zeebe-node')
 
 ;(async () => {
-    const zbc = new ZB.ZBClient('localhost:26500')
-    const result = await zbc.createWorkflowInstance('test-process', {
-        testData: 'something',
-    })
-    console.log(result)
+	const zbc = new ZB.ZBClient('localhost:26500')
+	const result = await zbc.createWorkflowInstance('test-process', {
+		testData: 'something',
+	})
+	console.log(result)
 })()
 ```
 
@@ -190,11 +194,11 @@ Example output:
 ```javascript
 const zbc = new ZB.ZBClient('localhost:26500')
 zbc.publishMessage({
-    correlationKey: 'value-to-correlate-with-workflow-variable',
-    messageId: uuid.v4(),
-    name: 'message-name',
-    variables: { valueToAddToWorkflowVariables: 'here', status: 'PROCESSED' },
-    timeToLive: 10000,
+	correlationKey: 'value-to-correlate-with-workflow-variable',
+	messageId: uuid.v4(),
+	name: 'message-name',
+	variables: { valueToAddToWorkflowVariables: 'here', status: 'PROCESSED' },
+	timeToLive: 10000,
 })
 ```
 
@@ -206,10 +210,10 @@ You can use the `publishStartMessage()` method to publish a message with no corr
 ```javascript
 const zbc = new ZB.ZBClient('localhost:26500')
 zbc.publishStartMessage({
-    messageId: uuid.v4(),
-    name: 'message-name',
-    variables: { initialWorkflowVariable: 'here' },
-    timeToLive: 10000,
+	messageId: uuid.v4(),
+	name: 'message-name',
+	variables: { initialWorkflowVariable: 'here' },
+	timeToLive: 10000,
 })
 ```
 
@@ -232,7 +236,7 @@ This method takes a filepath and returns TypeScript definitions that you can use
 ```javascript
 const ZB = require('zeebe-node')
 ;(async () => {
-    console.log(await ZB.BpmnParser.generateConstantsForBpmnFiles(workflowFile))
+	console.log(await ZB.BpmnParser.generateConstantsForBpmnFiles(workflowFile))
 })()
 ```
 
@@ -326,9 +330,9 @@ For the failure test, you need to run Operate ([docker-compose config](https://g
 
 ## Contributors
 
-| Name                                                          |
-| ------------------------------------------------------------- |
-| **[Josh Wulf](https://github.com/jwulf)**                     |
-| **[Jarred Filmer](https://github.com/BrighTide)**             |
-| **[Timothy Colbert](https://github.com/s3than)**              |
-| **[Olivier Albertini](https://github.com/OlivierAlbertini)**  |
+| Name                                                         |
+| ------------------------------------------------------------ |
+| **[Josh Wulf](https://github.com/jwulf)**                    |
+| **[Jarred Filmer](https://github.com/BrighTide)**            |
+| **[Timothy Colbert](https://github.com/s3than)**             |
+| **[Olivier Albertini](https://github.com/OlivierAlbertini)** |
