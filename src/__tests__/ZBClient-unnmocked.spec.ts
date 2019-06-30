@@ -28,4 +28,13 @@ describe('ZBClient constructor', () => {
 		)
 		await zbc.deployWorkflow('./test/hello-world.bpmn')
 	})
+	it('throws an exception when workflowInstanceKey is malformed', async () => {
+		const zbc = new ZBClient('localhoster', { retry: false })
+		expect.assertions(1)
+		try {
+			await zbc.cancelWorkflowInstance('hello-world')
+		} catch (e) {
+			expect(e).toMatchSnapshot()
+		}
+	})
 })
