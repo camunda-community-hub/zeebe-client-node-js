@@ -300,8 +300,7 @@ export class ZBWorker<
 					})
 
 					if (this.cancelWorkflowOnException) {
-						const workflowInstanceKey =
-							job.jobHeaders.workflowInstanceKey
+						const workflowInstanceKey = job.workflowInstanceKey
 						this.logger.debug(
 							`Cancelling workflow ${workflowInstanceKey}`
 						)

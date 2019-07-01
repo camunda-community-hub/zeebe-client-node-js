@@ -53,7 +53,12 @@ export interface ActivateJobsRequest {
 export interface ActivatedJob {
 	readonly key: string
 	readonly type: string
-	readonly jobHeaders: JobHeaders
+	readonly workflowInstanceKey: string
+	readonly bpmnProcessId: string
+	readonly workflowDefinitionVersion: number
+	readonly workflowKey: string
+	readonly elementId: string
+	readonly elementInstanceKey: string
 	/**
 	 * JSON object as a string
 	 */
@@ -73,22 +78,18 @@ export interface ActivatedJob {
 export interface Job<Variables = KeyedObject, CustomHeaders = KeyedObject> {
 	readonly key: string
 	readonly type: string
-	readonly jobHeaders: JobHeaders
-	readonly customHeaders: CustomHeaders
-	readonly worker: string
-	readonly retries: number
-	// epoch milliseconds
-	readonly deadline: string
-	readonly variables: Variables
-}
-
-export interface JobHeaders {
 	readonly workflowInstanceKey: string
 	readonly bpmnProcessId: string
 	readonly workflowDefinitionVersion: number
 	readonly workflowKey: string
 	readonly elementId: string
 	readonly elementInstanceKey: string
+	readonly customHeaders: CustomHeaders
+	readonly worker: string
+	readonly retries: number
+	// epoch milliseconds
+	readonly deadline: string
+	readonly variables: Variables
 }
 
 export interface ZBWorkerOptions {
@@ -229,7 +230,7 @@ export interface SetVariablesRequest<Variables = KeyedObject> {
 	/*
 	The unique identifier of a particular element; can be the workflow instance key (as
 	obtained during instance creation), or a given element, such as a service task (see
-	elementInstanceKey on the JobHeaders message)
+	elementInstanceKey on the Job message)
 	*/
 	readonly elementInstanceKey: string
 	variables: Partial<Variables>
