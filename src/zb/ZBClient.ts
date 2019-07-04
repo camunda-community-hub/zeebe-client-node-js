@@ -138,9 +138,20 @@ export class ZBClient {
 	): Promise<ZB.DeployWorkflowResponse> {
 		const workflows = Array.isArray(workflow) ? workflow : [workflow]
 
+		const readFile = (filename: string) => {
+			if (fs.existsSync(filename)) {
+				return fs.readFileSync(filename)
+			}
+			const name = `${filename}.bpmn`
+			if (fs.existsSync(name)) {
+				return fs.readFileSync(name)
+			}
+			throw new Error(`${filename} not found.`)
+		}
+
 		const workFlowRequests: ZB.WorkflowRequestObject[] = workflows.map(
 			wf => ({
-				definition: fs.readFileSync(wf),
+				definition: readFile(wf),
 				name: path.basename(wf),
 				type: 1,
 			})
