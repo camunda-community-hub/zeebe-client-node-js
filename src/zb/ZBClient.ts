@@ -46,7 +46,8 @@ export class ZBClient {
 			options.loglevel ||
 			'INFO'
 
-		if (!gatewayAddress.includes('://')) {
+		const includesProtocol = gatewayAddress.includes('://')
+		if (!includesProtocol) {
 			gatewayAddress = `grpc://${gatewayAddress}`
 		}
 		const url = parse(gatewayAddress)
