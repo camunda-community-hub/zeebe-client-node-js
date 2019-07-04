@@ -277,6 +277,10 @@ export class ZBWorker<
 								jobKey: job.key,
 								retries,
 							})
+							this.logger.debug(
+								`Failed job ${job.key} - ${errorMessage}`
+							)
+							clearInterval(timeoutCancel)
 						}
 						return shadowWorkerCallback
 					})()
