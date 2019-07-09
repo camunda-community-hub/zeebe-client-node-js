@@ -1,5 +1,4 @@
 import { ZBClient } from '../..'
-jest.unmock('node-grpc-client')
 
 process.env.ZB_NODE_LOG_LEVEL = process.env.ZB_NODE_LOG_LEVEL || 'NONE'
 

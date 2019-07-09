@@ -1,15 +1,17 @@
 import { ZBClient } from '..'
-jest.unmock('node-grpc-client')
 
 describe('ZBClient constructor', () => {
 	it('throws an exception when there is no broker and retry is false', async () => {
 		const zbc = new ZBClient('localhoster', { retry: false })
-		expect.assertions(1)
-		try {
-			await zbc.deployWorkflow('./test/hello-world.bpmn')
-		} catch (e) {
-			expect(e.message.indexOf('14 UNAVAILABLE:')).toEqual(0)
-		}
+		setTimeout(async () => {
+			expect.assertions(1)
+			try {
+				await zbc.deployWorkflow('./test/hello-world.bpmn')
+				expect(false).toBeFalsy()
+			} catch (e) {
+				expect(e.message.indexOf('14 UNAVAILABLE:')).toEqual(0)
+			}
+		}, 10000)
 	})
 	it('does not throw when there is no broker, by default', async done => {
 		const zbc = new ZBClient('localhoster')

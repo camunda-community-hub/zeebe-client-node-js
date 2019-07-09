@@ -265,4 +265,5 @@ export interface ZBClientOptions {
 	retry?: boolean
 	maxRetries?: number
 	maxRetryTimeout?: number
+	tls?: boolean
 }
