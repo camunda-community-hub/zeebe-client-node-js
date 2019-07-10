@@ -79,6 +79,16 @@ const zbc = new ZB.ZBClient(gatewayAddress, {
 
 Retry is provided by [promise-retry](https://www.npmjs.com/package/promise-retry), and the back-off strategy is simple ^2.
 
+### TLS
+
+In case you need to connect to a secured endpoint, you can enable TLS.
+
+```typescript
+const zbc = new ZB.ZBClient(gatewayAddress, {
+	tls: true,
+})
+```
+
 ### Create a Task Worker
 
 ```javascript

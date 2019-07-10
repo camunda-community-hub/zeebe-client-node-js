@@ -7,7 +7,6 @@ describe('ZBClient constructor', () => {
 			expect.assertions(1)
 			try {
 				await zbc.deployWorkflow('./test/hello-world.bpmn')
-				expect(false).toBeFalsy()
 			} catch (e) {
 				expect(e.message.indexOf('14 UNAVAILABLE:')).toEqual(0)
 			}
