@@ -56,8 +56,6 @@ export class ZBClient {
 
 		this.gatewayAddress = `${url.hostname}:${url.port}`
 
-		console.log('this.gatewayAddress', this.gatewayAddress) // tslint:disable-line
-
 		this.gRPCClient = new GRPCClient(
 			path.join(__dirname, '../../proto/zeebe.proto'),
 			'gateway_protocol',
