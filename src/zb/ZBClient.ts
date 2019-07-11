@@ -1,11 +1,11 @@
 import chalk from 'chalk'
 import * as fs from 'fs'
-import GRPCClient from 'node-grpc-client'
 import * as path from 'path'
 import promiseRetry from 'promise-retry'
 import { parse } from 'url'
 import { v4 as uuid } from 'uuid'
 import { BpmnParser, stringifyVariables } from '../lib'
+import { GRPCClient } from '../lib/GRPCClient'
 import * as ZB from '../lib/interfaces'
 // tslint:disable-next-line: no-duplicate-imports
 import { KeyedObject } from '../lib/interfaces'
@@ -60,7 +60,9 @@ export class ZBClient {
 			path.join(__dirname, '../../proto/zeebe.proto'),
 			'gateway_protocol',
 			'Gateway',
-			this.gatewayAddress
+			gatewayAddress,
+			{},
+			options.tls
 		)
 
 		this.retry = options.retry !== false

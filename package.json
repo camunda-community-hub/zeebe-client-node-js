@@ -55,12 +55,13 @@
 		]
 	},
 	"dependencies": {
+		"@grpc/proto-loader": "^0.5.1",
 		"@types/promise-retry": "^1.1.3",
 		"chalk": "^2.4.2",
 		"console-stamp": "^0.2.7",
 		"debug": "^4.1.1",
 		"fast-xml-parser": "^3.12.12",
-		"node-grpc-client": "^1.3.0",
+		"grpc": "^1.22.0",
 		"promise-retry": "^1.1.1",
 		"uuid": "^3.3.2"
 	},
