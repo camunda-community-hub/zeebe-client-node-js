@@ -1,25 +1,25 @@
-import { loadSync, PackageDefinition } from '@grpc/proto-loader'
+import { loadSync, Options, PackageDefinition } from '@grpc/proto-loader'
 import { Client, credentials, loadPackageDefinition } from 'grpc'
 
 export class GRPCClient {
 	private packageDefinition: PackageDefinition
 	private client: Client
-	private listNameMethods: any[]
+	private listNameMethods: string[]
 
 	constructor(
 		protoPath: string,
 		packageName: string,
 		service: string,
 		host: string,
-		options = {} as any,
+		options: Options = {},
 		tls: boolean = false
 	) {
 		this.packageDefinition = loadSync(protoPath, {
-			defaults: options.default === undefined ? true : options.default,
+			defaults: options.defaults === undefined ? true : options.defaults,
 			enums: options.enums === undefined ? String : options.enums,
 			keepCase: options.keepCase === undefined ? true : options.keepCase,
 			longs: options.longs === undefined ? String : options.longs,
-			oneofs: options.default === undefined ? true : options.default,
+			oneofs: options.oneofs === undefined ? true : options.oneofs,
 		})
 
 		const proto = loadPackageDefinition(this.packageDefinition)[packageName]
@@ -31,7 +31,7 @@ export class GRPCClient {
 		this.listNameMethods = []
 
 		for (const key in listMethods) {
-			if (key) {
+			if (listMethods[key]) {
 				const methodName = listMethods[key].originalName
 				this.listNameMethods.push(methodName)
 
