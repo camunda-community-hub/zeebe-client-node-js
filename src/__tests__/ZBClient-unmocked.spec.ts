@@ -3,14 +3,12 @@ import { ZBClient } from '..'
 describe('ZBClient constructor', () => {
 	it('throws an exception when there is no broker and retry is false', async () => {
 		const zbc = new ZBClient('localhoster', { retry: false })
-		setTimeout(async () => {
-			expect.assertions(1)
-			try {
-				await zbc.deployWorkflow('./test/hello-world.bpmn')
-			} catch (e) {
-				expect(e.message.indexOf('14 UNAVAILABLE:')).toEqual(0)
-			}
-		}, 10000)
+		expect.assertions(1)
+		try {
+			await zbc.deployWorkflow('./test/hello-world.bpmn')
+		} catch (e) {
+			expect(e.message.indexOf('14 UNAVAILABLE:')).toEqual(0)
+		}
 	})
 	it('does not throw when there is no broker, by default', async done => {
 		const zbc = new ZBClient('localhoster')

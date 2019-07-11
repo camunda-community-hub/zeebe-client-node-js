@@ -1,3 +1,4 @@
+// From: https://github.com/zeebe-io/zeebe/blob/develop/gateway-protocol/src/main/proto/gateway.proto
 syntax = 'proto3';
 package gateway_protocol;
 
