@@ -51,10 +51,7 @@ jobs:
           command: |
             for i in `seq 1 10`;
             do
-              curl localhost:9600/ready
-              if [ $? == 52 ]; then
-                echo success && exit 0
-              fi
+              nc -z localhost 9600 && echo success && exit 0
               echo -n .
               sleep 1
             done
