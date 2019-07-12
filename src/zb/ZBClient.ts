@@ -1,15 +1,18 @@
 import chalk from 'chalk'
 import * as fs from 'fs'
-import GRPCClient from 'node-grpc-client'
 import * as path from 'path'
 import promiseRetry from 'promise-retry'
+import { parse } from 'url'
 import { v4 as uuid } from 'uuid'
 import { BpmnParser, stringifyVariables } from '../lib'
+import { GRPCClient } from '../lib/GRPCClient'
 import * as ZB from '../lib/interfaces'
 // tslint:disable-next-line: no-duplicate-imports
 import { KeyedObject } from '../lib/interfaces'
 import { Utils } from '../lib/utils'
 import { ZBWorker } from './ZBWorker'
+
+const DEFAULT_GATEWAY_PORT = '26500'
 
 const idColors = [
 	chalk.yellow,
@@ -43,17 +46,23 @@ export class ZBClient {
 			options.loglevel ||
 			'INFO'
 
-		if (gatewayAddress.indexOf(':') === -1) {
-			gatewayAddress += ':26500'
+		const includesProtocol = gatewayAddress.includes('://')
+		if (!includesProtocol) {
+			gatewayAddress = `grpc://${gatewayAddress}`
 		}
+		const url = parse(gatewayAddress)
+		url.port = url.port || DEFAULT_GATEWAY_PORT
+		url.hostname = url.hostname || url.path
 
-		this.gatewayAddress = gatewayAddress
+		this.gatewayAddress = `${url.hostname}:${url.port}`
 
 		this.gRPCClient = new GRPCClient(
 			path.join(__dirname, '../../proto/zeebe.proto'),
 			'gateway_protocol',
 			'Gateway',
-			gatewayAddress
+			this.gatewayAddress,
+			{},
+			options.tls
 		)
 
 		this.retry = options.retry !== false
@@ -138,9 +147,20 @@ export class ZBClient {
 	): Promise<ZB.DeployWorkflowResponse> {
 		const workflows = Array.isArray(workflow) ? workflow : [workflow]
 
+		const readFile = (filename: string) => {
+			if (fs.existsSync(filename)) {
+				return fs.readFileSync(filename)
+			}
+			const name = `${filename}.bpmn`
+			if (fs.existsSync(name)) {
+				return fs.readFileSync(name)
+			}
+			throw new Error(`${filename} not found.`)
+		}
+
 		const workFlowRequests: ZB.WorkflowRequestObject[] = workflows.map(
 			wf => ({
-				definition: fs.readFileSync(wf),
+				definition: readFile(wf),
 				name: path.basename(wf),
 				type: 1,
 			})

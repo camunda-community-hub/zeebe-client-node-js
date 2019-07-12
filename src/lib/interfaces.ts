@@ -52,43 +52,44 @@ export interface ActivateJobsRequest {
 
 export interface ActivatedJob {
 	readonly key: string
-	type: string
-	jobHeaders: JobHeaders
+	readonly type: string
+	readonly workflowInstanceKey: string
+	readonly bpmnProcessId: string
+	readonly workflowDefinitionVersion: number
+	readonly workflowKey: string
+	readonly elementId: string
+	readonly elementInstanceKey: string
 	/**
 	 * JSON object as a string
 	 */
-	customHeaders: string
-	worker: string
-	retries: number
+	readonly customHeaders: string
+	readonly worker: string
+	readonly retries: number
 	/**
 	 * epoch milliseconds
 	 */
-	deadline: string
+	readonly deadline: string
 	/**
 	 * JSON object as a string
 	 */
-	variables: string
+	readonly variables: string
 }
 
 export interface Job<Variables = KeyedObject, CustomHeaders = KeyedObject> {
 	readonly key: string
-	type: string
-	jobHeaders: JobHeaders
-	customHeaders: CustomHeaders
-	worker: string
-	retries: number
-	// epoch milliseconds
-	deadline: string
-	variables: Variables
-}
-
-export interface JobHeaders {
+	readonly type: string
 	readonly workflowInstanceKey: string
-	bpmnProcessId: string
-	workflowDefinitionVersion: number
+	readonly bpmnProcessId: string
+	readonly workflowDefinitionVersion: number
 	readonly workflowKey: string
-	elementId: string
+	readonly elementId: string
 	readonly elementInstanceKey: string
+	readonly customHeaders: CustomHeaders
+	readonly worker: string
+	readonly retries: number
+	// epoch milliseconds
+	readonly deadline: string
+	readonly variables: Variables
 }
 
 export interface ZBWorkerOptions {
@@ -126,8 +127,8 @@ export interface CreateWorkflowInstanceRequest<Variables = KeyedObject> {
 
 export interface CreateWorkflowInstanceResponse {
 	readonly workflowKey: string
-	bpmnProcessId: string
-	version: number
+	readonly bpmnProcessId: string
+	readonly version: number
 	readonly workflowInstanceKey: string
 }
 
@@ -149,10 +150,10 @@ export interface BrokerInfo {
 }
 
 export interface TopologyResponse {
-	brokers: BrokerInfo[]
-	clusterSize: number
-	partitionsCount: number
-	replicationFactor: number
+	readonly brokers: BrokerInfo[]
+	readonly clusterSize: number
+	readonly partitionsCount: number
+	readonly replicationFactor: number
 }
 
 export enum ResourceType {
@@ -169,23 +170,23 @@ export interface WorkflowRequestObject {
 }
 
 export interface WorkflowMetadata {
-	bpmnProcessId: string
-	version: number
+	readonly bpmnProcessId: string
+	readonly version: number
 	readonly workflowKey: string
-	resourceName: string
+	readonly resourceName: string
 }
 
 export interface DeployWorkflowResponse {
 	readonly key: string
-	workflows: WorkflowMetadata[]
+	readonly workflows: WorkflowMetadata[]
 }
 
 export interface DeployWorkflowRequest {
-	workflows: WorkflowRequestObject[]
+	readonly workflows: WorkflowRequestObject[]
 }
 
 export interface ListWorkflowResponse {
-	workflows: WorkflowMetadata[]
+	readonly workflows: WorkflowMetadata[]
 }
 
 export interface PublishMessageRequest<Variables = KeyedObject> {
@@ -229,7 +230,7 @@ export interface SetVariablesRequest<Variables = KeyedObject> {
 	/*
 	The unique identifier of a particular element; can be the workflow instance key (as
 	obtained during instance creation), or a given element, such as a service task (see
-	elementInstanceKey on the JobHeaders message)
+	elementInstanceKey on the Job message)
 	*/
 	readonly elementInstanceKey: string
 	variables: Partial<Variables>
@@ -253,10 +254,10 @@ export interface GetWorkflowRequestWithBpmnProcessId {
 
 export interface GetWorkflowResponse {
 	readonly workflowKey: string
-	version: number
-	bpmnProcessId: string
-	resourceName: string
-	bpmnXml: string
+	readonly version: number
+	readonly bpmnProcessId: string
+	readonly resourceName: string
+	readonly bpmnXml: string
 }
 
 export interface ZBClientOptions {
@@ -265,4 +266,5 @@ export interface ZBClientOptions {
 	retry?: boolean
 	maxRetries?: number
 	maxRetryTimeout?: number
+	tls?: boolean
 }

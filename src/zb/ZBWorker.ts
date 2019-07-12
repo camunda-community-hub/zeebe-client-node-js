@@ -277,6 +277,10 @@ export class ZBWorker<
 								jobKey: job.key,
 								retries,
 							})
+							this.logger.debug(
+								`Failed job ${job.key} - ${errorMessage}`
+							)
+							clearInterval(timeoutCancel)
 						}
 						return shadowWorkerCallback
 					})()
@@ -300,8 +304,7 @@ export class ZBWorker<
 					})
 
 					if (this.cancelWorkflowOnException) {
-						const workflowInstanceKey =
-							job.jobHeaders.workflowInstanceKey
+						const workflowInstanceKey = job.workflowInstanceKey
 						this.logger.debug(
 							`Cancelling workflow ${workflowInstanceKey}`
 						)
