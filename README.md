@@ -11,7 +11,9 @@ Docker-compose configurations for Zeebe are available at [https://github.com/zee
 
 ## Versioning
 
-NPM Package version 3.x.x supports Zeebe 0.19.
+To enable that the client libraries can be easily supported to the Zeebe server we are remapping the version numbers, so that Major, Minor match the server application. Patches will be independent and indicate client updates.
+
+NPM Package version 0.19.x supports Zeebe 0.19.x
 
 NPM Package version 2.x.x supports Zeebe 0.18.
 
