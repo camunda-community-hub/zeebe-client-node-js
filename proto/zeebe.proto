@@ -1,3 +1,4 @@
+// From: https://github.com/zeebe-io/zeebe/blob/develop/gateway-protocol/src/main/proto/gateway.proto
 syntax = 'proto3';
 package gateway_protocol;
 
@@ -5,11 +6,14 @@ option java_multiple_files = false;
 option java_package = "io.zeebe.gateway.protocol";
 option go_package = "pb";
 
+// For a more complete documentation, refer to Zeebe documentation at:
+// https://docs.zeebe.io/grpc/reference.html
+
 message ActivateJobsRequest {
-    // the job type, as defined in the BPMN process (e.g. <zeebe:taskDefinition
-    // type="payment-service" />)
+  // the job type, as defined in the BPMN process (e.g. <zeebe:taskDefinition
+  // type="payment-service" />)
   string type = 1;
-    // the name of the worker activating the jobs, mostly used for logging purposes
+  // the name of the worker activating the jobs, mostly used for logging purposes
   string worker = 2;
   // a job returned after this call will not be activated by another call until the
   // timeout has been reached
@@ -22,46 +26,40 @@ message ActivateJobsRequest {
 }
 
 message ActivateJobsResponse {
-    // list of activated jobs
+  // list of activated jobs
   repeated ActivatedJob jobs = 1;
 }
 
 message ActivatedJob {
-    // the key, a unique identifier for the job
+  // the key, a unique identifier for the job
   int64 key = 1;
   // the type of the job (should match what was requested)
   string type = 2;
-  // a set of headers tying the job to a workflow instance/task instance
-  JobHeaders jobHeaders = 3;
-  // a set of custom headers defined during modelling; returned as a serialized
-  // JSON document
-  // json object as string
-  string customHeaders = 4;
-  // the name of the worker which activated this job
-  string worker = 5;
-  // the amount of retries left to this job (should always be positive)
-  int32 retries = 6;
-  // when the job can be activated again, sent as a UNIX epoch timestamp
-  int64 deadline = 7;
-  // JSON document, computed at activation time, consisting of all visible variables to
-  // the task scope
-  string variables = 8;
-}
-
-message JobHeaders {
   // the job's workflow instance key
-  int64 workflowInstanceKey = 1;
+  int64 workflowInstanceKey = 3;
   // the bpmn process ID of the job workflow definition
-  string bpmnProcessId = 2;
+  string bpmnProcessId = 4;
   // the version of the job workflow definition
-  int32 workflowDefinitionVersion = 3;
+  int32 workflowDefinitionVersion = 5;
   // the key of the job workflow definition
-  int64 workflowKey = 4;
+  int64 workflowKey = 6;
   // the associated task element ID
-  string elementId = 5;
+  string elementId = 7;
   // the unique key identifying the associated task, unique within the scope of the
   // workflow instance
-  int64 elementInstanceKey = 6;
+  int64 elementInstanceKey = 8;
+  // a set of custom headers defined during modelling; returned as a serialized
+  // JSON document
+  string customHeaders = 9;
+  // the name of the worker which activated this job
+  string worker = 10;
+  // the amount of retries left to this job (should always be positive)
+  int32 retries = 11;
+  // when the job can be activated again, sent as a UNIX epoch timestamp
+  int64 deadline = 12;
+  // JSON document, computed at activation time, consisting of all visible variables to
+  // the task scope
+  string variables = 13;
 }
 
 message CancelWorkflowInstanceRequest {
@@ -76,8 +74,7 @@ message CancelWorkflowInstanceResponse {
 message CompleteJobRequest {
   // the unique job identifier, as obtained from ActivateJobsResponse
   int64 jobKey = 1;
-    // a JSON document representing the variables in the current task scope
-  /* payload has to be a valid json object as string */
+  // a JSON document representing the variables in the current task scope
   string variables = 2;
 }
 
@@ -110,7 +107,7 @@ message CreateWorkflowInstanceResponse {
   int32 version = 3;
   // the unique identifier of the created workflow instance; to be used wherever a request
   // needs a workflow instance key (e.g. CancelWorkflowInstanceRequest)
-  int64 workflowInstanceKey = 5;
+  int64 workflowInstanceKey = 4;
 }
 
 message DeployWorkflowRequest {
@@ -120,7 +117,8 @@ message DeployWorkflowRequest {
 
 message WorkflowRequestObject {
   enum ResourceType {
-    // FILE type means the gateway will try to detect the resource type using the file extension of the name
+    // FILE type means the gateway will try to detect the resource type
+    // using the file extension of the name field
     FILE = 0;
     BPMN = 1; // extension 'bpmn'
     YAML = 2; // extension 'yaml'
@@ -163,47 +161,10 @@ message FailJobRequest {
   // an optional message describing why the job failed
   // this is particularly useful if a job runs out of retries and an incident is raised,
   // as it this message can help explain why an incident was raised
-
   string errorMessage = 3;
 }
 
 message FailJobResponse {
-}
-
-/* either workflow key or bpmn process id and version has to be specified*/
-message GetWorkflowRequest {
-  // the unique key identifying the workflow definition (e.g. returned from a workflow in
-  // the DeployWorkflowResponse message)
-  int64 workflowKey = 1;
-  // the version of the process; set to -1 to use the latest version
-  int32 version = 2;
-  // the BPMN process ID of the workflow definition
-  string bpmnProcessId = 3;
-}
-
-message GetWorkflowResponse {
-  // the unique key identifying the workflow definition (e.g. returned from a workflow in
-  // the DeployWorkflowResponse message)
-  int64 workflowKey = 1;
-  // the version of the process
-  int32 version = 2;
-  // the BPMN process ID of the workflow definition
-  string bpmnProcessId = 3;
-  // the name of the resource used to deployed the workflow
-  string resourceName = 4;
-  // a BPMN XML representation of the workflow
-  string bpmnXml = 5;
-}
-
-message ListWorkflowsRequest {
-  // optional filter: if specified, only the workflows with this given process ID will be
-  // returned
-  string bpmnProcessId = 1;
-}
-
-message ListWorkflowsResponse {
-  // a list of deployed workflows matching the request criteria (if any)
-  repeated WorkflowMetadata workflows = 1;
 }
 
 message PublishMessageRequest {
@@ -267,7 +228,7 @@ message Partition {
   // the unique ID of this partition
   int32 partitionId = 1;
   // the role of the broker for this partition
-  PartitionBrokerRole role = 3;
+  PartitionBrokerRole role = 2;
 }
 
 message UpdateJobRetriesRequest {
@@ -280,11 +241,10 @@ message UpdateJobRetriesRequest {
 message UpdateJobRetriesResponse {
 }
 
-
 message SetVariablesRequest {
   // the unique identifier of a particular element; can be the workflow instance key (as
   // obtained during instance creation), or a given element, such as a service task (see
-  // elementInstanceKey on the JobHeaders message)
+  // elementInstanceKey on the job message)
   int64 elementInstanceKey = 1;
   // a JSON serialized document describing variables as key value pairs; the root of the document
   // must be an object
@@ -396,30 +356,6 @@ service Gateway {
         - the job is already in a failed state, i.e. ran out of retries
    */
   rpc FailJob (FailJobRequest) returns (FailJobResponse) {
-  }
-
-  /*
-    Fetches the workflow definition either by workflow key, or BPMN process ID and version.
-    At least one of workflowKey or bpmnProcessId must be specified.
-
-    Errors:
-      NOT_FOUND:
-        - no workflow with the given key exists (if workflowKey was given)
-        - no workflow with the given process ID exists (if bpmnProcessId was given but version was -1)
-        - no workflow with the given process ID and version exists (if both bpmnProcessId and version were given)
-   */
-  rpc GetWorkflow (GetWorkflowRequest) returns (GetWorkflowResponse) {
-  }
-
-  /*
-    Lists all workflows matching the request criteria currently deployed in the cluster.
-
-    Errors:
-      NOT_FOUND:
-        - no workflows have been deployed yet (if no bpmnProcessId was given)
-        - no workflow with the given process ID exists (if bpmnProcessId was given)
-   */
-  rpc ListWorkflows (ListWorkflowsRequest) returns (ListWorkflowsResponse) {
   }
 
   /*

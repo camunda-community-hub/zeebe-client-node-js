@@ -11,7 +11,7 @@ prod_filters: &prod_filters # Ignores any commit on any branch by default
   # Only act on semver version tags
   tags:
     only:
-      - /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/
+      - /^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/
 
 workflows:
   version: 2
@@ -105,6 +105,7 @@ jobs:
             git remote add origin https://$GITHUB_API_KEY@github.com/creditsenseau/zeebe-client-node-js.git > /dev/null 2>&1
             git fetch origin
             sed -i '/docs/d' ./.gitignore
+            rm -rf docs
             npm run docs
             git add .
             git commit -m "docs update $CIRCLE_TAG"

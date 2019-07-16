@@ -1,5 +1,4 @@
 import { ZBClient } from '..'
-jest.unmock('node-grpc-client')
 
 describe('ZBClient constructor', () => {
 	it('throws an exception when there is no broker and retry is false', async () => {

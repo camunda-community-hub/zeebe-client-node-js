@@ -11,9 +11,11 @@ Docker-compose configurations for Zeebe are available at [https://github.com/zee
 
 ## Versioning
 
-NPM Package version 1.x.x supports Zeebe 0.15/0.16.
+NPM Package version 3.x.x supports Zeebe 0.19.
 
 NPM Package version 2.x.x supports Zeebe 0.18.
+
+NPM Package version 1.x.x supports Zeebe 0.15/0.16.
 
 ## Type difference from other Zeebe clients
 
@@ -78,6 +80,16 @@ const zbc = new ZB.ZBClient(gatewayAddress, {
 ```
 
 Retry is provided by [promise-retry](https://www.npmjs.com/package/promise-retry), and the back-off strategy is simple ^2.
+
+### TLS
+
+In case you need to connect to a secured endpoint, you can enable TLS.
+
+```typescript
+const zbc = new ZB.ZBClient(gatewayAddress, {
+	tls: true,
+})
+```
 
 ### Create a Task Worker
 
