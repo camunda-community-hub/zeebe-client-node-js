@@ -183,7 +183,8 @@ describe('ZBClient', () => {
 			attempts++
 			// Succeed on the third attempt
 			if (attempts === 3) {
-				return complete()
+				complete()
+				return
 			}
 			complete.failure('Triggering a retry')
 			if (attempts === 2) {
