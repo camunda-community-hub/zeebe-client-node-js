@@ -261,10 +261,12 @@ export class ZBWorker<
 								this.logger.debug(
 									`Completed task ${taskId} for ${this.taskType}`
 								)
+								return true
 							} else {
 								this.logger.debug(
 									`Completed task ${taskId} for ${this.taskType}, however it had timed out.`
 								)
+								return false
 							}
 						}
 						shadowWorkerCallback.success = shadowWorkerCallback

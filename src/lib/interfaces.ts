@@ -7,8 +7,8 @@ export interface KeyedObject {
 export type Loglevel = 'INFO' | 'DEBUG' | 'NONE' | 'ERROR'
 
 export interface CompleteFn<WorkerOutputVariables> {
-	(updatedVariables?: Partial<WorkerOutputVariables>): void
-	success: (updatedVariables?: Partial<WorkerOutputVariables>) => void
+	(updatedVariables?: Partial<WorkerOutputVariables>): boolean
+	success: (updatedVariables?: Partial<WorkerOutputVariables>) => boolean
 	failure: (errorMessage: string, retries?: number) => void
 }
 

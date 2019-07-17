@@ -32,7 +32,7 @@ export class GRPCClient {
 
 		for (const key in listMethods) {
 			if (listMethods[key]) {
-				const methodName = listMethods[key].originalName
+				const methodName = listMethods[key].originalName as string
 				this.listNameMethods.push(methodName)
 
 				this[`${methodName}Async`] = (data, fnAnswer) => {
