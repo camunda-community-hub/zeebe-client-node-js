@@ -255,7 +255,7 @@ export class ZBWorker<
 								jobKey: job.key,
 								variables: completedVariables,
 							})
-							clearInterval(timeoutCancel)
+							clearTimeout(timeoutCancel)
 							if (!taskTimedout) {
 								this.drainOne()
 								this.logger.debug(
