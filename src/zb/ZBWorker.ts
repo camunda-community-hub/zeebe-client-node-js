@@ -282,7 +282,7 @@ export class ZBWorker<
 							this.logger.debug(
 								`Failed job ${job.key} - ${errorMessage}`
 							)
-							clearInterval(timeoutCancel)
+							clearTimeout(timeoutCancel)
 						}
 						return shadowWorkerCallback
 					})()
