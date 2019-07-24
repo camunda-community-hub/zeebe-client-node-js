@@ -255,7 +255,7 @@ export class ZBWorker<
 								jobKey: job.key,
 								variables: completedVariables,
 							})
-							clearInterval(timeoutCancel)
+							clearTimeout(timeoutCancel)
 							if (!taskTimedout) {
 								this.drainOne()
 								this.logger.debug(
@@ -282,7 +282,7 @@ export class ZBWorker<
 							this.logger.debug(
 								`Failed job ${job.key} - ${errorMessage}`
 							)
-							clearInterval(timeoutCancel)
+							clearTimeout(timeoutCancel)
 						}
 						return shadowWorkerCallback
 					})()
