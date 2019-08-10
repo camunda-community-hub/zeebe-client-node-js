@@ -13,6 +13,8 @@ Docker-compose configurations for Zeebe are available at [https://github.com/zee
 
 To enable that the client libraries can be easily supported to the Zeebe server we are remapping the version numbers, so that Major, Minor match the server application. Patches will be independent and indicate client updates.
 
+NPM Package version 0.21.x supports Zeebe 0.21.x
+
 NPM Package version 0.20.x supports Zeebe 0.20.x
 
 NPM Package version 0.19.x supports Zeebe 0.19.x
@@ -178,6 +180,20 @@ Call `complete.failure()` to fail the task. You must pass in a string message de
 
 ```javascript
 complete.failure('This is a critical failure and will raise an incident', 0)
+```
+
+### Long polling
+
+With Zeebe 0.21 onward, long polling is supported for clients. Rather than polling continuously for work and getting nothing back, a client can poll once and leave the request open until work appears. This reduces network traffic and CPU utilization in the client. The Node client is hardcoded to long poll for ten minute intervals when long polling is enabled.
+
+Long polling for workers is enabled in the ZBClient, like this:
+
+```typescript
+const zbc = new ZBClient('serverAddress', {
+	longPoll: true,
+})
+
+const longPollingWorker = zbc.createWorker(uuid.v4(), 'task-type', handler)
 ```
 
 ### Start a Workflow Instance

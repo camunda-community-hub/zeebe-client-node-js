@@ -117,6 +117,10 @@ export interface ZBWorkerOptions {
 	 * If a handler throws an unhandled exception, if this is set true, the workflow will be failed. Defaults to false.
 	 */
 	failWorkflowOnException?: boolean
+	/**
+	 * Enable debug tracking
+	 */
+	debug?: boolean
 }
 
 export interface CreateWorkflowInstanceRequest<Variables = KeyedObject> {
@@ -267,4 +271,5 @@ export interface ZBClientOptions {
 	maxRetries?: number
 	maxRetryTimeout?: number
 	tls?: boolean
+	longPoll?: boolean
 }

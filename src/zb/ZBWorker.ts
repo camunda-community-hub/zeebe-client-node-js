@@ -1,9 +1,11 @@
 import chalk, { Chalk } from 'chalk'
+import { EventEmitter } from 'events'
 import * as uuid from 'uuid'
 import { parseVariables, stringifyVariables } from '../lib'
 import * as ZB from '../lib/interfaces'
 import { ZBLogger } from '../lib/ZBLogger'
 import { ZBClient } from './ZBClient'
+const TEN_MINUTES = 60000
 
 export class ZBWorker<
 	WorkerInputVariables,
@@ -15,6 +17,7 @@ export class ZBWorker<
 	public maxActiveJobs: number
 	public taskType: string
 	public timeout: number
+	public pollCount = 0
 
 	private closeCallback?: () => void
 	private closePromise?: Promise<undefined>
@@ -33,6 +36,10 @@ export class ZBWorker<
 	private cancelWorkflowOnException = false
 	private zbClient: ZBClient
 	private logger: ZBLogger
+	private longPoll: boolean
+	private debug: boolean
+	private restartPollingAfterLongPollTimeout?: NodeJS.Timeout
+	private capacityEmitter: EventEmitter
 
 	constructor({
 		gRPCClient,
@@ -69,7 +76,9 @@ export class ZBWorker<
 		this.maxActiveJobs = options.maxJobsToActivate || 32
 		this.timeout = options.timeout || 1000
 		this.pollInterval = options.pollInterval || 100
+		this.longPoll = options.longPoll === true
 		this.id = id || uuid.v4()
+		this.debug = options.debug === true
 		this.gRPCClient = gRPCClient
 		this.onConnectionErrorHandler = onConnectionError
 		const loglevel = options.loglevel || 'INFO'
@@ -84,6 +93,7 @@ export class ZBWorker<
 			stdout: options.stdout || console,
 			taskType: this.taskType,
 		})
+		this.capacityEmitter = new EventEmitter()
 		this.work()
 	}
 
@@ -101,6 +111,9 @@ export class ZBWorker<
 			if (this.pollHandle) {
 				// Stop polling for jobs
 				clearInterval(this.pollHandle)
+			}
+			if (this.restartPollingAfterLongPollTimeout) {
+				clearTimeout(this.restartPollingAfterLongPollTimeout)
 			}
 			// We will resolve the Promise in any case at two seconds over the worker timeout period.
 			// This deals with phantom tasks, which will have timed out on the server.
@@ -123,11 +136,12 @@ export class ZBWorker<
 
 	public work = () => {
 		this.logger.log(`Ready for ${this.taskType}...`)
-		this.activateJobs()
-		this.pollHandle = setInterval(
-			() => this.activateJobs(),
-			this.pollInterval
-		)
+		if (!this.longPoll) {
+			this.shortPollLoop()
+			this.activateJobs()
+		} else {
+			this.longPollLoop()
+		}
 	}
 
 	public completeJob(
@@ -154,6 +168,34 @@ export class ZBWorker<
 		})
 	}
 
+	private shortPollLoop() {
+		this.pollHandle = setInterval(
+			() => this.activateJobs(),
+			this.pollInterval
+		)
+	}
+
+	private longPollLoop() {
+		const result = this.activateJobs()
+
+		if (result.stream) {
+			result.stream.on('data', () => {
+				clearTimeout(this.restartPollingAfterLongPollTimeout!)
+				this.longPollLoop()
+			})
+			this.restartPollingAfterLongPollTimeout = setTimeout(
+				() => this.longPollLoop,
+				TEN_MINUTES
+			)
+		}
+		if (result.atCapacity) {
+			result.atCapacity.once('available', () => this.longPollLoop())
+		}
+		if (result.error) {
+			setTimeout(() => this.longPollLoop(), 1000) // @TODO implement backoff
+		}
+	}
+
 	private internalLog = (ns: string) => (msg: any) =>
 		// tslint:disable-next-line:no-console
 		console.log(`${ns}:`, msg)
@@ -174,6 +216,9 @@ export class ZBWorker<
 	}
 
 	private activateJobs() {
+		if (this.debug) {
+			this.logger.debug('Activating Jobs')
+		}
 		/**
 		 * It would be good to use a mutex to prevent multiple overlapping polling invocations.
 		 * However, the stream.on("data") is only called when there are jobs, so it there isn't an obvious (to me)
@@ -184,7 +229,7 @@ export class ZBWorker<
 			this.logger.log(
 				`Polling cancelled - ${this.taskType} has ${this.activeJobs} and a capacity of ${this.maxActiveJobs}.`
 			)
-			return
+			return { atCapacity: this.capacityEmitter }
 		}
 
 		const amount = this.maxActiveJobs - this.activeJobs
@@ -198,8 +243,14 @@ export class ZBWorker<
 
 		try {
 			stream = this.gRPCClient.activateJobsStream(activateJobsRequest)
+			if (this.debug) {
+				this.pollCount++
+			}
 		} catch (err) {
-			return this.handleGrpcError(err)
+			this.handleGrpcError(err)
+			return {
+				error: true,
+			}
 		}
 
 		const taskHandler = this.taskHandler
@@ -327,10 +378,14 @@ export class ZBWorker<
 			})
 		})
 		stream.on('error', (err: any) => this.handleGrpcError(err))
+		return { stream }
 	}
 
 	private drainOne() {
 		this.activeJobs--
+		if (!this.closing && this.longPoll) {
+			this.capacityEmitter.emit('available')
+		}
 		// If we are closing and hit zero active jobs, resolve the closing promise.
 		if (this.activeJobs <= 0 && this.closing) {
 			if (this.closeCallback && !this.closed) {

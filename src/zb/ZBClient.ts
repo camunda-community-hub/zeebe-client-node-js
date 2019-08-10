@@ -61,7 +61,9 @@ export class ZBClient {
 			'gateway_protocol',
 			'Gateway',
 			this.gatewayAddress,
-			{},
+			{
+				longPoll: this.options.longPoll,
+			},
 			options.tls
 		)
 
@@ -125,6 +127,7 @@ export class ZBClient {
 		}
 		// Prevent the creation of more workers
 		this.closing = true
+		this.gRPCClient.close() // close the GRPC channel
 		this.closePromise = Promise.all(this.workers.map(w => w.close()))
 		return this.closePromise
 	}

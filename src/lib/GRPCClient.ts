@@ -1,7 +1,12 @@
 import { loadSync, Options, PackageDefinition } from '@grpc/proto-loader'
 import { Client, credentials, loadPackageDefinition } from 'grpc'
 
+interface GRPCClientExtendedOptions {
+	longPoll?: boolean
+}
+
 export class GRPCClient {
+	public longPoll: boolean
 	private packageDefinition: PackageDefinition
 	private client: Client
 	private listNameMethods: string[]
@@ -11,7 +16,7 @@ export class GRPCClient {
 		packageName: string,
 		service: string,
 		host: string,
-		options: Options = {},
+		options: Options & GRPCClientExtendedOptions = {},
 		tls: boolean = false
 	) {
 		this.packageDefinition = loadSync(protoPath, {
@@ -22,6 +27,8 @@ export class GRPCClient {
 			oneofs: options.oneofs === undefined ? true : options.oneofs,
 		})
 
+		this.longPoll =
+			options.longPoll === undefined ? false : options.longPoll
 		const proto = loadPackageDefinition(this.packageDefinition)[packageName]
 		const listMethods = this.packageDefinition[`${packageName}.${service}`]
 		const channelCredentials = tls
@@ -40,7 +47,15 @@ export class GRPCClient {
 				}
 
 				this[`${methodName}Stream`] = data => {
-					return this.client[methodName](data)
+					if (this.longPoll) {
+						const TIMEOUT_IN_SECONDS = 600 // 10 minutes
+						const deadline = new Date().setSeconds(
+							new Date().getSeconds() + TIMEOUT_IN_SECONDS
+						)
+						return this.client[methodName](data, { deadline })
+					} else {
+						return this.client[methodName](data)
+					}
 				}
 
 				this[`${methodName}Sync`] = data => {
@@ -64,5 +79,9 @@ export class GRPCClient {
 
 	public listMethods() {
 		return this.listNameMethods
+	}
+
+	public close() {
+		this.client.close()
 	}
 }

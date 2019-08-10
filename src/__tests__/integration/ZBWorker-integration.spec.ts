@@ -35,6 +35,7 @@ describe('ZBWorker', () => {
 			done()
 		})
 	})
+
 	it('Does not fail a workflow when the handler throws, by default', async done => {
 		const res = await zbc.deployWorkflow('./test/hello-world.bpmn')
 		expect(res.workflows.length).toBe(1)
@@ -65,6 +66,7 @@ describe('ZBWorker', () => {
 			) // Will be caught in the library
 		})
 	})
+
 	it('Fails a workflow when the handler throws and options.failWorkflowOnException is set', async done => {
 		const res = await zbc.deployWorkflow('./test/hello-world.bpmn')
 		expect(res.workflows.length).toBe(1)
@@ -121,16 +123,39 @@ describe('ZBWorker', () => {
 			},
 		})
 
-		await zbc.createWorker('test2', 'wait', async (job, complete) => {
+		zbc.createWorker('test2', 'wait', async (job, complete) => {
 			expect(job.workflowInstanceKey).toBe(wfi)
 			complete.success(job)
 		})
 
-		await zbc.createWorker('test2', 'pathB', async (job, complete) => {
+		zbc.createWorker('test2', 'pathB', async (job, complete) => {
 			expect(job.workflowInstanceKey).toBe(wfi)
 			expect(job.variables.conditionVariable).toBe(false)
 			complete.success(job.variables)
 			done()
 		})
+	})
+
+	it("Doesn't long poll by default", async done => {
+		let wf
+		const res = await zbc.deployWorkflow('./test/hello-world.bpmn')
+		expect(res.workflows.length).toBe(1)
+
+		zbc.createWorker(
+			'test',
+			'console-log',
+			async (job, complete, worker) => {
+				expect(job.workflowInstanceKey).toBe(wf.workflowInstanceKey)
+				complete(job.variables)
+				expect(worker.pollCount > 5).toBe(true)
+				done()
+			},
+			{
+				debug: true,
+			}
+		)
+		setTimeout(async () => {
+			wf = await zbc.createWorkflowInstance('hello-world', {})
+		}, 3000)
 	})
 })
