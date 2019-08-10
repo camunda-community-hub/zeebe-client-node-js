@@ -355,7 +355,7 @@ export class ZBWorker<
 							`Cancelling workflow ${workflowInstanceKey}`
 						)
 						this.drainOne()
-						this.zbClient.cancelWorkflowInstance(
+						await this.zbClient.cancelWorkflowInstance(
 							workflowInstanceKey
 						)
 					} else {

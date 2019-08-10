@@ -86,7 +86,7 @@ describe('ZBWorker', () => {
 				} catch (e) {
 					done()
 				}
-			}, 1000)
+			}, 1500)
 		}
 		let alreadyFailed = false
 		// Faulty worker
