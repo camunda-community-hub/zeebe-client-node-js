@@ -115,20 +115,13 @@ export class ZBWorker<
 			if (this.restartPollingAfterLongPollTimeout) {
 				clearTimeout(this.restartPollingAfterLongPollTimeout)
 			}
-			// We will resolve the Promise in any case at two seconds over the worker timeout period.
-			// This deals with phantom tasks, which will have timed out on the server.
-			const closeTimeout = setTimeout(resolve, this.timeout + 2000)
 			// If we have no active tasks right now, resolve immediately.
 			// There could be a race condition here if we just polled the server and it is about to return jobs.
 			// In any case, we do not start working on those jobs, so they will time out on the server.
 			if (this.activeJobs <= 0) {
 				resolve()
-			}
-			// When this.activeJobs reaches 0, this will resolve the promise to close. Called in this.drainOne().
-			this.closeCallback = () => {
-				clearTimeout(closeTimeout)
-				this.closed = true
-				resolve()
+			} else {
+				this.capacityEmitter.once('empty', () => resolve())
 			}
 		})
 		return this.closePromise
@@ -216,14 +209,14 @@ export class ZBWorker<
 	}
 
 	private activateJobs() {
+		if (this.closing) {
+			return {
+				closing: true,
+			}
+		}
 		if (this.debug) {
 			this.logger.debug('Activating Jobs')
 		}
-		/**
-		 * It would be good to use a mutex to prevent multiple overlapping polling invocations.
-		 * However, the stream.on("data") is only called when there are jobs, so it there isn't an obvious (to me)
-		 * way to release the mutex.
-		 */
 		let stream: any
 		if (this.activeJobs >= this.maxActiveJobs) {
 			this.logger.log(
@@ -385,6 +378,9 @@ export class ZBWorker<
 		this.activeJobs--
 		if (!this.closing && this.longPoll) {
 			this.capacityEmitter.emit('available')
+		}
+		if (this.closing && this.activeJobs === 0) {
+			this.capacityEmitter.emit('empty')
 		}
 		// If we are closing and hit zero active jobs, resolve the closing promise.
 		if (this.activeJobs <= 0 && this.closing) {

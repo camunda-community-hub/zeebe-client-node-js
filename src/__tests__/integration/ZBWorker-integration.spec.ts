@@ -14,7 +14,9 @@ describe('ZBWorker', () => {
 	})
 
 	it('Can service a task', async done => {
-		const res = await zbc.deployWorkflow('./test/hello-world.bpmn')
+		const res = await zbc.deployWorkflow(
+			'./src/__tests__/testdata/hello-world.bpmn'
+		)
 		expect(res.workflows.length).toBe(1)
 
 		const wf = await zbc.createWorkflowInstance('hello-world', {})
@@ -26,18 +28,23 @@ describe('ZBWorker', () => {
 	})
 
 	it('Can service a task with complete.success', async done => {
-		const res = await zbc.deployWorkflow('./test/hello-world.bpmn')
+		const res = await zbc.deployWorkflow(
+			'./src/__tests__/testdata/hello-world.bpmn'
+		)
 		expect(res.workflows.length).toBe(1)
 		const wf = await zbc.createWorkflowInstance('hello-world', {})
 		zbc.createWorker('test', 'console-log', async (job, complete) => {
 			expect(job.workflowInstanceKey).toBe(wf.workflowInstanceKey)
 			complete.success(job.variables)
+			zbc.cancelWorkflowInstance(wf.workflowInstanceKey)
 			done()
 		})
 	})
 
 	it('Does not fail a workflow when the handler throws, by default', async done => {
-		const res = await zbc.deployWorkflow('./test/hello-world.bpmn')
+		const res = await zbc.deployWorkflow(
+			'./src/__tests__/testdata/hello-world.bpmn'
+		)
 		expect(res.workflows.length).toBe(1)
 		expect(res.workflows[0].bpmnProcessId).toBe('hello-world')
 		const wf = await zbc.createWorkflowInstance('hello-world', {})
@@ -46,10 +53,8 @@ describe('ZBWorker', () => {
 				try {
 					await zbc.cancelWorkflowInstance(wf.workflowInstanceKey) // throws if not found. Should NOT throw in this test
 				} catch (e) {
-					zbc.close()
 					throw e
 				}
-				zbc.close()
 				done()
 			}, 1000)
 		}
@@ -68,7 +73,9 @@ describe('ZBWorker', () => {
 	})
 
 	it('Fails a workflow when the handler throws and options.failWorkflowOnException is set', async done => {
-		const res = await zbc.deployWorkflow('./test/hello-world.bpmn')
+		const res = await zbc.deployWorkflow(
+			'./src/__tests__/testdata/hello-world.bpmn'
+		)
 		expect(res.workflows.length).toBe(1)
 		expect(res.workflows[0].bpmnProcessId).toBe('hello-world')
 		const wf = await zbc.createWorkflowInstance('hello-world', {})
@@ -77,7 +84,6 @@ describe('ZBWorker', () => {
 				try {
 					await zbc.cancelWorkflowInstance(wf.workflowInstanceKey) // throws if not found. SHOULD throw in this test
 				} catch (e) {
-					zbc.close()
 					done()
 				}
 			}, 1000)
@@ -105,7 +111,9 @@ describe('ZBWorker', () => {
 	})
 
 	it('Can update workflow variables with complete.success()', async done => {
-		const res = await zbc.deployWorkflow('./test/conditional-pathway.bpmn')
+		const res = await zbc.deployWorkflow(
+			'./src/__tests__/testdata/conditional-pathway.bpmn'
+		)
 		expect(res.workflows.length).toBe(1)
 		expect(res.workflows[0].bpmnProcessId).toBe('condition-test')
 
@@ -132,7 +140,7 @@ describe('ZBWorker', () => {
 			expect(job.workflowInstanceKey).toBe(wfi)
 			expect(job.variables.conditionVariable).toBe(false)
 			complete.success(job.variables)
-			zbc.close()
+			await zbc.cancelWorkflowInstance(wf.workflowInstanceKey)
 			done()
 		})
 	})
