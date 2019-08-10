@@ -12,6 +12,7 @@ describe('ZBWorker', () => {
 	afterEach(async () => {
 		await zbc.close() // Makes sure we don't forget to close connection
 	})
+
 	it('Causes a retry with complete.failure()', async done => {
 		const res = await zbc.deployWorkflow('./test/conditional-pathway.bpmn')
 		expect(res.workflows.length).toBe(1)
@@ -33,12 +34,11 @@ describe('ZBWorker', () => {
 
 		await zbc.createWorker('test2', 'wait', async (job, complete) => {
 			expect(job.workflowInstanceKey).toBe(wfi)
-
 			// Succeed on the third attempt
 			if (job.retries === 1) {
 				complete.success()
-				done()
 				expect(job.retries).toBe(1)
+				done()
 				return
 			}
 			complete.failure('Triggering a retry')
