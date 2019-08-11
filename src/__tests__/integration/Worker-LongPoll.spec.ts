@@ -16,7 +16,7 @@ describe('ZBWorker', () => {
 	it("Doesn't long poll by default", async done => {
 		const zbc = new ZBClient('0.0.0.0:26500')
 		const res = await zbc.deployWorkflow(
-			'./src/__tests__/testdata/long-poll.bpmn'
+			'./src/__tests__/testdata/Worker-LongPoll.bpmn'
 		)
 		expect(res.workflows.length).toBe(1)
 
@@ -45,7 +45,7 @@ describe('ZBWorker', () => {
 			longPoll: true,
 		})
 		const res = await zbcLongPoll.deployWorkflow(
-			'./src/__tests__/testdata/long-poll.bpmn'
+			'./src/__tests__/testdata/Worker-LongPoll.bpmn'
 		)
 		expect(res.workflows.length).toBe(1)
 

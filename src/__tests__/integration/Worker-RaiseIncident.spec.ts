@@ -11,7 +11,7 @@ describe('ZBWorker', () => {
 
 	it('Can raise an Operate incident with complete.failure()', async done => {
 		const res = await zbc.deployWorkflow(
-			'./src/__tests__/testdata/raise-incident.bpmn'
+			'./src/__tests__/testdata/Worker-RaiseIncident.bpmn'
 		)
 		expect(res.workflows.length).toBe(1)
 		expect(res.workflows[0].bpmnProcessId).toBe('raise-incident')

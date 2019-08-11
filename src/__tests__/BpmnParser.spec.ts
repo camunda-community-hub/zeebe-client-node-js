@@ -1,7 +1,7 @@
 import { BpmnParser } from '..'
 
-const testBpmnFile = __dirname + '/testdata/msg-start.bpmn'
-const simpleTestBpmnFile = __dirname + '/testdata/msg-start-simple.bpmn'
+const testBpmnFile = __dirname + '/testdata/BpmnParser2.bpmn'
+const simpleTestBpmnFile = __dirname + '/testdata/BpmnParser.bpmn'
 
 describe('parseBpmn', () => {
 	const parsed = BpmnParser.parseBpmn(testBpmnFile)
