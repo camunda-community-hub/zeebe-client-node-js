@@ -1,3 +1,14 @@
+# Version v0.21
+
+• Add long polling support. See [#64](https://github.com/creditsenseau/zeebe-client-node-js/issues/64).
+• @TODO: Add authentication via JWT.
+
+# Version v0.20
+
+• Add TLS support (Thanks Colin from the Camunda Cloud Team!).
+• Remove node-grpc-client dependency.
+• Change versioning to match Broker versioning (Thanks Tim!).
+
 # Version 2.4.0
 
 • Update for Zeebe 0.18.
