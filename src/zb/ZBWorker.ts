@@ -227,8 +227,11 @@ export class ZBWorker<
 
 		const amount = this.maxActiveJobs - this.activeJobs
 
+		const requestTimeout = this.longPoll ? TEN_MINUTES : -1
+
 		const activateJobsRequest: ZB.ActivateJobsRequest = {
 			maxJobsToActivate: amount,
+			requestTimeout,
 			timeout: this.timeout,
 			type: this.taskType,
 			worker: this.id,

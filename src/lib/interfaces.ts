@@ -48,6 +48,13 @@ export interface ActivateJobsRequest {
 	timeout: number
 	maxJobsToActivate: number
 	fetchVariable?: string[]
+	/**
+	 * The request will be completed when atleast one job is activated or after the requestTimeout.
+	 * if the requestTimeout = 0, the request will be completed after a default configured timeout in the broker.
+	 * To immediately complete the request when no job is activated set the requestTimeout to a negative value
+	 *
+	 */
+	requestTimeout: number
 }
 
 export interface ActivatedJob {
