@@ -41,6 +41,7 @@ describe('ZBWorker', () => {
 	})
 
 	it('Can long poll', async done => {
+		jest.setTimeout(30000)
 		const zbcLongPoll = new ZBClient('0.0.0.0:26500', {
 			longPoll: true,
 		})
@@ -66,6 +67,6 @@ describe('ZBWorker', () => {
 		)
 		setTimeout(async () => {
 			wf2 = await zbcLongPoll.createWorkflowInstance('long-poll', {})
-		}, 3000)
+		}, 13000)
 	})
 })

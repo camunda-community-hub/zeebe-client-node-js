@@ -51,7 +51,8 @@ describe('ZBWorker', () => {
 				complete.failure('Raise an incident in Operate', 0)
 				// Manually verify that an incident has been raised
 				done()
-			}
+			},
+			{ pollInterval: 10000, maxJobsToActivate: 1 }
 		)
 	})
 })

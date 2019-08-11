@@ -53,6 +53,7 @@ export class GRPCClient {
 							new Date().getSeconds() + TIMEOUT_IN_SECONDS
 						)
 						return this.client[methodName](data, { deadline })
+						// return this.client[methodName](data)
 					} else {
 						return this.client[methodName](data)
 					}

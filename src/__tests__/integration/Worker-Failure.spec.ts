@@ -3,25 +3,38 @@ import { ZBClient } from '../..'
 process.env.ZB_NODE_LOG_LEVEL = process.env.ZB_NODE_LOG_LEVEL || 'NONE'
 
 describe('ZBWorker', () => {
-	const zbc = new ZBClient('0.0.0.0:26500')
-	let wfi
+	let zbc: ZBClient
+	let wf
 
-	afterAll(async () => {
-		await zbc.cancelWorkflowInstance(wfi)
-		await zbc.close() // Makes sure we don't forget to close connection
+	beforeEach(() => {
+		zbc = new ZBClient('0.0.0.0:26500')
+	})
+
+	afterEach(async () => {
+		try {
+			if (wf) {
+				await zbc.cancelWorkflowInstance(wf.workflowInstanceKey)
+			}
+		} catch (e) {
+			// console.log('Caught NOT FOUND') // @DEBUG
+		} finally {
+			await zbc.close() // Makes sure we don't forget to close connection
+		}
 	})
 
 	it('Causes a retry with complete.failure()', async done => {
+		jest.setTimeout(30000)
 		const res = await zbc.deployWorkflow(
 			'./src/__tests__/testdata/Worker-Failure.bpmn'
 		)
+
 		expect(res.workflows.length).toBe(1)
 		expect(res.workflows[0].bpmnProcessId).toBe('worker-failure')
 
-		const wf = await zbc.createWorkflowInstance('worker-failure', {
+		wf = await zbc.createWorkflowInstance('worker-failure', {
 			conditionVariable: true,
 		})
-		wfi = wf.workflowInstanceKey
+		const wfi = wf.workflowInstanceKey
 		expect(wfi).toBeTruthy()
 
 		await zbc.setVariables({
@@ -50,37 +63,6 @@ describe('ZBWorker', () => {
 	})
 
 	it('Does not fail a workflow when the handler throws, by default', async done => {
-		const res = await zbc.deployWorkflow(
-			'./src/__tests__/testdata/Worker-Failure2.bpmn'
-		)
-		expect(res.workflows.length).toBe(1)
-		expect(res.workflows[0].bpmnProcessId).toBe('worker-failure2')
-		const wf = await zbc.createWorkflowInstance('worker-failure2', {})
-		const testWorkflowInstanceExists = () => {
-			setTimeout(async () => {
-				try {
-					await zbc.cancelWorkflowInstance(wf.workflowInstanceKey) // throws if not found. Should NOT throw in this test
-				} catch (e) {
-					throw e
-				}
-				done()
-			}, 1000)
-		}
-		let alreadyFailed = false
-		// Faulty worker
-		zbc.createWorker('test', 'console-log-worker-failure-2', () => {
-			if (alreadyFailed) {
-				return
-			}
-			alreadyFailed = true
-			testWorkflowInstanceExists() // waits 700ms then checks
-			throw new Error(
-				'Unhandled exception in task handler for testing purposes'
-			) // Will be caught in the library
-		})
-	})
-
-	it('Fails a workflow when the handler throws and options.failWorkflowOnException is set', async done => {
 		jest.setTimeout(10000)
 
 		const res = await zbc.deployWorkflow(
@@ -88,21 +70,56 @@ describe('ZBWorker', () => {
 		)
 		expect(res.workflows.length).toBe(1)
 		expect(res.workflows[0].bpmnProcessId).toBe('worker-failure2')
-		const wf = await zbc.createWorkflowInstance('worker-failure2', {})
-		const testWorkflowInstanceExists = () => {
+		wf = await zbc.createWorkflowInstance('worker-failure2', {})
+
+		let alreadyFailed = false
+
+		// Faulty worker - throws an unhandled exception in task handler
+		zbc.createWorker(
+			'test',
+			'console-log-worker-failure-2',
+			() => {
+				if (alreadyFailed) {
+					return
+				}
+				alreadyFailed = true
+				testWorkflowInstanceExists() // waits 700ms then checks
+				throw new Error(
+					'Unhandled exception in task handler for testing purposes'
+				) // Will be caught in the library
+			},
+			{
+				pollInterval: 10000,
+			}
+		)
+
+		function testWorkflowInstanceExists() {
 			setTimeout(async () => {
 				try {
-					await zbc.cancelWorkflowInstance(wf.workflowInstanceKey) // throws if not found. SHOULD throw in this test
+					await zbc.cancelWorkflowInstance(wf.workflowInstanceKey) // throws if not found. Should NOT throw in this test
 				} catch (e) {
-					done()
+					throw e // Should not throw
 				}
-			}, 1500)
+				done()
+			}, 700)
 		}
+	})
+
+	it('Fails a workflow when the handler throws and options.failWorkflowOnException is set', async done => {
+		jest.setTimeout(10000)
+
+		const res = await zbc.deployWorkflow(
+			'./src/__tests__/testdata/Worker-Failure3.bpmn'
+		)
+		expect(res.workflows.length).toBe(1)
+		expect(res.workflows[0].bpmnProcessId).toBe('worker-failure3')
+		wf = await zbc.createWorkflowInstance('worker-failure3', {})
+
 		let alreadyFailed = false
 		// Faulty worker
 		zbc.createWorker(
 			'test',
-			'console-log-worker-failure-2',
+			'console-log-worker-failure-3',
 			() => {
 				if (alreadyFailed) {
 					// It polls 10 times a second, and we need it to only throw once
@@ -118,5 +135,15 @@ describe('ZBWorker', () => {
 				failWorkflowOnException: true,
 			}
 		)
+
+		function testWorkflowInstanceExists() {
+			setTimeout(async () => {
+				try {
+					await zbc.cancelWorkflowInstance(wf.workflowInstanceKey) // throws if not found. SHOULD throw in this test
+				} catch (e) {
+					done()
+				}
+			}, 1500)
+		}
 	})
 })

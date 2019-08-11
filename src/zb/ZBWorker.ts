@@ -5,7 +5,7 @@ import { parseVariables, stringifyVariables } from '../lib'
 import * as ZB from '../lib/interfaces'
 import { ZBLogger } from '../lib/ZBLogger'
 import { ZBClient } from './ZBClient'
-const TEN_MINUTES = 60000
+const TEN_MINUTES = 600000
 
 export class ZBWorker<
 	WorkerInputVariables,
@@ -40,6 +40,8 @@ export class ZBWorker<
 	private debug: boolean
 	private restartPollingAfterLongPollTimeout?: NodeJS.Timeout
 	private capacityEmitter: EventEmitter
+	private keepAlive: NodeJS.Timer
+	private alivenessBit: number = 0
 
 	constructor({
 		gRPCClient,
@@ -94,6 +96,10 @@ export class ZBWorker<
 			taskType: this.taskType,
 		})
 		this.capacityEmitter = new EventEmitter()
+		// With long polling there are periods where no timers are running. This prevents the worker exiting.
+		this.keepAlive = setInterval(() => {
+			this.alivenessBit = (this.alivenessBit + 1) % 1
+		}, 10000)
 		this.work()
 	}
 
@@ -118,10 +124,18 @@ export class ZBWorker<
 			// If we have no active tasks right now, resolve immediately.
 			// There could be a race condition here if we just polled the server and it is about to return jobs.
 			// In any case, we do not start working on those jobs, so they will time out on the server.
+			// console.log(
+			// 	`Closing ${this.taskType} with ${this.activeJobs} jobs active`
+			// ) // @DEBUG
+
 			if (this.activeJobs <= 0) {
+				clearInterval(this.keepAlive)
 				resolve()
 			} else {
-				this.capacityEmitter.once('empty', () => resolve())
+				this.capacityEmitter.once('empty', () => {
+					clearInterval(this.keepAlive)
+					resolve()
+				})
 			}
 		})
 		return this.closePromise
@@ -170,12 +184,20 @@ export class ZBWorker<
 
 	private longPollLoop() {
 		const result = this.activateJobs()
+		const start = Date.now()
+		this.logger.debug('Long poll loop', Object.keys(result)[0], start)
 
 		if (result.stream) {
+			result.stream.on('end', () =>
+				this.logger.debug(`Stream ended ${Date.now() - start}`)
+			)
 			result.stream.on('data', () => {
+				this.logger.debug('Long poll loop on data')
 				clearTimeout(this.restartPollingAfterLongPollTimeout!)
 				this.longPollLoop()
 			})
+			// We do this here because activateJobs may not result in an open gRPC call
+			// for example, if the worker is at capacity or the worker is closing
 			this.restartPollingAfterLongPollTimeout = setTimeout(
 				() => this.longPollLoop,
 				TEN_MINUTES
@@ -220,7 +242,7 @@ export class ZBWorker<
 		let stream: any
 		if (this.activeJobs >= this.maxActiveJobs) {
 			this.logger.log(
-				`Polling cancelled - ${this.taskType} has ${this.activeJobs} and a capacity of ${this.maxActiveJobs}.`
+				`Worker at max capacity - ${this.taskType} has ${this.activeJobs} and a capacity of ${this.maxActiveJobs}.`
 			)
 			return { atCapacity: this.capacityEmitter }
 		}
@@ -236,6 +258,9 @@ export class ZBWorker<
 			type: this.taskType,
 			worker: this.id,
 		}
+		this.logger.debug(
+			`Requesting ${amount} jobs with requestTimeout ${requestTimeout}`
+		)
 
 		try {
 			stream = this.gRPCClient.activateJobsStream(activateJobsRequest)
@@ -294,6 +319,10 @@ export class ZBWorker<
 					 * To halt execution of the business process and raise an incident in Operate, call
 					 * complete(errorMessage, 0)
 					 */
+
+					/**
+					 * complete.success() handler
+					 */
 					const workerCallback = (() => {
 						const shadowWorkerCallback = (
 							completedVariables = {}
@@ -317,19 +346,26 @@ export class ZBWorker<
 							}
 						}
 						shadowWorkerCallback.success = shadowWorkerCallback
-						shadowWorkerCallback.failure = (
+						/**
+						 * complete.failure() handler
+						 */
+						shadowWorkerCallback.failure = async (
 							errorMessage,
 							retries = Math.max(0, job.retries - 1)
 						) => {
-							this.zbClient.failJob({
-								errorMessage,
-								jobKey: job.key,
-								retries,
-							})
-							this.logger.debug(
-								`Failed job ${job.key} - ${errorMessage}`
-							)
-							clearTimeout(timeoutCancel)
+							try {
+								await this.zbClient.failJob({
+									errorMessage,
+									jobKey: job.key,
+									retries,
+								})
+							} finally {
+								this.logger.debug(
+									`Failed job ${job.key} - ${errorMessage}`
+								)
+								this.drainOne()
+								clearTimeout(timeoutCancel)
+							}
 						}
 						return shadowWorkerCallback
 					})()
@@ -340,34 +376,47 @@ export class ZBWorker<
 						this
 					)
 				} catch (e) {
+					clearTimeout(timeoutCancel)
 					this.logger.error(
-						'Caught an unhandled exception in a task handler:'
+						`Caught an unhandled exception in a task handler for workflow instance ${job.workflowInstanceKey}:`
 					)
+					this.logger.debug(job)
 					this.logger.error(e)
-					this.logger.info(`Failing job ${job.key}`)
-					const retries = job.retries - 1
-					this.zbClient.failJob({
-						errorMessage: `Unhandled exception in task handler ${e}`,
-						jobKey: job.key,
-						retries,
-					})
 
 					if (this.cancelWorkflowOnException) {
-						const workflowInstanceKey = job.workflowInstanceKey
+						const { workflowInstanceKey } = job
 						this.logger.debug(
-							`Cancelling workflow ${workflowInstanceKey}`
+							`Cancelling workflow instance ${workflowInstanceKey}`
 						)
-						this.drainOne()
-						await this.zbClient.cancelWorkflowInstance(
-							workflowInstanceKey
-						)
-					} else {
-						if (retries > 0) {
-							this.logger.debug(
-								`The Zeebe engine will handle the retry. Retries left: ${retries}`
+						try {
+							await this.zbClient.cancelWorkflowInstance(
+								workflowInstanceKey
 							)
-						} else {
-							this.logger.debug('No retries left for this task')
+						} finally {
+							this.drainOne()
+						}
+					} else {
+						this.logger.info(`Failing job ${job.key}`)
+						const retries = job.retries - 1
+						try {
+							this.zbClient.failJob({
+								errorMessage: `Unhandled exception in task handler ${e}`,
+								jobKey: job.key,
+								retries,
+							})
+						} catch (e) {
+							this.logger.debug(e)
+						} finally {
+							this.drainOne()
+							if (retries > 0) {
+								this.logger.debug(
+									`The Zeebe engine will handle the retry. Retries left: ${retries}`
+								)
+							} else {
+								this.logger.debug(
+									'No retries left for this task'
+								)
+							}
 						}
 					}
 				}
