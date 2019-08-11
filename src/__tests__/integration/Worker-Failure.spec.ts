@@ -25,7 +25,7 @@ describe('ZBWorker', () => {
 	it('Causes a retry with complete.failure()', async done => {
 		jest.setTimeout(30000)
 		const res = await zbc.deployWorkflow(
-			'./src/__tests__/testdata/Worker-Failure.bpmn'
+			'./src/__tests__/testdata/Worker-Failure1.bpmn'
 		)
 
 		expect(res.workflows.length).toBe(1)
