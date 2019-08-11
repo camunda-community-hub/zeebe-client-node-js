@@ -360,6 +360,17 @@ npm run test:integration
 
 For the failure test, you need to run Operate ([docker-compose config](https://github.com/zeebe-io/zeebe-docker-compose/blob/master/operate/docker-compose.yml)) and manually verify that an incident has been raised at [http://localhost:8080](http://localhost:8080).
 
+### Writing Tests
+
+Zeebe is inherently stateful, so integration tests need to be carefully isolated so that workers from one test do not service tasks in another test. Jest runs tests in a random order, so intermittent failures are the outcome of tests that mutate shared state.
+
+For each feature:
+
+-   Use a unique bpmn process, named the same as the test file.
+-   Name the task types with a namespace that matches the test name.
+-   Cancel any workflows that do not run to completion in an `AfterAll` block.
+-   Ensure that there no Active workflows in the engine after running the integration tests have run.
+
 ## Contributors
 
 | Name                                                         |

@@ -4,13 +4,18 @@ process.env.ZB_NODE_LOG_LEVEL = process.env.ZB_NODE_LOG_LEVEL || 'NONE'
 
 describe('ZBWorker', () => {
 	let zbc: ZBClient
+	let wf
 
 	beforeEach(async () => {
 		zbc = new ZBClient('0.0.0.0:26500')
 	})
 
 	afterEach(async () => {
-		await zbc.close() // Makes sure we don't forget to close connection
+		try {
+			await zbc.cancelWorkflowInstance(wf.workflowInstanceKey)
+		} finally {
+			await zbc.close() // Makes sure we don't forget to close connection
+		}
 	})
 
 	it('Can service a task', async done => {
@@ -19,7 +24,7 @@ describe('ZBWorker', () => {
 		)
 		expect(res.workflows.length).toBe(1)
 
-		const wf = await zbc.createWorkflowInstance('hello-world', {})
+		wf = await zbc.createWorkflowInstance('hello-world', {})
 		zbc.createWorker('test', 'console-log', async (job, complete) => {
 			expect(job.workflowInstanceKey).toBe(wf.workflowInstanceKey)
 			complete(job.variables)
@@ -32,11 +37,10 @@ describe('ZBWorker', () => {
 			'./src/__tests__/testdata/hello-world.bpmn'
 		)
 		expect(res.workflows.length).toBe(1)
-		const wf = await zbc.createWorkflowInstance('hello-world', {})
+		wf = await zbc.createWorkflowInstance('hello-world', {})
 		zbc.createWorker('test', 'console-log', async (job, complete) => {
 			expect(job.workflowInstanceKey).toBe(wf.workflowInstanceKey)
 			complete.success(job.variables)
-			zbc.cancelWorkflowInstance(wf.workflowInstanceKey)
 			done()
 		})
 	})
@@ -48,7 +52,7 @@ describe('ZBWorker', () => {
 		expect(res.workflows.length).toBe(1)
 		expect(res.workflows[0].bpmnProcessId).toBe('condition-test')
 
-		const wf = await zbc.createWorkflowInstance('condition-test', {
+		wf = await zbc.createWorkflowInstance('condition-test', {
 			conditionVariable: true,
 		})
 		const wfi = wf.workflowInstanceKey
@@ -71,7 +75,6 @@ describe('ZBWorker', () => {
 			expect(job.workflowInstanceKey).toBe(wfi)
 			expect(job.variables.conditionVariable).toBe(false)
 			complete.success(job.variables)
-			await zbc.cancelWorkflowInstance(wf.workflowInstanceKey)
 			done()
 		})
 	})

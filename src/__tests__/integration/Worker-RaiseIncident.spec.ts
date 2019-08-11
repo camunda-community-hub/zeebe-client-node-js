@@ -1,5 +1,8 @@
 import { ZBClient } from '../..'
 
+/**
+ * Note: This test leaves its workflow instance active so the incident can be manually verified
+ */
 describe('ZBWorker', () => {
 	let wfi
 	const zbc = new ZBClient('0.0.0.0:26500')

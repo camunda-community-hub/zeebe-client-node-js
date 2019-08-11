@@ -4,13 +4,20 @@ process.env.ZB_NODE_LOG_LEVEL = process.env.ZB_NODE_LOG_LEVEL || 'NONE'
 
 describe('ZBClient', () => {
 	let zbc: ZBClient
+	let wf
 
 	beforeEach(async () => {
 		zbc = new ZBClient('0.0.0.0:26500')
 	})
 
 	afterEach(async () => {
-		await zbc.close() // Makes sure we don't forget to close connection
+		try {
+			if (wf) {
+				zbc.cancelWorkflowInstance(wf.workflowInstanceKey) // Cleanup any active workflows
+			}
+		} finally {
+			await zbc.close() // Makes sure we don't forget to close connection
+		}
 	})
 
 	it('Can get the broker topology', async () => {
@@ -51,12 +58,10 @@ describe('ZBClient', () => {
 		)
 		expect(res.workflows.length).toBe(1)
 
-		const workflowInstance = await zbc.createWorkflowInstance(
-			'hello-world',
-			{}
-		)
-		expect(workflowInstance.bpmnProcessId).toBe('hello-world')
-		expect(workflowInstance.workflowInstanceKey).toBeTruthy()
+		wf = await zbc.createWorkflowInstance('hello-world', {})
+		await zbc.cancelWorkflowInstance(wf.workflowInstanceKey)
+		expect(wf.bpmnProcessId).toBe('hello-world')
+		expect(wf.workflowInstanceKey).toBeTruthy()
 	})
 
 	it('Can cancel a workflow', async done => {
@@ -66,7 +71,7 @@ describe('ZBClient', () => {
 		expect(res.workflows.length).toBe(1)
 		expect(res.workflows[0].bpmnProcessId).toBe('hello-world')
 
-		const wf = await zbc.createWorkflowInstance('hello-world', {})
+		wf = await zbc.createWorkflowInstance('hello-world', {})
 		const wfi = wf.workflowInstanceKey
 		expect(wfi).toBeTruthy()
 
@@ -86,7 +91,7 @@ describe('ZBClient', () => {
 		expect(res.workflows.length).toBe(1)
 		expect(res.workflows[0].bpmnProcessId).toBe('condition-test')
 
-		const wf = await zbc.createWorkflowInstance('condition-test', {
+		wf = await zbc.createWorkflowInstance('condition-test', {
 			conditionVariable: true,
 		})
 		const wfi = wf.workflowInstanceKey
@@ -106,13 +111,15 @@ describe('ZBClient', () => {
 	})
 
 	it('Can update workflow variables', async done => {
+		jest.setTimeout(30000)
+
 		const res = await zbc.deployWorkflow(
 			'./src/__tests__/testdata/conditional-pathway.bpmn'
 		)
 		expect(res.workflows.length).toBe(1)
 		expect(res.workflows[0].bpmnProcessId).toBe('condition-test')
 
-		const wf = await zbc.createWorkflowInstance('condition-test', {
+		wf = await zbc.createWorkflowInstance('condition-test', {
 			conditionVariable: true,
 		})
 		const wfi = wf.workflowInstanceKey
