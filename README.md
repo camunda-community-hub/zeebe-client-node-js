@@ -375,6 +375,7 @@ For each feature:
 
 | Name                                                         |
 | ------------------------------------------------------------ |
+| **[Colin Raddatz](https://github.com/ColRad)**               |
 | **[Josh Wulf](https://github.com/jwulf)**                    |
 | **[Jarred Filmer](https://github.com/BrighTide)**            |
 | **[Timothy Colbert](https://github.com/s3than)**             |
