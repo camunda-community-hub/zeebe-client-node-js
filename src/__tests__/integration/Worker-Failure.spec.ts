@@ -63,7 +63,7 @@ describe('ZBWorker', () => {
 	})
 
 	it('Does not fail a workflow when the handler throws, by default', async done => {
-		jest.setTimeout(10000)
+		jest.setTimeout(15000)
 
 		const res = await zbc.deployWorkflow(
 			'./src/__tests__/testdata/Worker-Failure2.bpmn'

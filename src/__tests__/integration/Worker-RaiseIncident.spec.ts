@@ -13,6 +13,7 @@ describe('ZBWorker', () => {
 	})
 
 	it('Can raise an Operate incident with complete.failure()', async done => {
+		jest.setTimeout(15000)
 		const res = await zbc.deployWorkflow(
 			'./src/__tests__/testdata/Worker-RaiseIncident.bpmn'
 		)

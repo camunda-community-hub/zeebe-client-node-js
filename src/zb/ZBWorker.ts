@@ -188,9 +188,12 @@ export class ZBWorker<
 		this.logger.debug('Long poll loop', Object.keys(result)[0], start)
 
 		if (result.stream) {
-			result.stream.on('end', () =>
-				this.logger.debug(`Stream ended ${Date.now() - start}`)
-			)
+			result.stream.on('end', () => {
+				this.logger.debug(
+					`Stream ended after ${(Date.now() - start) / 1000} seconds`
+				)
+				this.longPollLoop()
+			})
 			result.stream.on('data', () => {
 				this.logger.debug('Long poll loop on data')
 				clearTimeout(this.restartPollingAfterLongPollTimeout!)
