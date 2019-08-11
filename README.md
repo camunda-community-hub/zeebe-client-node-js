@@ -366,10 +366,10 @@ Zeebe is inherently stateful, so integration tests need to be carefully isolated
 
 For each feature:
 
--   Use a unique bpmn process, named the same as the test file.
--   Name the task types with a namespace that matches the test name.
--   Cancel any workflows that do not run to completion in an `AfterAll` block.
--   Ensure that there no Active workflows in the engine after running the integration tests have run.
+-   Use a unique bpmn process, named the same as the test file. Don't reuse processes between tests, because they are tightly coupled.
+-   Name the task types with a namespace that matches the test name. This avoids workers from one test servicing tasks from another test, which causes unpredictable behaviour.
+-   Cancel any workflows that do not run to completion in an `AfterAll` or `AfterEach` block. This avoids subsequent test runs interacting with workflows from a previous test run.
+-   Ensure that there no Active workflows in the engine after running the integration tests have run. This manual check is to verify that there is no left-over state. (Note one exception: the Raise Incident test leaves the workflow open for manual verification in Operate).
 
 ## Contributors
 
