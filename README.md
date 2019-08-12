@@ -184,13 +184,15 @@ complete.failure('This is a critical failure and will raise an incident', 0)
 
 ### Long polling
 
-With Zeebe 0.21 onward, long polling is supported for clients. Rather than polling continuously for work and getting nothing back, a client can poll once and leave the request open until work appears. This reduces network traffic and CPU utilization in the server. Every JobActivation Request is appended to the event log, so continuous polling can significantly impact broker performance, especially when an exporter is loaded (see [here](https://github.com/creditsenseau/zeebe-client-node-js/issues/64#issuecomment-520233275)). The Node client is hardcoded to long poll for ten minute intervals when long polling is enabled.
+With Zeebe 0.21 onward, long polling is supported for clients. Rather than polling continuously for work and getting nothing back, a client can poll once and leave the request open until work appears. This reduces network traffic and CPU utilization in the server. Every JobActivation Request is appended to the event log, so continuous polling can significantly impact broker performance, especially when an exporter is loaded (see [here](https://github.com/creditsenseau/zeebe-client-node-js/issues/64#issuecomment-520233275)).
+
+To use long pollling, pass in a long poll timeout in milliseconds to the client. All workers created with that client will use it.
 
 Long polling for workers is enabled in the ZBClient, like this:
 
 ```typescript
 const zbc = new ZBClient('serverAddress', {
-	longPoll: true,
+	longPoll: 600000, // Ten minutes in millis
 })
 
 const longPollingWorker = zbc.createWorker(uuid.v4(), 'task-type', handler)

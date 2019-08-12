@@ -278,5 +278,5 @@ export interface ZBClientOptions {
 	maxRetries?: number
 	maxRetryTimeout?: number
 	tls?: boolean
-	longPoll?: boolean
+	longPoll?: number
 }

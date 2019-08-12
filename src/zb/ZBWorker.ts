@@ -36,7 +36,7 @@ export class ZBWorker<
 	private cancelWorkflowOnException = false
 	private zbClient: ZBClient
 	private logger: ZBLogger
-	private longPoll: boolean
+	private longPoll?: number
 	private debug: boolean
 	private restartPollingAfterLongPollTimeout?: NodeJS.Timeout
 	private capacityEmitter: EventEmitter
@@ -78,7 +78,7 @@ export class ZBWorker<
 		this.maxActiveJobs = options.maxJobsToActivate || 32
 		this.timeout = options.timeout || 1000
 		this.pollInterval = options.pollInterval || 100
-		this.longPoll = options.longPoll === true
+		this.longPoll = options.longPoll
 		this.id = id || uuid.v4()
 		this.debug = options.debug === true
 		this.gRPCClient = gRPCClient
@@ -203,7 +203,7 @@ export class ZBWorker<
 			// for example, if the worker is at capacity or the worker is closing
 			this.restartPollingAfterLongPollTimeout = setTimeout(
 				() => this.longPollLoop,
-				TEN_MINUTES
+				this.longPoll!
 			)
 		}
 		if (result.atCapacity) {
