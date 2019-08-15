@@ -5,7 +5,6 @@ import { parseVariables, stringifyVariables } from '../lib'
 import * as ZB from '../lib/interfaces'
 import { ZBLogger } from '../lib/ZBLogger'
 import { ZBClient } from './ZBClient'
-const TEN_MINUTES = 600000
 
 export class ZBWorker<
 	WorkerInputVariables,
@@ -26,7 +25,8 @@ export class ZBWorker<
 	private errored = false
 	private id = uuid.v4()
 	private onConnectionErrorHandler?: ZB.ConnectionErrorHandler
-	private pollHandle?: NodeJS.Timeout
+	// The handle for the fast poll timer
+	private fastPollHandle?: NodeJS.Timeout
 	private pollInterval: number
 	private taskHandler: ZB.ZBWorkerTaskHandler<
 		WorkerInputVariables,
@@ -41,7 +41,10 @@ export class ZBWorker<
 	private restartPollingAfterLongPollTimeout?: NodeJS.Timeout
 	private capacityEmitter: EventEmitter
 	private keepAlive: NodeJS.Timer
+	// Used to prevent worker from exiting when no timers active
 	private alivenessBit: number = 0
+	// Used to block fast poll when an ActivateJobRequest is in-flight
+	private fastPollInFlight = false
 
 	constructor({
 		gRPCClient,
@@ -92,6 +95,7 @@ export class ZBWorker<
 			id: this.id,
 			loglevel,
 			namespace: 'ZBWorker',
+			pollMode: this.longPoll ? 'Long Poll' : 'Fast Poll',
 			stdout: options.stdout || console,
 			taskType: this.taskType,
 		})
@@ -114,9 +118,9 @@ export class ZBWorker<
 		this.closePromise = new Promise(resolve => {
 			// this.closing prevents the worker from starting work on any new tasks
 			this.closing = true
-			if (this.pollHandle) {
+			if (this.fastPollHandle) {
 				// Stop polling for jobs
-				clearInterval(this.pollHandle)
+				clearInterval(this.fastPollHandle)
 			}
 			if (this.restartPollingAfterLongPollTimeout) {
 				clearTimeout(this.restartPollingAfterLongPollTimeout)
@@ -143,11 +147,14 @@ export class ZBWorker<
 
 	public work = () => {
 		this.logger.log(`Ready for ${this.taskType}...`)
-		if (!this.longPoll) {
-			this.shortPollLoop()
-			this.activateJobs()
-		} else {
+		if (this.longPoll) {
 			this.longPollLoop()
+		} else {
+			this.shortPollLoop()
+			this.fastPollHandle = setInterval(
+				() => this.shortPollLoop(),
+				this.pollInterval
+			)
 		}
 	}
 
@@ -176,28 +183,44 @@ export class ZBWorker<
 	}
 
 	private shortPollLoop() {
-		this.pollHandle = setInterval(
-			() => this.activateJobs(),
-			this.pollInterval
-		)
+		if (this.fastPollInFlight) {
+			return
+		}
+		this.fastPollInFlight = true
+		const result = this.activateJobs()
+
+		if (result.stream) {
+			result.stream.on('end', () => {
+				this.logger.debug('Fast poll stream end')
+				this.fastPollInFlight = false
+			})
+		}
+		if (result.atCapacity) {
+			result.atCapacity.once(
+				'available',
+				() => (this.fastPollInFlight = false)
+			)
+		}
+		if (result.error) {
+			this.fastPollInFlight = true
+		}
 	}
 
 	private longPollLoop() {
 		const result = this.activateJobs()
 		const start = Date.now()
 		this.logger.debug('Long poll loop', Object.keys(result)[0], start)
-
 		if (result.stream) {
 			result.stream.on('end', () => {
 				this.logger.debug(
 					`Stream ended after ${(Date.now() - start) / 1000} seconds`
 				)
+				clearTimeout(this.restartPollingAfterLongPollTimeout!)
 				this.longPollLoop()
 			})
 			result.stream.on('data', () => {
 				this.logger.debug('Long poll loop on data')
 				clearTimeout(this.restartPollingAfterLongPollTimeout!)
-				this.longPollLoop()
 			})
 			// We do this here because activateJobs may not result in an open gRPC call
 			// for example, if the worker is at capacity or the worker is closing
@@ -214,22 +237,20 @@ export class ZBWorker<
 		}
 	}
 
-	private internalLog = (ns: string) => (msg: any) =>
-		// tslint:disable-next-line:no-console
-		console.log(`${ns}:`, msg)
-
 	private handleGrpcError = (err: any) => {
 		if (!this.errored) {
 			if (this.onConnectionErrorHandler) {
 				this.onConnectionErrorHandler(err)
 				this.errored = true
 			} else {
-				this.internalLog(
-					chalk.red(`ERROR: `) +
-						chalk.yellow(`${this.id} - ${this.taskType}`)
-				)(chalk.red(err.details))
+				this.logger.error(`GRPC ERROR: ${err.message}`)
 				this.errored = true
 			}
+		}
+		if (this.longPoll) {
+			this.logger.debug(`gRPC Error ${chalk.red(err.details)}`)
+			this.logger.debug('Calling longPollLoop()')
+			this.longPollLoop()
 		}
 	}
 
@@ -252,7 +273,7 @@ export class ZBWorker<
 
 		const amount = this.maxActiveJobs - this.activeJobs
 
-		const requestTimeout = this.longPoll ? TEN_MINUTES : -1
+		const requestTimeout = this.longPoll || -1
 
 		const activateJobsRequest: ZB.ActivateJobsRequest = {
 			maxJobsToActivate: amount,
@@ -277,8 +298,8 @@ export class ZBWorker<
 			}
 		}
 
-		const taskHandler = this.taskHandler
 		stream.on('data', (res: ZB.ActivateJobsResponse) => {
+			this.errored = false
 			// If we are closing, don't start working on these jobs. They will have to be timed out by the server.
 			if (this.closing) {
 				return
@@ -286,144 +307,7 @@ export class ZBWorker<
 			const parsedVariables = res.jobs.map(parseVariables)
 			this.activeJobs += parsedVariables.length
 			// Call task handler for each new job
-			parsedVariables.forEach(async (job: ZB.ActivatedJob) => {
-				const customHeaders = JSON.parse(job.customHeaders || '{}')
-				/**
-				 * Client-side timeout handler - removes jobs from the activeJobs count if timed out,
-				 * prevents diminished capacity of this worker due to handler misbehaviour.
-				 */
-				let taskTimedout = false
-				const taskId = uuid.v4()
-				this.logger.debug(
-					`Setting ${this.taskType} task timeout for ${taskId} to ${this.timeout}`
-				)
-				const timeoutCancel = setTimeout(() => {
-					taskTimedout = true
-					this.drainOne()
-					this.logger.log(
-						`Timed out task ${taskId} for ${this.taskType}`
-					)
-				}, this.timeout)
-
-				// Any unhandled exception thrown by the user-supplied code will bubble up and throw here.
-				// The task timeout handler above will deal with it.
-				try {
-					/**
-					 * Construct the backward compatible worker callback
-					 * See https://stackoverflow.com/questions/12766528/build-a-function-object-with-properties-in-typescript
-					 * for an explanation of the pattern used.
-					 *
-					 * It is backward compatible because the old success handler is available as the function:
-					 *  complete(variables?: object).
-					 *
-					 * The new API is available as
-					 * complete.success(variables?: object) and complete.failure(errorMessage: string, retries?: number)
-					 *
-					 * To halt execution of the business process and raise an incident in Operate, call
-					 * complete(errorMessage, 0)
-					 */
-
-					/**
-					 * complete.success() handler
-					 */
-					const workerCallback = (() => {
-						const shadowWorkerCallback = (
-							completedVariables = {}
-						) => {
-							this.completeJob({
-								jobKey: job.key,
-								variables: completedVariables,
-							})
-							clearTimeout(timeoutCancel)
-							if (!taskTimedout) {
-								this.drainOne()
-								this.logger.debug(
-									`Completed task ${taskId} for ${this.taskType}`
-								)
-								return true
-							} else {
-								this.logger.debug(
-									`Completed task ${taskId} for ${this.taskType}, however it had timed out.`
-								)
-								return false
-							}
-						}
-						shadowWorkerCallback.success = shadowWorkerCallback
-						/**
-						 * complete.failure() handler
-						 */
-						shadowWorkerCallback.failure = async (
-							errorMessage,
-							retries = Math.max(0, job.retries - 1)
-						) => {
-							try {
-								await this.zbClient.failJob({
-									errorMessage,
-									jobKey: job.key,
-									retries,
-								})
-							} finally {
-								this.logger.debug(
-									`Failed job ${job.key} - ${errorMessage}`
-								)
-								this.drainOne()
-								clearTimeout(timeoutCancel)
-							}
-						}
-						return shadowWorkerCallback
-					})()
-
-					await taskHandler(
-						{ ...job, customHeaders: { ...customHeaders } } as any,
-						workerCallback,
-						this
-					)
-				} catch (e) {
-					clearTimeout(timeoutCancel)
-					this.logger.error(
-						`Caught an unhandled exception in a task handler for workflow instance ${job.workflowInstanceKey}:`
-					)
-					this.logger.debug(job)
-					this.logger.error(e)
-
-					if (this.cancelWorkflowOnException) {
-						const { workflowInstanceKey } = job
-						this.logger.debug(
-							`Cancelling workflow instance ${workflowInstanceKey}`
-						)
-						try {
-							await this.zbClient.cancelWorkflowInstance(
-								workflowInstanceKey
-							)
-						} finally {
-							this.drainOne()
-						}
-					} else {
-						this.logger.info(`Failing job ${job.key}`)
-						const retries = job.retries - 1
-						try {
-							this.zbClient.failJob({
-								errorMessage: `Unhandled exception in task handler ${e}`,
-								jobKey: job.key,
-								retries,
-							})
-						} catch (e) {
-							this.logger.debug(e)
-						} finally {
-							this.drainOne()
-							if (retries > 0) {
-								this.logger.debug(
-									`The Zeebe engine will handle the retry. Retries left: ${retries}`
-								)
-							} else {
-								this.logger.debug(
-									'No retries left for this task'
-								)
-							}
-						}
-					}
-				}
-			})
+			parsedVariables.forEach(job => this.handleJob(job))
 		})
 		stream.on('error', (err: any) => this.handleGrpcError(err))
 		return { stream }
@@ -431,7 +315,8 @@ export class ZBWorker<
 
 	private drainOne() {
 		this.activeJobs--
-		if (!this.closing && this.longPoll) {
+		this.logger.debug(`Load: ${this.activeJobs}/${this.maxActiveJobs}`)
+		if (!this.closing && this.activeJobs < this.maxActiveJobs * 0.75) {
 			this.capacityEmitter.emit('available')
 		}
 		if (this.closing && this.activeJobs === 0) {
@@ -441,6 +326,139 @@ export class ZBWorker<
 		if (this.activeJobs <= 0 && this.closing) {
 			if (this.closeCallback && !this.closed) {
 				this.closeCallback()
+			}
+		}
+	}
+
+	private async handleJob(job: ZB.ActivatedJob) {
+		const customHeaders = JSON.parse(job.customHeaders || '{}')
+		/**
+		 * Client-side timeout handler - removes jobs from the activeJobs count if timed out,
+		 * prevents diminished capacity of this worker due to handler misbehaviour.
+		 */
+		let taskTimedout = false
+		const taskId = uuid.v4()
+		this.logger.debug(
+			`Setting ${this.taskType} task timeout for ${taskId} to ${this.timeout}`
+		)
+		const timeoutCancel = setTimeout(() => {
+			taskTimedout = true
+			this.drainOne()
+			this.logger.log(`Timed out task ${taskId} for ${this.taskType}`)
+		}, this.timeout)
+
+		// Any unhandled exception thrown by the user-supplied code will bubble up and throw here.
+		// The task timeout handler above will deal with it.
+		try {
+			/**
+			 * Construct the backward compatible worker callback
+			 * See https://stackoverflow.com/questions/12766528/build-a-function-object-with-properties-in-typescript
+			 * for an explanation of the pattern used.
+			 *
+			 * It is backward compatible because the old success handler is available as the function:
+			 *  complete(variables?: object).
+			 *
+			 * The new API is available as
+			 * complete.success(variables?: object) and complete.failure(errorMessage: string, retries?: number)
+			 *
+			 * To halt execution of the business process and raise an incident in Operate, call
+			 * complete(errorMessage, 0)
+			 */
+
+			/**
+			 * complete.success() handler
+			 */
+			const workerCallback = (() => {
+				const shadowWorkerCallback = (completedVariables = {}) => {
+					this.completeJob({
+						jobKey: job.key,
+						variables: completedVariables,
+					})
+					clearTimeout(timeoutCancel)
+					if (!taskTimedout) {
+						this.drainOne()
+						this.logger.debug(
+							`Completed task ${taskId} for ${this.taskType}`
+						)
+						return true
+					} else {
+						this.logger.debug(
+							`Completed task ${taskId} for ${this.taskType}, however it had timed out.`
+						)
+						return false
+					}
+				}
+				shadowWorkerCallback.success = shadowWorkerCallback
+				/**
+				 * complete.failure() handler
+				 */
+				shadowWorkerCallback.failure = async (
+					errorMessage,
+					retries = Math.max(0, job.retries - 1)
+				) => {
+					try {
+						await this.zbClient.failJob({
+							errorMessage,
+							jobKey: job.key,
+							retries,
+						})
+					} finally {
+						this.logger.debug(
+							`Failed job ${job.key} - ${errorMessage}`
+						)
+						this.drainOne()
+						clearTimeout(timeoutCancel)
+					}
+				}
+				return shadowWorkerCallback
+			})()
+
+			await this.taskHandler(
+				{ ...job, customHeaders: { ...customHeaders } } as any,
+				workerCallback,
+				this
+			)
+		} catch (e) {
+			clearTimeout(timeoutCancel)
+			this.logger.error(
+				`Caught an unhandled exception in a task handler for workflow instance ${job.workflowInstanceKey}:`
+			)
+			this.logger.debug(job)
+			this.logger.error(e)
+
+			if (this.cancelWorkflowOnException) {
+				const { workflowInstanceKey } = job
+				this.logger.debug(
+					`Cancelling workflow instance ${workflowInstanceKey}`
+				)
+				try {
+					await this.zbClient.cancelWorkflowInstance(
+						workflowInstanceKey
+					)
+				} finally {
+					this.drainOne()
+				}
+			} else {
+				this.logger.info(`Failing job ${job.key}`)
+				const retries = job.retries - 1
+				try {
+					this.zbClient.failJob({
+						errorMessage: `Unhandled exception in task handler ${e}`,
+						jobKey: job.key,
+						retries,
+					})
+				} catch (e) {
+					this.logger.debug(e)
+				} finally {
+					this.drainOne()
+					if (retries > 0) {
+						this.logger.debug(
+							`The Zeebe engine will handle the retry. Retries left: ${retries}`
+						)
+					} else {
+						this.logger.debug('No retries left for this task')
+					}
+				}
 			}
 		}
 	}

@@ -31,6 +31,8 @@ export interface ZBWorkerLoggerOptions {
 	stdout?: any
 	color?: Chalk
 	namespace?: string | string[]
+	pollMode?: string
+	taskType: string
 }
 
 export type ConnectionErrorHandler = (error: any) => void

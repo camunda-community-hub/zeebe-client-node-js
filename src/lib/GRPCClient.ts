@@ -33,7 +33,11 @@ export class GRPCClient {
 		const channelCredentials = tls
 			? credentials.createSsl()
 			: credentials.createInsecure()
-		this.client = new proto[service](host, channelCredentials)
+		this.client = new proto[service](host, channelCredentials, {
+			'grpc.initial_reconnect_backoff_ms': 1000,
+			'grpc.max_reconnect_backoff_ms': 1000,
+			'grpc.min_reconnect_backoff_ms': 1000,
+		})
 		this.listNameMethods = []
 
 		for (const key in listMethods) {

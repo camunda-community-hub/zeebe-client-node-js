@@ -1,30 +1,29 @@
-import { Chalk } from 'chalk'
+import chalk, { Chalk } from 'chalk'
+import dayjs from 'dayjs'
 import { Loglevel, ZBWorkerLoggerOptions } from './interfaces'
 
 export class ZBLogger {
 	public loglevel: Loglevel
 	private colorFn: Chalk
-	private namespace?: string
-	private taskType?: string
+	private taskType: string
 	private id?: string
 	private stdout: any
 	private colorise: boolean
+	private pollMode: string
 
-	constructor(
-		{
-			loglevel,
-			color,
-			namespace,
-			stdout,
-			id,
-			taskType,
-			colorise,
-		}: ZBWorkerLoggerOptions & {
-			id?: string
-			taskType?: string
-			colorise?: boolean
-		} = { loglevel: 'INFO' }
-	) {
+	constructor({
+		loglevel,
+		color,
+		namespace,
+		stdout,
+		id,
+		taskType,
+		colorise,
+		pollMode,
+	}: ZBWorkerLoggerOptions & {
+		id?: string
+		colorise?: boolean
+	}) {
 		this.colorFn = color || ((m => m) as any)
 		this.taskType = taskType
 		this.id = id
@@ -34,6 +33,7 @@ export class ZBLogger {
 		this.loglevel = loglevel
 		this.stdout = stdout || console
 		this.colorise = colorise !== false
+		this.pollMode = pollMode || ''
 	}
 
 	public info(message: any, ...optionalParameters) {
@@ -44,43 +44,57 @@ export class ZBLogger {
 		if (this.loglevel === 'NONE') {
 			return
 		}
-		if (optionalParameters.length > 0) {
-			return this.stdout.error(message, optionalParameters)
-		} else {
-			return this.stdout.error(message)
-		}
+		const msg =
+			optionalParameters.length > 0
+				? this.makeMessage(message, optionalParameters)
+				: this.makeMessage(message)
+		this.stdout.error(chalk.red(msg))
 	}
 
-	public debug(message, ...optionalParameters: any[]) {
+	public debug(message: any, ...optionalParameters: any[]) {
 		if (this.loglevel !== 'DEBUG') {
 			return
 		}
-		this.log(message, optionalParameters)
+		const msg =
+			optionalParameters.length > 0
+				? this.makeMessage(message, optionalParameters)
+				: this.makeMessage(message)
+		if (this.stdout === console) {
+			this.stdout.info(this._colorise(msg))
+		} else {
+			this.stdout.info(msg)
+		}
 	}
 
 	public log(message: any, ...optionalParameters: any[]) {
 		if (this.loglevel === 'NONE' || this.loglevel === 'ERROR') {
 			return
 		}
+		const msg =
+			optionalParameters.length > 0
+				? this.makeMessage(message, optionalParameters)
+				: this.makeMessage(message)
 		if (this.stdout === console) {
-			let msg
-			if (this.colorise) {
-				msg =
-					this.getMetadataString() +
-					' > ' +
-					this.stringifyJSON(message)
-				if (optionalParameters) {
-					msg +=
-						' ' +
-						optionalParameters
-							.map(o => this.stringifyJSON(o))
-							.join(' ')
-				}
-			}
 			this.stdout.info(this._colorise(msg))
 		} else {
-			this.stdout.info(message, optionalParameters)
+			this.stdout.info(msg)
 		}
+	}
+
+	private makeMessage(message, ...optionalParameters) {
+		const msg = {
+			id: this.id,
+			message,
+			pollMode: this.pollMode,
+			taskType: this.taskType,
+			time: dayjs().format('YYYY MMM-DD HH:mm:ssA'),
+			timestamp: new Date(),
+		}
+
+		if (optionalParameters.length > 0) {
+			;(msg as any).data = optionalParameters
+		}
+		return JSON.stringify(msg)
 	}
 
 	private _colorise(message: string) {
@@ -93,41 +107,5 @@ export class ZBLogger {
 			}
 		}
 		return message
-	}
-	private getMetadataString() {
-		return '[ ' + this.getId() + this.getNamespace() + ' ]'
-	}
-	private getId() {
-		return `${this.taskType} ${this.id}`
-	}
-
-	private stringifyJSON(message: any) {
-		let parsedMessage = message
-
-		if (
-			message &&
-			typeof message === 'object' &&
-			!(message instanceof Error)
-		) {
-			try {
-				parsedMessage = JSON.stringify(message, null, 2)
-			} catch (e) {
-				parsedMessage = message
-			}
-		}
-		if (message instanceof Error) {
-			const getStackTrace = () => {
-				const obj = {} as any
-				Error.captureStackTrace(obj, getStackTrace)
-				return obj.stack
-			}
-
-			return getStackTrace()
-		}
-		return parsedMessage
-	}
-
-	private getNamespace() {
-		return this.namespace ? ` ${this.namespace}` : ''
 	}
 }
