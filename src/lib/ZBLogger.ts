@@ -1,4 +1,4 @@
-import chalk, { Chalk } from 'chalk'
+import { Chalk } from 'chalk'
 import dayjs from 'dayjs'
 import { Loglevel, ZBWorkerLoggerOptions } from './interfaces'
 
@@ -14,9 +14,9 @@ export class ZBLogger {
 	constructor({
 		loglevel,
 		color,
+		id,
 		namespace,
 		stdout,
-		id,
 		taskType,
 		colorise,
 		pollMode,
@@ -37,7 +37,18 @@ export class ZBLogger {
 	}
 
 	public info(message: any, ...optionalParameters) {
-		this.log(message, optionalParameters)
+		if (this.loglevel === 'NONE' || this.loglevel === 'ERROR') {
+			return
+		}
+		const msg =
+			optionalParameters.length > 0
+				? this.makeMessage(30, message, optionalParameters)
+				: this.makeMessage(30, message)
+		if (this.stdout === console) {
+			this.stdout.info(msg)
+		} else {
+			this.stdout.info(msg)
+		}
 	}
 
 	public error(message, ...optionalParameters: any[]) {
@@ -46,9 +57,9 @@ export class ZBLogger {
 		}
 		const msg =
 			optionalParameters.length > 0
-				? this.makeMessage(message, optionalParameters)
-				: this.makeMessage(message)
-		this.stdout.error(chalk.red(msg))
+				? this.makeMessage(50, message, optionalParameters)
+				: this.makeMessage(50, message)
+		this.stdout.info(msg)
 	}
 
 	public debug(message: any, ...optionalParameters: any[]) {
@@ -57,8 +68,8 @@ export class ZBLogger {
 		}
 		const msg =
 			optionalParameters.length > 0
-				? this.makeMessage(message, optionalParameters)
-				: this.makeMessage(message)
+				? this.makeMessage(20, message, optionalParameters)
+				: this.makeMessage(20, message)
 		if (this.stdout === console) {
 			this.stdout.info(this._colorise(msg))
 		} else {
@@ -72,18 +83,19 @@ export class ZBLogger {
 		}
 		const msg =
 			optionalParameters.length > 0
-				? this.makeMessage(message, optionalParameters)
-				: this.makeMessage(message)
+				? this.makeMessage(30, message, optionalParameters)
+				: this.makeMessage(30, message)
 		if (this.stdout === console) {
-			this.stdout.info(this._colorise(msg))
+			this.stdout.info(msg)
 		} else {
 			this.stdout.info(msg)
 		}
 	}
 
-	private makeMessage(message, ...optionalParameters) {
+	private makeMessage(level: number, message, ...optionalParameters) {
 		const msg = {
 			id: this.id,
+			level,
 			message,
 			pollMode: this.pollMode,
 			taskType: this.taskType,

@@ -2,9 +2,46 @@ import chalk, { Chalk } from 'chalk'
 import { EventEmitter } from 'events'
 import * as uuid from 'uuid'
 import { parseVariables, stringifyVariables } from '../lib'
+import { GRPCClient } from '../lib/GRPCClient'
 import * as ZB from '../lib/interfaces'
 import { ZBLogger } from '../lib/ZBLogger'
 import { ZBClient } from './ZBClient'
+
+interface ZBGRPC extends GRPCClient {
+	completeJobSync: any
+	activateJobsStream: any
+}
+const GrpcState = {
+	/**
+	 * The channel is trying to establish a connection and is waiting to make progress on one of the steps involved in name resolution,
+	 * TCP connection establishment or TLS handshake.
+	 */
+	CONNECTING: 1 as 1,
+	/**
+	 * This is the state where the channel is not even trying to create a connection because of a lack of new or pending RPCs.
+	 */
+	IDLE: 0 as 0,
+	/**
+	 * The channel has successfully established a connection all the way through TLS handshake (or equivalent)
+	 * and all subsequent attempt to communicate have succeeded (or are pending without any known failure ).
+	 */
+	READY: 2 as 2,
+	/**
+	 * This channel has started shutting down.
+	 */
+	SHUTDOWN: 4 as 4,
+	/**
+	 * There has been some transient failure (such as a TCP 3-way handshake timing out or a socket error).
+	 */
+	TRANSIENT_FAILURE: 3 as 3,
+}
+const connectivityState = [
+	'IDLE',
+	'CONNECTING',
+	'READY',
+	'TRANSIENT_FAILURE',
+	'SHUTDOWN',
+]
 
 export class ZBWorker<
 	WorkerInputVariables,
@@ -12,7 +49,7 @@ export class ZBWorker<
 	WorkerOutputVariables
 > {
 	public activeJobs = 0
-	public gRPCClient: any
+	public gRPCClient: ZBGRPC
 	public maxActiveJobs: number
 	public taskType: string
 	public timeout: number
@@ -45,6 +82,8 @@ export class ZBWorker<
 	private alivenessBit: number = 0
 	// Used to block fast poll when an ActivateJobRequest is in-flight
 	private fastPollInFlight = false
+
+	private gRPCRetryCount = 0
 
 	constructor({
 		gRPCClient,
@@ -211,11 +250,14 @@ export class ZBWorker<
 		const start = Date.now()
 		this.logger.debug('Long poll loop', Object.keys(result)[0], start)
 		if (result.stream) {
+			// This event happens when the server cancels the call after the deadline
+			// And when it has completed a response with work
 			result.stream.on('end', () => {
 				this.logger.debug(
 					`Stream ended after ${(Date.now() - start) / 1000} seconds`
 				)
 				clearTimeout(this.restartPollingAfterLongPollTimeout!)
+				result.stream.removeAllListeners()
 				this.longPollLoop()
 			})
 			result.stream.on('data', () => {
@@ -223,21 +265,75 @@ export class ZBWorker<
 				clearTimeout(this.restartPollingAfterLongPollTimeout!)
 			})
 			// We do this here because activateJobs may not result in an open gRPC call
-			// for example, if the worker is at capacity or the worker is closing
-			this.restartPollingAfterLongPollTimeout = setTimeout(
-				() => this.longPollLoop,
-				this.longPoll!
-			)
+			// for example, if the worker is at capacity
+			if (!this.closing) {
+				this.restartPollingAfterLongPollTimeout = setTimeout(
+					() => this.longPollLoop,
+					this.longPoll! + 100
+				)
+			}
 		}
 		if (result.atCapacity) {
 			result.atCapacity.once('available', () => this.longPollLoop())
 		}
 		if (result.error) {
+			this.logger.error(result.error.message)
 			setTimeout(() => this.longPollLoop(), 1000) // @TODO implement backoff
 		}
 	}
 
-	private handleGrpcError = (err: any) => {
+	private watchGrpcChannel(): Promise<number> {
+		return new Promise(resolve => {
+			const gRPC = this.gRPCClient.client
+			const state = gRPC.getChannel().getConnectivityState(false)
+			this.logger.error(`GRPC Channel State: ${connectivityState[state]}`)
+			const deadline = new Date().setSeconds(
+				new Date().getSeconds() + 300
+			)
+			if (state === GrpcState.IDLE) {
+				return resolve(state)
+			}
+			gRPC.getChannel().watchConnectivityState(
+				state,
+				deadline,
+				async error => {
+					this.gRPCRetryCount++
+					if (error) {
+						this.logger.error({ error })
+					}
+					const newState = gRPC
+						.getChannel()
+						.getConnectivityState(false)
+					this.logger.log(
+						`GRPC Channel State: ${connectivityState[newState]}`
+					)
+					this.logger.info(`gRPC Retry count: ${this.gRPCRetryCount}`)
+					if (
+						newState === GrpcState.READY ||
+						newState === GrpcState.IDLE
+					) {
+						this.logger.info('gRPC reconnected')
+						return resolve(newState)
+					} else {
+						return resolve(await this.watchGrpcChannel())
+					}
+				}
+			)
+		})
+	}
+
+	private handleGrpcError = (stream: any) => async (err: any) => {
+		// const streamStatus = stream.received_status
+
+		// if (streamStatus.code === 14) {
+		// 	// failed to connect to all addresses
+		// 	// TCP Write failed
+		// 	// either the client is misconfigured, or the network / broker went away
+		// 	this.logger.error(stream.received_status)
+		// 	// process.exit()
+		// }
+		this.logger.error('stream.received_status', stream.received_status)
+
 		if (!this.errored) {
 			if (this.onConnectionErrorHandler) {
 				this.onConnectionErrorHandler(err)
@@ -249,8 +345,17 @@ export class ZBWorker<
 		}
 		if (this.longPoll) {
 			this.logger.debug(`gRPC Error ${chalk.red(err.details)}`)
-			this.logger.debug('Calling longPollLoop()')
-			this.longPollLoop()
+			const channelState = await this.watchGrpcChannel()
+			this.logger.debug(
+				`Channel state: ${connectivityState[channelState]}`
+			)
+			stream.removeAllListeners()
+			if (channelState === GrpcState.READY) {
+				this.longPollLoop()
+			}
+			if (channelState === GrpcState.IDLE) {
+				this.longPollLoop()
+			}
 		}
 	}
 
@@ -291,10 +396,10 @@ export class ZBWorker<
 			if (this.debug) {
 				this.pollCount++
 			}
-		} catch (err) {
-			this.handleGrpcError(err)
+		} catch (error) {
+			// this.handleGrpcError(error)
 			return {
-				error: true,
+				error,
 			}
 		}
 
@@ -309,7 +414,9 @@ export class ZBWorker<
 			// Call task handler for each new job
 			parsedVariables.forEach(job => this.handleJob(job))
 		})
-		stream.on('error', (err: any) => this.handleGrpcError(err))
+		const errorListener = this.handleGrpcError(stream)
+		stream.on('error', (err: any) => errorListener(err))
+
 		return { stream }
 	}
 

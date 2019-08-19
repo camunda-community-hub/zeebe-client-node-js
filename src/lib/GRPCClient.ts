@@ -1,3 +1,4 @@
+// import { Client, credentials, loadPackageDefinition } from '@grpc/grpc-js'
 import { loadSync, Options, PackageDefinition } from '@grpc/proto-loader'
 import { Client, credentials, loadPackageDefinition } from 'grpc'
 
@@ -7,8 +8,8 @@ interface GRPCClientExtendedOptions {
 
 export class GRPCClient {
 	public longPoll?: number
+	public client: Client
 	private packageDefinition: PackageDefinition
-	private client: Client
 	private listNameMethods: string[]
 
 	constructor(
@@ -34,8 +35,9 @@ export class GRPCClient {
 			? credentials.createSsl()
 			: credentials.createInsecure()
 		this.client = new proto[service](host, channelCredentials, {
+			'grpc.enable_retries': 1,
 			'grpc.initial_reconnect_backoff_ms': 1000,
-			'grpc.max_reconnect_backoff_ms': 1000,
+			'grpc.max_reconnect_backoff_ms': 50000,
 			'grpc.min_reconnect_backoff_ms': 1000,
 		})
 		this.listNameMethods = []
@@ -51,11 +53,14 @@ export class GRPCClient {
 
 				this[`${methodName}Stream`] = data => {
 					if (this.longPoll) {
-						const deadline = new Date().setSeconds(
-							new Date().getSeconds() + this.longPoll / 1000
-						)
-						return this.client[methodName](data, { deadline })
-						// return this.client[methodName](data)
+						// This is a client-side deadline timeout
+						// Let the server manage the deadline.
+						// See: https://github.com/zeebe-io/zeebe/issues/2987
+						// const deadline = new Date().setSeconds(
+						// 	new Date().getSeconds() + this.longPoll / 1000
+						// )
+						// return this.client[methodName](data, { deadline })
+						return this.client[methodName](data)
 					} else {
 						return this.client[methodName](data)
 					}
