@@ -312,6 +312,7 @@ export class ZBWorker<
 			if (this.closing) {
 				return
 			}
+			this.fastPollInFlight = false
 			const parsedVariables = res.jobs.map(parseVariables)
 			this.activeJobs += parsedVariables.length
 			// Call task handler for each new job
