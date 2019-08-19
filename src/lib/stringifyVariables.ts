@@ -1,6 +1,6 @@
 export function stringifyVariables<
 	T extends { variables: { [key: string]: any } }
->(request: T) {
+>(request: T): T {
 	const variables = request.variables || {}
 	const variablesString = JSON.stringify(variables)
 	return (Object as any).assign({}, request, { variables: variablesString })

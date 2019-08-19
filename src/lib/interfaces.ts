@@ -1,5 +1,6 @@
 import { Chalk } from 'chalk'
 import { ZBWorker } from '../zb/ZBWorker'
+import { GRPCClient } from './GRPCClient'
 
 export interface KeyedObject {
 	[key: string]: any
@@ -281,4 +282,28 @@ export interface ZBClientOptions {
 	maxRetryTimeout?: number
 	tls?: boolean
 	longPoll?: number
+}
+
+export interface ZBGRPC extends GRPCClient {
+	completeJobSync: any
+	activateJobsStream: any
+	publishMessageSync(
+		publishMessageRequest: PublishMessageRequest
+	): Promise<void>
+	topologySync(): Promise<TopologyResponse>
+	updateJobRetriesSync(
+		updateJobRetriesRequest: UpdateJobRetriesRequest
+	): Promise<void>
+	deployWorkflowSync(workflows: {
+		workflows: WorkflowRequestObject[]
+	}): Promise<DeployWorkflowResponse>
+	failJobSync(failJobRequest: FailJobRequest): Promise<void>
+	createWorkflowInstanceSync(
+		createWorkflowInstanceRequest: CreateWorkflowInstanceRequest
+	): Promise<CreateWorkflowInstanceResponse>
+	cancelWorkflowInstanceSync(workflowInstanceKey: {
+		workflowInstanceKey: string | number
+	}): Promise<void>
+	setVariablesSync(request: SetVariablesRequest): Promise<void>
+	resolveIncidentSync(incidentKey: string): Promise<void>
 }

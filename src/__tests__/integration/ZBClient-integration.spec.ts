@@ -47,7 +47,8 @@ describe('ZBClient', () => {
 			'TASK_TYPE',
 			(job, complete) => {
 				complete(job)
-			}
+			},
+			{ loglevel: 'NONE' }
 		)
 		expect(worker).toBeTruthy()
 	})
@@ -97,17 +98,27 @@ describe('ZBClient', () => {
 		const wfi = wf.workflowInstanceKey
 		expect(wfi).toBeTruthy()
 
-		await zbc.createWorker('test2', 'wait', async (job, complete) => {
-			expect(job.workflowInstanceKey).toBe(wfi)
-			complete(job)
-		})
+		zbc.createWorker(
+			'test2',
+			'wait',
+			async (job, complete) => {
+				expect(job.workflowInstanceKey).toBe(wfi)
+				complete(job)
+			},
+			{ loglevel: 'NONE' }
+		)
 
-		await zbc.createWorker('test2', 'pathA', async (job, complete) => {
-			expect(job.workflowInstanceKey).toBe(wfi)
-			expect(job.variables.conditionVariable).toBe(true)
-			complete(job)
-			done()
-		})
+		zbc.createWorker(
+			'test2',
+			'pathA',
+			async (job, complete) => {
+				expect(job.workflowInstanceKey).toBe(wfi)
+				expect(job.variables.conditionVariable).toBe(true)
+				complete(job)
+				done()
+			},
+			{ loglevel: 'NONE' }
+		)
 	})
 
 	it('Can update workflow variables', async done => {
@@ -133,17 +144,27 @@ describe('ZBClient', () => {
 			},
 		})
 
-		await zbc.createWorker('test2', 'wait', async (job, complete) => {
-			expect(job.workflowInstanceKey).toBe(wfi)
-			complete(job)
-		})
+		zbc.createWorker(
+			'test2',
+			'wait',
+			async (job, complete) => {
+				expect(job.workflowInstanceKey).toBe(wfi)
+				complete(job)
+			},
+			{ loglevel: 'NONE' }
+		)
 
-		await zbc.createWorker('test2', 'pathB', async (job, complete) => {
-			expect(job.workflowInstanceKey).toBe(wfi)
-			expect(job.variables.conditionVariable).toBe(false)
-			complete(job.variables)
-			done()
-		})
+		zbc.createWorker(
+			'test2',
+			'pathB',
+			async (job, complete) => {
+				expect(job.workflowInstanceKey).toBe(wfi)
+				expect(job.variables.conditionVariable).toBe(false)
+				complete(job.variables)
+				done()
+			},
+			{ loglevel: 'NONE' }
+		)
 	})
 
 	it("does not retry to cancel a workflow instance that doesn't exist", async () => {

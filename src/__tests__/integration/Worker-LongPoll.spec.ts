@@ -31,9 +31,7 @@ describe('ZBWorker', () => {
 				await zbc.close()
 				done()
 			},
-			{
-				debug: true,
-			}
+			{ loglevel: 'ERROR', debug: true }
 		)
 		setTimeout(async () => {
 			wf1 = await zbc.createWorkflowInstance('long-poll', {})
@@ -61,9 +59,7 @@ describe('ZBWorker', () => {
 				await zbcLongPoll.close()
 				done()
 			},
-			{
-				debug: true,
-			}
+			{ loglevel: 'NONE', debug: true }
 		)
 		setTimeout(async () => {
 			wf2 = await zbcLongPoll.createWorkflowInstance('long-poll', {})

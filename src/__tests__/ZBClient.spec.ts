@@ -31,6 +31,7 @@ describe('ZBClient constructor', () => {
 		spy.mockRestore()
 	})
 	it('ZB_NODE_LOG_LEVEL precedes options passed in Ctor', () => {
+		process.env.ZB_NODE_LOG_LEVEL = 'INFO'
 		clientOptions.loglevel = 'DEBUG'
 		const spy = jest.spyOn(clientOptions, 'loglevel', 'get')
 		expect(new ZBClient('localhost', clientOptions)).toBeInstanceOf(

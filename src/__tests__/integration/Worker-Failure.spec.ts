@@ -45,7 +45,7 @@ describe('ZBWorker', () => {
 			},
 		})
 
-		await zbc.createWorker(
+		zbc.createWorker(
 			'test2',
 			'wait-worker-failure',
 			async (job, complete) => {
@@ -58,7 +58,8 @@ describe('ZBWorker', () => {
 					return
 				}
 				complete.failure('Triggering a retry')
-			}
+			},
+			{ loglevel: 'NONE' }
 		)
 	})
 
@@ -89,6 +90,7 @@ describe('ZBWorker', () => {
 				) // Will be caught in the library
 			},
 			{
+				loglevel: 'NONE',
 				pollInterval: 10000,
 			}
 		)
@@ -133,6 +135,7 @@ describe('ZBWorker', () => {
 			},
 			{
 				failWorkflowOnException: true,
+				loglevel: 'NONE',
 			}
 		)
 

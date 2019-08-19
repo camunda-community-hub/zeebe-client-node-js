@@ -25,11 +25,16 @@ describe('ZBWorker', () => {
 		expect(res.workflows.length).toBe(1)
 
 		wf = await zbc.createWorkflowInstance('hello-world', {})
-		zbc.createWorker('test', 'console-log', async (job, complete) => {
-			expect(job.workflowInstanceKey).toBe(wf.workflowInstanceKey)
-			complete(job.variables)
-			done()
-		})
+		zbc.createWorker(
+			'test',
+			'console-log',
+			async (job, complete) => {
+				expect(job.workflowInstanceKey).toBe(wf.workflowInstanceKey)
+				complete(job.variables)
+				done()
+			},
+			{ loglevel: 'NONE' }
+		)
 	})
 
 	it('Can service a task with complete.success', async done => {
@@ -38,11 +43,16 @@ describe('ZBWorker', () => {
 		)
 		expect(res.workflows.length).toBe(1)
 		wf = await zbc.createWorkflowInstance('hello-world', {})
-		zbc.createWorker('test', 'console-log', async (job, complete) => {
-			expect(job.workflowInstanceKey).toBe(wf.workflowInstanceKey)
-			complete.success(job.variables)
-			done()
-		})
+		zbc.createWorker(
+			'test',
+			'console-log',
+			async (job, complete) => {
+				expect(job.workflowInstanceKey).toBe(wf.workflowInstanceKey)
+				complete.success(job.variables)
+				done()
+			},
+			{ loglevel: 'NONE' }
+		)
 	})
 
 	it('Can update workflow variables with complete.success()', async done => {
@@ -66,16 +76,26 @@ describe('ZBWorker', () => {
 			},
 		})
 
-		zbc.createWorker('test2', 'wait', async (job, complete) => {
-			expect(job.workflowInstanceKey).toBe(wfi)
-			complete.success(job)
-		})
+		zbc.createWorker(
+			'test2',
+			'wait',
+			async (job, complete) => {
+				expect(job.workflowInstanceKey).toBe(wfi)
+				complete.success(job)
+			},
+			{ loglevel: 'NONE' }
+		)
 
-		zbc.createWorker('test2', 'pathB', async (job, complete) => {
-			expect(job.workflowInstanceKey).toBe(wfi)
-			expect(job.variables.conditionVariable).toBe(false)
-			complete.success(job.variables)
-			done()
-		})
+		zbc.createWorker(
+			'test2',
+			'pathB',
+			async (job, complete) => {
+				expect(job.workflowInstanceKey).toBe(wfi)
+				expect(job.variables.conditionVariable).toBe(false)
+				complete.success(job.variables)
+				done()
+			},
+			{ loglevel: 'NONE' }
+		)
 	})
 })

@@ -40,7 +40,8 @@ describe('ZBWorker', () => {
 			async (job, complete) => {
 				expect(job.workflowInstanceKey).toBe(wfi)
 				complete.success(job)
-			}
+			},
+			{ loglevel: 'NONE' }
 		)
 
 		await zbc.createWorker(
@@ -53,7 +54,7 @@ describe('ZBWorker', () => {
 				// Manually verify that an incident has been raised
 				done()
 			},
-			{ pollInterval: 10000, maxJobsToActivate: 1 }
+			{ pollInterval: 10000, maxJobsToActivate: 1, loglevel: 'NONE' }
 		)
 	})
 })

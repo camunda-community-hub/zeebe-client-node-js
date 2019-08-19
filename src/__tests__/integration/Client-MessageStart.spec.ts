@@ -30,7 +30,7 @@ describe('ZBClient', () => {
 			},
 		})
 
-		await zbc.createWorker(
+		zbc.createWorker(
 			'test2',
 			'console-log-msg',
 			async (job, complete) => {
@@ -40,7 +40,8 @@ describe('ZBClient', () => {
 				).toBe(true)
 				expect(job.variables.testKey).toBe(randomId) // Makes sure the worker isn't responding to another message
 				done()
-			}
+			},
+			{ loglevel: 'NONE' }
 		)
 	})
 })

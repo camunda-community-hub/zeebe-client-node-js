@@ -8,7 +8,7 @@ import { BpmnParser, stringifyVariables } from '../lib'
 import { GRPCClient } from '../lib/GRPCClient'
 import * as ZB from '../lib/interfaces'
 // tslint:disable-next-line: no-duplicate-imports
-import { KeyedObject } from '../lib/interfaces'
+import { KeyedObject, ZBGRPC } from '../lib/interfaces'
 import { Utils } from '../lib/utils'
 import { ZBWorker } from './ZBWorker'
 
@@ -26,13 +26,15 @@ export class ZBClient {
 	public gatewayAddress: string
 	private closePromise?: Promise<any>
 	private closing = false
-	private gRPCClient: any
+	private gRPCClient: ZBGRPC
+	private workerGRPCClient?: ZBGRPC
 	private options: ZB.ZBClientOptions
 	private workerCount = 0
 	private workers: Array<ZBWorker<any, any, any>> = []
 	private retry: boolean
 	private maxRetries: number = 50
 	private maxRetryTimeout: number = 5000
+	private loglevel: ZB.Loglevel
 
 	constructor(gatewayAddress: string, options: ZB.ZBClientOptions = {}) {
 		if (!gatewayAddress) {
@@ -40,8 +42,8 @@ export class ZBClient {
 				'Must provide a gateway address string to constructor'
 			)
 		}
-		this.options = options || {}
-		this.options.loglevel =
+		this.options = options ? options : {}
+		this.loglevel =
 			(process.env.ZB_NODE_LOG_LEVEL as ZB.Loglevel) ||
 			options.loglevel ||
 			'INFO'
@@ -56,16 +58,15 @@ export class ZBClient {
 
 		this.gatewayAddress = `${url.hostname}:${url.port}`
 
-		this.gRPCClient = new GRPCClient(
-			path.join(__dirname, '../../proto/zeebe.proto'),
-			'gateway_protocol',
-			'Gateway',
-			this.gatewayAddress,
-			{
-				longPoll: this.options.longPoll,
-			},
-			options.tls
-		)
+		this.gRPCClient = new GRPCClient({
+			host: this.gatewayAddress,
+			loglevel: this.loglevel,
+			options: { longPoll: this.options.longPoll },
+			packageName: 'gateway_protocol',
+			protoPath: path.join(__dirname, '../../proto/zeebe.proto'),
+			service: 'Gateway',
+			tls: options.tls === true,
+		}) as ZBGRPC
 
 		this.retry = options.retry !== false
 		this.maxRetries = options.maxRetries || this.maxRetries
@@ -98,12 +99,24 @@ export class ZBClient {
 			throw new Error('Client is closing. No worker creation allowed!')
 		}
 		const idColor = idColors[this.workerCount++ % idColors.length]
+		// Give worker its own gRPC connection
+		this.workerGRPCClient =
+			this.workerGRPCClient ||
+			(new GRPCClient({
+				host: this.gatewayAddress,
+				loglevel: this.loglevel!,
+				options: { longPoll: this.options.longPoll },
+				packageName: 'gateway_protocol',
+				protoPath: path.join(__dirname, '../../proto/zeebe.proto'),
+				service: 'Gateway',
+				tls: options.tls === true,
+			}) as ZBGRPC)
 		const worker = new ZBWorker<
 			WorkerInputVariables,
 			CustomHeaderShape,
 			WorkerOutputVariables
 		>({
-			gRPCClient: this.gRPCClient,
+			gRPCClient: this.workerGRPCClient,
 			id,
 			idColor,
 			onConnectionError,
