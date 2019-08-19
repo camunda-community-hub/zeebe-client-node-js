@@ -354,7 +354,9 @@ export class ZBClient {
 				}
 				return operation().catch(err => {
 					// This could be DNS resolution, or the gRPC gateway is not reachable yet
-					const isNetworkError = err.message.indexOf('14') === 0
+					const isNetworkError =
+						err.message.indexOf('14') === 0 ||
+						err.message.indexOf('Stream removed')
 					if (isNetworkError) {
 						c.error(`${err.message}`)
 						retry(err)
