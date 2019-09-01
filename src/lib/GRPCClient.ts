@@ -10,6 +10,9 @@ interface GRPCClientExtendedOptions {
 	longPoll?: number
 }
 
+// @TODO: Better handling of status codes to deal with TLS and OAuth
+// https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
+
 const GrpcState = {
 	/**
 	 * The channel is trying to establish a connection and is waiting to make progress on one of the steps involved in name resolution,

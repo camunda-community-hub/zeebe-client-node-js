@@ -61,7 +61,7 @@ export class ZBWorker<
 		zbClient,
 	}: {
 		gRPCClient: any
-		id: string
+		id: string | null
 		taskType: string
 		taskHandler: ZB.ZBWorkerTaskHandler<
 			WorkerInputVariables,

@@ -22,6 +22,7 @@
 		"url": "https://github.com/creditsenseau/zeebe-client-node-js"
 	},
 	"main": "dist/index.js",
+	"bin": "bin/zeebe-node-cli",
 	"scripts": {
 		"build": "tsc",
 		"watch": "tsc -w",

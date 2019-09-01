@@ -2,12 +2,13 @@ import { v4 as uuid } from 'uuid'
 import { ZBClient } from '../..'
 
 process.env.ZB_NODE_LOG_LEVEL = process.env.ZB_NODE_LOG_LEVEL || 'NONE'
+const gatewayAddress = process.env.ZEEBE_GATEWAY_ADDRESS || '0.0.0.0:26500'
 
 describe('ZBClient', () => {
 	let zbc: ZBClient
 
 	beforeEach(async () => {
-		zbc = new ZBClient('0.0.0.0:26500')
+		zbc = new ZBClient(gatewayAddress)
 	})
 
 	afterEach(async () => {

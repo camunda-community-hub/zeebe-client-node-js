@@ -8,7 +8,6 @@ import { BpmnParser, stringifyVariables } from '../lib'
 import { GRPCClient } from '../lib/GRPCClient'
 import * as ZB from '../lib/interfaces'
 // tslint:disable-next-line: no-duplicate-imports
-import { KeyedObject, ZBGRPC } from '../lib/interfaces'
 import { Utils } from '../lib/utils'
 import { ZBWorker } from './ZBWorker'
 
@@ -26,8 +25,8 @@ export class ZBClient {
 	public gatewayAddress: string
 	private closePromise?: Promise<any>
 	private closing = false
-	private gRPCClient: ZBGRPC
-	private workerGRPCClient?: ZBGRPC
+	private gRPCClient: ZB.ZBGRPC
+	private workerGRPCClient?: ZB.ZBGRPC
 	private options: ZB.ZBClientOptions
 	private workerCount = 0
 	private workers: Array<ZBWorker<any, any, any>> = []
@@ -66,7 +65,7 @@ export class ZBClient {
 			protoPath: path.join(__dirname, '../../proto/zeebe.proto'),
 			service: 'Gateway',
 			tls: options.tls === true,
-		}) as ZBGRPC
+		}) as ZB.ZBGRPC
 
 		this.retry = options.retry !== false
 		this.maxRetries = options.maxRetries || this.maxRetries
@@ -81,11 +80,11 @@ export class ZBClient {
 	 * @param options - Configuration options for the worker.
 	 */
 	public createWorker<
-		WorkerInputVariables = KeyedObject,
-		CustomHeaderShape = KeyedObject,
-		WorkerOutputVariables = WorkerInputVariables
+		WorkerInputVariables = ZB.GenericWorkerInputVariables,
+		CustomHeaderShape = ZB.GenericCustomHeaderShape,
+		WorkerOutputVariables = ZB.GenericWorkerOutputVariables
 	>(
-		id: string,
+		id: string | null,
 		taskType: string,
 		taskHandler: ZB.ZBWorkerTaskHandler<
 			WorkerInputVariables,
@@ -110,7 +109,7 @@ export class ZBClient {
 				protoPath: path.join(__dirname, '../../proto/zeebe.proto'),
 				service: 'Gateway',
 				tls: options.tls === true,
-			}) as ZBGRPC)
+			}) as ZB.ZBGRPC)
 		const worker = new ZBWorker<
 			WorkerInputVariables,
 			CustomHeaderShape,
@@ -210,7 +209,7 @@ export class ZBClient {
 	 * Publish a message to the broker for correlation with a workflow instance.
 	 * @param publishMessageRequest - The message to publish.
 	 */
-	public publishMessage<T = KeyedObject>(
+	public publishMessage<T = ZB.GenericWorkflowVariables>(
 		publishMessageRequest: ZB.PublishMessageRequest<T>
 	): Promise<void> {
 		return this.executeOperation(() =>
@@ -224,7 +223,7 @@ export class ZBClient {
 	 * Publish a message to the broker for correlation with a workflow message start event.
 	 * @param publishStartMessageRequest - The message to publish.
 	 */
-	public publishStartMessage<T = KeyedObject>(
+	public publishStartMessage<T = ZB.GenericWorkflowVariables>(
 		publishStartMessageRequest: ZB.PublishStartMessageRequest<T>
 	): Promise<void> {
 		/**
@@ -272,23 +271,31 @@ export class ZBClient {
 	 * @returns {Promise<CreateWorkflowInstanceResponse>}
 	 * @memberof ZBClient
 	 */
-	public createWorkflowInstance<Variables = KeyedObject>(
+	public createWorkflowInstance<Variables = ZB.GenericWorkflowVariables>(
 		bpmnProcessId: string,
 		variables: Variables,
-		version?: number
+		options: ZB.OperationOptions = {
+			maxRetries: this.maxRetries,
+			retry: true,
+		}
 	): Promise<ZB.CreateWorkflowInstanceResponse> {
-		version = version || -1
+		const version = options.version || -1
 
 		const createWorkflowInstanceRequest: ZB.CreateWorkflowInstanceRequest = {
 			bpmnProcessId,
 			variables: (variables as unknown) as object,
 			version,
 		}
-		return this.executeOperation(() =>
-			this.gRPCClient.createWorkflowInstanceSync(
-				stringifyVariables(createWorkflowInstanceRequest)
-			)
-		)
+
+		return ZB.noRetry(options)
+			? this.executeOperation(() =>
+					this.gRPCClient.createWorkflowInstanceSync(
+						stringifyVariables(createWorkflowInstanceRequest)
+					)
+			  )
+			: this.gRPCClient.createWorkflowInstanceSync(
+					stringifyVariables(createWorkflowInstanceRequest)
+			  )
 	}
 
 	public async cancelWorkflowInstance(
@@ -302,7 +309,7 @@ export class ZBClient {
 		)
 	}
 
-	public setVariables<Variables = KeyedObject>(
+	public setVariables<Variables = ZB.GenericWorkflowVariables>(
 		request: ZB.SetVariablesRequest<Variables>
 	): Promise<void> {
 		/*
@@ -330,8 +337,13 @@ export class ZBClient {
 	 * If this.retry is false, it will be executed with no retry, and the application should handle the exception.
 	 * @param operation A gRPC command operation
 	 */
-	private async executeOperation<T>(operation: () => Promise<T>): Promise<T> {
-		return this.retry ? this.retryOnFailure(operation) : operation()
+	private async executeOperation<T>(
+		operation: () => Promise<T>,
+		retries?: number
+	): Promise<T> {
+		return this.retry
+			? this.retryOnFailure(operation, retries)
+			: operation()
 	}
 
 	/**
@@ -340,7 +352,10 @@ export class ZBClient {
 	 * or retries are exhausted.
 	 * @param operation A gRPC command operation that may fail if the broker is not available
 	 */
-	private async retryOnFailure<T>(operation: () => Promise<T>): Promise<T> {
+	private async retryOnFailure<T>(
+		operation: () => Promise<T>,
+		retries = this.maxRetries
+	): Promise<T> {
 		const c = console
 		return promiseRetry(
 			(retry, n) => {
@@ -366,7 +381,7 @@ export class ZBClient {
 			},
 			{
 				maxTimeout: this.maxRetryTimeout,
-				retries: this.maxRetries,
+				retries,
 			}
 		)
 	}

@@ -13,10 +13,48 @@ export interface CompleteFn<WorkerOutputVariables> {
 	failure: (errorMessage: string, retries?: number) => void
 }
 
+export interface OperationOptionsWithRetry {
+	maxRetries: number
+	retry: true
+	version?: number
+}
+
+export interface OperationOptionsNoRetry {
+	retry: false
+	version?: number
+}
+
+export function hasRetry(options): options is OperationOptionsWithRetry {
+	return options.retry === true
+}
+
+export function noRetry(options): options is OperationOptionsNoRetry {
+	return options.retry === false
+}
+
+export type OperationOptions =
+	| OperationOptionsWithRetry
+	| OperationOptionsNoRetry
+
+export interface GenericWorkerInputVariables {
+	[key: string]: any
+}
+
+export interface GenericWorkflowVariables {
+	[key: string]: any
+}
+
+export interface GenericWorkerOutputVariables {
+	[key: string]: any
+}
+
+export interface GenericCustomHeaderShape {
+	[key: string]: any
+}
 export type ZBWorkerTaskHandler<
-	WorkerInputVariables = KeyedObject,
-	CustomHeaderShape = KeyedObject,
-	WorkerOutputVariables = WorkerInputVariables
+	WorkerInputVariables = GenericWorkerInputVariables,
+	CustomHeaderShape = GenericWorkerOutputVariables,
+	WorkerOutputVariables = GenericCustomHeaderShape
 > = (
 	job: Job<WorkerInputVariables, CustomHeaderShape>,
 	complete: CompleteFn<WorkerOutputVariables>,

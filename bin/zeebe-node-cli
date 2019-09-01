@@ -1,0 +1,7 @@
+#!/usr/bin/env node
+const ZB = require("../")
+
+const workfile = args[1]
+(async () => {
+  console.log(await ZB.BpmnParser.scaffold(workflowFile));
+})();

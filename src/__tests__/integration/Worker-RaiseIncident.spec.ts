@@ -1,11 +1,12 @@
 import { ZBClient } from '../..'
+const gatewayAddress = process.env.ZEEBE_GATEWAY_ADDRESS || '0.0.0.0:26500'
 
 /**
  * Note: This test leaves its workflow instance active so the incident can be manually verified
  */
 describe('ZBWorker', () => {
 	let wfi
-	const zbc = new ZBClient('0.0.0.0:26500')
+	const zbc = new ZBClient(gatewayAddress)
 
 	afterAll(() => {
 		zbc.cancelWorkflowInstance(wfi)
