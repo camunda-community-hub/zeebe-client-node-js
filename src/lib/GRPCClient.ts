@@ -2,8 +2,9 @@
 import { loadSync, Options, PackageDefinition } from '@grpc/proto-loader'
 import chalk from 'chalk'
 import { EventEmitter } from 'events'
-import { Client, credentials, loadPackageDefinition } from 'grpc'
+import { Client, credentials, loadPackageDefinition, Metadata } from 'grpc'
 import { Loglevel } from './interfaces'
+import { OAuthProvider } from './OAuthProvider'
 import { ZBLogger } from './ZBLogger'
 
 interface GRPCClientExtendedOptions {
@@ -52,25 +53,27 @@ export class GRPCClient extends EventEmitter {
 	private listNameMethods: string[]
 	private logger: ZBLogger
 	private gRPCRetryCount = 0
+	private oAuth?: OAuthProvider
 
 	constructor({
 		host,
 		loglevel,
+		oAuth,
 		options = {},
 		packageName,
 		protoPath,
 		service,
-		tls = false,
 	}: {
 		host: string
 		loglevel: Loglevel
+		oAuth?: OAuthProvider
 		options: Options & GRPCClientExtendedOptions
 		packageName: string
 		protoPath: string
 		service: string
-		tls: boolean
 	}) {
 		super()
+		this.oAuth = oAuth
 		this.longPoll = options.longPoll
 
 		this.logger = new ZBLogger({
@@ -92,7 +95,7 @@ export class GRPCClient extends EventEmitter {
 
 		const proto = loadPackageDefinition(this.packageDefinition)[packageName]
 		const listMethods = this.packageDefinition[`${packageName}.${service}`]
-		const channelCredentials = tls
+		const channelCredentials = oAuth
 			? credentials.createSsl()
 			: credentials.createInsecure()
 		this.client = new proto[service](host, channelCredentials, {
@@ -106,13 +109,16 @@ export class GRPCClient extends EventEmitter {
 		for (const key in listMethods) {
 			if (listMethods[key]) {
 				const methodName = listMethods[key].originalName as string
+
 				this.listNameMethods.push(methodName)
 
-				this[`${methodName}Async`] = (data, fnAnswer) => {
-					this.client[methodName](data, fnAnswer)
+				this[`${methodName}Async`] = async (data, fnAnswer) => {
+					const metadata = await this.getJWT()
+					this.client[methodName](data, metadata, fnAnswer)
 				}
 
-				this[`${methodName}Stream`] = data => {
+				this[`${methodName}Stream`] = async data => {
+					let stream
 					// if (this.longPoll) {
 					// This is a client-side deadline timeout
 					// Let the server manage the deadline.
@@ -122,7 +128,12 @@ export class GRPCClient extends EventEmitter {
 					// )
 					// return this.client[methodName](data, { deadline })
 					// } else {
-					const stream = this.client[methodName](data)
+					try {
+						const metadata = await this.getJWT()
+						stream = this.client[methodName](data, metadata)
+					} catch (e) {
+						this.logger.error(e)
+					}
 					/**
 					 * Once this gets attached here, it is attached to *all* calls
 					 * This is an issue if you do a sync call like cancelWorkflowSync
@@ -139,13 +150,18 @@ export class GRPCClient extends EventEmitter {
 
 				this[`${methodName}Sync`] = data => {
 					const client = this.client
-					return new Promise((resolve, reject) => {
-						client[methodName](data, (err, dat) => {
-							if (err) {
-								return reject(err)
-							}
-							resolve(dat)
-						})
+					return new Promise(async (resolve, reject) => {
+						try {
+							const metadata = await this.getJWT()
+							client[methodName](data, metadata, (err, dat) => {
+								if (err) {
+									return reject(err)
+								}
+								resolve(dat)
+							})
+						} catch (e) {
+							reject(e)
+						}
 					})
 				}
 			}
@@ -162,6 +178,16 @@ export class GRPCClient extends EventEmitter {
 
 	public close() {
 		this.client.close()
+	}
+
+	private async getJWT() {
+		let metadata
+		if (this.oAuth) {
+			const token = await this.oAuth.getToken()
+			metadata = new Metadata()
+			metadata.add('Authorization', `Bearer ${token}`)
+		}
+		return metadata
 	}
 
 	private watchGrpcChannel(): Promise<number> {

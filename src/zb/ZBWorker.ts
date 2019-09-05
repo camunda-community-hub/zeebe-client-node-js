@@ -199,12 +199,12 @@ export class ZBWorker<
 		})
 	}
 
-	private shortPollLoop() {
+	private async shortPollLoop() {
 		if (this.fastPollInFlight) {
 			return
 		}
 		this.fastPollInFlight = true
-		const result = this.activateJobs()
+		const result = await this.activateJobs()
 
 		if (result.stream) {
 			result.stream.on('end', () => {
@@ -223,8 +223,8 @@ export class ZBWorker<
 		}
 	}
 
-	private longPollLoop() {
-		const result = this.activateJobs()
+	private async longPollLoop() {
+		const result = await this.activateJobs()
 		const start = Date.now()
 		this.logger.debug('Long poll loop', Object.keys(result)[0], start)
 		if (result.stream) {
@@ -260,7 +260,7 @@ export class ZBWorker<
 		}
 	}
 
-	private activateJobs() {
+	private async activateJobs() {
 		if (this.stalled) {
 			return { stalled: true }
 		}
@@ -296,7 +296,9 @@ export class ZBWorker<
 		)
 
 		try {
-			stream = this.gRPCClient.activateJobsStream(activateJobsRequest)
+			stream = await this.gRPCClient.activateJobsStream(
+				activateJobsRequest
+			)
 			if (this.debug) {
 				this.pollCount++
 			}

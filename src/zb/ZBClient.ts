@@ -7,6 +7,7 @@ import { v4 as uuid } from 'uuid'
 import { BpmnParser, stringifyVariables } from '../lib'
 import { GRPCClient } from '../lib/GRPCClient'
 import * as ZB from '../lib/interfaces'
+import { OAuthProvider } from '../lib/OAuthProvider'
 // tslint:disable-next-line: no-duplicate-imports
 import { Utils } from '../lib/utils'
 import { ZBWorker } from './ZBWorker'
@@ -26,7 +27,6 @@ export class ZBClient {
 	private closePromise?: Promise<any>
 	private closing = false
 	private gRPCClient: ZB.ZBGRPC
-	private workerGRPCClient?: ZB.ZBGRPC
 	private options: ZB.ZBClientOptions
 	private workerCount = 0
 	private workers: Array<ZBWorker<any, any, any>> = []
@@ -34,6 +34,7 @@ export class ZBClient {
 	private maxRetries: number = 50
 	private maxRetryTimeout: number = 5000
 	private loglevel: ZB.Loglevel
+	private oAuth?: OAuthProvider
 
 	constructor(gatewayAddress: string, options: ZB.ZBClientOptions = {}) {
 		if (!gatewayAddress) {
@@ -57,14 +58,16 @@ export class ZBClient {
 
 		this.gatewayAddress = `${url.hostname}:${url.port}`
 
+		this.oAuth = options.auth ? new OAuthProvider(options.auth) : undefined
+
 		this.gRPCClient = new GRPCClient({
 			host: this.gatewayAddress,
 			loglevel: this.loglevel,
+			oAuth: this.oAuth,
 			options: { longPoll: this.options.longPoll },
 			packageName: 'gateway_protocol',
 			protoPath: path.join(__dirname, '../../proto/zeebe.proto'),
 			service: 'Gateway',
-			tls: options.tls === true,
 		}) as ZB.ZBGRPC
 
 		this.retry = options.retry !== false
@@ -98,24 +101,24 @@ export class ZBClient {
 			throw new Error('Client is closing. No worker creation allowed!')
 		}
 		const idColor = idColors[this.workerCount++ % idColors.length]
+		// Merge parent client options with worker override
+		options = { ...this.options, ...options }
 		// Give worker its own gRPC connection
-		this.workerGRPCClient =
-			this.workerGRPCClient ||
-			(new GRPCClient({
-				host: this.gatewayAddress,
-				loglevel: this.loglevel!,
-				options: { longPoll: this.options.longPoll },
-				packageName: 'gateway_protocol',
-				protoPath: path.join(__dirname, '../../proto/zeebe.proto'),
-				service: 'Gateway',
-				tls: options.tls === true,
-			}) as ZB.ZBGRPC)
+		const workerGRPCClient = new GRPCClient({
+			host: this.gatewayAddress,
+			loglevel: this.loglevel!,
+			oAuth: this.oAuth,
+			options: { longPoll: this.options.longPoll },
+			packageName: 'gateway_protocol',
+			protoPath: path.join(__dirname, '../../proto/zeebe.proto'),
+			service: 'Gateway',
+		}) as ZB.ZBGRPC
 		const worker = new ZBWorker<
 			WorkerInputVariables,
 			CustomHeaderShape,
 			WorkerOutputVariables
 		>({
-			gRPCClient: this.workerGRPCClient,
+			gRPCClient: workerGRPCClient,
 			id,
 			idColor,
 			onConnectionError,

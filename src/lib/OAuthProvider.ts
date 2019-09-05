@@ -1,0 +1,143 @@
+import * as fs from 'fs'
+import * as got from 'got'
+
+interface Token {
+	access_token: string
+	scope: string
+	expires_in: number
+	token_type: string
+	expiry: number
+}
+
+export interface OAuthProviderConfig {
+	/** OAuth Endpoint URL */
+	url: string
+	/** OAuth Audience */
+	audience: string
+	clientId: string
+	clientSecret: string
+	/** Cache token in memory and on filesystem? */
+	cache: boolean
+}
+export class OAuthProvider {
+	private static cachedTokenFile = (clientId: string) =>
+		`./.oauth-token-${clientId}.json`
+	public audience: string
+	public url: string
+	public clientId: string
+	public clientSecret: string
+	public useFileCache: boolean
+	public tokenCache = new Map()
+
+	constructor({
+		/** OAuth Endpoint URL */
+		url,
+		/** OAuth Audience */
+		audience,
+		clientId,
+		clientSecret,
+		/** Cache token in memory and on filesystem? */
+		cache,
+	}: {
+		url: string
+		audience: string
+		clientId: string
+		clientSecret: string
+		cache: boolean
+	}) {
+		this.url = url
+		this.audience = audience
+		this.clientId = clientId
+		this.clientSecret = clientSecret
+		this.useFileCache = cache
+	}
+
+	public async getToken(): Promise<string> {
+		if (this.tokenCache.has(this.clientId)) {
+			return this.tokenCache.get(this.clientId).access_token
+		}
+		if (this.useFileCache) {
+			const cachedToken = this.fromFileCache(this.clientId)
+			if (cachedToken) {
+				return cachedToken.access_token
+			}
+		}
+		try {
+			const res = await got.post(this.url, {
+				body: JSON.stringify({
+					audience: this.audience,
+					client_id: this.clientId,
+					client_secret: this.clientSecret,
+					grant_type: 'client_credentials',
+				}),
+				headers: {
+					'content-type': 'application/json',
+				},
+			})
+			//   console.log(res.body);
+			const token = JSON.parse(res.body)
+			if (this.useFileCache) {
+				this.toFileCache(token)
+			}
+			this.startExpiryTimer(token)
+
+			return token.access_token
+		} catch (e) {
+			throw new Error(e)
+		}
+	}
+
+	private fromFileCache(clientId: string) {
+		let token: Token
+		const tokenCachedInFile = fs.existsSync(
+			OAuthProvider.cachedTokenFile(clientId)
+		)
+		if (!tokenCachedInFile) {
+			return null
+		}
+		try {
+			token = JSON.parse(
+				fs.readFileSync(OAuthProvider.cachedTokenFile(clientId), 'utf8')
+			)
+
+			if (this.isExpired(token)) {
+				return null
+			}
+			this.startExpiryTimer(token)
+			return token
+		} catch (_) {
+			return null
+		}
+	}
+
+	private toFileCache(token: Token) {
+		const d = new Date()
+		fs.writeFile(
+			OAuthProvider.cachedTokenFile(this.clientId),
+			JSON.stringify({
+				...token,
+				expiry: d.setSeconds(d.getSeconds() + token.expires_in),
+			}),
+			e => {
+				// tslint:disable-next-line
+				console.error(e)
+			}
+		)
+	}
+
+	private isExpired(token: Token) {
+		const d = new Date()
+		return token.expiry <= d.setSeconds(d.getSeconds())
+	}
+
+	private startExpiryTimer(token: Token) {
+		const d = new Date()
+		const current = d.setSeconds(d.getSeconds())
+		const validityPeriod = token.expiry - current * 1000
+		if (validityPeriod <= 0) {
+			this.tokenCache.delete(this.clientId)
+			return
+		}
+		setTimeout(() => this.tokenCache.delete(this.clientId), validityPeriod)
+	}
+}

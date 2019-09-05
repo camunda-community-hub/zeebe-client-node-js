@@ -1,6 +1,7 @@
 import { Chalk } from 'chalk'
 import { ZBWorker } from '../zb/ZBWorker'
 import { GRPCClient } from './GRPCClient'
+import { OAuthProviderConfig } from './OAuthProvider'
 
 export interface KeyedObject {
 	[key: string]: any
@@ -318,7 +319,7 @@ export interface ZBClientOptions {
 	retry?: boolean
 	maxRetries?: number
 	maxRetryTimeout?: number
-	tls?: boolean
+	auth?: OAuthProviderConfig
 	longPoll?: number
 }
 

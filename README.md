@@ -27,6 +27,10 @@ NPM Package version 1.x.x supports Zeebe 0.15/0.16.
 
 Protobuf fields of type `int64` are serialised as type string in the Node library. These fields are serialised as numbers (long) in the Go and Java client. See [grpc/#7229](https://github.com/grpc/grpc/issues/7229) for why the Node library serialises them as string. The Workflow instance key, and other fields that are of type long in other client libraries, are type string in this library. Fields of type `int32` are serialised as type number in the Node library.
 
+## Scaffolding code from a BPM file
+
+You can scaffold your worker code from a BPMN file with the `bin/zeebe-node-cli` command. Pass in the path to the BPMN file, and it will produce a file to implement it.
+
 ## Example Use
 
 ### Add the Library to your Project
@@ -87,14 +91,23 @@ const zbc = new ZB.ZBClient(gatewayAddress, {
 
 Retry is provided by [promise-retry](https://www.npmjs.com/package/promise-retry), and the back-off strategy is simple ^2.
 
-### TLS
+Additionally, the gRPC Client will contiually reconnect when in a failed state.
 
-In case you need to connect to a secured endpoint, you can enable TLS.
+### OAuth
+
+In case you need to connect to a secured endpoint with OAuth (such as Camunda Cloud), you can pass in OAuth credentials. This will enable TLS, and handle the OAuth flow to get / renew a JWT:
 
 ```typescript
-const zbc = new ZB.ZBClient(gatewayAddress, {
-	tls: true,
-})
+const zbc = new ZB.ZBClient("103ca930-6da6-4df7-aa97-941eb1f85040.zeebe.camunda.io:443", {
+	auth: {
+		url: "https://login.cloud.camunda.io/oauth/token",
+		audience: "103ca930-6da6-4df7-aa97-941eb1f85040.zeebe.camunda.io",
+		clientId: "yStuGvJ6a1RQhy8DQpeXJ80yEpar3pXh",
+		clientSecret:
+		"WZahIGHjyj0-oQ7DZ_aH2wwNuZt5O8Sq0ZJTz0OaxfO7D6jaDBZxM_Q-BHRsiGO_",
+		cache: true
+	}
+}
 ```
 
 ### Create a Task Worker
@@ -288,8 +301,6 @@ export enum MessageName = {
     MSG_START_JOB = "MSG-START_JOB"
 };
 ```
-
-## Scaffolding code from a BPM file
 
 ## Logging
 
