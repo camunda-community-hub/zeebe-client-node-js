@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" id="Definitions_062ls39" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Zeebe Modeler" exporterVersion="0.6.0-dev">
+    <bpmn:message id="Message_1ubabn2" name="MSG-START_JOB">
+        <!-- <bpmn:extensionElements>
+            <zeebe:subscription correlationKey="$.__ignored__" />
+        </bpmn:extensionElements> -->
+    </bpmn:message>
+    <bpmn:message id="Message_15lzi4m" name="MSG-EMIT_FRAME">
+        <!-- <bpmn:extensionElements>
+      <zeebe:subscription correlationKey="$.__ignored__" />
+    </bpmn:extensionElements> -->
+    </bpmn:message>
+    <bpmn:process id="msg-start-simple" name="msg-start-simple" isExecutable="true">
+        <bpmn:serviceTask id="ServiceTask_0bkpmqi" name="log">
+            <bpmn:extensionElements>
+                0ex
+                <zeebe:taskDefinition type="console-log-1" />
+                <zeebe:taskHeaders>
+                    <zeebe:header key="message" value="Workflow started via MSG-EMIT_FRAME in" />
+                </zeebe:taskHeaders>
+            </bpmn:extensionElements>
+            <bpmn:incoming>SequenceFlow_1aa2adw</bpmn:incoming>
+            <bpmn:outgoing>SequenceFlow_0a1lo97</bpmn:outgoing>
+        </bpmn:serviceTask>
+        <bpmn:endEvent id="EndEvent_0jx6ajo">
+            <bpmn:incoming>SequenceFlow_0a1lo97</bpmn:incoming>
+        </bpmn:endEvent>
+        <bpmn:startEvent id="StartEvent_0gmfahc" name="MSG-EMIT_FRAME">
+            <bpmn:outgoing>SequenceFlow_1aa2adw</bpmn:outgoing>
+            <bpmn:messageEventDefinition id="MessageEventDefinition_0bzio1u" messageRef="Message_1gdb24q" />
+        </bpmn:startEvent>
+        <bpmn:subProcess id="SubProcess_098c5i1">
+            <bpmn:incoming>SequenceFlow_0dbqibr</bpmn:incoming>
+            <bpmn:outgoing>SequenceFlow_011jntd</bpmn:outgoing>
+            <bpmn:serviceTask id="ServiceTask_06bc177" name="log">
+                <bpmn:extensionElements>
+                    <zeebe:taskDefinition type="console-log" />
+                    <zeebe:taskHeaders>
+                        <zeebe:header key="message" value="Workflow started via MSG-START_JOB in" />
+                    </zeebe:taskHeaders>
+                </bpmn:extensionElements>
+                <bpmn:incoming>SequenceFlow_1ofj9cw</bpmn:incoming>
+                <bpmn:outgoing>SequenceFlow_1dqs52u</bpmn:outgoing>
+            </bpmn:serviceTask>
+            <bpmn:startEvent id="StartEvent_1hgx4va">
+                <bpmn:outgoing>SequenceFlow_1ofj9cw</bpmn:outgoing>
+            </bpmn:startEvent>
+            <bpmn:endEvent id="EndEvent_07pco63">
+                <bpmn:incoming>SequenceFlow_1dqs52u</bpmn:incoming>
+            </bpmn:endEvent>
+            <bpmn:sequenceFlow id="SequenceFlow_1dqs52u" sourceRef="ServiceTask_06bc177" targetRef="EndEvent_07pco63" />
+            <bpmn:sequenceFlow id="SequenceFlow_1ofj9cw" sourceRef="StartEvent_1hgx4va" targetRef="ServiceTask_06bc177" />
+        </bpmn:subProcess>
+        <bpmn:startEvent id="StartEvent_032o2pb" name="MSG-START_JOB">
+            <bpmn:outgoing>SequenceFlow_0dbqibr</bpmn:outgoing>
+            <bpmn:messageEventDefinition id="MessageEventDefinition_199aw1d" messageRef="Message_0w8g3j1" />
+        </bpmn:startEvent>
+        <bpmn:endEvent id="EndEvent_1wsf86q">
+            <bpmn:incoming>SequenceFlow_011jntd</bpmn:incoming>
+        </bpmn:endEvent>
+        <bpmn:sequenceFlow id="SequenceFlow_1aa2adw" sourceRef="StartEvent_0gmfahc" targetRef="ServiceTask_0bkpmqi" />
+        <bpmn:sequenceFlow id="SequenceFlow_0a1lo97" sourceRef="ServiceTask_0bkpmqi" targetRef="EndEvent_0jx6ajo" />
+        <bpmn:sequenceFlow id="SequenceFlow_0dbqibr" sourceRef="StartEvent_032o2pb" targetRef="SubProcess_098c5i1" />
+        <bpmn:sequenceFlow id="SequenceFlow_011jntd" sourceRef="SubProcess_098c5i1" targetRef="EndEvent_1wsf86q" />
+    </bpmn:process>
+    <bpmn:message id="Message_0w8g3j1" name="MSG-START_JOB">
+        <!-- <bpmn:extensionElements>
+            <zeebe:subscription correlationKey="$.__ignored__" />
+        </bpmn:extensionElements> -->
+    </bpmn:message>
+    <bpmn:message id="Message_1gdb24q" name="MSG-EMIT_FRAME-1">
+        <!-- <bpmn:extensionElements>
+            <zeebe:subscription correlationKey="$.__ignored__" />
+        </bpmn:extensionElements> -->
+    </bpmn:message>
+    <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+        <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="msg-start-simple">
+            <bpmndi:BPMNShape id="ServiceTask_0bkpmqi_di" bpmnElement="ServiceTask_0bkpmqi">
+                <dc:Bounds x="214" y="428" width="100" height="80" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="EndEvent_0jx6ajo_di" bpmnElement="EndEvent_0jx6ajo">
+                <dc:Bounds x="364" y="450" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="StartEvent_0gmfahc_di" bpmnElement="StartEvent_0gmfahc">
+                <dc:Bounds x="128" y="450" width="36" height="36" />
+                <bpmndi:BPMNLabel>
+                    <dc:Bounds x="112" y="493" width="71" height="27" />
+                </bpmndi:BPMNLabel>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="SubProcess_098c5i1_di" bpmnElement="SubProcess_098c5i1" isExpanded="true">
+                <dc:Bounds x="223" y="181" width="350" height="200" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="StartEvent_032o2pb_di" bpmnElement="StartEvent_032o2pb">
+                <dc:Bounds x="114" y="263" width="36" height="36" />
+                <bpmndi:BPMNLabel>
+                    <dc:Bounds x="102" y="306" width="63" height="27" />
+                </bpmndi:BPMNLabel>
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="EndEvent_1wsf86q_di" bpmnElement="EndEvent_1wsf86q">
+                <dc:Bounds x="667" y="263" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNEdge id="SequenceFlow_1aa2adw_di" bpmnElement="SequenceFlow_1aa2adw">
+                <di:waypoint x="164" y="468" />
+                <di:waypoint x="214" y="468" />
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge id="SequenceFlow_0a1lo97_di" bpmnElement="SequenceFlow_0a1lo97">
+                <di:waypoint x="314" y="468" />
+                <di:waypoint x="364" y="468" />
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge id="SequenceFlow_0dbqibr_di" bpmnElement="SequenceFlow_0dbqibr">
+                <di:waypoint x="150" y="281" />
+                <di:waypoint x="223" y="281" />
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge id="SequenceFlow_011jntd_di" bpmnElement="SequenceFlow_011jntd">
+                <di:waypoint x="573" y="281" />
+                <di:waypoint x="667" y="281" />
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNShape id="ServiceTask_06bc177_di" bpmnElement="ServiceTask_06bc177">
+                <dc:Bounds x="360" y="244" width="100" height="80" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="StartEvent_1hgx4va_di" bpmnElement="StartEvent_1hgx4va">
+                <dc:Bounds x="262" y="266" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNShape id="EndEvent_07pco63_di" bpmnElement="EndEvent_07pco63">
+                <dc:Bounds x="522" y="266" width="36" height="36" />
+            </bpmndi:BPMNShape>
+            <bpmndi:BPMNEdge id="SequenceFlow_1dqs52u_di" bpmnElement="SequenceFlow_1dqs52u">
+                <di:waypoint x="460" y="284" />
+                <di:waypoint x="522" y="284" />
+            </bpmndi:BPMNEdge>
+            <bpmndi:BPMNEdge id="SequenceFlow_1ofj9cw_di" bpmnElement="SequenceFlow_1ofj9cw">
+                <di:waypoint x="298" y="284" />
+                <di:waypoint x="360" y="284" />
+            </bpmndi:BPMNEdge>
+        </bpmndi:BPMNPlane>
+    </bpmndi:BPMNDiagram>
+</bpmn:definitions>

@@ -2,6 +2,17 @@ import parser = require('fast-xml-parser')
 import fs = require('fs')
 import * as path from 'path'
 
+// Converts, for example, task_type or task-type to TaskType
+function getSafeName(tasktype: string) {
+	return tasktype
+		.split('_')
+		.map(([f, ...r]) => [f.toUpperCase(), ...r].join(''))
+		.join('')
+		.split('-')
+		.map(([f, ...r]) => [f.toUpperCase(), ...r].join(''))
+		.join('')
+}
+
 export class BpmnParser {
 	/**
 	 * Read BPMN files and return an array of one or more parsed BPMN objects.
@@ -36,6 +47,137 @@ export class BpmnParser {
 		return undefined
 	}
 
+	// Produce a starter worker file from a BPMN file
+	public static async scaffold(filename: string) {
+		const bpmnObject = BpmnParser.parseBpmn(filename)[0]
+
+		const taskTypes = await BpmnParser.getTaskTypes(bpmnObject)
+		const interfaces = await BpmnParser.generateConstantsForBpmnFiles(
+			filename
+		)
+
+		const headerInterfaces: { [key: string]: string[] } = {} // mutated in the recursive function
+
+		await scanForHeadersRecursively(bpmnObject)
+
+		const importStmnt = `import { ZBClient, Auth } from "zeebe-node"
+
+const getToken = new Auth().getToken({
+	url: "https://login.cloud.camunda.io/oauth/token",
+	audience: "817d8be9-25e2-42f1-81b8-c8cfbd2adb75.zeebe.camunda.io",
+	clientId: "YaNx4Qf0uQSBcPDW9qQk6Q4SZaRUA7SK",
+	clientSecret:
+		"llKhkB_r7PsfnaWnQVDbdU9aXPAIjhTKiqLwsAySZI6XRgcs0pHofCBqT1j54amF",
+	cache: true
+});
+
+// @TODO Point to your Zeebe contact point
+const zbc = new ZBClient('0.0.0.0', {
+
+}) 
+`
+		const genericWorkflowVariables = `// @TODO Update with the shape of your job variables
+// For better intellisense and type-safety
+export interface WorkflowVariables {
+	[key: string]: any
+}`
+
+		const workers = taskTypes
+			.map(
+				t => `// Worker for tasks of type "${t}"
+${
+	headerInterfaces[t]
+		? headerInterfaces[t].join('|')
+		: 'type ' + getSafeName(t) + 'CustomHeaders = never'
+}
+
+export const ${getSafeName(t)}Worker = zbc.createWorker<
+WorkflowVariables, 
+${getSafeName(t)}CustomHeaders, 
+WorkflowVariables
+>(null, "${t}", (job, complete, worker) => {
+	worker.log(job)
+	complete.success()
+})
+`
+			)
+			.join('\n')
+
+		return `${importStmnt}
+${genericWorkflowVariables}
+${interfaces} 
+${workers}`
+
+		async function scanForHeadersRecursively(obj: object) {
+			if (obj instanceof Object) {
+				for (const k in obj) {
+					if (obj.hasOwnProperty(k)) {
+						if (k === 'bpmn:serviceTask') {
+							const tasks = Array.isArray(obj[k])
+								? obj[k]
+								: [obj[k]]
+							tasks.forEach(t => {
+								let customHeaderNames: string[] | undefined
+								const hasCustomHeaders =
+									t['bpmn:extensionElements'][
+										'zeebe:taskHeaders'
+									]
+								if (hasCustomHeaders) {
+									let customHeaders =
+										hasCustomHeaders['zeebe:header']
+									if (!Array.isArray(customHeaders)) {
+										customHeaders = [customHeaders]
+									}
+									customHeaderNames = customHeaders.map(
+										h => h.attr['@_key']
+									)
+								}
+								const tasktype =
+									t['bpmn:extensionElements'][
+										'zeebe:taskDefinition'
+									].attr['@_type']
+								const headerInterfaceName = getSafeName(
+									tasktype
+								)
+								if (customHeaderNames) {
+									const headerInterfaceDfnBody = customHeaderNames
+										.sort()
+										.map(h => '    ' + h + ': string')
+										.join('\n')
+									const headerInterfaceDfn = `interface ${headerInterfaceName}CustomHeaders {
+${headerInterfaceDfnBody}
+}`
+									if (!headerInterfaces[tasktype]) {
+										headerInterfaces[tasktype] = [
+											headerInterfaceDfn,
+										]
+									} else {
+										if (
+											headerInterfaces[tasktype].filter(
+												d => d === headerInterfaceDfn
+											).length === 0
+										) {
+											headerInterfaces[tasktype].push(
+												`{
+${headerInterfaceDfnBody}
+}`
+											)
+										}
+									}
+								}
+							})
+						} else {
+							// recursive call to scan property
+							await scanForHeadersRecursively(obj[k])
+						}
+					}
+				}
+			} else {
+				// not an Object so obj[k] here is a value
+			}
+		}
+	}
+
 	/**
 	 * Generate TypeScript constants for task types and message names in BPMN files
 	 * @param filenames - a BPMN file path or array of BPMN file paths
@@ -50,31 +192,33 @@ export class BpmnParser {
 		const taskTypes = await BpmnParser.getTaskTypes(parsed)
 		const messageNames = await BpmnParser.getMessageNames(parsed)
 		const files = filenames.map(f => path.basename(f))
-		const taskEnumMembers = taskTypes.map(
-			t =>
-				`\n${t
-					.split('-')
-					.join('_')
-					.toUpperCase()} = "${t}"`
-		)
-		const messageEnumMembers = messageNames.map(
-			m =>
-				`\n${m
-					.split('-')
-					.join('_')
-					.toUpperCase()} = "${m}"`
-		)
+		const taskEnumMembers = taskTypes
+			.map(
+				t =>
+					`    ${t
+						.split('-')
+						.join('_')
+						.toUpperCase()} = "${t}"`
+			)
+			.join(',\n')
+		const messageEnumMembers = messageNames
+			.map(
+				m =>
+					`    ${m
+						.split('-')
+						.join('_')
+						.toUpperCase()} = "${m}"`
+			)
+			.join(',\n')
 		return `
 // Autogenerated constants for ${files}
 
 export enum TaskType {
-    ${taskEnumMembers}
-
+${taskEnumMembers}
 }
 
 export enum MessageName {
-    ${messageEnumMembers}
-
+${messageEnumMembers}
 }
 
 `
@@ -207,3 +351,12 @@ export enum MessageName {
 		}
 	}
 }
+
+const a = 'hello-world_there'
+
+a.split('_')
+	.map(([f, ...r]) => [f.toUpperCase(), ...r].join(''))
+	.join('')
+	.split('-')
+	.map(([f, ...r]) => [f.toUpperCase(), ...r].join(''))
+	.join('')

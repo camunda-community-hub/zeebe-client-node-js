@@ -1,5 +1,7 @@
 import { Chalk } from 'chalk'
 import { ZBWorker } from '../zb/ZBWorker'
+import { GRPCClient } from './GRPCClient'
+import { OAuthProviderConfig } from './OAuthProvider'
 
 export interface KeyedObject {
 	[key: string]: any
@@ -12,10 +14,48 @@ export interface CompleteFn<WorkerOutputVariables> {
 	failure: (errorMessage: string, retries?: number) => void
 }
 
+export interface OperationOptionsWithRetry {
+	maxRetries: number
+	retry: true
+	version?: number
+}
+
+export interface OperationOptionsNoRetry {
+	retry: false
+	version?: number
+}
+
+export function hasRetry(options): options is OperationOptionsWithRetry {
+	return options.retry === true
+}
+
+export function noRetry(options): options is OperationOptionsNoRetry {
+	return options.retry === false
+}
+
+export type OperationOptions =
+	| OperationOptionsWithRetry
+	| OperationOptionsNoRetry
+
+export interface GenericWorkerInputVariables {
+	[key: string]: any
+}
+
+export interface GenericWorkflowVariables {
+	[key: string]: any
+}
+
+export interface GenericWorkerOutputVariables {
+	[key: string]: any
+}
+
+export interface GenericCustomHeaderShape {
+	[key: string]: any
+}
 export type ZBWorkerTaskHandler<
-	WorkerInputVariables = KeyedObject,
-	CustomHeaderShape = KeyedObject,
-	WorkerOutputVariables = WorkerInputVariables
+	WorkerInputVariables = GenericWorkerInputVariables,
+	CustomHeaderShape = GenericWorkerOutputVariables,
+	WorkerOutputVariables = GenericCustomHeaderShape
 > = (
 	job: Job<WorkerInputVariables, CustomHeaderShape>,
 	complete: CompleteFn<WorkerOutputVariables>,
@@ -31,6 +71,8 @@ export interface ZBWorkerLoggerOptions {
 	stdout?: any
 	color?: Chalk
 	namespace?: string | string[]
+	pollMode?: string
+	taskType: string
 }
 
 export type ConnectionErrorHandler = (error: any) => void
@@ -48,6 +90,13 @@ export interface ActivateJobsRequest {
 	timeout: number
 	maxJobsToActivate: number
 	fetchVariable?: string[]
+	/**
+	 * The request will be completed when atleast one job is activated or after the requestTimeout.
+	 * if the requestTimeout = 0, the request will be completed after a default configured timeout in the broker.
+	 * To immediately complete the request when no job is activated set the requestTimeout to a negative value
+	 *
+	 */
+	requestTimeout: number
 }
 
 export interface ActivatedJob {
@@ -117,6 +166,10 @@ export interface ZBWorkerOptions {
 	 * If a handler throws an unhandled exception, if this is set true, the workflow will be failed. Defaults to false.
 	 */
 	failWorkflowOnException?: boolean
+	/**
+	 * Enable debug tracking
+	 */
+	debug?: boolean
 }
 
 export interface CreateWorkflowInstanceRequest<Variables = KeyedObject> {
@@ -266,5 +319,30 @@ export interface ZBClientOptions {
 	retry?: boolean
 	maxRetries?: number
 	maxRetryTimeout?: number
-	tls?: boolean
+	auth?: OAuthProviderConfig
+	longPoll?: number
+}
+
+export interface ZBGRPC extends GRPCClient {
+	completeJobSync: any
+	activateJobsStream: any
+	publishMessageSync(
+		publishMessageRequest: PublishMessageRequest
+	): Promise<void>
+	topologySync(): Promise<TopologyResponse>
+	updateJobRetriesSync(
+		updateJobRetriesRequest: UpdateJobRetriesRequest
+	): Promise<void>
+	deployWorkflowSync(workflows: {
+		workflows: WorkflowRequestObject[]
+	}): Promise<DeployWorkflowResponse>
+	failJobSync(failJobRequest: FailJobRequest): Promise<void>
+	createWorkflowInstanceSync(
+		createWorkflowInstanceRequest: CreateWorkflowInstanceRequest
+	): Promise<CreateWorkflowInstanceResponse>
+	cancelWorkflowInstanceSync(workflowInstanceKey: {
+		workflowInstanceKey: string | number
+	}): Promise<void>
+	setVariablesSync(request: SetVariablesRequest): Promise<void>
+	resolveIncidentSync(incidentKey: string): Promise<void>
 }

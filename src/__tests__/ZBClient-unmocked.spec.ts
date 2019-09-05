@@ -5,7 +5,9 @@ describe('ZBClient constructor', () => {
 		const zbc = new ZBClient('localhoster', { retry: false })
 		expect.assertions(1)
 		try {
-			await zbc.deployWorkflow('./test/hello-world.bpmn')
+			await zbc.deployWorkflow(
+				'./src/__tests__/testdata/hello-world.bpmn'
+			)
 		} catch (e) {
 			expect(e.message.indexOf('14 UNAVAILABLE:')).toEqual(0)
 		}
@@ -25,7 +27,7 @@ describe('ZBClient constructor', () => {
 		console.log(
 			'vvv The gRPC connection failure message below is expected. vvv'
 		)
-		await zbc.deployWorkflow('./test/hello-world.bpmn')
+		await zbc.deployWorkflow('./src/__tests__/testdata/hello-world.bpmn')
 	})
 	it('throws an exception when workflowInstanceKey is malformed', async () => {
 		const zbc = new ZBClient('localhoster', { retry: false })
