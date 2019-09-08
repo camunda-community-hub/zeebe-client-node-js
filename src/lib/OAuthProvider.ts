@@ -17,8 +17,9 @@ export interface OAuthProviderConfig {
 	clientId: string
 	clientSecret: string
 	/** Cache token in memory and on filesystem? */
-	cache: boolean
+	cacheOnDisk: boolean
 }
+
 export class OAuthProvider {
 	private static cachedTokenFile = (clientId: string) =>
 		`./.oauth-token-${clientId}.json`
@@ -27,7 +28,7 @@ export class OAuthProvider {
 	public clientId: string
 	public clientSecret: string
 	public useFileCache: boolean
-	public tokenCache = new Map()
+	public tokenCache = {}
 
 	constructor({
 		/** OAuth Endpoint URL */
@@ -37,24 +38,24 @@ export class OAuthProvider {
 		clientId,
 		clientSecret,
 		/** Cache token in memory and on filesystem? */
-		cache,
+		cacheOnDisk,
 	}: {
 		url: string
 		audience: string
 		clientId: string
 		clientSecret: string
-		cache: boolean
+		cacheOnDisk: boolean
 	}) {
 		this.url = url
 		this.audience = audience
 		this.clientId = clientId
 		this.clientSecret = clientSecret
-		this.useFileCache = cache
+		this.useFileCache = cacheOnDisk
 	}
 
 	public async getToken(): Promise<string> {
-		if (this.tokenCache.has(this.clientId)) {
-			return this.tokenCache.get(this.clientId).access_token
+		if (this.tokenCache[this.clientId]) {
+			return this.tokenCache[this.clientId].access_token
 		}
 		if (this.useFileCache) {
 			const cachedToken = this.fromFileCache(this.clientId)
@@ -79,6 +80,7 @@ export class OAuthProvider {
 			if (this.useFileCache) {
 				this.toFileCache(token)
 			}
+			this.tokenCache[this.clientId] = token
 			this.startExpiryTimer(token)
 
 			return token.access_token
@@ -112,13 +114,16 @@ export class OAuthProvider {
 
 	private toFileCache(token: Token) {
 		const d = new Date()
+		const file = OAuthProvider.cachedTokenFile(this.clientId)
 		fs.writeFile(
-			OAuthProvider.cachedTokenFile(this.clientId),
+			file,
 			JSON.stringify({
 				...token,
 				expiry: d.setSeconds(d.getSeconds() + token.expires_in),
 			}),
 			e => {
+				// tslint:disable-next-line
+				console.log('Error writing OAuth token to file' + file)
 				// tslint:disable-next-line
 				console.error(e)
 			}
@@ -135,9 +140,9 @@ export class OAuthProvider {
 		const current = d.setSeconds(d.getSeconds())
 		const validityPeriod = token.expiry - current * 1000
 		if (validityPeriod <= 0) {
-			this.tokenCache.delete(this.clientId)
+			delete this.tokenCache[this.clientId]
 			return
 		}
-		setTimeout(() => this.tokenCache.delete(this.clientId), validityPeriod)
+		setTimeout(() => delete this.tokenCache[this.clientId], validityPeriod)
 	}
 }

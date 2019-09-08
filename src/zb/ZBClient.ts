@@ -35,6 +35,7 @@ export class ZBClient {
 	private maxRetryTimeout: number = 5000
 	private loglevel: ZB.Loglevel
 	private oAuth?: OAuthProvider
+	private useTLS: boolean
 
 	constructor(gatewayAddress: string, options: ZB.ZBClientOptions = {}) {
 		if (!gatewayAddress) {
@@ -58,7 +59,10 @@ export class ZBClient {
 
 		this.gatewayAddress = `${url.hostname}:${url.port}`
 
-		this.oAuth = options.auth ? new OAuthProvider(options.auth) : undefined
+		this.oAuth = options.oAuth
+			? new OAuthProvider(options.oAuth)
+			: undefined
+		this.useTLS = options.useTLS !== false && !options.oAuth
 
 		this.gRPCClient = new GRPCClient({
 			host: this.gatewayAddress,
@@ -68,6 +72,7 @@ export class ZBClient {
 			packageName: 'gateway_protocol',
 			protoPath: path.join(__dirname, '../../proto/zeebe.proto'),
 			service: 'Gateway',
+			useTLS: this.useTLS,
 		}) as ZB.ZBGRPC
 
 		this.retry = options.retry !== false
@@ -112,6 +117,7 @@ export class ZBClient {
 			packageName: 'gateway_protocol',
 			protoPath: path.join(__dirname, '../../proto/zeebe.proto'),
 			service: 'Gateway',
+			useTLS: this.useTLS,
 		}) as ZB.ZBGRPC
 		const worker = new ZBWorker<
 			WorkerInputVariables,
