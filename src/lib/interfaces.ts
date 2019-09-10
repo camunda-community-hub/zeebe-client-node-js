@@ -11,7 +11,7 @@ export type Loglevel = 'INFO' | 'DEBUG' | 'NONE' | 'ERROR'
 export interface CompleteFn<WorkerOutputVariables> {
 	(updatedVariables?: Partial<WorkerOutputVariables>): boolean
 	/**
-	 * Complete the job with a success, optionallu passing in a state update to merge
+	 * Complete the job with a success, optionally passing in a state update to merge
 	 * with the workflow variables on the broker.
 	 */
 	success: (updatedVariables?: Partial<WorkerOutputVariables>) => boolean
