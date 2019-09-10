@@ -10,7 +10,16 @@ export type Loglevel = 'INFO' | 'DEBUG' | 'NONE' | 'ERROR'
 
 export interface CompleteFn<WorkerOutputVariables> {
 	(updatedVariables?: Partial<WorkerOutputVariables>): boolean
+	/**
+	 * Complete the job with a success, optionallu passing in a state update to merge
+	 * with the workflow variables on the broker.
+	 */
 	success: (updatedVariables?: Partial<WorkerOutputVariables>) => boolean
+	/**
+	 * Fail the job with an informative message as to the cause. Optionally pass in a
+	 * value remaining retries. If no value is passed for retries then the current retry
+	 * count is decremented. Pass in `0`for retries to raise an incident in Operate.
+	 */
 	failure: (errorMessage: string, retries?: number) => void
 }
 
@@ -23,14 +32,6 @@ export interface OperationOptionsWithRetry {
 export interface OperationOptionsNoRetry {
 	retry: false
 	version?: number
-}
-
-export function hasRetry(options): options is OperationOptionsWithRetry {
-	return options.retry === true
-}
-
-export function noRetry(options): options is OperationOptionsNoRetry {
-	return options.retry === false
 }
 
 export type OperationOptions =
@@ -85,10 +86,28 @@ export interface ActivateJobsResponse {
  * Request object to send the broker to request jobs for the worker.
  */
 export interface ActivateJobsRequest {
+	/**
+	 * The job type, as defined in the BPMN process (e.g. <zeebe:taskDefinition
+	 * type="payment-service" />)
+	 */
 	type: string
+	/** The name of the worker activating the jobs, mostly used for logging purposes */
 	worker: string
+	/**
+	 * The duration the broker allows for jobs activated by this call to complete
+	 * before timing them out releasing them for retry on the broker.
+	 * The broker checks time outs every 30 seconds, so the broker timeout is guaranteed in at-most timeout + 29s
+	 * be guaranteed.
+	 */
 	timeout: number
+	/**
+	 * The maximum jobs to activate by this request
+	 */
 	maxJobsToActivate: number
+	/**
+	 * A list of variables to fetch as the job variables; if empty, all visible variables at
+	 * the time of activation for the scope of the job will be returned
+	 */
 	fetchVariable?: string[]
 	/**
 	 * The request will be completed when atleast one job is activated or after the requestTimeout.
@@ -100,44 +119,84 @@ export interface ActivateJobsRequest {
 }
 
 export interface ActivatedJob {
+	/** The key, a unique identifier for the job */
 	readonly key: string
+	/**
+	 * The job type, as defined in the BPMN process (e.g. <zeebe:taskDefinition
+	 * type="payment-service" />)
+	 */
 	readonly type: string
+	/** The job's workflow instance key */
 	readonly workflowInstanceKey: string
+	/** The bpmn process ID of the job workflow definition */
 	readonly bpmnProcessId: string
+	/** The version of the job workflow definition */
 	readonly workflowDefinitionVersion: number
+	/** The key of the job workflow definition */
 	readonly workflowKey: string
+	/** The associated task element ID */
 	readonly elementId: string
+	/**
+	 * The unique key identifying the associated task, unique within the scope of the
+	 * workflow instance
+	 */
 	readonly elementInstanceKey: string
 	/**
-	 * JSON object as a string
+	 * A set of custom headers defined during modelling
 	 */
 	readonly customHeaders: string
+	/** The name of the worker that activated this job */
 	readonly worker: string
+	/* The amount of retries left to this job (should always be positive) */
 	readonly retries: number
 	/**
-	 * epoch milliseconds
+	 * When the job will timeout on the broker if it is not completed by this worker.
+	 * In epoch milliseconds
 	 */
 	readonly deadline: string
 	/**
-	 * JSON object as a string
+	 * All visible variables in the task scope, computed at activation time, constrained by any
+	 * fetchVariables value in the ActivateJobRequest.
 	 */
 	readonly variables: string
 }
 
 export interface Job<Variables = KeyedObject, CustomHeaders = KeyedObject> {
+	/** The key, a unique identifier for the job */
 	readonly key: string
+	/**
+	 * The job type, as defined in the BPMN process (e.g. <zeebe:taskDefinition
+	 * type="payment-service" />)
+	 */
 	readonly type: string
+	/** The job's workflow instance key */
 	readonly workflowInstanceKey: string
+	/** The bpmn process ID of the job workflow definition */
 	readonly bpmnProcessId: string
+	/** The version of the job workflow defini` tion */
 	readonly workflowDefinitionVersion: number
+	/** The key of the job workflow definition */
 	readonly workflowKey: string
+	/** The associated task element ID */
 	readonly elementId: string
+	/**
+	 * The unique key identifying the associated task, unique within the scope of the
+	 * workflow instance
+	 */
 	readonly elementInstanceKey: string
+	/**
+	 * A set of custom headers defined during modelling
+	 */
 	readonly customHeaders: CustomHeaders
+	/** The name of the worker that activated this job */
 	readonly worker: string
+	/* The amount of retries left to this job (should always be positive) */
 	readonly retries: number
 	// epoch milliseconds
 	readonly deadline: string
+	/**
+	 * All visible variables in the task scope, computed at activation time.
+	 */
 	readonly variables: Variables
 }
 
@@ -147,7 +206,8 @@ export interface ZBWorkerOptions {
 	 */
 	maxJobsToActivate?: number
 	/**
-	 * Max ms to allow before time out of a task given to this worker. Default: 1000ms.
+	 * Max ms to allow before time out of a task given to this worker. Default: 30000ms.
+	 * The broker checks deadline timeouts every 30 seconds, so an
 	 */
 	timeout?: number
 	/**
@@ -179,9 +239,26 @@ export interface CreateWorkflowInstanceRequest<Variables = KeyedObject> {
 }
 
 export interface CreateWorkflowInstanceResponse {
+	/**
+	 * The unique key identifying the workflow definition (e.g. returned from a workflow
+	 * in the DeployWorkflowResponse message)
+	 */
 	readonly workflowKey: string
+	/**
+	 * The BPMN process ID of the workflow definition
+	 */
 	readonly bpmnProcessId: string
+	/**
+	 * The version of the process; set to -1 to use the latest version
+	 */
 	readonly version: number
+	/**
+	 * Stringified JSON document that will instantiate the variables for the root variable scope of the
+	 * workflow instance; it must be a JSON object, as variables will be mapped in a
+	 * key-value fashion. e.g. { "a": 1, "b": 2 } will create two variables, named "a" and
+	 * "b" respectively, with their associated values. [{ "a": 1, "b": 2 }] would not be a\
+	 * valid argument, as the root of the JSON document is an array and not an object.
+	 */
 	readonly workflowInstanceKey: string
 }
 

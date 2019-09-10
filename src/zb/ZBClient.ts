@@ -296,7 +296,7 @@ export class ZBClient {
 			version,
 		}
 
-		return ZB.noRetry(options)
+		return options.retry === false
 			? this.executeOperation(() =>
 					this.gRPCClient.createWorkflowInstanceSync(
 						stringifyVariables(createWorkflowInstanceRequest)
