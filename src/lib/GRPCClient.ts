@@ -63,6 +63,7 @@ export class GRPCClient extends EventEmitter {
 		packageName,
 		protoPath,
 		service,
+		useTLS,
 	}: {
 		host: string
 		loglevel: Loglevel
@@ -71,6 +72,7 @@ export class GRPCClient extends EventEmitter {
 		packageName: string
 		protoPath: string
 		service: string
+		useTLS: boolean
 	}) {
 		super()
 		this.oAuth = oAuth
@@ -95,7 +97,7 @@ export class GRPCClient extends EventEmitter {
 
 		const proto = loadPackageDefinition(this.packageDefinition)[packageName]
 		const listMethods = this.packageDefinition[`${packageName}.${service}`]
-		const channelCredentials = oAuth
+		const channelCredentials = useTLS
 			? credentials.createSsl()
 			: credentials.createInsecure()
 		this.client = new proto[service](host, channelCredentials, {

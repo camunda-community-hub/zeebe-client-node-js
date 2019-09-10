@@ -93,22 +93,34 @@ Retry is provided by [promise-retry](https://www.npmjs.com/package/promise-retry
 
 Additionally, the gRPC Client will contiually reconnect when in a failed state.
 
+### TLS
+
+Enable a secure connection by setting `useTLS: true`:
+
+```typescript
+const zbc = new ZB.ZBClient(tlsProxiedGatewayAddress, {
+	useTLS: true,
+})
+```
+
 ### OAuth
 
-In case you need to connect to a secured endpoint with OAuth (such as Camunda Cloud), you can pass in OAuth credentials. This will enable TLS, and handle the OAuth flow to get / renew a JWT:
+In case you need to connect to a secured endpoint with OAuth (such as Camunda Cloud), you can pass in OAuth credentials. This will enable TLS (unless you explicitly disable it with `useTLS: false`), and handle the OAuth flow to get / renew a JWT:
 
 ```typescript
 const zbc = new ZB.ZBClient("103ca930-6da6-4df7-aa97-941eb1f85040.zeebe.camunda.io:443", {
-	auth: {
+	oAuth: {
 		url: "https://login.cloud.camunda.io/oauth/token",
 		audience: "103ca930-6da6-4df7-aa97-941eb1f85040.zeebe.camunda.io",
 		clientId: "yStuGvJ6a1RQhy8DQpeXJ80yEpar3pXh",
 		clientSecret:
 		"WZahIGHjyj0-oQ7DZ_aH2wwNuZt5O8Sq0ZJTz0OaxfO7D6jaDBZxM_Q-BHRsiGO_",
-		cache: true
+		cacheOnDisk: true
 	}
 }
 ```
+
+The `cacheOnDisk` option will cache the token on disk, which can be useful in development if you are restarting the service frequently.
 
 ### Create a Task Worker
 

@@ -10,6 +10,7 @@ import * as ZB from '../lib/interfaces'
 import { OAuthProvider } from '../lib/OAuthProvider'
 // tslint:disable-next-line: no-duplicate-imports
 import { Utils } from '../lib/utils'
+import { ZBLogger } from '../lib/ZBLogger'
 import { ZBWorker } from './ZBWorker'
 
 const DEFAULT_GATEWAY_PORT = '26500'
@@ -34,7 +35,9 @@ export class ZBClient {
 	private maxRetries: number = 50
 	private maxRetryTimeout: number = 5000
 	private loglevel: ZB.Loglevel
+	private logger: ZBLogger
 	private oAuth?: OAuthProvider
+	private useTLS: boolean
 
 	constructor(gatewayAddress: string, options: ZB.ZBClientOptions = {}) {
 		if (!gatewayAddress) {
@@ -47,7 +50,10 @@ export class ZBClient {
 			(process.env.ZB_NODE_LOG_LEVEL as ZB.Loglevel) ||
 			options.loglevel ||
 			'INFO'
-
+		this.logger = new ZBLogger({
+			loglevel: this.loglevel,
+			taskType: 'ZBClient',
+		})
 		const includesProtocol = gatewayAddress.includes('://')
 		if (!includesProtocol) {
 			gatewayAddress = `grpc://${gatewayAddress}`
@@ -58,7 +64,11 @@ export class ZBClient {
 
 		this.gatewayAddress = `${url.hostname}:${url.port}`
 
-		this.oAuth = options.auth ? new OAuthProvider(options.auth) : undefined
+		this.oAuth = options.oAuth
+			? new OAuthProvider(options.oAuth)
+			: undefined
+		this.useTLS = options.useTLS === true || !!options.oAuth
+		this.logger.info(`Use TLS: ${this.useTLS}`)
 
 		this.gRPCClient = new GRPCClient({
 			host: this.gatewayAddress,
@@ -68,6 +78,7 @@ export class ZBClient {
 			packageName: 'gateway_protocol',
 			protoPath: path.join(__dirname, '../../proto/zeebe.proto'),
 			service: 'Gateway',
+			useTLS: this.useTLS,
 		}) as ZB.ZBGRPC
 
 		this.retry = options.retry !== false
@@ -112,6 +123,7 @@ export class ZBClient {
 			packageName: 'gateway_protocol',
 			protoPath: path.join(__dirname, '../../proto/zeebe.proto'),
 			service: 'Gateway',
+			useTLS: this.useTLS,
 		}) as ZB.ZBGRPC
 		const worker = new ZBWorker<
 			WorkerInputVariables,
@@ -290,7 +302,7 @@ export class ZBClient {
 			version,
 		}
 
-		return ZB.noRetry(options)
+		return options.retry === false
 			? this.executeOperation(() =>
 					this.gRPCClient.createWorkflowInstanceSync(
 						stringifyVariables(createWorkflowInstanceRequest)
