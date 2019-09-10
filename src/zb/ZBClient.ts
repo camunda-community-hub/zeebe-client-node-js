@@ -10,6 +10,7 @@ import * as ZB from '../lib/interfaces'
 import { OAuthProvider } from '../lib/OAuthProvider'
 // tslint:disable-next-line: no-duplicate-imports
 import { Utils } from '../lib/utils'
+import { ZBLogger } from '../lib/ZBLogger'
 import { ZBWorker } from './ZBWorker'
 
 const DEFAULT_GATEWAY_PORT = '26500'
@@ -34,6 +35,7 @@ export class ZBClient {
 	private maxRetries: number = 50
 	private maxRetryTimeout: number = 5000
 	private loglevel: ZB.Loglevel
+	private logger: ZBLogger
 	private oAuth?: OAuthProvider
 	private useTLS: boolean
 
@@ -48,7 +50,10 @@ export class ZBClient {
 			(process.env.ZB_NODE_LOG_LEVEL as ZB.Loglevel) ||
 			options.loglevel ||
 			'INFO'
-
+		this.logger = new ZBLogger({
+			loglevel: this.loglevel,
+			taskType: 'ZBClient',
+		})
 		const includesProtocol = gatewayAddress.includes('://')
 		if (!includesProtocol) {
 			gatewayAddress = `grpc://${gatewayAddress}`
@@ -62,7 +67,8 @@ export class ZBClient {
 		this.oAuth = options.oAuth
 			? new OAuthProvider(options.oAuth)
 			: undefined
-		this.useTLS = options.useTLS !== false && !options.oAuth
+		this.useTLS = options.useTLS === true || !!options.oAuth
+		this.logger.info(`Use TLS: ${this.useTLS}`)
 
 		this.gRPCClient = new GRPCClient({
 			host: this.gatewayAddress,
