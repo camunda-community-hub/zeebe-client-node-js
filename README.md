@@ -105,33 +105,85 @@ const zbc = new ZB.ZBClient(tlsProxiedGatewayAddress, {
 
 ### OAuth
 
-In case you need to connect to a secured endpoint with OAuth (such as Camunda Cloud), you can pass in OAuth credentials. This will enable TLS (unless you explicitly disable it with `useTLS: false`), and handle the OAuth flow to get / renew a JWT:
+In case you need to connect to a secured endpoint with OAuth, you can pass in OAuth credentials. This will enable TLS (unless you explicitly disable it with `useTLS: false`), and handle the OAuth flow to get / renew a JWT:
 
 ```typescript
-const zbc = new ZB.ZBClient("103ca930-6da6-4df7-aa97-941eb1f85040.zeebe.camunda.io:443", {
+const zbc = new ZB.ZBClient("my-secure-broker.io:443", {
 	oAuth: {
-		url: "https://login.cloud.camunda.io/oauth/token",
-		audience: "103ca930-6da6-4df7-aa97-941eb1f85040.zeebe.camunda.io",
-		clientId: "yStuGvJ6a1RQhy8DQpeXJ80yEpar3pXh",
+		url: "https://your-auth-endpoint/oauth/token",
+		audience: "my-secure-broker.io",
+		clientId: "myClientId",
 		clientSecret:
-		"WZahIGHjyj0-oQ7DZ_aH2wwNuZt5O8Sq0ZJTz0OaxfO7D6jaDBZxM_Q-BHRsiGO_",
-		cacheOnDisk: true
+		"randomClientSecret",
+		cacheOnDisk: false
 	}
 }
 ```
 
 The `cacheOnDisk` option will cache the token on disk, which can be useful in development if you are restarting the service frequently.
 
+### Camunda Cloud
+
+You can connect to Camunda Client by using the `camundaCloud` configuration option, using the `clusterId`, `clientSecret`, and `clientId` from the Camunda Cloud Console, like this:
+
+```typescript
+const zbc = new ZB.ZBClient({
+	camundaCloud: {
+		clientId,
+		clientSecret,
+		clusterId,
+	},
+})
+```
+
+That's it! Under the hood, the client lib will construct the OAuth configuration for Camunda Cloud and set the gateway address and port for you.
+
+## Zero-Conf constructor
+
+The ZBClient has a 0-parameter constructor that takes the config from the environment. This is useful for injecting secrets into your app via the environment, and switching between development and production environments with no change to code.
+
+To use the zero-conf constructor, you create the client like this:
+
+```typescript
+const zbc = new ZBClient()
+```
+
+With no relevant environment variables set, it will default to localhost on the default port with no TLS.
+
+The following environment variable configurations are possible with the Zero-conf constructor:
+
+Camunda Cloud:
+
+```
+ZEEBE_CAMUNDA_CLOUD_CLUSTER_ID
+ZEEBE_CLIENT_SECRET
+ZEEBE_CLIENT_ID
+```
+
+Self-hosted or local broker (no TLS or OAuth):
+
+```
+ZEEBE_GATEWAY_ADDRESS
+```
+
+Self-hosted or local broker with OAuth + TLS:
+
+```
+ZEEBE_CLIENT_ID
+ZEEBE_CLIENT_SECRET
+ZEEBE_TOKEN_AUDIENCE
+ZEEBE_AUTHORIZATION_SERVER_URL
+ZEEBE_GATEWAY_ADDRESS
+```
+
 ### Create a Task Worker
 
 ```javascript
 const ZB = require('zeebe-node')
 
-;(async () => {
-	const zbc = new ZB.ZBClient('localhost:26500')
+const zbc = new ZB.ZBClient('localhost:26500')
 
-	const zbWorker = zbc.createWorker('test-worker', 'demo-service', handler)
-})()
+const zbWorker = zbc.createWorker('test-worker', 'demo-service', handler)
 
 function handler(job, complete) {
 	console.log('Task variables', job.variables)

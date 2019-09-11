@@ -390,6 +390,13 @@ export interface GetWorkflowResponse {
 	readonly bpmnXml: string
 }
 
+export interface CamundaCloudConfig {
+	clusterId: string
+	clientId: string
+	clientSecret: string
+	cacheOnDisk?: boolean
+}
+
 export interface ZBClientOptions {
 	loglevel?: Loglevel
 	stdout?: any
@@ -399,6 +406,9 @@ export interface ZBClientOptions {
 	oAuth?: OAuthProviderConfig
 	useTLS?: boolean
 	longPoll?: number
+	camundaCloud?: CamundaCloudConfig
+	hostname?: string
+	port?: string
 }
 
 export interface ZBGRPC extends GRPCClient {
