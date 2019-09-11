@@ -124,7 +124,7 @@ The `cacheOnDisk` option will cache the token on disk, which can be useful in de
 
 ### Camunda Cloud
 
-You can connect to Camunda Client by using the `camundaCloud` configuration option, using the `clusterId`, `clientSecret`, and `clientId` from the Camunda Cloud Console, like this:
+You can connect to Camunda Cloud by using the `camundaCloud` configuration option, using the `clusterId`, `clientSecret`, and `clientId` from the Camunda Cloud Console, like this:
 
 ```typescript
 const zbc = new ZB.ZBClient({
