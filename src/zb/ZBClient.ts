@@ -2,18 +2,15 @@ import chalk from 'chalk'
 import * as fs from 'fs'
 import * as path from 'path'
 import promiseRetry from 'promise-retry'
-import { parse } from 'url'
 import { v4 as uuid } from 'uuid'
 import { BpmnParser, stringifyVariables } from '../lib'
+import { ConfigurationHydrator } from '../lib/ConfigurationHydrator'
 import { GRPCClient } from '../lib/GRPCClient'
 import * as ZB from '../lib/interfaces'
 import { OAuthProvider } from '../lib/OAuthProvider'
 // tslint:disable-next-line: no-duplicate-imports
 import { Utils } from '../lib/utils'
-import { ZBLogger } from '../lib/ZBLogger'
 import { ZBWorker } from './ZBWorker'
-
-const DEFAULT_GATEWAY_PORT = '26500'
 
 const idColors = [
 	chalk.yellow,
@@ -24,51 +21,60 @@ const idColors = [
 ]
 
 export class ZBClient {
+	private static readonly DEFAULT_MAX_RETRIES = 50
+	private static readonly DEFAULT_MAX_RETRY_TIMEOUT = 5000
 	public gatewayAddress: string
+	public loglevel: ZB.Loglevel
 	private closePromise?: Promise<any>
 	private closing = false
+	// A gRPC channel for the ZBClient to execute commands on
 	private gRPCClient: ZB.ZBGRPC
 	private options: ZB.ZBClientOptions
 	private workerCount = 0
 	private workers: Array<ZBWorker<any, any, any>> = []
 	private retry: boolean
-	private maxRetries: number = 50
-	private maxRetryTimeout: number = 5000
-	private loglevel: ZB.Loglevel
-	private logger: ZBLogger
+	private maxRetries: number
+	private maxRetryTimeout: number
 	private oAuth?: OAuthProvider
 	private useTLS: boolean
 
-	constructor(gatewayAddress: string, options: ZB.ZBClientOptions = {}) {
-		if (!gatewayAddress) {
-			throw new Error(
-				'Must provide a gateway address string to constructor'
-			)
+	/**
+	 *
+	 * @param options Zero-conf constructor. The entire ZBClient connection config can be passed in via the environment.
+	 */
+	constructor(options?: ZB.ZBClientOptions)
+	constructor(gatewayAddress: string, options?: ZB.ZBClientOptions)
+	constructor(
+		gatewayAddress?: string | ZB.ZBClientOptions,
+		options?: ZB.ZBClientOptions
+	) {
+		if (typeof gatewayAddress === 'object') {
+			options = gatewayAddress
+			gatewayAddress = undefined
 		}
-		this.options = options ? options : {}
+		const opts = options ? options : {}
+		this.options = {
+			...opts,
+			retry: opts.retry !== false,
+		}
 		this.loglevel =
 			(process.env.ZB_NODE_LOG_LEVEL as ZB.Loglevel) ||
-			options.loglevel ||
+			this.options.loglevel ||
 			'INFO'
-		this.logger = new ZBLogger({
-			loglevel: this.loglevel,
-			taskType: 'ZBClient',
-		})
-		const includesProtocol = gatewayAddress.includes('://')
-		if (!includesProtocol) {
-			gatewayAddress = `grpc://${gatewayAddress}`
-		}
-		const url = parse(gatewayAddress)
-		url.port = url.port || DEFAULT_GATEWAY_PORT
-		url.hostname = url.hostname || url.path
 
-		this.gatewayAddress = `${url.hostname}:${url.port}`
+		this.options = ConfigurationHydrator.configure(
+			gatewayAddress,
+			this.options
+		)
 
-		this.oAuth = options.oAuth
-			? new OAuthProvider(options.oAuth)
+		this.gatewayAddress = `${this.options.hostname}:${this.options.port}`
+
+		this.oAuth = this.options.oAuth
+			? new OAuthProvider(this.options.oAuth)
 			: undefined
-		this.useTLS = options.useTLS === true || !!options.oAuth
-		this.logger.info(`Use TLS: ${this.useTLS}`)
+		this.useTLS =
+			this.options.useTLS === true ||
+			(!!this.options.oAuth && this.options.useTLS !== false)
 
 		this.gRPCClient = new GRPCClient({
 			host: this.gatewayAddress,
@@ -81,9 +87,11 @@ export class ZBClient {
 			useTLS: this.useTLS,
 		}) as ZB.ZBGRPC
 
-		this.retry = options.retry !== false
-		this.maxRetries = options.maxRetries || this.maxRetries
-		this.maxRetryTimeout = options.maxRetryTimeout || this.maxRetryTimeout
+		this.retry = this.options.retry !== false
+		this.maxRetries =
+			this.options.maxRetries || ZBClient.DEFAULT_MAX_RETRIES
+		this.maxRetryTimeout =
+			this.options.maxRetryTimeout || ZBClient.DEFAULT_MAX_RETRY_TIMEOUT
 	}
 
 	/**

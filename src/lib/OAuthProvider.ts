@@ -1,6 +1,9 @@
 import * as fs from 'fs'
 import * as got from 'got'
 
+import os = require('os')
+const homedir = os.homedir()
+
 interface Token {
 	access_token: string
 	scope: string
@@ -21,8 +24,9 @@ export interface OAuthProviderConfig {
 }
 
 export class OAuthProvider {
+	private static readonly cacheDir = `${homedir}/.camunda`
 	private static cachedTokenFile = (clientId: string) =>
-		`./.oauth-token-${clientId}.json`
+		`${OAuthProvider.cacheDir}/oauth-token-${clientId}.json`
 	public audience: string
 	public url: string
 	public clientId: string
@@ -64,13 +68,14 @@ export class OAuthProvider {
 			}
 		}
 		try {
+			const body = JSON.stringify({
+				audience: this.audience,
+				client_id: this.clientId,
+				client_secret: this.clientSecret,
+				grant_type: 'client_credentials',
+			})
 			const res = await got.post(this.url, {
-				body: JSON.stringify({
-					audience: this.audience,
-					client_id: this.clientId,
-					client_secret: this.clientSecret,
-					grant_type: 'client_credentials',
-				}),
+				body,
 				headers: {
 					'content-type': 'application/json',
 				},
@@ -115,6 +120,9 @@ export class OAuthProvider {
 	private toFileCache(token: Token) {
 		const d = new Date()
 		const file = OAuthProvider.cachedTokenFile(this.clientId)
+		if (!fs.existsSync(OAuthProvider.cacheDir)) {
+			fs.mkdirSync(OAuthProvider.cacheDir)
+		}
 		fs.writeFile(
 			file,
 			JSON.stringify({
@@ -122,6 +130,9 @@ export class OAuthProvider {
 				expiry: d.setSeconds(d.getSeconds() + token.expires_in),
 			}),
 			e => {
+				if (!e) {
+					return
+				}
 				// tslint:disable-next-line
 				console.log('Error writing OAuth token to file' + file)
 				// tslint:disable-next-line
