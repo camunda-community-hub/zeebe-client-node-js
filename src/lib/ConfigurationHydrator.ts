@@ -61,14 +61,24 @@ export class ConfigurationHydrator {
 		if (explicitGateway) {
 			return {}
 		}
+		// We can either take a simple clusterId, or else the whole Zeebe Address
+		// This env var is Node-client specific
 		const clusterId = process.env.ZEEBE_CAMUNDA_CLOUD_CLUSTER_ID
+		// This env var is compatible with zbctl and the Java and Go clients
+		const zeebeAddress = process.env.ZEEBE_ADDRESS
+		const name = clusterId ? clusterId : zeebeAddress
+		const hostname = `${ConfigurationHydrator.justClusterId(
+			name
+		)}.zeebe.camunda.io`
+		const audience = hostname
+
 		const clientId = process.env.ZEEBE_CLIENT_ID
 		const clientSecret = process.env.ZEEBE_CLIENT_SECRET
-		return clusterId
+		return clientId
 			? {
-					hostname: `${clusterId}.zeebe.camunda.io`,
+					hostname,
 					oAuth: {
-						audience: `${clusterId}.zeebe.camunda.io`,
+						audience,
 						cacheOnDisk: true,
 						clientId: clientId!,
 						clientSecret: clientSecret!,
@@ -81,7 +91,10 @@ export class ConfigurationHydrator {
 	}
 
 	private static getGatewayFromEnvironment() {
-		const connectionString = process.env.ZEEBE_GATEWAY_ADDRESS
+		// ZEEBE_GATEWAY_ADDRESS is for backward compatibility. ZEEBE_ADDRESS is for compatibility with
+		// the Java / Go clients (including zbctl)
+		const connectionString =
+			process.env.ZEEBE_GATEWAY_ADDRESS || process.env.ZEEBE_ADDRESS
 		return connectionString
 			? ConfigurationHydrator.decodeConnectionString(connectionString)
 			: {}
@@ -112,11 +125,14 @@ export class ConfigurationHydrator {
 	private static getCamundaCloudConfig(options: ZB.ZBClientOptions = {}) {
 		if (options.camundaCloud) {
 			const { camundaCloud } = options
+			const clusterId = ConfigurationHydrator.justClusterId(
+				camundaCloud.clusterId
+			)
 			const configuration: ZB.ZBClientOptions = {
 				...options,
-				hostname: `${camundaCloud.clusterId}.zeebe.camunda.io`,
+				hostname: `${clusterId}.zeebe.camunda.io`,
 				oAuth: {
-					audience: `${camundaCloud.clusterId}.zeebe.camunda.io`,
+					audience: `${clusterId}.zeebe.camunda.io`,
 					cacheOnDisk: camundaCloud.cacheOnDisk !== false,
 					clientId: camundaCloud.clientId,
 					clientSecret: camundaCloud.clientSecret,
@@ -128,5 +144,14 @@ export class ConfigurationHydrator {
 			return configuration
 		}
 		return options
+	}
+
+	private static justClusterId(maybeClusterId: string | undefined) {
+		// 'Be liberal in what you accept and conservative in what you emit'
+		// Here we account for users pasting in either the expected clusterId
+		// or the entire Zeebe ContactPoint from the Cloud Console.
+		return maybeClusterId
+			? maybeClusterId.split('.zeebe.camunda.io')[0]
+			: undefined
 	}
 }

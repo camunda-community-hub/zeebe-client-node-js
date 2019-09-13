@@ -10,6 +10,7 @@ describe('ConfigurationHydrator', () => {
 		'ZEEBE_CLIENT_SECRET',
 		'ZEEBE_CLIENT_ID',
 		'ZEEBE_GATEWAY_ADDRESS',
+		'ZEEBE_ADDRESS',
 		'ZEEBE_TOKEN_AUDIENCE',
 		'ZEEBE_AUTHORIZATION_SERVER_URL',
 	]
@@ -128,6 +129,32 @@ describe('ConfigurationHydrator', () => {
 				clientSecret:
 					'WZahIGHjyj0-oQ7DZ_aH2wwNuZt5O8Sq0ZJTz0OaxfO7D6jaDBZxM_Q-BHRsiGO_',
 				clusterId: '103ca930-6da6-4df7-aa97-941eb1f85040',
+			},
+		})
+		expect(conf.hostname).toBe(
+			'103ca930-6da6-4df7-aa97-941eb1f85040.zeebe.camunda.io'
+		)
+		expect(conf.port).toBe('443')
+		expect(conf.oAuth!.audience).toBe(
+			'103ca930-6da6-4df7-aa97-941eb1f85040.zeebe.camunda.io'
+		)
+		expect(conf.oAuth!.url).toBe(
+			'https://login.cloud.camunda.io/oauth/token'
+		)
+		expect(conf.oAuth!.clientId).toBe('yStuGvJ6a1RQhy8DQpeXJ80yEpar3pXh')
+		expect(conf.oAuth!.clientSecret).toBe(
+			'WZahIGHjyj0-oQ7DZ_aH2wwNuZt5O8Sq0ZJTz0OaxfO7D6jaDBZxM_Q-BHRsiGO_'
+		)
+	})
+	it('Constructs the Camunda Cloud connection correctly when the user pastes in the entire connection string (works for Daniel in demos)', () => {
+		// process.env.ZEEBE_GATEWAY_ADDRESS = 'zeebe://localhost:26500'
+		const conf = ConfigurationHydrator.configure(undefined, {
+			camundaCloud: {
+				clientId: 'yStuGvJ6a1RQhy8DQpeXJ80yEpar3pXh',
+				clientSecret:
+					'WZahIGHjyj0-oQ7DZ_aH2wwNuZt5O8Sq0ZJTz0OaxfO7D6jaDBZxM_Q-BHRsiGO_',
+				clusterId:
+					'103ca930-6da6-4df7-aa97-941eb1f85040.zeebe.camunda.io:443',
 			},
 		})
 		expect(conf.hostname).toBe(
