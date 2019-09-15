@@ -155,7 +155,7 @@ The following environment variable configurations are possible with the Zero-con
 Camunda Cloud:
 
 ```
-ZEEBE_CAMUNDA_CLOUD_CLUSTER_ID
+ZEEBE_GATEWAY_ADDRESS
 ZEEBE_CLIENT_SECRET
 ZEEBE_CLIENT_ID
 ```
