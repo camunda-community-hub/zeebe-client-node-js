@@ -13,6 +13,7 @@ describe('StdOut Substitution', () => {
 			z.close()
 		}, 2000)
 		setTimeout(() => {
+			expect(mockStd.messages.length > 0).toBe(true)
 			done()
 		}, 4000)
 	})

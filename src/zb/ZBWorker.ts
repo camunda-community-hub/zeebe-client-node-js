@@ -95,8 +95,6 @@ export class ZBWorker<
 		this.cancelWorkflowOnException =
 			options.failWorkflowOnException || false
 		this.zbClient = zbClient
-		// tslint:disable-next-line: no-console
-		console.log(options.stdout) // @DEBUG
 
 		this.logger = new ZBLogger({
 			color: idColor,
@@ -148,6 +146,7 @@ export class ZBWorker<
 			} else {
 				this.capacityEmitter.once('empty', () => {
 					clearInterval(this.keepAlive)
+					this.gRPCClient.close()
 					resolve()
 				})
 			}
@@ -366,48 +365,14 @@ export class ZBWorker<
 		// The task timeout handler above will deal with it.
 		try {
 			/**
-			 * Construct the backward compatible worker callback
-			 * See https://stackoverflow.com/questions/12766528/build-a-function-object-with-properties-in-typescript
-			 * for an explanation of the pattern used.
-			 *
-			 * It is backward compatible because the old success handler is available as the function:
-			 *  complete(variables?: object).
-			 *
-			 * The new API is available as
 			 * complete.success(variables?: object) and complete.failure(errorMessage: string, retries?: number)
 			 *
 			 * To halt execution of the business process and raise an incident in Operate, call
 			 * complete(errorMessage, 0)
 			 */
 
-			/**
-			 * complete.success() handler
-			 */
-			const workerCallback = (() => {
-				const shadowWorkerCallback = (completedVariables = {}) => {
-					this.completeJob({
-						jobKey: job.key,
-						variables: completedVariables,
-					})
-					clearTimeout(timeoutCancel)
-					if (!taskTimedout) {
-						this.drainOne()
-						this.logger.debug(
-							`Completed task ${taskId} for ${this.taskType}`
-						)
-						return true
-					} else {
-						this.logger.debug(
-							`Completed task ${taskId} for ${this.taskType}, however it had timed out.`
-						)
-						return false
-					}
-				}
-				shadowWorkerCallback.success = shadowWorkerCallback
-				/**
-				 * complete.failure() handler
-				 */
-				shadowWorkerCallback.failure = async (
+			const workerCallback = {
+				failure: async (
 					errorMessage,
 					retries = Math.max(0, job.retries - 1)
 				) => {
@@ -424,9 +389,27 @@ export class ZBWorker<
 						this.drainOne()
 						clearTimeout(timeoutCancel)
 					}
-				}
-				return shadowWorkerCallback
-			})()
+				},
+				success: async (completedVariables = {}) => {
+					await this.completeJob({
+						jobKey: job.key,
+						variables: completedVariables,
+					})
+					clearTimeout(timeoutCancel)
+					if (!taskTimedout) {
+						this.drainOne()
+						this.logger.debug(
+							`Completed task ${taskId} for ${this.taskType}`
+						)
+						return true
+					} else {
+						this.logger.debug(
+							`Completed task ${taskId} for ${this.taskType}, however it had timed out.`
+						)
+						return false
+					}
+				},
+			}
 
 			await this.taskHandler(
 				{ ...job, customHeaders: { ...customHeaders } } as any,
@@ -439,7 +422,7 @@ export class ZBWorker<
 				`Caught an unhandled exception in a task handler for workflow instance ${job.workflowInstanceKey}:`
 			)
 			this.logger.debug(job)
-			this.logger.error(e)
+			this.logger.error(e.message)
 
 			if (this.cancelWorkflowOnException) {
 				const { workflowInstanceKey } = job

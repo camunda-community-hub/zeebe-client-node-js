@@ -35,7 +35,7 @@ describe('ZBClient', () => {
 			'test2',
 			'console-log-msg',
 			async (job, complete) => {
-				complete(job.variables)
+				complete.success(job.variables)
 				expect(
 					job.customHeaders.message.indexOf('Workflow') !== -1
 				).toBe(true)

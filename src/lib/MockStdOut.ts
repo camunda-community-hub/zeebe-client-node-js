@@ -6,8 +6,6 @@ export class MockStdOut {
 	}
 
 	public error(message: string) {
-		// tslint:disable-next-line: no-console
-		console.log(arguments)
 		this.messages.push(message)
 	}
 }

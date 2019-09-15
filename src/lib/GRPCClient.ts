@@ -47,6 +47,7 @@ const connectivityState = [
 ]
 
 export class GRPCClient extends EventEmitter {
+	public channelClosed = false
 	public longPoll?: number
 	public client: Client
 	private packageDefinition: PackageDefinition
@@ -54,7 +55,6 @@ export class GRPCClient extends EventEmitter {
 	private logger: ZBLogger
 	private gRPCRetryCount = 0
 	private oAuth?: OAuthProvider
-	private channelClosed = false
 
 	constructor({
 		host,
@@ -199,6 +199,9 @@ export class GRPCClient extends EventEmitter {
 	private watchGrpcChannel(): Promise<number> {
 		return new Promise(resolve => {
 			const gRPC = this.client
+			if (this.channelClosed) {
+				return
+			}
 			const state = gRPC.getChannel().getConnectivityState(false)
 			this.logger.error(`GRPC Channel State: ${connectivityState[state]}`)
 			const deadline = new Date().setSeconds(

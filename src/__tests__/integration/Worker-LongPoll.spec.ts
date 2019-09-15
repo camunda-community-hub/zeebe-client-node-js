@@ -26,9 +26,8 @@ describe('ZBWorker', () => {
 			'console-log-long-poll',
 			async (job, complete, worker) => {
 				expect(job.workflowInstanceKey).toBe(wf1.workflowInstanceKey)
-				complete(job.variables)
+				complete.success(job.variables)
 				expect(worker.pollCount > 5).toBe(true)
-				// await zbc.cancelWorkflowInstance(wf.workflowInstanceKey)
 				await zbc.close()
 				done()
 			},
@@ -54,14 +53,14 @@ describe('ZBWorker', () => {
 			'console-log-long-poll',
 			async (job, complete, worker) => {
 				expect(job.workflowInstanceKey).toBe(wf2.workflowInstanceKey)
-				complete(job.variables)
+				complete.success(job.variables)
 				expect(worker.pollCount).toBe(1)
-				// await zbcLongPoll.cancelWorkflowInstance(wf.workflowInstanceKey)
 				await zbcLongPoll.close()
 				done()
 			},
 			{ loglevel: 'NONE', debug: true }
 		)
+		// Wait to outside 10s - it should have only polled once when it gets the job
 		setTimeout(async () => {
 			wf2 = await zbcLongPoll.createWorkflowInstance('long-poll', {})
 		}, 13000)

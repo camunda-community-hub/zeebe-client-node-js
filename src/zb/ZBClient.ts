@@ -147,7 +147,7 @@ export class ZBClient {
 		// Prevent the creation of more workers
 		this.closing = true
 		await Promise.all(this.workers.map(w => w.close()))
-		this.gRPCClient.close() // close the GRPC channel
+		this.gRPCClient.close() // close the client GRPC channel
 	}
 
 	/**
@@ -379,7 +379,7 @@ export class ZBClient {
 		const c = console
 		return promiseRetry(
 			(retry, n) => {
-				if (this.closing) {
+				if (this.closing || this.gRPCClient.channelClosed) {
 					return Promise.resolve() as any
 				}
 				if (n > 1) {
@@ -395,6 +395,10 @@ export class ZBClient {
 					if (isNetworkError) {
 						c.error(`${err.message}`)
 						retry(err)
+					}
+					// The gRPC channel will be closed if close has been called
+					if (this.gRPCClient.channelClosed) {
+						return Promise.resolve() as any
 					}
 					throw err
 				})

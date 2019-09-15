@@ -1,5 +1,7 @@
 import { ZBClient } from '..'
 
+jest.setTimeout(12000)
+
 describe('ZBClient constructor', () => {
 	it('throws an exception when there is no broker and retry is false', async () => {
 		const zbc = new ZBClient('localhoster', { retry: false })
@@ -14,15 +16,16 @@ describe('ZBClient constructor', () => {
 	})
 	it('does not throw when there is no broker, by default', async done => {
 		const zbc = new ZBClient('localhoster')
-		setTimeout(() => {
+		setTimeout(async () => {
 			// tslint:disable-next-line
 			console.log(
 				'^^^ The gRPC connection failure message above is expected. ^^^'
 			)
-			zbc.close()
+			await zbc.close()
 			expect(true).toBe(true)
-			done()
-		}, 4000)
+			// We have to wait ten seconds here, because the operation retry logic keeps it alive (I think...)
+			setTimeout(() => done(), 10000)
+		}, 2000)
 		// tslint:disable-next-line
 		console.log(
 			'vvv The gRPC connection failure message below is expected. vvv'
