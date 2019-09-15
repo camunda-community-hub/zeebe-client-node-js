@@ -95,6 +95,9 @@ export class ZBWorker<
 		this.cancelWorkflowOnException =
 			options.failWorkflowOnException || false
 		this.zbClient = zbClient
+		// tslint:disable-next-line: no-console
+		console.log(options.stdout) // @DEBUG
+
 		this.logger = new ZBLogger({
 			color: idColor,
 			id: this.id,
@@ -140,6 +143,7 @@ export class ZBWorker<
 
 			if (this.activeJobs <= 0) {
 				clearInterval(this.keepAlive)
+				this.gRPCClient.close()
 				resolve()
 			} else {
 				this.capacityEmitter.once('empty', () => {

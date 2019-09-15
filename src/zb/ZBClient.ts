@@ -37,6 +37,7 @@ export class ZBClient {
 	private maxRetryTimeout: number
 	private oAuth?: OAuthProvider
 	private useTLS: boolean
+	private stdout: any
 
 	/**
 	 *
@@ -76,22 +77,14 @@ export class ZBClient {
 			this.options.useTLS === true ||
 			(!!this.options.oAuth && this.options.useTLS !== false)
 
-		this.gRPCClient = new GRPCClient({
-			host: this.gatewayAddress,
-			loglevel: this.loglevel,
-			oAuth: this.oAuth,
-			options: { longPoll: this.options.longPoll },
-			packageName: 'gateway_protocol',
-			protoPath: path.join(__dirname, '../../proto/zeebe.proto'),
-			service: 'Gateway',
-			useTLS: this.useTLS,
-		}) as ZB.ZBGRPC
+		this.gRPCClient = this.constructGrpcClient()
 
 		this.retry = this.options.retry !== false
 		this.maxRetries =
 			this.options.maxRetries || ZBClient.DEFAULT_MAX_RETRIES
 		this.maxRetryTimeout =
 			this.options.maxRetryTimeout || ZBClient.DEFAULT_MAX_RETRY_TIMEOUT
+		this.stdout = this.options.stdout || console
 	}
 
 	/**
@@ -123,16 +116,7 @@ export class ZBClient {
 		// Merge parent client options with worker override
 		options = { ...this.options, ...options }
 		// Give worker its own gRPC connection
-		const workerGRPCClient = new GRPCClient({
-			host: this.gatewayAddress,
-			loglevel: this.loglevel!,
-			oAuth: this.oAuth,
-			options: { longPoll: this.options.longPoll },
-			packageName: 'gateway_protocol',
-			protoPath: path.join(__dirname, '../../proto/zeebe.proto'),
-			service: 'Gateway',
-			useTLS: this.useTLS,
-		}) as ZB.ZBGRPC
+		const workerGRPCClient = this.constructGrpcClient()
 		const worker = new ZBWorker<
 			WorkerInputVariables,
 			CustomHeaderShape,
@@ -353,6 +337,19 @@ export class ZBClient {
 		)
 	}
 
+	private constructGrpcClient() {
+		return new GRPCClient({
+			host: this.gatewayAddress,
+			loglevel: this.loglevel,
+			oAuth: this.oAuth,
+			options: { longPoll: this.options.longPoll },
+			packageName: 'gateway_protocol',
+			protoPath: path.join(__dirname, '../../proto/zeebe.proto'),
+			service: 'Gateway',
+			stdout: this.stdout,
+			useTLS: this.useTLS,
+		}) as ZB.ZBGRPC
+	}
 	/**
 	 * If this.retry is set true, the operation will be wrapped in an configurable retry on exceptions
 	 * of gRPC error code 14 - Transient Network Failure.
