@@ -1,4 +1,13 @@
-# Version v0.21
+# Version 0.20.6
+
+-   _BREAKING CHANGE_: Remove `complete()` in job handler callback. Use `complete.success()`.
+-   Inject stdout to logger in GRPC client. Fixes [#74](https://github.com/creditsenseau/zeebe-client-node-js/issues/74).
+
+# Version 0.20.5
+
+-   Add support for the Zeebe service on Camunda Cloud.
+
+# Version v0.20.1
 
 • Add long polling support. See [#64](https://github.com/creditsenseau/zeebe-client-node-js/issues/64).
 • @TODO: Add authentication via JWT.

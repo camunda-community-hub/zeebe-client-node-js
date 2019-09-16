@@ -47,6 +47,7 @@ const connectivityState = [
 ]
 
 export class GRPCClient extends EventEmitter {
+	public channelClosed = false
 	public longPoll?: number
 	public client: Client
 	private packageDefinition: PackageDefinition
@@ -64,6 +65,7 @@ export class GRPCClient extends EventEmitter {
 		protoPath,
 		service,
 		useTLS,
+		stdout = console,
 	}: {
 		host: string
 		loglevel: Loglevel
@@ -73,6 +75,7 @@ export class GRPCClient extends EventEmitter {
 		protoPath: string
 		service: string
 		useTLS: boolean
+		stdout: any
 	}) {
 		super()
 		this.oAuth = oAuth
@@ -84,7 +87,7 @@ export class GRPCClient extends EventEmitter {
 			loglevel,
 			namespace: 'ZBWorker',
 			pollMode: this.longPoll ? 'Long Poll' : 'Fast Poll',
-			stdout: console,
+			stdout,
 			taskType: 'gRPC Channel',
 		})
 		this.packageDefinition = loadSync(protoPath, {
@@ -180,6 +183,7 @@ export class GRPCClient extends EventEmitter {
 
 	public close() {
 		this.client.close()
+		this.channelClosed = true
 	}
 
 	private async getJWT() {
@@ -195,6 +199,9 @@ export class GRPCClient extends EventEmitter {
 	private watchGrpcChannel(): Promise<number> {
 		return new Promise(resolve => {
 			const gRPC = this.client
+			if (this.channelClosed) {
+				return
+			}
 			const state = gRPC.getChannel().getConnectivityState(false)
 			this.logger.error(`GRPC Channel State: ${connectivityState[state]}`)
 			const deadline = new Date().setSeconds(
@@ -207,6 +214,9 @@ export class GRPCClient extends EventEmitter {
 				state,
 				deadline,
 				async error => {
+					if (this.channelClosed) {
+						return
+					}
 					this.gRPCRetryCount++
 					if (error) {
 						this.logger.error({ error })

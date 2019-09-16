@@ -31,7 +31,7 @@ describe('ZBWorker', () => {
 			'console-log',
 			async (job, complete) => {
 				expect(job.workflowInstanceKey).toBe(wf.workflowInstanceKey)
-				complete(job.variables)
+				complete.success(job.variables)
 				done()
 			},
 			{ loglevel: 'NONE' }

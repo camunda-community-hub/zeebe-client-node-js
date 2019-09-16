@@ -47,7 +47,7 @@ describe('ZBClient', () => {
 			'test',
 			'TASK_TYPE',
 			(job, complete) => {
-				complete(job)
+				complete.success(job)
 			},
 			{ loglevel: 'NONE' }
 		)
@@ -104,7 +104,7 @@ describe('ZBClient', () => {
 			'wait',
 			async (job, complete) => {
 				expect(job.workflowInstanceKey).toBe(wfi)
-				complete(job)
+				complete.success(job)
 			},
 			{ loglevel: 'NONE' }
 		)
@@ -115,7 +115,7 @@ describe('ZBClient', () => {
 			async (job, complete) => {
 				expect(job.workflowInstanceKey).toBe(wfi)
 				expect(job.variables.conditionVariable).toBe(true)
-				complete(job)
+				complete.success(job)
 				done()
 			},
 			{ loglevel: 'NONE' }
@@ -150,7 +150,7 @@ describe('ZBClient', () => {
 			'wait',
 			async (job, complete) => {
 				expect(job.workflowInstanceKey).toBe(wfi)
-				complete(job)
+				complete.success(job)
 			},
 			{ loglevel: 'NONE' }
 		)
@@ -161,7 +161,7 @@ describe('ZBClient', () => {
 			async (job, complete) => {
 				expect(job.workflowInstanceKey).toBe(wfi)
 				expect(job.variables.conditionVariable).toBe(false)
-				complete(job.variables)
+				complete.success(job.variables)
 				done()
 			},
 			{ loglevel: 'NONE' }
