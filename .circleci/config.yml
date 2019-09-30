@@ -33,7 +33,7 @@ jobs:
   test:
     docker:
       - image: circleci/node:11.10.1
-      - image: camunda/zeebe:021.alpha-3
+      - image: camunda/zeebe:0.21.0-alpha3
     working_directory: ~/zeebe-client-node-js
     steps:
       - checkout
