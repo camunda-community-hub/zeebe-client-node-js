@@ -77,7 +77,7 @@ export interface ZBWorkerLoggerOptions {
 	taskType: string
 }
 
-export type ConnectionErrorHandler = (error: any) => void
+export type ConnectionErrorHandler = (error?: any) => void
 
 export interface ActivateJobsResponse {
 	jobs: ActivatedJob[]

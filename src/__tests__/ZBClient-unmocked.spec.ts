@@ -1,6 +1,6 @@
 import { ZBClient } from '..'
 
-jest.setTimeout(12000)
+jest.setTimeout(13000)
 
 describe('ZBClient constructor', () => {
 	it('throws an exception when there is no broker and retry is false', async () => {
@@ -23,7 +23,7 @@ describe('ZBClient constructor', () => {
 			)
 			await zbc.close()
 			expect(true).toBe(true)
-			// We have to wait ten seconds here, because the operation retry logic keeps it alive (I think...)
+			// We have to wait ten seconds here, because the operation retry logic keeps it alive
 			setTimeout(() => done(), 10000)
 		}, 2000)
 		// tslint:disable-next-line

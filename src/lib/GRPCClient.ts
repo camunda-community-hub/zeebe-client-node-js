@@ -279,8 +279,6 @@ export class GRPCClient extends EventEmitter {
 	}
 
 	private setNotReady() {
-		// tslint:disable-next-line: no-console
-		console.log('setNotReady called') // @DEBUG
 		if (this.readyTimer) {
 			clearTimeout(this.readyTimer)
 			this.readyTimer = undefined

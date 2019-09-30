@@ -1,6 +1,6 @@
 import { ZBClient } from '../..'
 
-jest.setTimeout(15000)
+jest.setTimeout(10000)
 process.env.ZB_NODE_LOG_LEVEL = process.env.ZB_NODE_LOG_LEVEL || 'DEBUG'
 
 describe('onReady Handler', () => {

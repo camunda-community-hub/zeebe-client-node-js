@@ -85,8 +85,8 @@ export class ZBClient {
 		this.onConnectionError = this.options.onConnectionError
 		this.onReady = this.options.onReady
 		this.gRPCClient = this.constructGrpcClient({
-			onConnectionError: this.onConnectionError,
-			onReady: this.onReady,
+			onConnectionError: () => this._onConnectionError(),
+			onReady: () => this._onReady(),
 		})
 
 		this.retry = this.options.retry !== false
@@ -126,10 +126,38 @@ export class ZBClient {
 			throw new Error('Client is closing. No worker creation allowed!')
 		}
 		const idColor = idColors[this.workerCount++ % idColors.length]
+		onConnectionError = onConnectionError || options.onConnectionError
+		const onReady = options.onReady
+		// We use the worker to notify up to the ZBClient when there is a connection failure
+		// Otherwise the ZBClient only knows there is a failure when it tries to execute a command
+		// This way, a top-level handler on the ZBClient can be informed whenever we know the connection
+		// has failed. Workers know about it fast.
+		// tslint:disable-next-line: variable-name
+		const _onConnectionError = (err?: any) => {
+			this._onConnectionError()
+			// Allow a per-worker handler for specialised behaviour
+			if (onConnectionError) {
+				onConnectionError(err)
+			}
+		}
+		// tslint:disable-next-line: variable-name
+		const _onReady = () => {
+			this._onReady()
+			if (onReady) {
+				onReady()
+			}
+		}
 		// Merge parent client options with worker override
-		options = { ...this.options, ...options }
+		options = {
+			...this.options,
+			onReady: undefined, // Do not inherit client handler
+			...options,
+		}
 		// Give worker its own gRPC connection
-		const workerGRPCClient = this.constructGrpcClient({})
+		const workerGRPCClient = this.constructGrpcClient({
+			onConnectionError: _onConnectionError,
+			onReady: _onReady,
+		})
 		const worker = new ZBWorker<
 			WorkerInputVariables,
 			CustomHeaderShape,
@@ -387,6 +415,19 @@ export class ZBClient {
 			: operation()
 	}
 
+	private _onConnectionError() {
+		// @TODO - debounce because workers can call in
+		if (this.onConnectionError) {
+			this.onConnectionError()
+		}
+	}
+
+	private _onReady() {
+		// @ TODO - debounce because workers can call in
+		if (this.onReady) {
+			this.onReady()
+		}
+	}
 	/**
 	 * This function takes a gRPC operation that returns a Promise as a function, and invokes it.
 	 * If the operation throws gRPC error 14, this function will continue to try it until it succeeds
