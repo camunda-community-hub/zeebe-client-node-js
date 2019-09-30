@@ -21,11 +21,11 @@ const idColors = [
 ]
 
 export class ZBClient {
-	get connected() {
-		return this.gRPCClient.connected
-	}
 	private static readonly DEFAULT_MAX_RETRIES = 50
 	private static readonly DEFAULT_MAX_RETRY_TIMEOUT = 5000
+	private static readonly DEFAULT_CONNECTION_TOLERANCE = 3000
+	public connectionTolerance: number = ZBClient.DEFAULT_CONNECTION_TOLERANCE
+	public connected = false
 	public gatewayAddress: string
 	public loglevel: ZB.Loglevel
 	public onReady?: () => void
@@ -43,6 +43,8 @@ export class ZBClient {
 	private oAuth?: OAuthProvider
 	private useTLS: boolean
 	private stdout: any
+	private lastReady?: Date
+	private lastConnectionError?: Date
 
 	/**
 	 *
@@ -82,6 +84,8 @@ export class ZBClient {
 			this.options.useTLS === true ||
 			(!!this.options.oAuth && this.options.useTLS !== false)
 
+		this.connectionTolerance =
+			this.options.connectionTolerance || this.connectionTolerance
 		this.onConnectionError = this.options.onConnectionError
 		this.onReady = this.options.onReady
 		this.gRPCClient = this.constructGrpcClient({
@@ -386,6 +390,7 @@ export class ZBClient {
 		onConnectionError?: () => void
 	}) {
 		return new GRPCClient({
+			connectionTolerance: this.connectionTolerance,
 			host: this.gatewayAddress,
 			loglevel: this.loglevel,
 			oAuth: this.oAuth,
@@ -416,16 +421,36 @@ export class ZBClient {
 	}
 
 	private _onConnectionError() {
-		// @TODO - debounce because workers can call in
+		this.connected = false
 		if (this.onConnectionError) {
-			this.onConnectionError()
+			if (this.lastConnectionError) {
+				const now = new Date()
+				const delta = now.valueOf() - this.lastConnectionError.valueOf()
+				if (delta > this.connectionTolerance / 2) {
+					// @TODO is this the right window?
+					this.onConnectionError()
+				}
+			} else {
+				this.onConnectionError()
+			}
+			this.lastConnectionError = new Date()
 		}
 	}
 
 	private _onReady() {
-		// @ TODO - debounce because workers can call in
+		this.connected = true
 		if (this.onReady) {
-			this.onReady()
+			if (this.lastReady) {
+				const now = new Date()
+				const delta = now.valueOf() - this.lastReady.valueOf()
+				if (delta > this.connectionTolerance / 2) {
+					// @TODO is this the right window?
+					this.onReady()
+				}
+			} else {
+				this.onReady()
+			}
+			this.lastReady = new Date()
 		}
 	}
 	/**

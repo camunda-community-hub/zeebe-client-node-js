@@ -399,6 +399,7 @@ export interface CamundaCloudConfig {
 }
 
 export interface ZBClientOptions {
+	connectionTolerance?: number
 	loglevel?: Loglevel
 	stdout?: any
 	retry?: boolean

@@ -63,6 +63,7 @@ export class GRPCClient extends EventEmitter {
 	private onConnectionError?: () => void
 
 	constructor({
+		connectionTolerance,
 		host,
 		loglevel,
 		oAuth,
@@ -75,6 +76,7 @@ export class GRPCClient extends EventEmitter {
 		onConnectionError,
 		onReady,
 	}: {
+		connectionTolerance: number
 		host: string
 		loglevel: Loglevel
 		oAuth?: OAuthProvider
@@ -90,7 +92,7 @@ export class GRPCClient extends EventEmitter {
 		super()
 		this.oAuth = oAuth
 		this.longPoll = options.longPoll
-		this.connectionTolerance = 3000 // @TODO - make configurable
+		this.connectionTolerance = connectionTolerance
 
 		this.onReady = onReady
 		this.onConnectionError = onConnectionError
@@ -265,6 +267,7 @@ export class GRPCClient extends EventEmitter {
 		if (this.readyTimer) {
 			clearTimeout(this.readyTimer)
 		}
+
 		this.readyTimer = setTimeout(() => {
 			this.readyTimer = undefined
 			this.connected = true

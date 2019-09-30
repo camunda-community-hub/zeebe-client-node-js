@@ -55,7 +55,7 @@ describe('ZBWorker', () => {
 				// Manually verify that an incident has been raised
 				done()
 			},
-			{ pollInterval: 10000, maxJobsToActivate: 1, loglevel: 'NONE' }
+			{ longPoll: 10000, maxJobsToActivate: 1, loglevel: 'NONE' }
 		)
 	})
 })
