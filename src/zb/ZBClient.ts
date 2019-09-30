@@ -21,10 +21,15 @@ const idColors = [
 ]
 
 export class ZBClient {
+	get connected() {
+		return this.gRPCClient.connected
+	}
 	private static readonly DEFAULT_MAX_RETRIES = 50
 	private static readonly DEFAULT_MAX_RETRY_TIMEOUT = 5000
 	public gatewayAddress: string
 	public loglevel: ZB.Loglevel
+	public onReady?: () => void
+	public onConnectionError?: () => void
 	private closePromise?: Promise<any>
 	private closing = false
 	// A gRPC channel for the ZBClient to execute commands on
@@ -77,7 +82,12 @@ export class ZBClient {
 			this.options.useTLS === true ||
 			(!!this.options.oAuth && this.options.useTLS !== false)
 
-		this.gRPCClient = this.constructGrpcClient()
+		this.onConnectionError = this.options.onConnectionError
+		this.onReady = this.options.onReady
+		this.gRPCClient = this.constructGrpcClient({
+			onConnectionError: this.onConnectionError,
+			onReady: this.onReady,
+		})
 
 		this.retry = this.options.retry !== false
 		this.maxRetries =
@@ -85,6 +95,9 @@ export class ZBClient {
 		this.maxRetryTimeout =
 			this.options.maxRetryTimeout || ZBClient.DEFAULT_MAX_RETRY_TIMEOUT
 		this.stdout = this.options.stdout || console
+		if (this.onReady || this.onConnectionError) {
+			this.topology()
+		}
 	}
 
 	/**
@@ -116,7 +129,7 @@ export class ZBClient {
 		// Merge parent client options with worker override
 		options = { ...this.options, ...options }
 		// Give worker its own gRPC connection
-		const workerGRPCClient = this.constructGrpcClient()
+		const workerGRPCClient = this.constructGrpcClient({})
 		const worker = new ZBWorker<
 			WorkerInputVariables,
 			CustomHeaderShape,
@@ -337,11 +350,19 @@ export class ZBClient {
 		)
 	}
 
-	private constructGrpcClient() {
+	private constructGrpcClient({
+		onReady,
+		onConnectionError,
+	}: {
+		onReady?: () => void
+		onConnectionError?: () => void
+	}) {
 		return new GRPCClient({
 			host: this.gatewayAddress,
 			loglevel: this.loglevel,
 			oAuth: this.oAuth,
+			onConnectionError,
+			onReady,
 			options: { longPoll: this.options.longPoll },
 			packageName: 'gateway_protocol',
 			protoPath: path.join(__dirname, '../../proto/zeebe.proto'),

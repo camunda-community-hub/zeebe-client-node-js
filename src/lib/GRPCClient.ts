@@ -49,12 +49,18 @@ const connectivityState = [
 export class GRPCClient extends EventEmitter {
 	public channelClosed = false
 	public longPoll?: number
+	public connected: boolean = false
 	public client: Client
+	public onReady?: () => void
 	private packageDefinition: PackageDefinition
 	private listNameMethods: string[]
 	private logger: ZBLogger
 	private gRPCRetryCount = 0
 	private oAuth?: OAuthProvider
+	private readyTimer?: NodeJS.Timeout
+	private failTimer?: NodeJS.Timeout
+	private connectionTolerance: number
+	private onConnectionError?: () => void
 
 	constructor({
 		host,
@@ -66,6 +72,8 @@ export class GRPCClient extends EventEmitter {
 		service,
 		useTLS,
 		stdout = console,
+		onConnectionError,
+		onReady,
 	}: {
 		host: string
 		loglevel: Loglevel
@@ -76,10 +84,18 @@ export class GRPCClient extends EventEmitter {
 		service: string
 		useTLS: boolean
 		stdout: any
+		onConnectionError?: () => void
+		onReady?: () => void
 	}) {
 		super()
 		this.oAuth = oAuth
 		this.longPoll = options.longPoll
+		this.connectionTolerance = 3000 // @TODO - make configurable
+
+		this.onReady = onReady
+		this.onConnectionError = onConnectionError
+		this.on('ready', () => this.setReady())
+		this.on('error', () => this.setNotReady())
 
 		this.logger = new ZBLogger({
 			color: chalk.green,
@@ -160,8 +176,10 @@ export class GRPCClient extends EventEmitter {
 							const metadata = await this.getJWT()
 							client[methodName](data, metadata, (err, dat) => {
 								if (err) {
+									this.setNotReady()
 									return reject(err)
 								}
+								this.setReady()
 								resolve(dat)
 							})
 						} catch (e) {
@@ -242,12 +260,47 @@ export class GRPCClient extends EventEmitter {
 		})
 	}
 
+	private setReady() {
+		// debounce rapid connect / disconnect
+		if (this.readyTimer) {
+			clearTimeout(this.readyTimer)
+		}
+		this.readyTimer = setTimeout(() => {
+			this.readyTimer = undefined
+			this.connected = true
+			if (this.onReady) {
+				this.onReady()
+			}
+			if (this.failTimer) {
+				clearTimeout(this.failTimer)
+				this.failTimer = undefined
+			}
+		}, this.connectionTolerance)
+	}
+
+	private setNotReady() {
+		// tslint:disable-next-line: no-console
+		console.log('setNotReady called') // @DEBUG
+		if (this.readyTimer) {
+			clearTimeout(this.readyTimer)
+			this.readyTimer = undefined
+		}
+		this.connected = false
+		if (!this.failTimer) {
+			this.failTimer = setTimeout(() => {
+				if (this.onConnectionError) {
+					this.onConnectionError()
+				}
+			}, this.connectionTolerance)
+		}
+	}
+
 	private handleGrpcError = (stream: any) => async (err: any) => {
 		this.emit('error', err)
 		this.logger.error(`GRPC ERROR: ${err.message}`)
 		const channelState = await this.watchGrpcChannel()
 		this.logger.debug(
-			`GRPC  Channel state: ${connectivityState[channelState]}`
+			`gRPC Channel state: ${connectivityState[channelState]}`
 		)
 		stream.removeAllListeners()
 		if (

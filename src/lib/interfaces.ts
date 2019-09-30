@@ -410,6 +410,8 @@ export interface ZBClientOptions {
 	camundaCloud?: CamundaCloudConfig
 	hostname?: string
 	port?: string
+	onReady?: () => void
+	onConnectionError?: () => void
 }
 
 export interface ZBGRPC extends GRPCClient {
