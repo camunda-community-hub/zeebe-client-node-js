@@ -91,7 +91,7 @@ export class ZBWorker<
 		// See the Worker-LongPoll test
 		this.debug = options.debug === true
 		this.gRPCClient = gRPCClient
-		const loglevel = options.loglevel || 'INFO'
+		const loglevel = options.loglevel!
 		this.cancelWorkflowOnException =
 			options.failWorkflowOnException || false
 		this.zbClient = zbClient

@@ -10,6 +10,7 @@ import * as ZB from '../lib/interfaces'
 import { OAuthProvider } from '../lib/OAuthProvider'
 // tslint:disable-next-line: no-duplicate-imports
 import { Utils } from '../lib/utils'
+import { ZBLogger } from '../lib/ZBLogger'
 import { ZBWorker } from './ZBWorker'
 
 const idColors = [
@@ -45,6 +46,7 @@ export class ZBClient {
 	private stdout: any
 	private lastReady?: Date
 	private lastConnectionError?: Date
+	private logger: ZBLogger
 
 	/**
 	 *
@@ -65,10 +67,16 @@ export class ZBClient {
 			...opts,
 			retry: opts.retry !== false,
 		}
-		this.loglevel =
+		this.options.loglevel =
 			(process.env.ZB_NODE_LOG_LEVEL as ZB.Loglevel) ||
 			this.options.loglevel ||
 			'INFO'
+		this.loglevel = this.options.loglevel
+
+		this.logger = new ZBLogger({
+			loglevel: this.loglevel,
+			taskType: 'ZBClient',
+		})
 
 		this.options = ConfigurationHydrator.configure(
 			gatewayAddress,
@@ -154,6 +162,7 @@ export class ZBClient {
 		// Merge parent client options with worker override
 		options = {
 			...this.options,
+			loglevel: this.loglevel,
 			onReady: undefined, // Do not inherit client handler
 			...options,
 		}
@@ -339,7 +348,7 @@ export class ZBClient {
 			version,
 		}
 
-		return options.retry === false
+		return options.retry === false // @debug
 			? this.executeOperation(() =>
 					this.gRPCClient.createWorkflowInstanceSync(
 						stringifyVariables(createWorkflowInstanceRequest)
@@ -463,14 +472,13 @@ export class ZBClient {
 		operation: () => Promise<T>,
 		retries = this.maxRetries
 	): Promise<T> {
-		const c = console
 		return promiseRetry(
 			(retry, n) => {
 				if (this.closing || this.gRPCClient.channelClosed) {
 					return Promise.resolve() as any
 				}
 				if (n > 1) {
-					c.error(
+					this.logger.error(
 						`gRPC connection is in failed state. Attempt ${n}. Retrying in 5s...`
 					)
 				}
@@ -480,7 +488,7 @@ export class ZBClient {
 						err.message.indexOf('14') === 0 ||
 						err.message.indexOf('Stream removed') !== -1
 					if (isNetworkError) {
-						c.error(`${err.message}`)
+						this.logger.error(`${err.message}`)
 						retry(err)
 					}
 					// The gRPC channel will be closed if close has been called

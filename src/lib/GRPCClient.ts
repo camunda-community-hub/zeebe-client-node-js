@@ -178,6 +178,7 @@ export class GRPCClient extends EventEmitter {
 							const metadata = await this.getJWT()
 							client[methodName](data, metadata, (err, dat) => {
 								if (err) {
+									// This will throw on network or business errors
 									this.setNotReady()
 									return reject(err)
 								}
