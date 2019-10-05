@@ -225,17 +225,17 @@ const ZB = require('zeebe-node')
 
 const zbc = new ZB.ZBClient('localhost:26500')
 
-const zbWorker = zbc.createWorker('test-worker', 'demo-service', handler)
+const zbWorker = zbc.createWorker(null, 'demo-service', handler)
 
 function handler(job, complete) {
 	console.log('Task variables', job.variables)
-	let updatedVariables = Object.assign({}, job.variables, {
-		updatedProperty: 'newValue',
-	})
 
 	// Task worker business logic goes here
+	const updateToBrokerVariables = {
+		updatedProperty: 'newValue',
+	}
 
-	complete(updatedVariables)
+	complete(updateToBrokerVariables)
 }
 ```
 
