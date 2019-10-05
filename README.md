@@ -93,7 +93,7 @@ Retry is provided by [promise-retry](https://www.npmjs.com/package/promise-retry
 
 Additionally, the gRPC Client will continually reconnect when in a failed state, such as when the gateway goes away due to pod rescheduling on Kubernetes.
 
-### onReady, onConnectionError, and connected
+### onReady(), onConnectionError(), and connected
 
 The client has a `connected` property that can be examined to determined if it has a gRPC connection to the gateway.
 
