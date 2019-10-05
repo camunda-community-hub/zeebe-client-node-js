@@ -1,5 +1,5 @@
 import { ZBClient } from '..'
-process.env.ZB_NODE_LOG_LEVEL = process.env.ZB_NODE_LOG_LEVEL || 'NONE'
+process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 
 jest.setTimeout(13000)
 

@@ -1,7 +1,7 @@
 import { ZBClient } from '../..'
 
 jest.setTimeout(10000)
-process.env.ZB_NODE_LOG_LEVEL = process.env.ZB_NODE_LOG_LEVEL || 'NONE'
+process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 
 describe('onReady Handler', () => {
 	it(`Doesn't call the onReady handler if there is no broker`, async done => {

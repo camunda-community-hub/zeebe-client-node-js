@@ -25,6 +25,7 @@ export class ZBClient {
 	private static readonly DEFAULT_MAX_RETRIES = 50
 	private static readonly DEFAULT_MAX_RETRY_TIMEOUT = 5000
 	private static readonly DEFAULT_CONNECTION_TOLERANCE = 3000
+	private static readonly DEFAULT_LONGPOLL_PERIOD = 60000
 	public connectionTolerance: number = ZBClient.DEFAULT_CONNECTION_TOLERANCE
 	public connected = false
 	public gatewayAddress: string
@@ -64,11 +65,13 @@ export class ZBClient {
 		}
 		const opts = options ? options : {}
 		this.options = {
+			longPoll: ZBClient.DEFAULT_LONGPOLL_PERIOD,
 			...opts,
 			retry: opts.retry !== false,
 		}
 		this.options.loglevel =
 			(process.env.ZB_NODE_LOG_LEVEL as ZB.Loglevel) ||
+			(process.env.ZEEBE_NODE_LOG_LEVEL as ZB.Loglevel) ||
 			this.options.loglevel ||
 			'INFO'
 		this.loglevel = this.options.loglevel
@@ -348,7 +351,7 @@ export class ZBClient {
 			version,
 		}
 
-		return options.retry === false // @debug
+		return options.retry === true
 			? this.executeOperation(() =>
 					this.gRPCClient.createWorkflowInstanceSync(
 						stringifyVariables(createWorkflowInstanceRequest)
@@ -483,11 +486,13 @@ export class ZBClient {
 					)
 				}
 				return operation().catch(err => {
-					// This could be DNS resolution, or the gRPC gateway is not reachable yet
+					// This could be DNS resolution, or the gRPC gateway is not reachable yet, or Backpressure
 					const isNetworkError =
 						err.message.indexOf('14') === 0 ||
 						err.message.indexOf('Stream removed') !== -1
-					if (isNetworkError) {
+					const isBackpressure =
+						err.message.indexOf('8') === 0 || err.code === 8
+					if (isNetworkError || isBackpressure) {
 						this.logger.error(`${err.message}`)
 						retry(err)
 					}

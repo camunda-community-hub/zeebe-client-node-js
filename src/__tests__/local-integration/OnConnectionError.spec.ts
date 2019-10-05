@@ -1,7 +1,7 @@
 import { ZBClient } from '../..'
 
 jest.setTimeout(30000)
-process.env.ZB_NODE_LOG_LEVEL = process.env.ZB_NODE_LOG_LEVEL || 'NONE'
+process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 
 describe('onConnectionError Handler', () => {
 	it(`Calls the onConnectionError handler if there is no broker`, async done => {
@@ -127,12 +127,15 @@ describe('onConnectionError Handler', () => {
 	})
 	it(`Does not call the onConnectionError handler if there is a business error`, async done => {
 		let called = 0
+		let wf = 'arstsrasrateiuhrastulyharsntharsie'
 		const zbc2 = new ZBClient({
 			onConnectionError: () => {
 				called++
 			},
 		})
-		zbc2.createWorkflowInstance('arstsrasrateiuhrastulyharsntharsie', {})
+		zbc2.createWorkflowInstance(wf, {}).catch(() => {
+			wf = 'throw error away'
+		})
 		setTimeout(() => {
 			expect(zbc2.connected).toBe(true)
 			expect(called).toBe(0)
