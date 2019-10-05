@@ -153,11 +153,6 @@ export class GRPCClient extends EventEmitter {
 
 				this.listNameMethods.push(methodName)
 
-				// this[`${methodName}Async`] = async (data, fnAnswer) => {
-				// 	const metadata = await this.getJWT()
-				// 	this.client[methodName](data, metadata, fnAnswer)
-				// }
-
 				this[`${methodName}Stream`] = async data => {
 					let stream
 					// if (this.longPoll) {
