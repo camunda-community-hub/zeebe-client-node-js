@@ -77,7 +77,7 @@ export interface ZBWorkerLoggerOptions {
 	taskType: string
 }
 
-export type ConnectionErrorHandler = (error: any) => void
+export type ConnectionErrorHandler = (error?: any) => void
 
 export interface ActivateJobsResponse {
 	jobs: ActivatedJob[]
@@ -399,6 +399,7 @@ export interface CamundaCloudConfig {
 }
 
 export interface ZBClientOptions {
+	connectionTolerance?: number
 	loglevel?: Loglevel
 	stdout?: any
 	retry?: boolean
@@ -410,6 +411,8 @@ export interface ZBClientOptions {
 	camundaCloud?: CamundaCloudConfig
 	hostname?: string
 	port?: string
+	onReady?: () => void
+	onConnectionError?: () => void
 }
 
 export interface ZBGRPC extends GRPCClient {

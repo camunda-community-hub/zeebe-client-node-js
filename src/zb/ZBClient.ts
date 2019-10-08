@@ -10,6 +10,7 @@ import * as ZB from '../lib/interfaces'
 import { OAuthProvider } from '../lib/OAuthProvider'
 // tslint:disable-next-line: no-duplicate-imports
 import { Utils } from '../lib/utils'
+import { ZBLogger } from '../lib/ZBLogger'
 import { ZBWorker } from './ZBWorker'
 
 const idColors = [
@@ -23,8 +24,14 @@ const idColors = [
 export class ZBClient {
 	private static readonly DEFAULT_MAX_RETRIES = 50
 	private static readonly DEFAULT_MAX_RETRY_TIMEOUT = 5000
+	private static readonly DEFAULT_CONNECTION_TOLERANCE = 3000
+	private static readonly DEFAULT_LONGPOLL_PERIOD = 60000
+	public connectionTolerance: number = ZBClient.DEFAULT_CONNECTION_TOLERANCE
+	public connected = false
 	public gatewayAddress: string
 	public loglevel: ZB.Loglevel
+	public onReady?: () => void
+	public onConnectionError?: () => void
 	private closePromise?: Promise<any>
 	private closing = false
 	// A gRPC channel for the ZBClient to execute commands on
@@ -38,6 +45,9 @@ export class ZBClient {
 	private oAuth?: OAuthProvider
 	private useTLS: boolean
 	private stdout: any
+	private lastReady?: Date
+	private lastConnectionError?: Date
+	private logger: ZBLogger
 
 	/**
 	 *
@@ -55,13 +65,21 @@ export class ZBClient {
 		}
 		const opts = options ? options : {}
 		this.options = {
+			longPoll: ZBClient.DEFAULT_LONGPOLL_PERIOD,
 			...opts,
 			retry: opts.retry !== false,
 		}
-		this.loglevel =
+		this.options.loglevel =
 			(process.env.ZB_NODE_LOG_LEVEL as ZB.Loglevel) ||
+			(process.env.ZEEBE_NODE_LOG_LEVEL as ZB.Loglevel) ||
 			this.options.loglevel ||
 			'INFO'
+		this.loglevel = this.options.loglevel
+
+		this.logger = new ZBLogger({
+			loglevel: this.loglevel,
+			taskType: 'ZBClient',
+		})
 
 		this.options = ConfigurationHydrator.configure(
 			gatewayAddress,
@@ -77,7 +95,14 @@ export class ZBClient {
 			this.options.useTLS === true ||
 			(!!this.options.oAuth && this.options.useTLS !== false)
 
-		this.gRPCClient = this.constructGrpcClient()
+		this.connectionTolerance =
+			this.options.connectionTolerance || this.connectionTolerance
+		this.onConnectionError = this.options.onConnectionError
+		this.onReady = this.options.onReady
+		this.gRPCClient = this.constructGrpcClient({
+			onConnectionError: () => this._onConnectionError(),
+			onReady: () => this._onReady(),
+		})
 
 		this.retry = this.options.retry !== false
 		this.maxRetries =
@@ -85,6 +110,9 @@ export class ZBClient {
 		this.maxRetryTimeout =
 			this.options.maxRetryTimeout || ZBClient.DEFAULT_MAX_RETRY_TIMEOUT
 		this.stdout = this.options.stdout || console
+		if (this.onReady || this.onConnectionError) {
+			this.topology()
+		}
 	}
 
 	/**
@@ -113,10 +141,39 @@ export class ZBClient {
 			throw new Error('Client is closing. No worker creation allowed!')
 		}
 		const idColor = idColors[this.workerCount++ % idColors.length]
+		onConnectionError = onConnectionError || options.onConnectionError
+		const onReady = options.onReady
+		// We use the worker to notify up to the ZBClient when there is a connection failure
+		// Otherwise the ZBClient only knows there is a failure when it tries to execute a command
+		// This way, a top-level handler on the ZBClient can be informed whenever we know the connection
+		// has failed. Workers know about it fast.
+		// tslint:disable-next-line: variable-name
+		const _onConnectionError = (err?: any) => {
+			this._onConnectionError()
+			// Allow a per-worker handler for specialised behaviour
+			if (onConnectionError) {
+				onConnectionError(err)
+			}
+		}
+		// tslint:disable-next-line: variable-name
+		const _onReady = () => {
+			this._onReady()
+			if (onReady) {
+				onReady()
+			}
+		}
 		// Merge parent client options with worker override
-		options = { ...this.options, ...options }
+		options = {
+			...this.options,
+			loglevel: this.loglevel,
+			onReady: undefined, // Do not inherit client handler
+			...options,
+		}
 		// Give worker its own gRPC connection
-		const workerGRPCClient = this.constructGrpcClient()
+		const workerGRPCClient = this.constructGrpcClient({
+			onConnectionError: _onConnectionError,
+			onReady: _onReady,
+		})
 		const worker = new ZBWorker<
 			WorkerInputVariables,
 			CustomHeaderShape,
@@ -294,7 +351,7 @@ export class ZBClient {
 			version,
 		}
 
-		return options.retry === false
+		return options.retry === true
 			? this.executeOperation(() =>
 					this.gRPCClient.createWorkflowInstanceSync(
 						stringifyVariables(createWorkflowInstanceRequest)
@@ -337,11 +394,20 @@ export class ZBClient {
 		)
 	}
 
-	private constructGrpcClient() {
+	private constructGrpcClient({
+		onReady,
+		onConnectionError,
+	}: {
+		onReady?: () => void
+		onConnectionError?: () => void
+	}) {
 		return new GRPCClient({
+			connectionTolerance: this.connectionTolerance,
 			host: this.gatewayAddress,
 			loglevel: this.loglevel,
 			oAuth: this.oAuth,
+			onConnectionError,
+			onReady,
 			options: { longPoll: this.options.longPoll },
 			packageName: 'gateway_protocol',
 			protoPath: path.join(__dirname, '../../proto/zeebe.proto'),
@@ -366,6 +432,39 @@ export class ZBClient {
 			: operation()
 	}
 
+	private _onConnectionError() {
+		this.connected = false
+		if (this.onConnectionError) {
+			if (this.lastConnectionError) {
+				const now = new Date()
+				const delta = now.valueOf() - this.lastConnectionError.valueOf()
+				if (delta > this.connectionTolerance / 2) {
+					// @TODO is this the right window?
+					this.onConnectionError()
+				}
+			} else {
+				this.onConnectionError()
+			}
+			this.lastConnectionError = new Date()
+		}
+	}
+
+	private _onReady() {
+		this.connected = true
+		if (this.onReady) {
+			if (this.lastReady) {
+				const now = new Date()
+				const delta = now.valueOf() - this.lastReady.valueOf()
+				if (delta > this.connectionTolerance / 2) {
+					// @TODO is this the right window?
+					this.onReady()
+				}
+			} else {
+				this.onReady()
+			}
+			this.lastReady = new Date()
+		}
+	}
 	/**
 	 * This function takes a gRPC operation that returns a Promise as a function, and invokes it.
 	 * If the operation throws gRPC error 14, this function will continue to try it until it succeeds
@@ -376,24 +475,25 @@ export class ZBClient {
 		operation: () => Promise<T>,
 		retries = this.maxRetries
 	): Promise<T> {
-		const c = console
 		return promiseRetry(
 			(retry, n) => {
 				if (this.closing || this.gRPCClient.channelClosed) {
 					return Promise.resolve() as any
 				}
 				if (n > 1) {
-					c.error(
+					this.logger.error(
 						`gRPC connection is in failed state. Attempt ${n}. Retrying in 5s...`
 					)
 				}
 				return operation().catch(err => {
-					// This could be DNS resolution, or the gRPC gateway is not reachable yet
+					// This could be DNS resolution, or the gRPC gateway is not reachable yet, or Backpressure
 					const isNetworkError =
 						err.message.indexOf('14') === 0 ||
 						err.message.indexOf('Stream removed') !== -1
-					if (isNetworkError) {
-						c.error(`${err.message}`)
+					const isBackpressure =
+						err.message.indexOf('8') === 0 || err.code === 8
+					if (isNetworkError || isBackpressure) {
+						this.logger.error(`${err.message}`)
 						retry(err)
 					}
 					// The gRPC channel will be closed if close has been called

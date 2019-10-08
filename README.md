@@ -76,7 +76,7 @@ If no workers have been started, this can be fatal to the process if it is not h
 
 To mitigate against this, the Node client implements some client-side gRPC operation retry logic by default. This can be configured, including disabled, via configuration in the client constructor.
 
--   Operations retry, but only for [gRPC error code 14](https://github.com/grpc/grpc/blob/master/doc/statuscodes.md) - indicating a transient network failure. This can be caused by passing in an unresolvable gateway address (`14: DNS Resolution failed`), or by the gateway not being ready yet (`14: UNAVAILABLE: failed to connect to all addresses`).
+-   Operations retry, but only for [gRPC error codes 8 and 14](https://github.com/grpc/grpc/blob/master/doc/statuscodes.md) - indicating resource exhaustion (8) or transient network failure (14). Resource exhaustion occurs when the broker starts backpressure due to latency because of load. Network failure can be caused by passing in an unresolvable gateway address (`14: DNS Resolution failed`), or by the gateway not being ready yet (`14: UNAVAILABLE: failed to connect to all addresses`).
 -   Operations that fail for other reasons, such as deploying an invalid bpmn file or cancelling a workflow that does not exist, do not retry.
 -   Retry is enabled by default, and can be disabled by passing { retry: false } to the client constructor.
 -   `maxRetries` and `maxRetryTimeout` are also configurable through the constructor options. By default, if not supplied, the values are:
@@ -91,7 +91,49 @@ const zbc = new ZB.ZBClient(gatewayAddress, {
 
 Retry is provided by [promise-retry](https://www.npmjs.com/package/promise-retry), and the back-off strategy is simple ^2.
 
-Additionally, the gRPC Client will contiually reconnect when in a failed state.
+Additionally, the gRPC Client will continually reconnect when in a failed state, such as when the gateway goes away due to pod rescheduling on Kubernetes.
+
+### onReady(), onConnectionError(), and connected
+
+The client has a `connected` property that can be examined to determine if it has a gRPC connection to the gateway.
+
+The client and the worker can take an optional `onReady()` and `onConnectionError()` handler in their options, like this:
+
+```TypeScript
+const zbc = new ZB.ZBClient({
+	onReady: () => console.log(`Connected!`),
+	onConnectionError: () => console.log(`Disconnected!`)
+})
+
+const zbWorker = zbc.createWorker(
+	null,
+	'demo-service',
+	handler,
+	{
+		onReady: () => console.log(`Worker connected!`),
+		onConnectionError: () => console.log(`Worker disconnected!`)
+	})
+```
+
+These handlers are called whenever the gRPC channel is established or lost. As the channel will jitter when it is lost, there is a `connectionTolerance` property that determines how long the connection must be in a connected or failed state before the handler is called. By default this is 3000ms. You can specify another value like this:
+
+```TypeScript
+const zbc = new ZB.ZBClient({
+	onReady: () => console.log(`Connected!`),
+	onConnectionError: () => console.log(`Disconnected!`),
+	connectionTolerance: 5000
+})
+
+const zbWorker = zbc.createWorker(
+	null,
+	'demo-service',
+	handler,
+	{
+		onReady: () => console.log(`Worker connected!`),
+		onConnectionError: () => console.log(`Worker disconnected!`),
+		connectionTolerance: 35000
+	})
+```
 
 ### TLS
 
@@ -183,17 +225,17 @@ const ZB = require('zeebe-node')
 
 const zbc = new ZB.ZBClient('localhost:26500')
 
-const zbWorker = zbc.createWorker('test-worker', 'demo-service', handler)
+const zbWorker = zbc.createWorker(null, 'demo-service', handler)
 
 function handler(job, complete) {
 	console.log('Task variables', job.variables)
-	let updatedVariables = Object.assign({}, job.variables, {
-		updatedProperty: 'newValue',
-	})
 
 	// Task worker business logic goes here
+	const updateToBrokerVariables = {
+		updatedProperty: 'newValue',
+	}
 
-	complete(updatedVariables)
+	complete(updateToBrokerVariables)
 }
 ```
 
@@ -261,18 +303,22 @@ complete.failure('This is a critical failure and will raise an incident', 0)
 
 ### Long polling
 
-With Zeebe 0.21 onward, long polling is supported for clients. Rather than polling continuously for work and getting nothing back, a client can poll once and leave the request open until work appears. This reduces network traffic and CPU utilization in the server. Every JobActivation Request is appended to the event log, so continuous polling can significantly impact broker performance, especially when an exporter is loaded (see [here](https://github.com/creditsenseau/zeebe-client-node-js/issues/64#issuecomment-520233275)).
+With Zeebe 0.21 onward, long polling is supported for clients, and is used by default. Rather than polling continuously for work and getting nothing back, a client can poll once and leave the request open until work appears. This reduces network traffic and CPU utilization in the server. Every JobActivation Request is appended to the event log, so continuous polling can significantly impact broker performance, especially when an exporter is loaded (see [here](https://github.com/creditsenseau/zeebe-client-node-js/issues/64#issuecomment-520233275)).
 
-To use long pollling, pass in a long poll timeout in milliseconds to the client. All workers created with that client will use it.
+The default long polling period is 60000ms (60s).
 
-Long polling for workers is enabled in the ZBClient, like this:
+To use a different long polling period, pass in a long poll timeout in milliseconds to the client. All workers created with that client will use it. Alternatively, set a period per-worker.
+
+Long polling for workers is configured in the ZBClient like this:
 
 ```typescript
 const zbc = new ZBClient('serverAddress', {
-	longPoll: 600000, // Ten minutes in millis
+	longPoll: 600000, // Ten minutes in millis - inherited by workers
 })
 
-const longPollingWorker = zbc.createWorker(uuid.v4(), 'task-type', handler)
+const longPollingWorker = zbc.createWorker(null, 'task-type', handler, {
+	longPoll: 120000, // override client, poll 2m
+})
 ```
 
 ### Start a Workflow Instance
@@ -377,7 +423,7 @@ const zbc = new ZBClient('localhost', { loglevel: 'DEBUG' })
 And also via the environment:
 
 ```bash
-ZB_NODE_LOG_LEVEL='ERROR' node start.js
+ZEEBE_NODE_LOG_LEVEL='ERROR' node start.js
 ```
 
 By default the library uses `console.info` and `console.error` for logging. You can also pass in a custom logger, such as [pino](https://github.com/pinojs/pino):
@@ -449,8 +495,8 @@ For each feature:
 
 | Name                                                         |
 | ------------------------------------------------------------ |
-| **[Colin Raddatz](https://github.com/ColRad)**               |
 | **[Josh Wulf](https://github.com/jwulf)**                    |
+| **[Colin Raddatz](https://github.com/ColRad)**               |
 | **[Jarred Filmer](https://github.com/BrighTide)**            |
 | **[Timothy Colbert](https://github.com/s3than)**             |
 | **[Olivier Albertini](https://github.com/OlivierAlbertini)** |

@@ -1,48 +1,20 @@
 import { ZBClient } from '../..'
 
-process.env.ZB_NODE_LOG_LEVEL = process.env.ZB_NODE_LOG_LEVEL || 'NONE'
+process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 const gatewayAddress = process.env.ZEEBE_GATEWAY_ADDRESS || '0.0.0.0:26500'
 
 describe('ZBWorker', () => {
-	let wf1
 	let wf2
 
 	afterAll(async () => {
 		const zbc = new ZBClient(gatewayAddress)
-		await zbc.cancelWorkflowInstance(wf1.workflowInstanceKey)
 		await zbc.cancelWorkflowInstance(wf2.workflowInstanceKey)
 		await zbc.close()
 	})
 
-	it("Doesn't long poll by default", async done => {
-		const zbc = new ZBClient(gatewayAddress)
-		const res = await zbc.deployWorkflow(
-			'./src/__tests__/testdata/Worker-LongPoll.bpmn'
-		)
-		expect(res.workflows.length).toBe(1)
-
-		zbc.createWorker(
-			'test',
-			'console-log-long-poll',
-			async (job, complete, worker) => {
-				expect(job.workflowInstanceKey).toBe(wf1.workflowInstanceKey)
-				complete.success(job.variables)
-				expect(worker.pollCount > 5).toBe(true)
-				await zbc.close()
-				done()
-			},
-			{ loglevel: 'ERROR', debug: true }
-		)
-		setTimeout(async () => {
-			wf1 = await zbc.createWorkflowInstance('long-poll', {})
-		}, 3000)
-	})
-
-	it('Can long poll', async done => {
+	it('Does long poll by default', async done => {
 		jest.setTimeout(30000)
-		const zbcLongPoll = new ZBClient(gatewayAddress, {
-			longPoll: 600000,
-		})
+		const zbcLongPoll = new ZBClient(gatewayAddress)
 		const res = await zbcLongPoll.deployWorkflow(
 			'./src/__tests__/testdata/Worker-LongPoll.bpmn'
 		)

@@ -29,9 +29,6 @@ export class ZBWorker<
 	private closing = false
 	private closed = false
 	private id = uuid.v4()
-	// The handle for the fast poll timer
-	private fastPollHandle?: NodeJS.Timeout
-	private pollInterval: number
 	private taskHandler: ZB.ZBWorkerTaskHandler<
 		WorkerInputVariables,
 		CustomHeaderShape,
@@ -47,8 +44,6 @@ export class ZBWorker<
 	private keepAlive: NodeJS.Timer
 	// Used to prevent worker from exiting when no timers active
 	private alivenessBit: number = 0
-	// Used to block fast poll when an ActivateJobRequest is in-flight
-	private fastPollInFlight = false
 	private stalled = false
 
 	constructor({
@@ -84,14 +79,13 @@ export class ZBWorker<
 		this.taskType = taskType
 		this.maxActiveJobs = options.maxJobsToActivate || 32
 		this.timeout = options.timeout || 1000
-		this.pollInterval = options.pollInterval || 100
 		this.longPoll = options.longPoll
 		this.id = id || uuid.v4()
 		// Set options.debug to true to count the number of poll requests for testing
 		// See the Worker-LongPoll test
 		this.debug = options.debug === true
 		this.gRPCClient = gRPCClient
-		const loglevel = options.loglevel || 'INFO'
+		const loglevel = options.loglevel!
 		this.cancelWorkflowOnException =
 			options.failWorkflowOnException || false
 		this.zbClient = zbClient
@@ -125,10 +119,6 @@ export class ZBWorker<
 		this.closePromise = new Promise(resolve => {
 			// this.closing prevents the worker from starting work on any new tasks
 			this.closing = true
-			if (this.fastPollHandle) {
-				// Stop polling for jobs
-				clearInterval(this.fastPollHandle)
-			}
 			if (this.restartPollingAfterLongPollTimeout) {
 				clearTimeout(this.restartPollingAfterLongPollTimeout)
 			}
@@ -156,15 +146,7 @@ export class ZBWorker<
 
 	public work = () => {
 		this.logger.log(`Ready for ${this.taskType}...`)
-		if (this.longPoll) {
-			this.longPollLoop()
-		} else {
-			this.shortPollLoop()
-			this.fastPollHandle = setInterval(
-				() => this.shortPollLoop(),
-				this.pollInterval
-			)
-		}
+		this.longPollLoop()
 	}
 
 	public completeJob(
@@ -195,35 +177,8 @@ export class ZBWorker<
 		this.logger.error(`Stalled on gRPC error`)
 		this.gRPCClient.once('ready', () => {
 			this.stalled = false
-			this.fastPollInFlight = false
-			if (this.longPoll) {
-				this.longPollLoop()
-			}
+			this.longPollLoop()
 		})
-	}
-
-	private async shortPollLoop() {
-		if (this.fastPollInFlight) {
-			return
-		}
-		this.fastPollInFlight = true
-		const result = await this.activateJobs()
-
-		if (result.stream) {
-			result.stream.on('end', () => {
-				this.logger.debug('Fast poll stream end')
-				this.fastPollInFlight = false
-			})
-		}
-		if (result.atCapacity) {
-			result.atCapacity.once(
-				'available',
-				() => (this.fastPollInFlight = false)
-			)
-		}
-		if (result.error) {
-			this.fastPollInFlight = true
-		}
 	}
 
 	private async longPollLoop() {
@@ -241,10 +196,6 @@ export class ZBWorker<
 				result.stream.removeAllListeners()
 				this.longPollLoop()
 			})
-			// result.stream.on('data', () => {
-			// 	this.logger.debug('Long poll loop on data')
-			// 	clearTimeout(this.restartPollingAfterLongPollTimeout!)
-			// })
 			// We do this here because activateJobs may not result in an open gRPC call
 			// for example, if the worker is at capacity
 			if (!this.closing) {
@@ -306,7 +257,6 @@ export class ZBWorker<
 				this.pollCount++
 			}
 		} catch (error) {
-			// this.handleGrpcError(error)
 			return {
 				error,
 			}
@@ -317,7 +267,6 @@ export class ZBWorker<
 			if (this.closing) {
 				return
 			}
-			this.fastPollInFlight = false
 			const parsedVariables = res.jobs.map(parseVariables)
 			this.activeJobs += parsedVariables.length
 			// Call task handler for each new job

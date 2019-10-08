@@ -1,3 +1,11 @@
+# Version 0.21.0
+
+-   Long-polling is now the default.
+-   `connected` property added to ZBClient.
+-   `onConnectionError()`, `onReady()`, and `connectionTolerance` added to ZBClient and ZBWorker.
+-   gRPC retry on gRPC Error 8 (RESOURCE_EXHAUSTED) due to Broker Backpressure.
+-   Deprecate `ZB_NODE_LOG_LEVEL`, add `ZEEBE_NODE_LOG_LEVEL`.
+
 # Version 0.20.6
 
 -   _BREAKING CHANGE_: Remove `complete()` in job handler callback. Use `complete.success()`.
@@ -10,7 +18,6 @@
 # Version v0.20.1
 
 • Add long polling support. See [#64](https://github.com/creditsenseau/zeebe-client-node-js/issues/64).
-• @TODO: Add authentication via JWT.
 
 # Version v0.20
 
