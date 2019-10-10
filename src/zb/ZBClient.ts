@@ -217,12 +217,12 @@ export class ZBClient {
 
 	/**
 	 *
-	 * @param workflow - A path or array of paths to .bpmn files.
+	 * @param workflow - A path or array of paths to .bpmn files or an object describing the workflow
 	 * @param {redeploy?: boolean} - Redeploy workflow. Defaults to true.
 	 * If set false, will not redeploy a workflow that exists.
 	 */
 	public async deployWorkflow(
-		workflow: string | string[]
+		workflow: string | string[] | { definition: Buffer; name: string }
 	): Promise<ZB.DeployWorkflowResponse> {
 		const workflows = Array.isArray(workflow) ? workflow : [workflow]
 
@@ -238,11 +238,21 @@ export class ZBClient {
 		}
 
 		const workFlowRequests: ZB.WorkflowRequestObject[] = workflows.map(
-			wf => ({
-				definition: readFile(wf),
-				name: path.basename(wf),
-				type: 1,
-			})
+			wf => {
+				if (typeof wf === 'object') {
+					return {
+						definition: wf.definition,
+						name: wf.name,
+						type: 1,
+					}
+				} else {
+					return {
+						definition: readFile(wf),
+						name: path.basename(wf),
+						type: 1,
+					}
+				}
+			}
 		)
 
 		if (workFlowRequests.length > 0) {
