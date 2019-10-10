@@ -75,9 +75,11 @@ export class ZBClient {
 			this.options.loglevel ||
 			'INFO'
 		this.loglevel = this.options.loglevel
+		this.stdout = this.options.stdout || console
 
 		this.logger = new ZBLogger({
 			loglevel: this.loglevel,
+			stdout: this.stdout,
 			taskType: 'ZBClient',
 		})
 
@@ -109,7 +111,6 @@ export class ZBClient {
 			this.options.maxRetries || ZBClient.DEFAULT_MAX_RETRIES
 		this.maxRetryTimeout =
 			this.options.maxRetryTimeout || ZBClient.DEFAULT_MAX_RETRY_TIMEOUT
-		this.stdout = this.options.stdout || console
 		if (this.onReady || this.onConnectionError) {
 			this.topology()
 		}
