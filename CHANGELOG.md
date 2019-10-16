@@ -1,3 +1,8 @@
+# Version 0.21.1
+
+-   Feature: `ZBClient.deployWorkflow()` now accepts an object containing a buffer.
+-   Fix: Pass stdout to ZBLogger and GRPCClient.
+
 # Version 0.21.0
 
 -   Long-polling is now the default.

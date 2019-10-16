@@ -58,13 +58,21 @@ const ZB = require('zeebe-node')
 
 ```javascript
 const ZB = require('zeebe-node')
+const fs = require('fs')
 
 ;(async () => {
-	const zbc = new ZB.ZBClient('localhost:26500')
+	const zbc = new ZB.ZBClient() // localhost:26500 || ZEEBE_GATEWAY_ADDRESS
 
 	const res = await zbc.deployWorkflow('./domain-mutation.bpmn')
-
 	console.log(res)
+
+	// Deploy multiple with an array of filepaths
+	await zbc.deployWorkflow(['./wf1.bpmn', './wf2.bpmn'])
+
+	const buffer = fs.readFileSync('./wf3.bpmn')
+
+	// Deploy from an in-memory buffer
+	await zbc.deployWorkflow({ definition: , name: 'wf3.bpmn'})
 })()
 ```
 
