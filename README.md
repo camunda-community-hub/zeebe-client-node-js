@@ -508,3 +508,4 @@ For each feature:
 | **[Jarred Filmer](https://github.com/BrighTide)**            |
 | **[Timothy Colbert](https://github.com/s3than)**             |
 | **[Olivier Albertini](https://github.com/OlivierAlbertini)** |
+| **[Patrick Dehn](https://github.com/pedesen)**               |

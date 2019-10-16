@@ -1,7 +1,7 @@
 # Version 0.21.1
 
--   Feature: `ZBClient.deployWorkflow()` now accepts an object containing a buffer.
--   Fix: Pass stdout to ZBLogger and GRPCClient.
+-   Feature: `ZBClient.deployWorkflow()` now accepts an object containing a buffer. (Thanks Patrick Dehn!)
+-   Fix: Pass stdout to ZBLogger and GRPCClient. (Thanks Patrick Dehn!)
 
 # Version 0.21.0
 
