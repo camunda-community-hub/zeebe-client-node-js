@@ -11,10 +11,10 @@ describe('onReady Handler', () => {
 				called = true
 			},
 		}) // Doesn't exist!!!
-		setTimeout(() => {
+		setTimeout(async () => {
 			expect(called).toBe(false)
 			expect(zbc2.connected).toBe(false)
-			zbc2.close()
+			await zbc2.close()
 			done()
 		}, 4000)
 	})
@@ -27,10 +27,10 @@ describe('onReady Handler', () => {
 			},
 		})
 
-		setTimeout(() => {
+		setTimeout(async () => {
 			expect(called).toBe(1)
 			expect(zbc2.connected).toBe(true)
-			zbc2.close()
+			await zbc2.close()
 			done()
 		}, 4000)
 	})

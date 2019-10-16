@@ -223,9 +223,57 @@ export class GRPCClient extends EventEmitter {
 		return this.listNameMethods
 	}
 
-	public close() {
-		this.client.close()
-		this.channelClosed = true
+	public close(timeout = 5000) {
+		return new Promise((resolve, reject) => {
+			let alreadyClosed = false
+			const gRPC = this.client
+			let state: any
+			try {
+				state = gRPC.getChannel().getConnectivityState(false)
+			} catch (e) {
+				const msg = e.toString()
+				alreadyClosed = msg.includes(
+					'Cannot call getConnectivityState on a closed Channel'
+				)
+				if (alreadyClosed) {
+					setTimeout(() => resolve(), 2000)
+				}
+			}
+			if (!alreadyClosed) {
+				this.logger.info(
+					`GRPC Channel State: ${connectivityState[state]}`
+				)
+				const deadline = new Date().setSeconds(
+					new Date().getSeconds() + 300
+				)
+				gRPC.getChannel().watchConnectivityState(
+					state,
+					deadline,
+					async () => {
+						try {
+							const newState = gRPC
+								.getChannel()
+								.getConnectivityState(false)
+							this.logger.info(
+								`GRPC Channel State: ${connectivityState[newState]}`
+							)
+						} catch (e) {
+							const msg = e.toString()
+							alreadyClosed = msg.includes(
+								'Cannot call getConnectivityState on a closed Channel'
+							)
+							this.logger.info(`Closed: ${alreadyClosed}`)
+							if (alreadyClosed) {
+								setTimeout(() => resolve(), 2000)
+							}
+						}
+					}
+				)
+			}
+			this.client.close()
+			this.channelClosed = true
+			setTimeout(() => (alreadyClosed ? null : reject()), timeout)
+		})
 	}
 
 	private async getJWT() {

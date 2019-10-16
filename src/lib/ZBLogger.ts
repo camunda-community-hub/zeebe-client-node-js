@@ -1,5 +1,6 @@
 import { Chalk } from 'chalk'
 import dayjs from 'dayjs'
+import * as stackTrace from 'stack-trace'
 import { Loglevel, ZBWorkerLoggerOptions } from './interfaces'
 
 export class ZBLogger {
@@ -40,10 +41,11 @@ export class ZBLogger {
 		if (this.loglevel === 'NONE' || this.loglevel === 'ERROR') {
 			return
 		}
+		const frame = stackTrace.get()[1]
 		const msg =
 			optionalParameters.length > 0
-				? this.makeMessage(30, message, optionalParameters)
-				: this.makeMessage(30, message)
+				? this.makeMessage(frame, 30, message, optionalParameters)
+				: this.makeMessage(frame, 30, message)
 		if (this.stdout === console) {
 			this.stdout.info(msg)
 		} else {
@@ -55,10 +57,12 @@ export class ZBLogger {
 		if (this.loglevel === 'NONE') {
 			return
 		}
+		const frame = stackTrace.get()[1]
+
 		const msg =
 			optionalParameters.length > 0
-				? this.makeMessage(50, message, optionalParameters)
-				: this.makeMessage(50, message)
+				? this.makeMessage(frame, 50, message, optionalParameters)
+				: this.makeMessage(frame, 50, message)
 		this.stdout.info(msg)
 	}
 
@@ -66,10 +70,12 @@ export class ZBLogger {
 		if (this.loglevel !== 'DEBUG') {
 			return
 		}
+		const frame = stackTrace.get()[1]
+
 		const msg =
 			optionalParameters.length > 0
-				? this.makeMessage(20, message, optionalParameters)
-				: this.makeMessage(20, message)
+				? this.makeMessage(frame, 20, message, optionalParameters)
+				: this.makeMessage(frame, 20, message)
 		if (this.stdout === console) {
 			this.stdout.info(this._colorise(msg))
 		} else {
@@ -81,10 +87,12 @@ export class ZBLogger {
 		if (this.loglevel === 'NONE' || this.loglevel === 'ERROR') {
 			return
 		}
+		const frame = stackTrace.get()[1]
+
 		const msg =
 			optionalParameters.length > 0
-				? this.makeMessage(30, message, optionalParameters)
-				: this.makeMessage(30, message)
+				? this.makeMessage(frame, 30, message, optionalParameters)
+				: this.makeMessage(frame, 30, message)
 		if (this.stdout === console) {
 			this.stdout.info(msg)
 		} else {
@@ -92,8 +100,14 @@ export class ZBLogger {
 		}
 	}
 
-	private makeMessage(level: number, message, ...optionalParameters) {
+	private makeMessage(
+		frame: stackTrace.StackFrame,
+		level: number,
+		message,
+		...optionalParameters
+	) {
 		const msg = {
+			context: `${frame.getFileName()}:${frame.getLineNumber()}`,
 			id: this.id,
 			level,
 			message,
