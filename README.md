@@ -72,7 +72,7 @@ const fs = require('fs')
 	const buffer = fs.readFileSync('./wf3.bpmn')
 
 	// Deploy from an in-memory buffer
-	await zbc.deployWorkflow({ definition: , name: 'wf3.bpmn'})
+	await zbc.deployWorkflow({ definition: buffer, name: 'wf3.bpmn' })
 })()
 ```
 
