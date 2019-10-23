@@ -79,7 +79,7 @@ describe('onConnectionError Handler', () => {
 		setTimeout(() => {
 			expect(zbc2.connected).toBe(false)
 			zbc2.close()
-			expect(called).toBe(2)
+			expect(called).toBeLessThanOrEqual(3)
 			done()
 		}, 15000)
 	})
