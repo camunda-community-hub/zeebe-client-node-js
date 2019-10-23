@@ -75,9 +75,11 @@ export class ZBClient {
 			this.options.loglevel ||
 			'INFO'
 		this.loglevel = this.options.loglevel
+		this.stdout = this.options.stdout || console
 
 		this.logger = new ZBLogger({
 			loglevel: this.loglevel,
+			stdout: this.stdout,
 			taskType: 'ZBClient',
 		})
 
@@ -109,7 +111,6 @@ export class ZBClient {
 			this.options.maxRetries || ZBClient.DEFAULT_MAX_RETRIES
 		this.maxRetryTimeout =
 			this.options.maxRetryTimeout || ZBClient.DEFAULT_MAX_RETRY_TIMEOUT
-		this.stdout = this.options.stdout || console
 		if (this.onReady || this.onConnectionError) {
 			this.topology()
 		}
@@ -219,12 +220,12 @@ export class ZBClient {
 
 	/**
 	 *
-	 * @param workflow - A path or array of paths to .bpmn files.
+	 * @param workflow - A path or array of paths to .bpmn files or an object describing the workflow
 	 * @param {redeploy?: boolean} - Redeploy workflow. Defaults to true.
 	 * If set false, will not redeploy a workflow that exists.
 	 */
 	public async deployWorkflow(
-		workflow: string | string[]
+		workflow: string | string[] | { definition: Buffer; name: string }
 	): Promise<ZB.DeployWorkflowResponse> {
 		const workflows = Array.isArray(workflow) ? workflow : [workflow]
 
@@ -240,11 +241,21 @@ export class ZBClient {
 		}
 
 		const workFlowRequests: ZB.WorkflowRequestObject[] = workflows.map(
-			wf => ({
-				definition: readFile(wf),
-				name: path.basename(wf),
-				type: 1,
-			})
+			wf => {
+				if (typeof wf === 'object') {
+					return {
+						definition: wf.definition,
+						name: wf.name,
+						type: 1,
+					}
+				} else {
+					return {
+						definition: readFile(wf),
+						name: path.basename(wf),
+						type: 1,
+					}
+				}
+			}
 		)
 
 		if (workFlowRequests.length > 0) {

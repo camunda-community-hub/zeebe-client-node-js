@@ -58,13 +58,21 @@ const ZB = require('zeebe-node')
 
 ```javascript
 const ZB = require('zeebe-node')
+const fs = require('fs')
 
 ;(async () => {
-	const zbc = new ZB.ZBClient('localhost:26500')
+	const zbc = new ZB.ZBClient() // localhost:26500 || ZEEBE_GATEWAY_ADDRESS
 
 	const res = await zbc.deployWorkflow('./domain-mutation.bpmn')
-
 	console.log(res)
+
+	// Deploy multiple with an array of filepaths
+	await zbc.deployWorkflow(['./wf1.bpmn', './wf2.bpmn'])
+
+	const buffer = fs.readFileSync('./wf3.bpmn')
+
+	// Deploy from an in-memory buffer
+	await zbc.deployWorkflow({ definition: buffer, name: 'wf3.bpmn' })
 })()
 ```
 
@@ -291,7 +299,7 @@ zbc.createWorker('test-worker', 'console-log', maybeFaultyHandler, {
 
 ### Completing tasks with success or failure
 
-To complete a task, the task worker handler function receives a `complete` method. This method has a `success` and a `failure` method (as well as being able to be called directly). Calling the method directly - `complete()` is the same as calling `complete.success()`.
+To complete a task, the task worker handler function receives a `complete` method. This method has a `success` and a `failure` method.
 
 Call `complete.success()` passing in a optional plain old JavaScript object (POJO) - a key:value map. These are variable:value pairs that will be used to update the workflow state in the broker. They will be merged with existing values. You can set an existing key to `null` or `undefined`, but there is no way to delete a key.
 
@@ -500,3 +508,4 @@ For each feature:
 | **[Jarred Filmer](https://github.com/BrighTide)**            |
 | **[Timothy Colbert](https://github.com/s3than)**             |
 | **[Olivier Albertini](https://github.com/OlivierAlbertini)** |
+| **[Patrick Dehn](https://github.com/pedesen)**               |
