@@ -353,7 +353,6 @@ export class ZBWorker<
 			)
 			this.logger.debug(job)
 			this.logger.error(e.message)
-
 			if (this.cancelWorkflowOnException) {
 				const { workflowInstanceKey } = job
 				this.logger.debug(
