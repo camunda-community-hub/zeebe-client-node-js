@@ -1,6 +1,7 @@
 # Version 0.21.2
 
 -   Fix: `ZBClient.close()` and `ZBWorker.close()` now return an awaitable Promise that guarantees the underlying gRPC channel is closed. It takes at least two seconds after jobs are drained to close the gRPC connection. When the `close` promise resolves, the gRPC channel is closed. Note that `ZBClient.close()` closes all workers created from that client.
+-   Feature: Log messages now include a `context` property with the stack frame that generated the log message.
 
 # Version 0.21.1
 
