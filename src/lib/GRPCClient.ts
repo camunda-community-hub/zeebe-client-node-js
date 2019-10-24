@@ -297,7 +297,7 @@ export class GRPCClient extends EventEmitter {
 			const deadline = new Date().setSeconds(
 				new Date().getSeconds() + 300
 			)
-			if (state === GrpcState.IDLE) {
+			if (state === GrpcState.IDLE || state === GrpcState.READY) {
 				return resolve(state)
 			}
 			gRPC.getChannel().watchConnectivityState(

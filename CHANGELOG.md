@@ -2,6 +2,7 @@
 
 -   Fix: `ZBClient.close()` and `ZBWorker.close()` now return an awaitable Promise that guarantees the underlying gRPC channel is closed. It takes at least two seconds after jobs are drained to close the gRPC connection. When the `close` promise resolves, the gRPC channel is closed. Note that `ZBClient.close()` closes all workers created from that client.
 -   Feature: Log messages now include a `context` property with the stack frame that generated the log message.
+-   Fix: Workers would stall for 180 seconds if they received a 504: Gateway Unavailable error on the HTTP2 transport. This was incorrectly treated as a gRPC channel failure. The code now checks the state of the gRPC channel when a transport error is thrown, rather than assuming it has failed. Fixes [#96](https://github.com/creditsenseau/zeebe-client-node-js/issues/96).
 
 # Version 0.21.1
 
