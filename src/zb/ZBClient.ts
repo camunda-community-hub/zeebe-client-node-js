@@ -198,14 +198,17 @@ export class ZBClient {
 	 * @returns Promise
 	 * @memberof ZBClient
 	 */
-	public async close() {
-		if (this.closePromise) {
-			return this.closePromise
-		}
-		// Prevent the creation of more workers
-		this.closing = true
-		await Promise.all(this.workers.map(w => w.close()))
-		this.gRPCClient.close() // close the client GRPC channel
+	public async close(timeout?: number) {
+		this.closePromise =
+			this.closePromise ||
+			new Promise(async resolve => {
+				// Prevent the creation of more workers
+				this.closing = true
+				await Promise.all(this.workers.map(w => w.close(timeout)))
+				await this.gRPCClient.close(timeout) // close the client GRPC channel
+				resolve()
+			})
+		return this.closePromise
 	}
 
 	/**

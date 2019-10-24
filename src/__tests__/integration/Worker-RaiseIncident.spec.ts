@@ -9,9 +9,9 @@ describe('ZBWorker', () => {
 	let wfi
 	const zbc = new ZBClient(gatewayAddress)
 
-	afterAll(() => {
+	afterAll(async () => {
 		zbc.cancelWorkflowInstance(wfi)
-		zbc.close()
+		await zbc.close()
 	})
 
 	it('Can raise an Operate incident with complete.failure()', async done => {

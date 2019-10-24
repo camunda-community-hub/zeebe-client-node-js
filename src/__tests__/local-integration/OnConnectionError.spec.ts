@@ -11,10 +11,10 @@ describe('onConnectionError Handler', () => {
 				called++
 			},
 		}) // Doesn't exist!!!
-		setTimeout(() => {
+		setTimeout(async () => {
 			expect(called).toBe(1)
 			expect(zbc2.connected).toBe(false)
-			zbc2.close()
+			await zbc2.close()
 			done()
 		}, 4000)
 	})
@@ -26,10 +26,10 @@ describe('onConnectionError Handler', () => {
 				called++
 			},
 		})
-		setTimeout(() => {
+		setTimeout(async () => {
 			expect(called).toBe(0)
 			expect(zbc2.connected).toBe(true)
-			zbc2.close()
+			await zbc2.close()
 			done()
 		}, 4000)
 	})
@@ -79,7 +79,7 @@ describe('onConnectionError Handler', () => {
 		setTimeout(() => {
 			expect(zbc2.connected).toBe(false)
 			zbc2.close()
-			expect(called).toBe(2)
+			expect(called).toBeLessThanOrEqual(3)
 			done()
 		}, 15000)
 	})
@@ -96,9 +96,9 @@ describe('onConnectionError Handler', () => {
 			}
 		)
 
-		setTimeout(() => {
+		setTimeout(async () => {
 			expect(zbc2.connected).toBe(false)
-			zbc2.close()
+			await zbc2.close()
 			expect(called).toBe(1)
 			done()
 		}, 4000)
@@ -118,9 +118,9 @@ describe('onConnectionError Handler', () => {
 			}
 		)
 
-		setTimeout(() => {
+		setTimeout(async () => {
 			expect(zbc2.connected).toBe(false)
-			zbc2.close()
+			await zbc2.close()
 			expect(called).toBe(1)
 			done()
 		}, 4000)
@@ -136,10 +136,10 @@ describe('onConnectionError Handler', () => {
 		zbc2.createWorkflowInstance(wf, {}).catch(() => {
 			wf = 'throw error away'
 		})
-		setTimeout(() => {
+		setTimeout(async () => {
 			expect(zbc2.connected).toBe(true)
 			expect(called).toBe(0)
-			zbc2.close()
+			await zbc2.close()
 			done()
 		}, 4000)
 	})

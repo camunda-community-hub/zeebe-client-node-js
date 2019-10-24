@@ -112,11 +112,11 @@ export class ZBWorker<
 	 * Returns a promise that the worker has stopped accepting tasks and
 	 * has drained all current active tasks. Will reject if you try to call it more than once.
 	 */
-	public close() {
+	public close(timeout?: number) {
 		if (this.closePromise) {
 			return this.closePromise
 		}
-		this.closePromise = new Promise(resolve => {
+		this.closePromise = new Promise(async resolve => {
 			// this.closing prevents the worker from starting work on any new tasks
 			this.closing = true
 			if (this.restartPollingAfterLongPollTimeout) {
@@ -131,12 +131,12 @@ export class ZBWorker<
 
 			if (this.activeJobs <= 0) {
 				clearInterval(this.keepAlive)
-				this.gRPCClient.close()
+				await this.gRPCClient.close(timeout)
 				resolve()
 			} else {
-				this.capacityEmitter.once('empty', () => {
+				this.capacityEmitter.once('empty', async () => {
 					clearInterval(this.keepAlive)
-					this.gRPCClient.close()
+					await this.gRPCClient.close(timeout)
 					resolve()
 				})
 			}
@@ -295,20 +295,11 @@ export class ZBWorker<
 
 	private async handleJob(job: ZB.ActivatedJob) {
 		const customHeaders = JSON.parse(job.customHeaders || '{}')
-		/**
-		 * Client-side timeout handler - removes jobs from the activeJobs count if timed out,
-		 * prevents diminished capacity of this worker due to handler misbehaviour.
-		 */
-		let taskTimedout = false
+
 		const taskId = uuid.v4()
 		this.logger.debug(
 			`Setting ${this.taskType} task timeout for ${taskId} to ${this.timeout}`
 		)
-		const timeoutCancel = setTimeout(() => {
-			taskTimedout = true
-			this.drainOne()
-			this.logger.log(`Timed out task ${taskId} for ${this.taskType}`)
-		}, this.timeout)
 
 		// Any unhandled exception thrown by the user-supplied code will bubble up and throw here.
 		// The task timeout handler above will deal with it.
@@ -336,7 +327,6 @@ export class ZBWorker<
 							`Failed job ${job.key} - ${errorMessage}`
 						)
 						this.drainOne()
-						clearTimeout(timeoutCancel)
 					}
 				},
 				success: async (completedVariables = {}) => {
@@ -344,19 +334,11 @@ export class ZBWorker<
 						jobKey: job.key,
 						variables: completedVariables,
 					})
-					clearTimeout(timeoutCancel)
-					if (!taskTimedout) {
-						this.drainOne()
-						this.logger.debug(
-							`Completed task ${taskId} for ${this.taskType}`
-						)
-						return true
-					} else {
-						this.logger.debug(
-							`Completed task ${taskId} for ${this.taskType}, however it had timed out.`
-						)
-						return false
-					}
+					this.drainOne()
+					this.logger.debug(
+						`Completed task ${taskId} for ${this.taskType}`
+					)
+					return true
 				},
 			}
 
@@ -366,13 +348,11 @@ export class ZBWorker<
 				this
 			)
 		} catch (e) {
-			clearTimeout(timeoutCancel)
 			this.logger.error(
 				`Caught an unhandled exception in a task handler for workflow instance ${job.workflowInstanceKey}:`
 			)
 			this.logger.debug(job)
 			this.logger.error(e.message)
-
 			if (this.cancelWorkflowOnException) {
 				const { workflowInstanceKey } = job
 				this.logger.debug(

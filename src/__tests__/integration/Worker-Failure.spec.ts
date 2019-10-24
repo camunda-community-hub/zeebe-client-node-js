@@ -11,7 +11,7 @@ describe('ZBWorker', () => {
 		zbc = new ZBClient(gatewayAddress)
 	})
 
-	afterEach(async () => {
+	afterEach(async done => {
 		try {
 			if (wf) {
 				await zbc.cancelWorkflowInstance(wf.workflowInstanceKey)
@@ -20,6 +20,7 @@ describe('ZBWorker', () => {
 			// console.log('Caught NOT FOUND') // @DEBUG
 		} finally {
 			await zbc.close() // Makes sure we don't forget to close connection
+			done()
 		}
 	})
 
@@ -46,7 +47,7 @@ describe('ZBWorker', () => {
 			},
 		})
 
-		zbc.createWorker(
+		const w = zbc.createWorker(
 			'test2',
 			'wait-worker-failure',
 			async (job, complete) => {
@@ -55,8 +56,7 @@ describe('ZBWorker', () => {
 				if (job.retries === 1) {
 					complete.success()
 					expect(job.retries).toBe(1)
-					done()
-					return
+					return w.close().then(() => done())
 				}
 				complete.failure('Triggering a retry')
 			},
@@ -65,7 +65,7 @@ describe('ZBWorker', () => {
 	})
 
 	it('Does not fail a workflow when the handler throws, by default', async done => {
-		jest.setTimeout(15000)
+		jest.setTimeout(17000)
 
 		const res = await zbc.deployWorkflow(
 			'./src/__tests__/testdata/Worker-Failure2.bpmn'
@@ -77,15 +77,16 @@ describe('ZBWorker', () => {
 		let alreadyFailed = false
 
 		// Faulty worker - throws an unhandled exception in task handler
-		zbc.createWorker(
+		const w = zbc.createWorker(
 			'test',
 			'console-log-worker-failure-2',
-			() => {
+			async (_, complete) => {
 				if (alreadyFailed) {
-					return
+					await zbc.cancelWorkflowInstance(wf.workflowInstanceKey) // throws if not found. Should NOT throw in this test
+					complete.success()
+					return w.close().then(() => done())
 				}
 				alreadyFailed = true
-				testWorkflowInstanceExists() // waits 700ms then checks
 				throw new Error(
 					'Unhandled exception in task handler for testing purposes'
 				) // Will be caught in the library
@@ -95,17 +96,6 @@ describe('ZBWorker', () => {
 				pollInterval: 10000,
 			}
 		)
-
-		function testWorkflowInstanceExists() {
-			setTimeout(async () => {
-				try {
-					await zbc.cancelWorkflowInstance(wf.workflowInstanceKey) // throws if not found. Should NOT throw in this test
-				} catch (e) {
-					throw e // Should not throw
-				}
-				done()
-			}, 700)
-		}
 	})
 
 	it('Fails a workflow when the handler throws and options.failWorkflowOnException is set', async done => {
@@ -120,12 +110,12 @@ describe('ZBWorker', () => {
 
 		let alreadyFailed = false
 		// Faulty worker
-		zbc.createWorker(
+		const w = zbc.createWorker(
 			'test',
 			'console-log-worker-failure-3',
 			() => {
 				if (alreadyFailed) {
-					// It polls 10 times a second, and we need it to only throw once
+					// It polls multiple times a second, and we need it to only throw once
 					return
 				}
 				alreadyFailed = true
@@ -145,7 +135,7 @@ describe('ZBWorker', () => {
 				try {
 					await zbc.cancelWorkflowInstance(wf.workflowInstanceKey) // throws if not found. SHOULD throw in this test
 				} catch (e) {
-					done()
+					w.close().then(() => done())
 				}
 			}, 1500)
 		}

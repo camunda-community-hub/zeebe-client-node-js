@@ -165,7 +165,7 @@ const zbc = new ZB.ZBClient("my-secure-broker.io:443", {
 		clientId: "myClientId",
 		clientSecret:
 		"randomClientSecret",
-		cacheOnDisk: false
+		cacheOnDisk: true
 	}
 }
 ```
