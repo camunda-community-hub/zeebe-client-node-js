@@ -106,7 +106,9 @@ export class ZBLogger {
 		message,
 		...optionalParameters
 	) {
+		// tslint:disable: object-literal-sort-keys
 		const msg = {
+			timestamp: new Date(),
 			context: `${frame.getFileName()}:${frame.getLineNumber()}`,
 			id: this.id,
 			level,
@@ -114,7 +116,6 @@ export class ZBLogger {
 			pollMode: this.pollMode,
 			taskType: this.taskType,
 			time: dayjs().format('YYYY MMM-DD HH:mm:ssA'),
-			timestamp: new Date(),
 		}
 
 		if (optionalParameters.length > 0) {

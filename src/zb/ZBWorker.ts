@@ -184,7 +184,11 @@ export class ZBWorker<
 	private async longPollLoop() {
 		const result = await this.activateJobs()
 		const start = Date.now()
-		this.logger.debug('Long poll loop', Object.keys(result)[0], start)
+		this.logger.debug(
+			`Long poll loop. this.longPoll: ${this.longPoll}`,
+			Object.keys(result)[0],
+			start
+		)
 		if (result.stream) {
 			// This event happens when the server cancels the call after the deadline
 			// And when it has completed a response with work
