@@ -139,11 +139,47 @@ export class GRPCClient extends EventEmitter {
 		const channelCredentials = useTLS
 			? credentials.createSsl()
 			: credentials.createInsecure()
+		// Options documented here: https://github.com/grpc/grpc/blob/master/include/grpc/impl/codegen/grpc_types.h
 		this.client = new proto[service](host, channelCredentials, {
+			/**
+			 * If set to zero, disables retry behavior.
+			 * Otherwise, transparent retries are enabled for all RPCs,
+			 * and configurable retries are enabled when they are configured
+			 * via the service config. For details, see:
+			 * https://github.com/grpc/proposal/blob/master/A6-client-retries.md
+			 */
 			'grpc.enable_retries': 1,
+			/**
+			 * The time between the first and second connection attempts,
+			 * in ms
+			 */
 			'grpc.initial_reconnect_backoff_ms': 1000,
+			/**
+			 * The maximum time between subsequent connection attempts,
+			 * in ms
+			 */
 			'grpc.max_reconnect_backoff_ms': 50000,
+			/**
+			 * The minimum time between subsequent connection attempts,
+			 * in ms
+			 */
 			'grpc.min_reconnect_backoff_ms': 1000,
+			/**
+			 * After a duration of this time the client/server
+			 * pings its peer to see if the transport is still alive.
+			 * Int valued, milliseconds.
+			 */
+			'grpc.keepalive_time_ms': 50000,
+			/**
+			 * After waiting for a duration of this time,
+			 * if the keepalive ping sender does
+			 * not receive the ping ack, it will close the
+			 * transport. Int valued, milliseconds.
+			 */
+			'grpc.keepalive_timeout_ms': 20000,
+			'grpc.http2.min_time_between_pings_ms': 15000,
+			'grpc.keepalive_permit_without_calls': 1,
+			'grpc.http2.max_pings_without_data': 0,
 		})
 		this.listNameMethods = []
 
