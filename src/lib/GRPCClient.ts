@@ -89,6 +89,7 @@ export class GRPCClient extends EventEmitter {
 		packageName,
 		protoPath,
 		service,
+		tasktype,
 		useTLS,
 		stdout = console,
 		onConnectionError,
@@ -102,6 +103,7 @@ export class GRPCClient extends EventEmitter {
 		packageName: string
 		protoPath: string
 		service: string
+		tasktype: string
 		useTLS: boolean
 		stdout: any
 		onConnectionError?: () => void
@@ -121,7 +123,7 @@ export class GRPCClient extends EventEmitter {
 			color: chalk.green,
 			id: 'gRPC Channel',
 			loglevel,
-			namespace: 'ZBWorker',
+			namespace: tasktype,
 			pollMode: this.longPoll ? 'Long Poll' : 'Fast Poll',
 			stdout,
 			taskType: 'gRPC Channel',

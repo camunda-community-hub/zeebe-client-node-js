@@ -104,6 +104,7 @@ export class ZBClient {
 		this.gRPCClient = this.constructGrpcClient({
 			onConnectionError: () => this._onConnectionError(),
 			onReady: () => this._onReady(),
+			tasktype: 'ZBClient',
 		})
 
 		this.retry = this.options.retry !== false
@@ -174,6 +175,7 @@ export class ZBClient {
 		const workerGRPCClient = this.constructGrpcClient({
 			onConnectionError: _onConnectionError,
 			onReady: _onReady,
+			tasktype: taskType,
 		})
 		const worker = new ZBWorker<
 			WorkerInputVariables,
@@ -411,9 +413,11 @@ export class ZBClient {
 	private constructGrpcClient({
 		onReady,
 		onConnectionError,
+		tasktype,
 	}: {
 		onReady?: () => void
 		onConnectionError?: () => void
+		tasktype: string
 	}) {
 		return new GRPCClient({
 			connectionTolerance: this.connectionTolerance,
@@ -427,6 +431,7 @@ export class ZBClient {
 			protoPath: path.join(__dirname, '../../proto/zeebe.proto'),
 			service: 'Gateway',
 			stdout: this.stdout,
+			tasktype,
 			useTLS: this.useTLS,
 		}) as ZB.ZBGRPC
 	}
