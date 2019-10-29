@@ -2,11 +2,12 @@
 
 -   Feature: Enable gRPC heartbeat. The gRPC heartbeat is intended to stop proxies from terminating the gRPC connection. See [#101](https://github.com/creditsenseau/zeebe-client-node-js/issues/101).
 -   Feature: gRPC channel logging now displays which worker the channel is for, or if it is for the ZBClient. See [#98](https://github.com/creditsenseau/zeebe-client-node-js/issues/98).
+-   Feature: Upgrade [grpc](https://www.npmjs.com/package/grpc) dependency from 1.22.0 to 1.23.4
 
 # Version 0.21.2
 
 -   Fix: `ZBClient.close()` and `ZBWorker.close()` now return an awaitable Promise that guarantees the underlying gRPC channel is closed. It takes at least two seconds after jobs are drained to close the gRPC connection. When the `close` promise resolves, the gRPC channel is closed. Note that `ZBClient.close()` closes all workers created from that client.
--   Fix: Workers would stall for 180 seconds if they received a 504: Gateway Unavailable error on the HTTP2 transport. This was incorrectly treated as a gRPC channel failure. The code now checks the state of the gRPC channel when a transport error is thrown, rather than assuming it has failed. Fixes [#96](https://github.com/creditsenseau/zeebe-client-node-js/issues/96).
+-   Fix: Workers would stall for 180 seconds if they received a 504: Gateway Unavailable error on the HTTP2 transport. This was incorrectly treated as a gRPC channel failure. The code now checks the state of the gRPC channel when a transport error is thrown, rather than assuming it has failed. See [#96](https://github.com/creditsenseau/zeebe-client-node-js/issues/96).
 -   Feature: Log messages now include a `context` property with the stack frame that generated the log message.
 
 # Version 0.21.1

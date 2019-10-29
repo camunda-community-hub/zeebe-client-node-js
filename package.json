@@ -1,5 +1,5 @@
 {
-	"name": "zeebe-node",
+	"name": "zeebe-node-next",
 	"version": "v0.21.3",
 	"description": "A Node.js client library for the Zeebe Microservices Orchestration Engine.",
 	"keywords": [
@@ -65,7 +65,7 @@
 		"debug": "^4.1.1",
 		"fast-xml-parser": "^3.12.12",
 		"got": "^9.6.0",
-		"grpc": "^1.22.0",
+		"grpc": "^1.23.4",
 		"promise-retry": "^1.1.1",
 		"stack-trace": "0.0.10",
 		"uuid": "^3.3.2"
