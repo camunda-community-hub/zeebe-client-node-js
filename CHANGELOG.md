@@ -2,7 +2,8 @@
 
 -   Feature: Enable gRPC heartbeat. The gRPC heartbeat is intended to stop proxies from terminating the gRPC connection. See [#101](https://github.com/creditsenseau/zeebe-client-node-js/issues/101).
 -   Feature: gRPC channel logging now displays which worker the channel is for, or if it is for the ZBClient. See [#98](https://github.com/creditsenseau/zeebe-client-node-js/issues/98).
--   Feature: Upgrade [grpc](https://www.npmjs.com/package/grpc) dependency from 1.22.0 to 1.23.4
+-   Chore: Upgrade [grpc](https://www.npmjs.com/package/grpc) dependency from 1.22.0 to 1.23.4
+-   Security: Upgraded [typedoc](https://typedoc.org) dev dependency to 0.15.0, removing 8487 known vulnerabilities. Note that this package is used to build documentation and not installed in applications that depend on zeebe-node.
 
 # Version 0.21.2
 

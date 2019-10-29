@@ -88,7 +88,7 @@
 		"tsc-watch": "^1.0.31",
 		"tslint": "^5.16.0",
 		"tslint-config-prettier": "^1.18.0",
-		"typedoc": "^0.14.2",
+		"typedoc": "^0.15.0",
 		"typedoc-plugin-sourcefile-url": "^1.0.4",
 		"typescript": "^3.2.2"
 	},
