@@ -342,6 +342,7 @@ export class ZBClient {
 		)
 	}
 
+	// tslint:disable: no-object-literal-type-assertion
 	/**
 	 *
 	 * Create and start execution of a workflow instance.
@@ -354,12 +355,15 @@ export class ZBClient {
 	public createWorkflowInstance<Variables = ZB.GenericWorkflowVariables>(
 		bpmnProcessId: string,
 		variables: Variables,
-		options: ZB.OperationOptions = {
+		options: ZB.OperationOptions = {} as ZB.OperationOptions
+	): Promise<ZB.CreateWorkflowInstanceResponse> {
+		options = {
 			maxRetries: this.maxRetries,
 			retry: true,
-		}
-	): Promise<ZB.CreateWorkflowInstanceResponse> {
-		const version = options.version || -1
+			version: -1,
+			...options,
+		} as ZB.OperationOptions
+		const version = options.version
 
 		const createWorkflowInstanceRequest: ZB.CreateWorkflowInstanceRequest = {
 			bpmnProcessId,
@@ -376,6 +380,48 @@ export class ZBClient {
 			: this.gRPCClient.createWorkflowInstanceSync(
 					stringifyVariables(createWorkflowInstanceRequest)
 			  )
+	}
+
+	public createWorkflowInstanceWithResult<
+		Variables = ZB.GenericWorkflowVariables,
+		Result = ZB.GenericWorkerOutputVariables
+	>(
+		bpmnProcessId: string,
+		variables: Variables,
+		options: ZB.OperationOptions & {
+			requestTimeout?: number
+		} = {} as ZB.OperationOptions
+	): Promise<ZB.CreateWorkflowInstanceWithResultResponse<Result>> {
+		options = {
+			maxRetries: this.maxRetries,
+			requestTimeout: 0,
+			retry: true,
+			version: -1,
+			...options,
+		} as ZB.OperationOptions
+		const version = options.version
+
+		const createWorkflowInstanceRequest: ZB.CreateWorkflowInstanceRequest = stringifyVariables(
+			{
+				bpmnProcessId,
+				variables: (variables as unknown) as object,
+				version,
+			}
+		)
+
+		return options.retry === true
+			? this.executeOperation(() =>
+					this.gRPCClient.createWorkflowInstanceWithResultSync<
+						Result
+					>({
+						request: createWorkflowInstanceRequest,
+						requestTimeout: options.requestTimeout!,
+					})
+			  )
+			: this.gRPCClient.createWorkflowInstanceWithResultSync<Result>({
+					request: createWorkflowInstanceRequest,
+					requestTimeout: options.requestTimeout!,
+			  })
 	}
 
 	public async cancelWorkflowInstance(
