@@ -28,6 +28,6 @@ describe('Await Outcome', () => {
 				retry: true,
 			}
 		)
-		expect(result.variables.targetValue).toBe(5)
+		expect(result.variables.sourceValue).toBe(5)
 	})
 })

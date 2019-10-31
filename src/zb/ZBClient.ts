@@ -3,7 +3,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import promiseRetry from 'promise-retry'
 import { v4 as uuid } from 'uuid'
-import { BpmnParser, stringifyVariables } from '../lib'
+import { BpmnParser, parseVariables, stringifyVariables } from '../lib'
 import { ConfigurationHydrator } from '../lib/ConfigurationHydrator'
 import { GRPCClient } from '../lib/GRPCClient'
 import * as ZB from '../lib/interfaces'
@@ -417,11 +417,13 @@ export class ZBClient {
 						request: createWorkflowInstanceRequest,
 						requestTimeout: options.requestTimeout!,
 					})
-			  )
-			: this.gRPCClient.createWorkflowInstanceWithResultSync<Result>({
-					request: createWorkflowInstanceRequest,
-					requestTimeout: options.requestTimeout!,
-			  })
+			  ).then(res => parseVariables(res as any))
+			: this.gRPCClient
+					.createWorkflowInstanceWithResultSync<Result>({
+						request: createWorkflowInstanceRequest,
+						requestTimeout: options.requestTimeout!,
+					})
+					.then(res => parseVariables(res as any))
 	}
 
 	public async cancelWorkflowInstance(
