@@ -269,6 +269,9 @@ export interface CreateWorkflowInstanceWithResultRequest {
 	// before the requestTimeout.
 	// if requestTimeout = 0, uses the generic requestTimeout configured in the gateway.
 	requestTimeout: number
+	// list of names of variables to be included in `CreateWorkflowInstanceWithResultResponse.variables`
+	// if empty, all visible variables in the root scope will be returned.
+	fetchVariables?: string[]
 }
 
 export interface CreateWorkflowInstanceWithResultResponse<Result> {

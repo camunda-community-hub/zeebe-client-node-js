@@ -343,35 +343,57 @@ export class ZBClient {
 	}
 
 	// tslint:disable: no-object-literal-type-assertion
-	/**
-	 *
-	 * Create and start execution of a workflow instance.
-	 * @param {string} bpmnProcessId
-	 * @param {Variables} variables - payload to pass in to the workflow
-	 * @param {number} [version] - version of the workflow to run. Optional: defaults to latest if not present
-	 * @returns {Promise<CreateWorkflowInstanceResponse>}
-	 * @memberof ZBClient
-	 */
 	public createWorkflowInstance<Variables = ZB.GenericWorkflowVariables>(
 		bpmnProcessId: string,
-		variables: Variables,
-		options: ZB.OperationOptions = {} as ZB.OperationOptions
+		variables: Variables
+	): Promise<ZB.CreateWorkflowInstanceResponse>
+	public createWorkflowInstance<
+		Variables = ZB.GenericWorkflowVariables
+	>(config: {
+		bpmnProcessId: string
+		variables: Variables
+		version: number
+	}): Promise<ZB.CreateWorkflowInstanceResponse>
+	public createWorkflowInstance<Variables = ZB.GenericWorkflowVariables>(
+		configOrbpmnProcessId:
+			| string
+			| {
+					bpmnProcessId: string
+					variables: Variables
+					version: number
+			  },
+		variables?: Variables
 	): Promise<ZB.CreateWorkflowInstanceResponse> {
-		options = {
-			maxRetries: this.maxRetries,
-			retry: true,
-			version: -1,
-			...options,
-		} as ZB.OperationOptions
-		const version = options.version
+		const isConfigObject = (
+			conf:
+				| {
+						bpmnProcessId: string
+						variables: Variables
+						version: number
+				  }
+				| string
+		): conf is {
+			bpmnProcessId: string
+			variables: Variables
+			version: number
+		} => typeof conf === 'object'
 
+		const version = isConfigObject(configOrbpmnProcessId)
+			? configOrbpmnProcessId.version || -1
+			: -1
+		const bpmnProcessId = isConfigObject(configOrbpmnProcessId)
+			? configOrbpmnProcessId.bpmnProcessId
+			: configOrbpmnProcessId
+		const variablesConcrete = isConfigObject(configOrbpmnProcessId)
+			? configOrbpmnProcessId.variables
+			: variables
 		const createWorkflowInstanceRequest: ZB.CreateWorkflowInstanceRequest = {
 			bpmnProcessId,
-			variables: (variables as unknown) as object,
+			variables: (variablesConcrete as unknown) as object,
 			version,
 		}
 
-		return options.retry === true
+		return this.retry === true
 			? this.executeOperation(() =>
 					this.gRPCClient.createWorkflowInstanceSync(
 						stringifyVariables(createWorkflowInstanceRequest)
@@ -385,43 +407,92 @@ export class ZBClient {
 	public createWorkflowInstanceWithResult<
 		Variables = ZB.GenericWorkflowVariables,
 		Result = ZB.GenericWorkerOutputVariables
+	>(config: {
+		bpmnProcessId: string
+		version?: number
+		variables: Variables
+		requestTimeout?: number
+		fetchVariables?: string[]
+	}): Promise<ZB.CreateWorkflowInstanceWithResultResponse<Result>>
+	public createWorkflowInstanceWithResult<
+		Variables = ZB.GenericWorkflowVariables,
+		Result = ZB.GenericWorkerOutputVariables
 	>(
 		bpmnProcessId: string,
-		variables: Variables,
-		options: ZB.OperationOptions & {
+		variables: Variables
+	): Promise<ZB.CreateWorkflowInstanceWithResultResponse<Result>>
+	public createWorkflowInstanceWithResult<
+		Variables = ZB.GenericWorkflowVariables,
+		Result = ZB.GenericWorkerOutputVariables
+	>(
+		configOrBpmnProcessId:
+			| {
+					bpmnProcessId: string
+					version?: number
+					variables: Variables
+					requestTimeout?: number
+					fetchVariables?: string[]
+			  }
+			| string,
+		variables?: Variables
+	) {
+		const isConfigObject = (
+			config:
+				| {
+						bpmnProcessId: string
+						variables: Variables
+						version?: number
+						requestTimeout?: number
+						fetchVariables?: string[]
+				  }
+				| string
+		): config is {
+			bpmnProcessId: string
+			variables: Variables
+			version?: number
 			requestTimeout?: number
-		} = {} as ZB.OperationOptions
-	): Promise<ZB.CreateWorkflowInstanceWithResultResponse<Result>> {
-		options = {
-			maxRetries: this.maxRetries,
-			requestTimeout: 0,
-			retry: true,
-			version: -1,
-			...options,
-		} as ZB.OperationOptions
-		const version = options.version
+			fetchVariables?: string[]
+		} => typeof config === 'object'
+
+		const bpmnProcessIdConcrete = isConfigObject(configOrBpmnProcessId)
+			? configOrBpmnProcessId.bpmnProcessId
+			: configOrBpmnProcessId
+		const variablesConcrete = isConfigObject(configOrBpmnProcessId)
+			? configOrBpmnProcessId.variables
+			: variables
+		const versionConcrete = isConfigObject(configOrBpmnProcessId)
+			? configOrBpmnProcessId.version || -1
+			: -1
+		const requestTimeoutConcrete = isConfigObject(configOrBpmnProcessId)
+			? configOrBpmnProcessId.requestTimeout || 0
+			: 0
+		const fetchVariables = isConfigObject(configOrBpmnProcessId)
+			? configOrBpmnProcessId.fetchVariables
+			: undefined
 
 		const createWorkflowInstanceRequest: ZB.CreateWorkflowInstanceRequest = stringifyVariables(
 			{
-				bpmnProcessId,
-				variables: (variables as unknown) as object,
-				version,
+				bpmnProcessId: bpmnProcessIdConcrete,
+				variables: (variablesConcrete as unknown) as object,
+				version: versionConcrete,
 			}
 		)
 
-		return options.retry === true
+		return this.retry === true
 			? this.executeOperation(() =>
 					this.gRPCClient.createWorkflowInstanceWithResultSync<
 						Result
 					>({
+						fetchVariables,
 						request: createWorkflowInstanceRequest,
-						requestTimeout: options.requestTimeout!,
+						requestTimeout: requestTimeoutConcrete,
 					})
 			  ).then(res => parseVariables(res as any))
 			: this.gRPCClient
 					.createWorkflowInstanceWithResultSync<Result>({
+						fetchVariables,
 						request: createWorkflowInstanceRequest,
-						requestTimeout: options.requestTimeout!,
+						requestTimeout: requestTimeoutConcrete,
 					})
 					.then(res => parseVariables(res as any))
 	}
