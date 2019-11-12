@@ -25,7 +25,7 @@ export class ZBClient {
 	private static readonly DEFAULT_MAX_RETRIES = 50
 	private static readonly DEFAULT_MAX_RETRY_TIMEOUT = 5000
 	private static readonly DEFAULT_CONNECTION_TOLERANCE = 3000
-	private static readonly DEFAULT_LONGPOLL_PERIOD = 60000
+	private static readonly DEFAULT_LONGPOLL_PERIOD = 30000
 	public connectionTolerance: number = ZBClient.DEFAULT_CONNECTION_TOLERANCE
 	public connected = false
 	public gatewayAddress: string
