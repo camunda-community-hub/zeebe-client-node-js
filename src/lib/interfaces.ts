@@ -73,7 +73,7 @@ export interface ZBWorkerLoggerOptions {
 	stdout?: any
 	color?: Chalk
 	namespace?: string | string[]
-	pollMode?: string
+	pollInterval: number
 	taskType: string
 }
 
@@ -433,7 +433,7 @@ export interface ZBClientOptions {
 	maxRetryTimeout?: number
 	oAuth?: OAuthProviderConfig
 	useTLS?: boolean
-	longPoll?: number
+	longPoll: number
 	camundaCloud?: CamundaCloudConfig
 	hostname?: string
 	port?: string

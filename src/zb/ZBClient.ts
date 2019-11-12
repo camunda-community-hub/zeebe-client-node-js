@@ -67,7 +67,7 @@ export class ZBClient {
 		this.options = {
 			longPoll: ZBClient.DEFAULT_LONGPOLL_PERIOD,
 			...opts,
-			retry: opts.retry !== false,
+			retry: (opts as any).retry !== false,
 		}
 		this.options.loglevel =
 			(process.env.ZB_NODE_LOG_LEVEL as ZB.Loglevel) ||
@@ -79,6 +79,7 @@ export class ZBClient {
 
 		this.logger = new ZBLogger({
 			loglevel: this.loglevel,
+			pollInterval: this.options.longPoll!,
 			stdout: this.stdout,
 			taskType: 'ZBClient',
 		})
@@ -136,7 +137,7 @@ export class ZBClient {
 			CustomHeaderShape,
 			WorkerOutputVariables
 		>,
-		options: ZB.ZBWorkerOptions & ZB.ZBClientOptions = {},
+		options: ZB.ZBWorkerOptions & ZB.ZBClientOptions = {} as any,
 		onConnectionError?: ZB.ConnectionErrorHandler | undefined
 	) {
 		if (this.closing) {

@@ -124,9 +124,9 @@ export class GRPCClient extends EventEmitter {
 			id: 'gRPC Channel',
 			loglevel,
 			namespace: tasktype,
-			pollMode: this.longPoll ? 'Long Poll' : 'Fast Poll',
+			pollInterval: this.longPoll!,
 			stdout,
-			taskType: 'gRPC Channel',
+			taskType: tasktype,
 		})
 		this.packageDefinition = loadSync(protoPath, {
 			defaults: options.defaults === undefined ? true : options.defaults,
@@ -160,7 +160,7 @@ export class GRPCClient extends EventEmitter {
 			 * The maximum time between subsequent connection attempts,
 			 * in ms
 			 */
-			'grpc.max_reconnect_backoff_ms': 50000,
+			'grpc.max_reconnect_backoff_ms': 30000,
 			/**
 			 * The minimum time between subsequent connection attempts,
 			 * in ms
@@ -171,7 +171,7 @@ export class GRPCClient extends EventEmitter {
 			 * pings its peer to see if the transport is still alive.
 			 * Int valued, milliseconds.
 			 */
-			'grpc.keepalive_time_ms': 50000,
+			'grpc.keepalive_time_ms': 30000,
 			/**
 			 * After waiting for a duration of this time,
 			 * if the keepalive ping sender does
@@ -180,7 +180,26 @@ export class GRPCClient extends EventEmitter {
 			 */
 			'grpc.keepalive_timeout_ms': 20000,
 			'grpc.http2.min_time_between_pings_ms': 15000,
+			/**
+			 * Minimum allowed time between a server receiving
+			 * successive ping frames without sending any data
+			 * frame. Int valued, milliseconds
+			 */
+			'grpc.http2.min_ping_interval_without_data_ms': 20000,
+			/**
+			 * This channel argument if set to 1
+			 * (0 : false; 1 : true), allows keepalive pings
+			 * to be sent even if there are no calls in flight.
+			 */
 			'grpc.keepalive_permit_without_calls': 1,
+			/**
+			 * This channel argument controls the maximum number
+			 * of pings that can be sent when there is no other
+			 * data (data frame or header frame) to be sent.
+			 * GRPC Core will not continue sending pings if we
+			 * run over the limit. Setting it to 0 allows sending
+			 * pings without sending data.
+			 */
 			'grpc.http2.max_pings_without_data': 0,
 		})
 		this.listNameMethods = []

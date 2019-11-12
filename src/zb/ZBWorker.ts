@@ -37,7 +37,7 @@ export class ZBWorker<
 	private cancelWorkflowOnException = false
 	private zbClient: ZBClient
 	private logger: ZBLogger
-	private longPoll?: number
+	private longPoll: number
 	private debug: boolean
 	private restartPollingAfterLongPollTimeout?: NodeJS.Timeout
 	private capacityEmitter: EventEmitter
@@ -95,7 +95,7 @@ export class ZBWorker<
 			id: this.id,
 			loglevel,
 			namespace: 'ZBWorker',
-			pollMode: this.longPoll ? 'Long Poll' : 'Fast Poll',
+			pollInterval: this.longPoll,
 			stdout: options.stdout || console,
 			taskType: this.taskType,
 		})
