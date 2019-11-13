@@ -3,7 +3,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import promiseRetry from 'promise-retry'
 import { v4 as uuid } from 'uuid'
-import { BpmnParser, stringifyVariables } from '../lib'
+import { BpmnParser, parseVariables, stringifyVariables } from '../lib'
 import { ConfigurationHydrator } from '../lib/ConfigurationHydrator'
 import { GRPCClient } from '../lib/GRPCClient'
 import * as ZB from '../lib/interfaces'
@@ -22,10 +22,10 @@ const idColors = [
 ]
 
 export class ZBClient {
+	public static readonly DEFAULT_CONNECTION_TOLERANCE = 3000
 	private static readonly DEFAULT_MAX_RETRIES = 50
 	private static readonly DEFAULT_MAX_RETRY_TIMEOUT = 5000
-	private static readonly DEFAULT_CONNECTION_TOLERANCE = 3000
-	private static readonly DEFAULT_LONGPOLL_PERIOD = 60000
+	private static readonly DEFAULT_LONGPOLL_PERIOD = 30000
 	public connectionTolerance: number = ZBClient.DEFAULT_CONNECTION_TOLERANCE
 	public connected = false
 	public gatewayAddress: string
@@ -67,7 +67,7 @@ export class ZBClient {
 		this.options = {
 			longPoll: ZBClient.DEFAULT_LONGPOLL_PERIOD,
 			...opts,
-			retry: opts.retry !== false,
+			retry: (opts as any).retry !== false,
 		}
 		this.options.loglevel =
 			(process.env.ZB_NODE_LOG_LEVEL as ZB.Loglevel) ||
@@ -79,6 +79,7 @@ export class ZBClient {
 
 		this.logger = new ZBLogger({
 			loglevel: this.loglevel,
+			pollInterval: this.options.longPoll!,
 			stdout: this.stdout,
 			taskType: 'ZBClient',
 		})
@@ -104,6 +105,7 @@ export class ZBClient {
 		this.gRPCClient = this.constructGrpcClient({
 			onConnectionError: () => this._onConnectionError(),
 			onReady: () => this._onReady(),
+			tasktype: 'ZBClient',
 		})
 
 		this.retry = this.options.retry !== false
@@ -135,7 +137,7 @@ export class ZBClient {
 			CustomHeaderShape,
 			WorkerOutputVariables
 		>,
-		options: ZB.ZBWorkerOptions & ZB.ZBClientOptions = {},
+		options: ZB.ZBWorkerOptions & ZB.ZBClientOptions = {} as any,
 		onConnectionError?: ZB.ConnectionErrorHandler | undefined
 	) {
 		if (this.closing) {
@@ -174,6 +176,7 @@ export class ZBClient {
 		const workerGRPCClient = this.constructGrpcClient({
 			onConnectionError: _onConnectionError,
 			onReady: _onReady,
+			tasktype: taskType,
 		})
 		const worker = new ZBWorker<
 			WorkerInputVariables,
@@ -340,32 +343,58 @@ export class ZBClient {
 		)
 	}
 
-	/**
-	 *
-	 * Create and start execution of a workflow instance.
-	 * @param {string} bpmnProcessId
-	 * @param {Variables} variables - payload to pass in to the workflow
-	 * @param {number} [version] - version of the workflow to run. Optional: defaults to latest if not present
-	 * @returns {Promise<CreateWorkflowInstanceResponse>}
-	 * @memberof ZBClient
-	 */
+	// tslint:disable: no-object-literal-type-assertion
 	public createWorkflowInstance<Variables = ZB.GenericWorkflowVariables>(
 		bpmnProcessId: string,
-		variables: Variables,
-		options: ZB.OperationOptions = {
-			maxRetries: this.maxRetries,
-			retry: true,
-		}
+		variables: Variables
+	): Promise<ZB.CreateWorkflowInstanceResponse>
+	public createWorkflowInstance<
+		Variables = ZB.GenericWorkflowVariables
+	>(config: {
+		bpmnProcessId: string
+		variables: Variables
+		version: number
+	}): Promise<ZB.CreateWorkflowInstanceResponse>
+	public createWorkflowInstance<Variables = ZB.GenericWorkflowVariables>(
+		configOrbpmnProcessId:
+			| string
+			| {
+					bpmnProcessId: string
+					variables: Variables
+					version: number
+			  },
+		variables?: Variables
 	): Promise<ZB.CreateWorkflowInstanceResponse> {
-		const version = options.version || -1
+		const isConfigObject = (
+			conf:
+				| {
+						bpmnProcessId: string
+						variables: Variables
+						version: number
+				  }
+				| string
+		): conf is {
+			bpmnProcessId: string
+			variables: Variables
+			version: number
+		} => typeof conf === 'object'
 
+		const version = isConfigObject(configOrbpmnProcessId)
+			? configOrbpmnProcessId.version || -1
+			: -1
+		const bpmnProcessId = isConfigObject(configOrbpmnProcessId)
+			? configOrbpmnProcessId.bpmnProcessId
+			: configOrbpmnProcessId
+		const variablesConcrete = isConfigObject(configOrbpmnProcessId)
+			? configOrbpmnProcessId.variables
+			: variables
 		const createWorkflowInstanceRequest: ZB.CreateWorkflowInstanceRequest = {
 			bpmnProcessId,
-			variables: (variables as unknown) as object,
+			variables: (variablesConcrete as unknown) as object,
 			version,
 		}
 
-		return options.retry === true
+		return this.retry === true
 			? this.executeOperation(() =>
 					this.gRPCClient.createWorkflowInstanceSync(
 						stringifyVariables(createWorkflowInstanceRequest)
@@ -374,6 +403,99 @@ export class ZBClient {
 			: this.gRPCClient.createWorkflowInstanceSync(
 					stringifyVariables(createWorkflowInstanceRequest)
 			  )
+	}
+
+	public createWorkflowInstanceWithResult<
+		Variables = ZB.GenericWorkflowVariables,
+		Result = ZB.GenericWorkerOutputVariables
+	>(config: {
+		bpmnProcessId: string
+		version?: number
+		variables: Variables
+		requestTimeout?: number
+		fetchVariables?: string[]
+	}): Promise<ZB.CreateWorkflowInstanceWithResultResponse<Result>>
+	public createWorkflowInstanceWithResult<
+		Variables = ZB.GenericWorkflowVariables,
+		Result = ZB.GenericWorkerOutputVariables
+	>(
+		bpmnProcessId: string,
+		variables: Variables
+	): Promise<ZB.CreateWorkflowInstanceWithResultResponse<Result>>
+	public createWorkflowInstanceWithResult<
+		Variables = ZB.GenericWorkflowVariables,
+		Result = ZB.GenericWorkerOutputVariables
+	>(
+		configOrBpmnProcessId:
+			| {
+					bpmnProcessId: string
+					version?: number
+					variables: Variables
+					requestTimeout?: number
+					fetchVariables?: string[]
+			  }
+			| string,
+		variables?: Variables
+	) {
+		const isConfigObject = (
+			config:
+				| {
+						bpmnProcessId: string
+						variables: Variables
+						version?: number
+						requestTimeout?: number
+						fetchVariables?: string[]
+				  }
+				| string
+		): config is {
+			bpmnProcessId: string
+			variables: Variables
+			version?: number
+			requestTimeout?: number
+			fetchVariables?: string[]
+		} => typeof config === 'object'
+
+		const bpmnProcessIdConcrete = isConfigObject(configOrBpmnProcessId)
+			? configOrBpmnProcessId.bpmnProcessId
+			: configOrBpmnProcessId
+		const variablesConcrete = isConfigObject(configOrBpmnProcessId)
+			? configOrBpmnProcessId.variables
+			: variables
+		const versionConcrete = isConfigObject(configOrBpmnProcessId)
+			? configOrBpmnProcessId.version || -1
+			: -1
+		const requestTimeoutConcrete = isConfigObject(configOrBpmnProcessId)
+			? configOrBpmnProcessId.requestTimeout || 0
+			: 0
+		const fetchVariables = isConfigObject(configOrBpmnProcessId)
+			? configOrBpmnProcessId.fetchVariables
+			: undefined
+
+		const createWorkflowInstanceRequest: ZB.CreateWorkflowInstanceRequest = stringifyVariables(
+			{
+				bpmnProcessId: bpmnProcessIdConcrete,
+				variables: (variablesConcrete as unknown) as object,
+				version: versionConcrete,
+			}
+		)
+
+		return this.retry === true
+			? this.executeOperation(() =>
+					this.gRPCClient.createWorkflowInstanceWithResultSync<
+						Result
+					>({
+						fetchVariables,
+						request: createWorkflowInstanceRequest,
+						requestTimeout: requestTimeoutConcrete,
+					})
+			  ).then(res => parseVariables(res as any))
+			: this.gRPCClient
+					.createWorkflowInstanceWithResultSync<Result>({
+						fetchVariables,
+						request: createWorkflowInstanceRequest,
+						requestTimeout: requestTimeoutConcrete,
+					})
+					.then(res => parseVariables(res as any))
 	}
 
 	public async cancelWorkflowInstance(
@@ -411,9 +533,11 @@ export class ZBClient {
 	private constructGrpcClient({
 		onReady,
 		onConnectionError,
+		tasktype,
 	}: {
 		onReady?: () => void
 		onConnectionError?: () => void
+		tasktype: string
 	}) {
 		return new GRPCClient({
 			connectionTolerance: this.connectionTolerance,
@@ -427,6 +551,7 @@ export class ZBClient {
 			protoPath: path.join(__dirname, '../../proto/zeebe.proto'),
 			service: 'Gateway',
 			stdout: this.stdout,
+			tasktype,
 			useTLS: this.useTLS,
 		}) as ZB.ZBGRPC
 	}

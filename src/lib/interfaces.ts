@@ -73,7 +73,7 @@ export interface ZBWorkerLoggerOptions {
 	stdout?: any
 	color?: Chalk
 	namespace?: string | string[]
-	pollMode?: string
+	pollInterval: number
 	taskType: string
 }
 
@@ -263,6 +263,32 @@ export interface CreateWorkflowInstanceResponse {
 	readonly workflowInstanceKey: string
 }
 
+export interface CreateWorkflowInstanceWithResultRequest {
+	request: CreateWorkflowInstanceRequest
+	// timeout in milliseconds. the request will be closed if the workflow is not completed
+	// before the requestTimeout.
+	// if requestTimeout = 0, uses the generic requestTimeout configured in the gateway.
+	requestTimeout: number
+	// list of names of variables to be included in `CreateWorkflowInstanceWithResultResponse.variables`
+	// if empty, all visible variables in the root scope will be returned.
+	fetchVariables?: string[]
+}
+
+export interface CreateWorkflowInstanceWithResultResponse<Result> {
+	// the key of the workflow definition which was used to create the workflow instance
+	workflowKey: string
+	// the BPMN process ID of the workflow definition which was used to create the workflow
+	// instance
+	bpmnProcessId: string
+	// the version of the workflow definition which was used to create the workflow instance
+	version: number
+	// the unique identifier of the created workflow instance; to be used wherever a request
+	// needs a workflow instance key (e.g. CancelWorkflowInstanceRequest)
+	workflowInstanceKey: string
+	// consisting of all visible variables to the root scope
+	variables: Result
+}
+
 export enum PartitionBrokerRole {
 	LEADER = 0,
 	BROKER = 1,
@@ -432,6 +458,9 @@ export interface ZBGRPC extends GRPCClient {
 	createWorkflowInstanceSync(
 		createWorkflowInstanceRequest: CreateWorkflowInstanceRequest
 	): Promise<CreateWorkflowInstanceResponse>
+	createWorkflowInstanceWithResultSync<Result>(
+		createWorkflowInstanceWithResultRequest: CreateWorkflowInstanceWithResultRequest
+	): Promise<CreateWorkflowInstanceWithResultResponse<Result>>
 	cancelWorkflowInstanceSync(workflowInstanceKey: {
 		workflowInstanceKey: string | number
 	}): Promise<void>

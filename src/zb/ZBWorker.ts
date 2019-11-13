@@ -37,7 +37,7 @@ export class ZBWorker<
 	private cancelWorkflowOnException = false
 	private zbClient: ZBClient
 	private logger: ZBLogger
-	private longPoll?: number
+	private longPoll: number
 	private debug: boolean
 	private restartPollingAfterLongPollTimeout?: NodeJS.Timeout
 	private capacityEmitter: EventEmitter
@@ -79,7 +79,8 @@ export class ZBWorker<
 		this.taskType = taskType
 		this.maxActiveJobs = options.maxJobsToActivate || 32
 		this.timeout = options.timeout || 1000
-		this.longPoll = options.longPoll
+		this.longPoll =
+			options.longPoll || ZBClient.DEFAULT_CONNECTION_TOLERANCE
 		this.id = id || uuid.v4()
 		// Set options.debug to true to count the number of poll requests for testing
 		// See the Worker-LongPoll test
@@ -95,7 +96,7 @@ export class ZBWorker<
 			id: this.id,
 			loglevel,
 			namespace: 'ZBWorker',
-			pollMode: this.longPoll ? 'Long Poll' : 'Fast Poll',
+			pollInterval: this.longPoll,
 			stdout: options.stdout || console,
 			taskType: this.taskType,
 		})
@@ -184,7 +185,11 @@ export class ZBWorker<
 	private async longPollLoop() {
 		const result = await this.activateJobs()
 		const start = Date.now()
-		this.logger.debug('Long poll loop', Object.keys(result)[0], start)
+		this.logger.debug(
+			`Long poll loop. this.longPoll: ${this.longPoll}`,
+			Object.keys(result)[0],
+			start
+		)
 		if (result.stream) {
 			// This event happens when the server cancels the call after the deadline
 			// And when it has completed a response with work

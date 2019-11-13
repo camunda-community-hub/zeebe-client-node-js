@@ -1,6 +1,6 @@
 {
 	"name": "zeebe-node",
-	"version": "v0.21.2",
+	"version": "v0.22.0-alpha.1",
 	"description": "A Node.js client library for the Zeebe Microservices Orchestration Engine.",
 	"keywords": [
 		"zeebe",
@@ -11,7 +11,9 @@
 		"conductor",
 		"camunda",
 		"Netflix",
-		"workflow"
+		"workflow",
+		"Uber",
+		"Cadence"
 	],
 	"homepage": "https://creditsenseau.github.io/zeebe-client-node-js/",
 	"bugs": {
@@ -65,7 +67,7 @@
 		"debug": "^4.1.1",
 		"fast-xml-parser": "^3.12.12",
 		"got": "^9.6.0",
-		"grpc": "^1.22.0",
+		"grpc": "^1.23.4",
 		"promise-retry": "^1.1.1",
 		"stack-trace": "0.0.10",
 		"uuid": "^3.3.2"
@@ -88,7 +90,7 @@
 		"tsc-watch": "^1.0.31",
 		"tslint": "^5.16.0",
 		"tslint-config-prettier": "^1.18.0",
-		"typedoc": "^0.14.2",
+		"typedoc": "^0.15.0",
 		"typedoc-plugin-sourcefile-url": "^1.0.4",
 		"typescript": "^3.2.2"
 	},

@@ -10,7 +10,7 @@ export class ZBLogger {
 	private id?: string
 	private stdout: any
 	private colorise: boolean
-	private pollMode: string
+	private pollInterval: number
 
 	constructor({
 		loglevel,
@@ -20,7 +20,7 @@ export class ZBLogger {
 		stdout,
 		taskType,
 		colorise,
-		pollMode,
+		pollInterval,
 	}: ZBWorkerLoggerOptions & {
 		id?: string
 		colorise?: boolean
@@ -34,7 +34,7 @@ export class ZBLogger {
 		this.loglevel = loglevel
 		this.stdout = stdout || console
 		this.colorise = colorise !== false
-		this.pollMode = pollMode || ''
+		this.pollInterval = pollInterval
 	}
 
 	public info(message: any, ...optionalParameters) {
@@ -106,15 +106,16 @@ export class ZBLogger {
 		message,
 		...optionalParameters
 	) {
+		// tslint:disable: object-literal-sort-keys
 		const msg = {
+			timestamp: new Date(),
 			context: `${frame.getFileName()}:${frame.getLineNumber()}`,
 			id: this.id,
 			level,
 			message,
-			pollMode: this.pollMode,
+			pollInterval: this.pollInterval,
 			taskType: this.taskType,
 			time: dayjs().format('YYYY MMM-DD HH:mm:ssA'),
-			timestamp: new Date(),
 		}
 
 		if (optionalParameters.length > 0) {

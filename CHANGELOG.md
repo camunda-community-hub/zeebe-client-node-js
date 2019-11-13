@@ -1,8 +1,23 @@
+# Version 0.22.0
+
+-   Breaking Change: the signature for specifying a workflow definition version in `createWorkflowInstance` has changed. See the README for the new signature.
+-   Feature: Awaitable workflow outcome. The client can initiate a workflow and receive the outcome of the workflow in the response. See [zeebe/#2896](https://github.com/zeebe-io/zeebe/issues/2896).
+-   Change default long poll to 30s. See [#101](https://github.com/creditsenseau/zeebe-client-node-js/issues/101).
+-   Fix: Correctly log task type from gRPC client.
+-   Change `pollMode` to `pollInterval` in logging.
+
+# Version 0.21.3
+
+-   Feature: Enable gRPC heartbeat. The gRPC heartbeat is intended to stop proxies from terminating the gRPC connection. See [#101](https://github.com/creditsenseau/zeebe-client-node-js/issues/101).
+-   Feature: gRPC channel logging now displays which worker the channel is for, or if it is for the ZBClient. See [#98](https://github.com/creditsenseau/zeebe-client-node-js/issues/98).
+-   Chore: Upgrade [grpc](https://www.npmjs.com/package/grpc) dependency from 1.22.0 to 1.23.4
+-   Security: Upgraded [typedoc](https://typedoc.org) dev dependency to 0.15.0, removing 8487 known vulnerabilities. Note that this package is used to build documentation and not installed in applications that depend on zeebe-node.
+
 # Version 0.21.2
 
 -   Fix: `ZBClient.close()` and `ZBWorker.close()` now return an awaitable Promise that guarantees the underlying gRPC channel is closed. It takes at least two seconds after jobs are drained to close the gRPC connection. When the `close` promise resolves, the gRPC channel is closed. Note that `ZBClient.close()` closes all workers created from that client.
+-   Fix: Workers would stall for 180 seconds if they received a 504: Gateway Unavailable error on the HTTP2 transport. This was incorrectly treated as a gRPC channel failure. The code now checks the state of the gRPC channel when a transport error is thrown, rather than assuming it has failed. See [#96](https://github.com/creditsenseau/zeebe-client-node-js/issues/96).
 -   Feature: Log messages now include a `context` property with the stack frame that generated the log message.
--   Fix: Workers would stall for 180 seconds if they received a 504: Gateway Unavailable error on the HTTP2 transport. This was incorrectly treated as a gRPC channel failure. The code now checks the state of the gRPC channel when a transport error is thrown, rather than assuming it has failed. Fixes [#96](https://github.com/creditsenseau/zeebe-client-node-js/issues/96).
 
 # Version 0.21.1
 

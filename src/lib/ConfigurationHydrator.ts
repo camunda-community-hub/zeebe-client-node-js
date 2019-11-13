@@ -122,7 +122,9 @@ export class ConfigurationHydrator {
 		}
 	}
 
-	private static getCamundaCloudConfig(options: ZB.ZBClientOptions = {}) {
+	private static getCamundaCloudConfig(
+		options: ZB.ZBClientOptions = {} as any
+	) {
 		if (options.camundaCloud) {
 			const { camundaCloud } = options
 			const clusterId = ConfigurationHydrator.justClusterId(
