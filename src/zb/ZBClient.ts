@@ -30,8 +30,10 @@ export class ZBClient {
 	public connected = false
 	public gatewayAddress: string
 	public loglevel: ZB.Loglevel
+	public performanceTestStore: {[uuid: string]: ZB.PerformanceTest}
 	public onReady?: () => void
 	public onConnectionError?: () => void
+
 	private closePromise?: Promise<any>
 	private closing = false
 	// A gRPC channel for the ZBClient to execute commands on
@@ -53,17 +55,19 @@ export class ZBClient {
 	 *
 	 * @param options Zero-conf constructor. The entire ZBClient connection config can be passed in via the environment.
 	 */
-	constructor(options?: ZB.ZBClientOptions)
-	constructor(gatewayAddress: string, options?: ZB.ZBClientOptions)
+	constructor(testStore: {[uuid: string]: ZB.PerformanceTest}, options?: ZB.ZBClientOptions)
+	constructor(testStore: {[uuid: string]: ZB.PerformanceTest}, gatewayAddress: string, options?: ZB.ZBClientOptions)
 	constructor(
+		testStore: {[uuid: string]: ZB.PerformanceTest},
 		gatewayAddress?: string | ZB.ZBClientOptions,
-		options?: ZB.ZBClientOptions
+		options?: ZB.ZBClientOptions,
 	) {
 		if (typeof gatewayAddress === 'object') {
 			options = gatewayAddress
 			gatewayAddress = undefined
 		}
 		const opts = options ? options : {}
+		this.performanceTestStore = testStore
 		this.options = {
 			longPoll: ZBClient.DEFAULT_LONGPOLL_PERIOD,
 			...opts,
@@ -87,6 +91,7 @@ export class ZBClient {
 			gatewayAddress,
 			this.options
 		)
+
 
 		this.gatewayAddress = `${this.options.hostname}:${this.options.port}`
 

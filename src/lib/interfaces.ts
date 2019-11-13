@@ -3,6 +3,20 @@ import { ZBWorker } from '../zb/ZBWorker'
 import { GRPCClient } from './GRPCClient'
 import { OAuthProviderConfig } from './OAuthProvider'
 
+export interface PerformanceTest {
+	finished: () => void
+	startTime: number
+	endTime?: number
+	tasks: PerformanceTestTask[]
+	testId: string
+}
+
+export interface PerformanceTestTask {
+	bpmnElementId: string
+	endTime?: number
+	startTime: number
+}
+
 export interface KeyedObject {
 	[key: string]: any
 }
@@ -160,6 +174,10 @@ export interface ActivatedJob {
 	 * fetchVariables value in the ActivateJobRequest.
 	 */
 	readonly variables: string
+	/**
+	 * The time at which the library received the job in ms.
+	 */
+	readonly startTime: number
 }
 
 export interface Job<Variables = KeyedObject, CustomHeaders = KeyedObject> {
@@ -199,6 +217,10 @@ export interface Job<Variables = KeyedObject, CustomHeaders = KeyedObject> {
 	 * All visible variables in the task scope, computed at activation time.
 	 */
 	readonly variables: Variables
+	/**
+	 * The time at which the library received the job in ms.
+	 */
+	readonly startTime: number
 }
 
 export interface ZBWorkerOptions {
@@ -400,6 +422,7 @@ export interface CamundaCloudConfig {
 
 export interface ZBClientOptions {
 	connectionTolerance?: number
+	emitTimings?: boolean
 	loglevel?: Loglevel
 	stdout?: any
 	retry?: boolean

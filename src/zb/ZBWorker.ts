@@ -150,10 +150,15 @@ export class ZBWorker<
 	}
 
 	public completeJob(
-		completeJobRequest: ZB.CompleteJobRequest
+		completeJobRequest: ZB.CompleteJobRequest,
 	): Promise<void> {
 		const withStringifiedVariables = stringifyVariables(completeJobRequest)
 		this.logger.debug(withStringifiedVariables)
+
+		// The latest task for this test should be the one we're concerned with
+		const testId = completeJobRequest.variables.testId
+		this.zbClient.performanceTestStore[testId].tasks[this.zbClient.performanceTestStore[testId].tasks.length - 1].endTime = Date.now()
+
 		return this.gRPCClient.completeJobSync(withStringifiedVariables)
 	}
 
@@ -263,6 +268,7 @@ export class ZBWorker<
 		}
 
 		stream.on('data', (res: ZB.ActivateJobsResponse) => {
+			const startTime = Date.now()
 			// If we are closing, don't start working on these jobs. They will have to be timed out by the server.
 			if (this.closing) {
 				return
@@ -270,7 +276,7 @@ export class ZBWorker<
 			const parsedVariables = res.jobs.map(parseVariables)
 			this.activeJobs += parsedVariables.length
 			// Call task handler for each new job
-			parsedVariables.forEach(job => this.handleJob(job))
+			parsedVariables.forEach(job => this.handleJob(job, startTime))
 		})
 
 		return { stream }
@@ -293,13 +299,20 @@ export class ZBWorker<
 		}
 	}
 
-	private async handleJob(job: ZB.ActivatedJob) {
+	private async handleJob(job: ZB.ActivatedJob, startTime: number) {
 		const customHeaders = JSON.parse(job.customHeaders || '{}')
 
 		const taskId = uuid.v4()
 		this.logger.debug(
 			`Setting ${this.taskType} task timeout for ${taskId} to ${this.timeout}`
 		)
+
+		const testId = (job.variables as unknown as {testId: string}).testId
+
+		this.zbClient.performanceTestStore[testId].tasks.push({
+			bpmnElementId: job.elementId,
+			startTime
+		})
 
 		// Any unhandled exception thrown by the user-supplied code will bubble up and throw here.
 		// The task timeout handler above will deal with it.
@@ -343,7 +356,7 @@ export class ZBWorker<
 			}
 
 			await this.taskHandler(
-				{ ...job, customHeaders: { ...customHeaders } } as any,
+				{ ...job, customHeaders: { ...customHeaders }} as any,
 				workerCallback,
 				this
 			)
