@@ -433,7 +433,7 @@ export interface ZBClientOptions {
 	maxRetryTimeout?: number
 	oAuth?: OAuthProviderConfig
 	useTLS?: boolean
-	longPoll: number
+	longPoll?: number
 	camundaCloud?: CamundaCloudConfig
 	hostname?: string
 	port?: string

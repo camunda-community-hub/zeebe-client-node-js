@@ -79,7 +79,8 @@ export class ZBWorker<
 		this.taskType = taskType
 		this.maxActiveJobs = options.maxJobsToActivate || 32
 		this.timeout = options.timeout || 1000
-		this.longPoll = options.longPoll
+		this.longPoll =
+			options.longPoll || ZBClient.DEFAULT_CONNECTION_TOLERANCE
 		this.id = id || uuid.v4()
 		// Set options.debug to true to count the number of poll requests for testing
 		// See the Worker-LongPoll test

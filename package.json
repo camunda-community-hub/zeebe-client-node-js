@@ -1,6 +1,6 @@
 {
 	"name": "zeebe-node",
-	"version": "v0.22.0",
+	"version": "v0.22.0-alpha.1",
 	"description": "A Node.js client library for the Zeebe Microservices Orchestration Engine.",
 	"keywords": [
 		"zeebe",
@@ -11,7 +11,9 @@
 		"conductor",
 		"camunda",
 		"Netflix",
-		"workflow"
+		"workflow",
+		"Uber",
+		"Cadence"
 	],
 	"homepage": "https://creditsenseau.github.io/zeebe-client-node-js/",
 	"bugs": {
