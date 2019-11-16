@@ -152,7 +152,7 @@ export class ZBWorker<
 
 	public completeJob(
 		completeJobRequest: ZB.CompleteJobRequest
-	): Promise<void> {
+	): Promise<any> {
 		const withStringifiedVariables = stringifyVariables(completeJobRequest)
 		this.logger.debug(withStringifiedVariables)
 		return this.gRPCClient.completeJobSync(withStringifiedVariables)
@@ -335,7 +335,7 @@ export class ZBWorker<
 					}
 				},
 				success: async (completedVariables = {}) => {
-					await this.completeJob({
+					const res = await this.completeJob({
 						jobKey: job.key,
 						variables: completedVariables,
 					})
@@ -343,7 +343,7 @@ export class ZBWorker<
 					this.logger.debug(
 						`Completed task ${taskId} for ${this.taskType}`
 					)
-					return true
+					return res
 				},
 			}
 

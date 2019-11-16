@@ -432,6 +432,10 @@ export interface ZBClientOptions {
 	maxRetries?: number
 	maxRetryTimeout?: number
 	oAuth?: OAuthProviderConfig
+	basicAuth?: {
+		username: string
+		password: string
+	}
 	useTLS?: boolean
 	longPoll?: number
 	camundaCloud?: CamundaCloudConfig

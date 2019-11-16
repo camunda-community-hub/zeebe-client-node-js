@@ -4,6 +4,7 @@ import * as path from 'path'
 import promiseRetry from 'promise-retry'
 import { v4 as uuid } from 'uuid'
 import { BpmnParser, parseVariables, stringifyVariables } from '../lib'
+import { BasicAuthConfig } from '../lib/BasicAuthConfig'
 import { ConfigurationHydrator } from '../lib/ConfigurationHydrator'
 import { GRPCClient } from '../lib/GRPCClient'
 import * as ZB from '../lib/interfaces'
@@ -43,6 +44,7 @@ export class ZBClient {
 	private maxRetries: number
 	private maxRetryTimeout: number
 	private oAuth?: OAuthProvider
+	private basicAuth?: BasicAuthConfig
 	private useTLS: boolean
 	private stdout: any
 	private lastReady?: Date
@@ -97,7 +99,7 @@ export class ZBClient {
 		this.useTLS =
 			this.options.useTLS === true ||
 			(!!this.options.oAuth && this.options.useTLS !== false)
-
+		this.basicAuth = this.options.basicAuth
 		this.connectionTolerance =
 			this.options.connectionTolerance || this.connectionTolerance
 		this.onConnectionError = this.options.onConnectionError
@@ -540,6 +542,7 @@ export class ZBClient {
 		tasktype: string
 	}) {
 		return new GRPCClient({
+			basicAuth: this.basicAuth,
 			connectionTolerance: this.connectionTolerance,
 			host: this.gatewayAddress,
 			loglevel: this.loglevel,

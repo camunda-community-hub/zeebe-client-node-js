@@ -169,6 +169,22 @@ const zbc = new ZB.ZBClient("my-secure-broker.io:443", {
 
 The `cacheOnDisk` option will cache the token on disk, which can be useful in development if you are restarting the service frequently.
 
+## Basic Auth
+
+If you put a proxy in front of the broker with basic auth, you can pass in a username and password:
+
+```typescript
+const zbc = new ZB.ZBClient("my-broker-with-basic-auth.io:443", {
+	basicAuth: {
+		username: "user1",
+		password: "secret",
+	},
+	useTLS: true
+}
+```
+
+Basic Auth will also work without TLS.
+
 ### Camunda Cloud
 
 You can connect to Camunda Cloud by using the `camundaCloud` configuration option, using the `clusterId`, `clientSecret`, and `clientId` from the Camunda Cloud Console, like this:
@@ -221,6 +237,13 @@ ZEEBE_CLIENT_SECRET
 ZEEBE_TOKEN_AUDIENCE
 ZEEBE_AUTHORIZATION_SERVER_URL
 ZEEBE_GATEWAY_ADDRESS
+```
+
+Basic Auth:
+
+```
+ZEEBE_BASIC_AUTH_PASSWORD
+ZEEBE_BASIC_AUTH_USERNAME
 ```
 
 ### Create a Task Worker

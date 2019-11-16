@@ -1,4 +1,5 @@
 import { parse } from 'url'
+import { BasicAuthConfig } from './BasicAuthConfig'
 import * as ZB from './interfaces'
 import { OAuthProviderConfig } from './OAuthProvider'
 
@@ -11,6 +12,7 @@ export class ConfigurationHydrator {
 		const configuration = {
 			hostname: 'localhost',
 			port: '26500',
+			...ConfigurationHydrator.readBasicAuthFromEnvironment(),
 			...ConfigurationHydrator.readOAuthFromEnvironment(),
 			...ConfigurationHydrator.getGatewayFromEnvironment(),
 			...ConfigurationHydrator.readCamundaClusterConfFromEnv(
@@ -52,6 +54,19 @@ export class ConfigurationHydrator {
 						clientSecret,
 						url: authServerUrl,
 						useTLS: true,
+					},
+			  }
+			: {}
+	}
+
+	private static readBasicAuthFromEnvironment(): BasicAuthConfig | {} {
+		const password = process.env.ZEEBE_BASIC_AUTH_PASSWORD
+		const username = process.env.ZEEBE_BASIC_AUTH_USERNAME
+		return password && username
+			? {
+					basicAuth: {
+						password,
+						username,
 					},
 			  }
 			: {}

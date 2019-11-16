@@ -1,10 +1,12 @@
 # Version 0.22.0
 
--   Breaking Change: the signature for specifying a workflow definition version in `createWorkflowInstance` has changed. See the README for the new signature.
+-   Breaking Change: The signature for specifying a workflow definition version in `createWorkflowInstance` has changed. See the README for the new signature.
+-   Breaking Change: Change `pollMode` to `pollInterval` in logging.
+-   Breaking Change: Change default long poll to 30s. See [#101](https://github.com/creditsenseau/zeebe-client-node-js/issues/101).
+-   Feature: Add support for Basic Auth
 -   Feature: Awaitable workflow outcome. The client can initiate a workflow and receive the outcome of the workflow in the response. See [zeebe/#2896](https://github.com/zeebe-io/zeebe/issues/2896).
--   Change default long poll to 30s. See [#101](https://github.com/creditsenseau/zeebe-client-node-js/issues/101).
 -   Fix: Correctly log task type from gRPC client.
--   Change `pollMode` to `pollInterval` in logging.
+-   Chore: Upgrade TypeScript to 3.7
 
 # Version 0.21.3
 
