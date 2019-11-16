@@ -229,8 +229,10 @@ export class GRPCClient extends EventEmitter {
 					try {
 						const metadata = await this.getAuthToken()
 						stream = this.client[methodName](data, metadata)
+						this.setReady()
 					} catch (e) {
 						this.logger.error(e)
+						this.setNotReady()
 					}
 					/**
 					 * Once this gets attached here, it is attached to *all* calls
