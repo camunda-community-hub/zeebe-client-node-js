@@ -1,5 +1,4 @@
 import { parse } from 'url'
-import { BasicAuthConfig } from './BasicAuthConfig'
 import * as ZB from './interfaces'
 import { OAuthProviderConfig } from './OAuthProvider'
 
@@ -59,7 +58,7 @@ export class ConfigurationHydrator {
 			: {}
 	}
 
-	private static readBasicAuthFromEnvironment(): BasicAuthConfig | {} {
+	private static readBasicAuthFromEnvironment(): ZB.BasicAuthConfig | {} {
 		const password = process.env.ZEEBE_BASIC_AUTH_PASSWORD
 		const username = process.env.ZEEBE_BASIC_AUTH_USERNAME
 		return password && username

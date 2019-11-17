@@ -1,10 +1,10 @@
 import chalk from 'chalk'
+import { EventEmitter } from 'events'
 import * as fs from 'fs'
 import * as path from 'path'
 import promiseRetry from 'promise-retry'
 import { v4 as uuid } from 'uuid'
 import { BpmnParser, parseVariables, stringifyVariables } from '../lib'
-import { BasicAuthConfig } from '../lib/BasicAuthConfig'
 import { ConfigurationHydrator } from '../lib/ConfigurationHydrator'
 import { GRPCClient } from '../lib/GRPCClient'
 import * as ZB from '../lib/interfaces'
@@ -22,7 +22,7 @@ const idColors = [
 	chalk.blue,
 ]
 
-export class ZBClient {
+export class ZBClient extends EventEmitter {
 	public static readonly DEFAULT_CONNECTION_TOLERANCE = 3000
 	private static readonly DEFAULT_MAX_RETRIES = 50
 	private static readonly DEFAULT_MAX_RETRY_TIMEOUT = 5000
@@ -44,7 +44,7 @@ export class ZBClient {
 	private maxRetries: number
 	private maxRetryTimeout: number
 	private oAuth?: OAuthProvider
-	private basicAuth?: BasicAuthConfig
+	private basicAuth?: ZB.BasicAuthConfig
 	private useTLS: boolean
 	private stdout: any
 	private lastReady?: Date
@@ -61,6 +61,7 @@ export class ZBClient {
 		gatewayAddress?: string | ZB.ZBClientOptions,
 		options?: ZB.ZBClientOptions
 	) {
+		super()
 		if (typeof gatewayAddress === 'object') {
 			options = gatewayAddress
 			gatewayAddress = undefined
@@ -154,6 +155,7 @@ export class ZBClient {
 		// has failed. Workers know about it fast.
 		// tslint:disable-next-line: variable-name
 		const _onConnectionError = (err?: any) => {
+			worker.emit('connectionError', err)
 			this._onConnectionError()
 			// Allow a per-worker handler for specialised behaviour
 			if (onConnectionError) {
@@ -163,6 +165,7 @@ export class ZBClient {
 		// tslint:disable-next-line: variable-name
 		const _onReady = () => {
 			this._onReady()
+			worker.emit('ready')
 			if (onReady) {
 				onReady()
 			}
@@ -576,36 +579,44 @@ export class ZBClient {
 
 	private _onConnectionError() {
 		this.connected = false
-		if (this.onConnectionError) {
-			if (this.lastConnectionError) {
-				const now = new Date()
-				const delta = now.valueOf() - this.lastConnectionError.valueOf()
-				if (delta > this.connectionTolerance / 2) {
+		if (this.lastConnectionError) {
+			const now = new Date()
+			const delta = now.valueOf() - this.lastConnectionError.valueOf()
+			if (delta > this.connectionTolerance / 2) {
+				if (this.onConnectionError) {
 					// @TODO is this the right window?
 					this.onConnectionError()
 				}
-			} else {
+				this.emit('connectionError')
+			}
+		} else {
+			if (this.onConnectionError) {
 				this.onConnectionError()
 			}
-			this.lastConnectionError = new Date()
+			this.emit('connectionError')
 		}
+		this.lastConnectionError = new Date()
 	}
 
 	private _onReady() {
 		this.connected = true
-		if (this.onReady) {
-			if (this.lastReady) {
-				const now = new Date()
-				const delta = now.valueOf() - this.lastReady.valueOf()
-				if (delta > this.connectionTolerance / 2) {
-					// @TODO is this the right window?
+		if (this.lastReady) {
+			const now = new Date()
+			const delta = now.valueOf() - this.lastReady.valueOf()
+			if (delta > this.connectionTolerance / 2) {
+				// @TODO is this the right window?
+				if (this.onReady) {
 					this.onReady()
 				}
-			} else {
+				this.emit('ready')
+			}
+		} else {
+			if (this.onReady) {
 				this.onReady()
 			}
-			this.lastReady = new Date()
+			this.emit('ready')
 		}
+		this.lastReady = new Date()
 	}
 	/**
 	 * This function takes a gRPC operation that returns a Promise as a function, and invokes it.

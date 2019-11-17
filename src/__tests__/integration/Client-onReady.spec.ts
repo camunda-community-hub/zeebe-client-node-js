@@ -10,7 +10,7 @@ describe('onReady Handler', () => {
 			onReady: () => {
 				called = true
 			},
-		}) // Doesn't exist!!!
+		}) // Broker doesn't exist!!!
 		setTimeout(async () => {
 			expect(called).toBe(false)
 			expect(zbc2.connected).toBe(false)
@@ -25,6 +25,20 @@ describe('onReady Handler', () => {
 			onReady: () => {
 				called++
 			},
+		})
+
+		setTimeout(async () => {
+			expect(called).toBe(1)
+			expect(zbc2.connected).toBe(true)
+			await zbc2.close()
+			done()
+		}, 4000)
+	})
+
+	it(`Does emit the ready event if there is a broker`, done => {
+		let called = 0
+		const zbc2 = new ZBClient().on('ready', () => {
+			called++
 		})
 
 		setTimeout(async () => {

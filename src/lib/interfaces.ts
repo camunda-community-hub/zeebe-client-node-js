@@ -3,6 +3,11 @@ import { ZBWorker } from '../zb/ZBWorker'
 import { GRPCClient } from './GRPCClient'
 import { OAuthProviderConfig } from './OAuthProvider'
 
+export interface BasicAuthConfig {
+	password: string
+	username: string
+}
+
 export interface KeyedObject {
 	[key: string]: any
 }

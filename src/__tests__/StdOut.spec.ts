@@ -7,6 +7,7 @@ describe('StdOut Substitution', () => {
 	it('uses an injected stdout', done => {
 		const mockStd = new MockStdOut()
 		const z = new ZBClient({ stdout: mockStd })
+
 		// tslint:disable-next-line: no-console
 		z.createWorker(null, 'test', console.log)
 		setTimeout(() => {

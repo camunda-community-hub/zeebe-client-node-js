@@ -16,6 +16,7 @@ describe('parseBpmn', () => {
 			const parsedv7 = await BpmnParser.generateConstantsForBpmnFiles(
 				modeller7File
 			)
+			// console.log(parsedv7)
 			expect(typeof parsedv7).toBe('string')
 		})
 	})
