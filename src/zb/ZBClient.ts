@@ -116,9 +116,15 @@ export class ZBClient extends EventEmitter {
 			this.options.maxRetries || ZBClient.DEFAULT_MAX_RETRIES
 		this.maxRetryTimeout =
 			this.options.maxRetryTimeout || ZBClient.DEFAULT_MAX_RETRY_TIMEOUT
-		if (this.onReady || this.onConnectionError) {
-			this.topology()
-		}
+		// Send command to broker to eagerly fail / prove connection.
+		// This is useful for, for example: the Node-Red client, which wants to
+		// display the connection status.
+		this.topology().catch(e => {
+			// Swallow exception to avoid throwing if retries are off
+			if (e.thisWillNeverHappenYo) {
+				this.emit('never')
+			}
+		})
 	}
 
 	/**
