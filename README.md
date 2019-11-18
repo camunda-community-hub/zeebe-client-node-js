@@ -5,13 +5,15 @@
 
 This is a Node.js gRPC client for [Zeebe](https://zeebe.io). It is written in TypeScript and transpiled to JavaScript in the `dist` directory.
 
-Comprehensive API documentation is available [online](https://creditsenseau.github.io/zeebe-client-node-js/) and in the `docs` subdirectory.
+Comprehensive API documentation is available [online](https://creditsenseau.github.io/zeebe-client-node-js/).
+
+See CHANGELOG.md to see what has changed with each release.
 
 Docker-compose configurations for Zeebe are available at [https://github.com/zeebe-io/zeebe-docker-compose](https://github.com/zeebe-io/zeebe-docker-compose).
 
 ## Versioning
 
-To enable that the client libraries can be easily supported to the Zeebe server we are remapping the version numbers, so that Major, Minor match the server application. Patches will be independent and indicate client updates.
+To enable that the client libraries can be easily supported to the Zeebe server we map the version numbers, so that Major, Minor match the server application. Patches are independent and indicate client updates.
 
 NPM Package version 0.22.x supports Zeebe 0.22.x
 
