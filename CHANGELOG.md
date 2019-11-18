@@ -1,13 +1,37 @@
 # Version 0.22.0
 
--   Breaking Change: The signature for specifying a workflow definition version in `createWorkflowInstance` has changed. See the README for the new signature.
--   Breaking Change: Change `pollMode` to `pollInterval` in logging.
--   Breaking Change: Change default long poll to 30s. See [#101](https://github.com/creditsenseau/zeebe-client-node-js/issues/101).
--   Feature: Add support for Basic Auth. See the README for details.
--   Feature: Awaitable workflow outcome. The client can initiate a workflow and receive the outcome of the workflow in the response. See [zeebe/#2896](https://github.com/zeebe-io/zeebe/issues/2896) and [this blog post](https://zeebe.io/blog/2019/10/0.22-awaitable-outcomes/).
--   Fix: Correctly log task type from gRPC client.
--   Fix: If the oAuth cacheOnDisk is true, and the `$HOME/.camunda` directory is not writable, then the ZBClient constructor will throw. See [#110](https://github.com/creditsenseau/zeebe-client-node-js/issues/110).
--   Chore: Upgrade TypeScript to 3.7
+## Breaking Changes
+
+_Changes in APIs or behaviour that may affect existing applications that use zeebe-node._
+
+-   The signature for specifying a workflow definition version in `createWorkflowInstance` has changed. See the README for the new signature.
+-   If the oAuth cacheOnDisk is true and the directory `$HOME/.camunda` is not writable, then the ZBClient constructor will now throw to prevent unbounded token requests. Thanks to GitHub user MainAero for reporting this. See [#110](https://github.com/creditsenseau/zeebe-client-node-js/issues/110).
+-   Change default long poll for workers to 30s. See [#101](https://github.com/creditsenseau/zeebe-client-node-js/issues/101).
+-   The ZBClient no longer bubbles up gRPC status from its workers. See [#109](https://github.com/creditsenseau/zeebe-client-node-js/issues/109) and [this comment](https://github.com/creditsenseau/zeebe-client-node-js/issues/99#issuecomment-554926818).
+-   Remove `pollMode` (it's now always long-poll), and add `pollInterval` in ZBLogger messages.
+
+## New Features
+
+_New shiny stuff._
+
+-   Add support for Basic Auth. See [this commit](https://github.com/jwulf/zeebe-client-node-js/commit/bd261a7417d68ff9c6739b3057a042aaade7eb4a) and the README for details.
+-   Awaitable workflow outcome. With a 0.22 broker, the client can initiate a workflow and receive the outcome of the workflow in the broker response. See [zeebe/#2896](https://github.com/zeebe-io/zeebe/issues/2896) and [this blog post](https://zeebe.io/blog/2019/10/0.22-awaitable-outcomes/).
+-   Support `ZEEBE_INSECURE_CONNECTION` environment variable. See [#111](https://github.com/creditsenseau/zeebe-client-node-js/issues/111).
+-   ZBClient and ZBWorker now extend `EventEmitter` and emit `ready` and `connectionError` events from their gRPC client channels. This is in addition to the existing callback handlers. See [#108](https://github.com/creditsenseau/zeebe-client-node-js/issues/108).
+
+## Fixes
+
+_Things that were broken and now are not._
+
+-   Correctly log task type from gRPC client in ZBLogger. See [#98](https://github.com/creditsenseau/zeebe-client-node-js/issues/98).
+-   A message with no name would break `BpmnParser.generateConstantsForBpmnFiles`. Now it handles this correctly. Thanks to T.V. Vignesh for reporting this. See [#106](https://github.com/creditsenseau/zeebe-client-node-js/issues/106).
+-   The `onReady` handler was not called for workers on initial start. Now it is. Thanks to Patrick Dehn for reporting this. See [#97](https://github.com/creditsenseau/zeebe-client-node-js/issues/97).
+
+## Chores
+
+_Internal house-keeping with no end-user impact._
+
+-   Upgrade TypeScript to 3.7
 
 # Version 0.21.3
 
