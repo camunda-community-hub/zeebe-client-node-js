@@ -41,7 +41,7 @@ export class ConfigurationHydrator {
 			return {}
 		}
 		const value = secureConnection.toLowerCase()
-		const useTLS = value === 'false'
+		const useTLS = value === 'false' || !(value === 'true')
 		return {
 			useTLS,
 		}

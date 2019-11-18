@@ -289,6 +289,11 @@ describe('ConfigurationHydrator', () => {
 		const conf = ConfigurationHydrator.configure('localhost:26600', {})
 		expect(conf.useTLS).toBe(true)
 	})
+	it('Can be unsecured via the environment', () => {
+		process.env.ZEEBE_INSECURE_CONNECTION = 'true'
+		const conf = ConfigurationHydrator.configure('localhost:26600', {})
+		expect(conf.useTLS).toBe(false)
+	})
 	// const clientId = process.env.ZEEBE_CLIENT_ID
 	// const clientSecret = process.env.ZEEBE_CLIENT_SECRET
 	// const audience = process.env.ZEEBE_TOKEN_AUDIENCE
