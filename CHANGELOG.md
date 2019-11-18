@@ -6,6 +6,7 @@
 -   Feature: Add support for Basic Auth. See the README for details.
 -   Feature: Awaitable workflow outcome. The client can initiate a workflow and receive the outcome of the workflow in the response. See [zeebe/#2896](https://github.com/zeebe-io/zeebe/issues/2896) and [this blog post](https://zeebe.io/blog/2019/10/0.22-awaitable-outcomes/).
 -   Fix: Correctly log task type from gRPC client.
+-   Fix: If the oAuth cacheOnDisk is true, and the `$HOME/.camunda` directory is not writable, then the ZBClient constructor will throw. See [#110](https://github.com/creditsenseau/zeebe-client-node-js/issues/110).
 -   Chore: Upgrade TypeScript to 3.7
 
 # Version 0.21.3

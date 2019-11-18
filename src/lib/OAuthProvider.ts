@@ -55,6 +55,17 @@ export class OAuthProvider {
 		this.clientId = clientId
 		this.clientSecret = clientSecret
 		this.useFileCache = cacheOnDisk
+
+		if (this.useFileCache) {
+			try {
+				fs.accessSync(OAuthProvider.cacheDir, fs.constants.W_OK)
+			} catch (e) {
+				throw new Error(
+					`FATAL: Cannot write to OAuth cache dir ${OAuthProvider.cacheDir}\n` +
+						'If you are running on AWS Lambda, set the HOME environment variable of your lambda function to /tmp'
+				)
+			}
+		}
 	}
 
 	public async getToken(): Promise<string> {
