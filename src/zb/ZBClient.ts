@@ -155,14 +155,9 @@ export class ZBClient extends EventEmitter {
 		const idColor = idColors[this.workerCount++ % idColors.length]
 		onConnectionError = onConnectionError || options.onConnectionError
 		const onReady = options.onReady
-		// We use the worker to notify up to the ZBClient when there is a connection failure
-		// Otherwise the ZBClient only knows there is a failure when it tries to execute a command
-		// This way, a top-level handler on the ZBClient can be informed whenever we know the connection
-		// has failed. Workers know about it fast.
 		// tslint:disable-next-line: variable-name
 		const _onConnectionError = (err?: any) => {
 			worker.emit('connectionError', err)
-			this._onConnectionError()
 			// Allow a per-worker handler for specialised behaviour
 			if (onConnectionError) {
 				onConnectionError(err)
@@ -170,7 +165,6 @@ export class ZBClient extends EventEmitter {
 		}
 		// tslint:disable-next-line: variable-name
 		const _onReady = () => {
-			this._onReady()
 			worker.emit('ready')
 			if (onReady) {
 				onReady()
