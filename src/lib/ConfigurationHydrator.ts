@@ -19,6 +19,7 @@ export class ConfigurationHydrator {
 			),
 			...ConfigurationHydrator.decodeConnectionString(gatewayAddress),
 			...ConfigurationHydrator.getCamundaCloudConfig(options),
+			...ConfigurationHydrator.readTLSFromEnvironment(),
 		}
 		return configuration
 	}
@@ -33,6 +34,18 @@ export class ConfigurationHydrator {
 	// Explicit gateway & options.camundaCloud
 
 	// }
+
+	private static readTLSFromEnvironment() {
+		const secureConnection = process.env.ZEEBE_INSECURE_CONNECTION
+		if (!secureConnection) {
+			return {}
+		}
+		const value = secureConnection.toLowerCase()
+		const useTLS = value === 'false'
+		return {
+			useTLS,
+		}
+	}
 
 	private static readOAuthFromEnvironment(): OAuthProviderConfig | {} {
 		const clientId = process.env.ZEEBE_CLIENT_ID
