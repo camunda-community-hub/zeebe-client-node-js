@@ -343,6 +343,14 @@ export class ZBClient {
 		)
 	}
 
+	public completeJob(
+		completeJobRequest: ZB.CompleteJobRequest
+	): Promise<void> {
+		const withStringifiedVariables = stringifyVariables(completeJobRequest)
+		this.logger.debug(withStringifiedVariables)
+		return this.gRPCClient.completeJobSync(withStringifiedVariables)
+	}
+
 	// tslint:disable: no-object-literal-type-assertion
 	public createWorkflowInstance<Variables = ZB.GenericWorkflowVariables>(
 		bpmnProcessId: string,

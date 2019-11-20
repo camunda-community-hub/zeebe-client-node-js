@@ -1,7 +1,7 @@
 import { Chalk } from 'chalk'
 import { EventEmitter } from 'events'
 import * as uuid from 'uuid'
-import { parseVariables, stringifyVariables } from '../lib'
+import { parseVariables } from '../lib'
 import { GRPCClient } from '../lib/GRPCClient'
 import * as ZB from '../lib/interfaces'
 import { ZBLogger } from '../lib/ZBLogger'
@@ -148,14 +148,6 @@ export class ZBWorker<
 	public work = () => {
 		this.logger.log(`Ready for ${this.taskType}...`)
 		this.longPollLoop()
-	}
-
-	public completeJob(
-		completeJobRequest: ZB.CompleteJobRequest
-	): Promise<void> {
-		const withStringifiedVariables = stringifyVariables(completeJobRequest)
-		this.logger.debug(withStringifiedVariables)
-		return this.gRPCClient.completeJobSync(withStringifiedVariables)
 	}
 
 	public log(msg: any) {
@@ -335,7 +327,7 @@ export class ZBWorker<
 					}
 				},
 				success: async (completedVariables = {}) => {
-					await this.completeJob({
+					await this.zbClient.completeJob({
 						jobKey: job.key,
 						variables: completedVariables,
 					})
