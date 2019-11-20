@@ -426,6 +426,7 @@ export interface CamundaCloudConfig {
 	clusterId: string
 	clientId: string
 	clientSecret: string
+	cacheDir?: string
 	cacheOnDisk?: boolean
 }
 

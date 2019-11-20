@@ -8,7 +8,7 @@ import { BpmnParser, parseVariables, stringifyVariables } from '../lib'
 import { ConfigurationHydrator } from '../lib/ConfigurationHydrator'
 import { GRPCClient } from '../lib/GRPCClient'
 import * as ZB from '../lib/interfaces'
-import { OAuthProvider } from '../lib/OAuthProvider'
+import { OAuthProvider, OAuthProviderConfig } from '../lib/OAuthProvider'
 // tslint:disable-next-line: no-duplicate-imports
 import { Utils } from '../lib/utils'
 import { ZBLogger } from '../lib/ZBLogger'
@@ -95,7 +95,12 @@ export class ZBClient extends EventEmitter {
 		this.gatewayAddress = `${this.options.hostname}:${this.options.port}`
 
 		this.oAuth = this.options.oAuth
-			? new OAuthProvider(this.options.oAuth)
+			? new OAuthProvider(
+					this.options.oAuth as OAuthProviderConfig & {
+						cacheDir: string
+						cacheOnDisk: boolean
+					}
+			  )
 			: undefined
 		this.useTLS =
 			this.options.useTLS === true ||
@@ -125,6 +130,17 @@ export class ZBClient extends EventEmitter {
 				this.emit('never')
 			}
 		})
+	}
+
+	public async cancelWorkflowInstance(
+		workflowInstanceKey: string | number
+	): Promise<void> {
+		Utils.validateNumber(workflowInstanceKey, 'workflowInstanceKey')
+		return this.executeOperation(() =>
+			this.gRPCClient.cancelWorkflowInstanceSync({
+				workflowInstanceKey,
+			})
+		)
 	}
 
 	/**
@@ -217,135 +233,6 @@ export class ZBClient extends EventEmitter {
 				resolve()
 			})
 		return this.closePromise
-	}
-
-	/**
-	 * Return the broker cluster topology
-	 */
-	public topology(): Promise<ZB.TopologyResponse> {
-		return this.executeOperation(this.gRPCClient.topologySync)
-	}
-
-	/**
-	 *
-	 * @param workflow - A path or array of paths to .bpmn files or an object describing the workflow
-	 * @param {redeploy?: boolean} - Redeploy workflow. Defaults to true.
-	 * If set false, will not redeploy a workflow that exists.
-	 */
-	public async deployWorkflow(
-		workflow: string | string[] | { definition: Buffer; name: string }
-	): Promise<ZB.DeployWorkflowResponse> {
-		const workflows = Array.isArray(workflow) ? workflow : [workflow]
-
-		const readFile = (filename: string) => {
-			if (fs.existsSync(filename)) {
-				return fs.readFileSync(filename)
-			}
-			const name = `${filename}.bpmn`
-			if (fs.existsSync(name)) {
-				return fs.readFileSync(name)
-			}
-			throw new Error(`${filename} not found.`)
-		}
-
-		const workFlowRequests: ZB.WorkflowRequestObject[] = workflows.map(
-			wf => {
-				if (typeof wf === 'object') {
-					return {
-						definition: wf.definition,
-						name: wf.name,
-						type: 1,
-					}
-				} else {
-					return {
-						definition: readFile(wf),
-						name: path.basename(wf),
-						type: 1,
-					}
-				}
-			}
-		)
-
-		if (workFlowRequests.length > 0) {
-			return this.executeOperation(() =>
-				this.gRPCClient.deployWorkflowSync({
-					workflows: workFlowRequests,
-				})
-			)
-		} else {
-			return {
-				key: '-1',
-				workflows: [],
-			}
-		}
-	}
-
-	/**
-	 * Return an array of task-types specified in a BPMN file.
-	 * @param file - Path to bpmn file.
-	 */
-	public getServiceTypesFromBpmn(files: string | string[]) {
-		if (typeof files === 'string') {
-			files = [files]
-		}
-		return BpmnParser.getTaskTypes(BpmnParser.parseBpmn(files))
-	}
-
-	/**
-	 * Publish a message to the broker for correlation with a workflow instance.
-	 * @param publishMessageRequest - The message to publish.
-	 */
-	public publishMessage<T = ZB.GenericWorkflowVariables>(
-		publishMessageRequest: ZB.PublishMessageRequest<T>
-	): Promise<void> {
-		return this.executeOperation(() =>
-			this.gRPCClient.publishMessageSync(
-				stringifyVariables(publishMessageRequest)
-			)
-		)
-	}
-
-	/**
-	 * Publish a message to the broker for correlation with a workflow message start event.
-	 * @param publishStartMessageRequest - The message to publish.
-	 */
-	public publishStartMessage<T = ZB.GenericWorkflowVariables>(
-		publishStartMessageRequest: ZB.PublishStartMessageRequest<T>
-	): Promise<void> {
-		/**
-		 * The hash of the correlationKey is used to determine the partition where this workflow will start.
-		 * So we assign a random uuid to balance workflow instances created via start message across partitions.
-		 *
-		 * We make the correlationKey optional, because the caller can specify a correlationKey + messageId
-		 * to guarantee an idempotent message.
-		 *
-		 * Multiple messages with the same correlationKey + messageId combination will only start a workflow once.
-		 * See: https://github.com/zeebe-io/zeebe/issues/1012 and https://github.com/zeebe-io/zeebe/issues/1022
-		 */
-
-		const publishMessageRequest: ZB.PublishMessageRequest = {
-			correlationKey: uuid(),
-			...publishStartMessageRequest,
-		}
-		return this.executeOperation(() =>
-			this.gRPCClient.publishMessageSync(
-				stringifyVariables(publishMessageRequest)
-			)
-		)
-	}
-
-	public updateJobRetries(
-		updateJobRetriesRequest: ZB.UpdateJobRetriesRequest
-	): Promise<void> {
-		return this.executeOperation(() =>
-			this.gRPCClient.updateJobRetriesSync(updateJobRetriesRequest)
-		)
-	}
-
-	public failJob(failJobRequest: ZB.FailJobRequest): Promise<void> {
-		return this.executeOperation(() =>
-			this.gRPCClient.failJobSync(failJobRequest)
-		)
 	}
 
 	public completeJob(
@@ -511,14 +398,123 @@ export class ZBClient extends EventEmitter {
 					.then(res => parseVariables(res as any))
 	}
 
-	public async cancelWorkflowInstance(
-		workflowInstanceKey: string | number
-	): Promise<void> {
-		Utils.validateNumber(workflowInstanceKey, 'workflowInstanceKey')
+	/**
+	 *
+	 * @param workflow - A path or array of paths to .bpmn files or an object describing the workflow
+	 * @param {redeploy?: boolean} - Redeploy workflow. Defaults to true.
+	 * If set false, will not redeploy a workflow that exists.
+	 */
+	public async deployWorkflow(
+		workflow: string | string[] | { definition: Buffer; name: string }
+	): Promise<ZB.DeployWorkflowResponse> {
+		const workflows = Array.isArray(workflow) ? workflow : [workflow]
+
+		const readFile = (filename: string) => {
+			if (fs.existsSync(filename)) {
+				return fs.readFileSync(filename)
+			}
+			const name = `${filename}.bpmn`
+			if (fs.existsSync(name)) {
+				return fs.readFileSync(name)
+			}
+			throw new Error(`${filename} not found.`)
+		}
+
+		const workFlowRequests: ZB.WorkflowRequestObject[] = workflows.map(
+			wf => {
+				if (typeof wf === 'object') {
+					return {
+						definition: wf.definition,
+						name: wf.name,
+						type: 1,
+					}
+				} else {
+					return {
+						definition: readFile(wf),
+						name: path.basename(wf),
+						type: 1,
+					}
+				}
+			}
+		)
+
+		if (workFlowRequests.length > 0) {
+			return this.executeOperation(() =>
+				this.gRPCClient.deployWorkflowSync({
+					workflows: workFlowRequests,
+				})
+			)
+		} else {
+			return {
+				key: '-1',
+				workflows: [],
+			}
+		}
+	}
+
+	public failJob(failJobRequest: ZB.FailJobRequest): Promise<void> {
 		return this.executeOperation(() =>
-			this.gRPCClient.cancelWorkflowInstanceSync({
-				workflowInstanceKey,
-			})
+			this.gRPCClient.failJobSync(failJobRequest)
+		)
+	}
+
+	/**
+	 * Return an array of task-types specified in a BPMN file.
+	 * @param file - Path to bpmn file.
+	 */
+	public getServiceTypesFromBpmn(files: string | string[]) {
+		if (typeof files === 'string') {
+			files = [files]
+		}
+		return BpmnParser.getTaskTypes(BpmnParser.parseBpmn(files))
+	}
+
+	/**
+	 * Publish a message to the broker for correlation with a workflow instance.
+	 * @param publishMessageRequest - The message to publish.
+	 */
+	public publishMessage<T = ZB.GenericWorkflowVariables>(
+		publishMessageRequest: ZB.PublishMessageRequest<T>
+	): Promise<void> {
+		return this.executeOperation(() =>
+			this.gRPCClient.publishMessageSync(
+				stringifyVariables(publishMessageRequest)
+			)
+		)
+	}
+
+	/**
+	 * Publish a message to the broker for correlation with a workflow message start event.
+	 * @param publishStartMessageRequest - The message to publish.
+	 */
+	public publishStartMessage<T = ZB.GenericWorkflowVariables>(
+		publishStartMessageRequest: ZB.PublishStartMessageRequest<T>
+	): Promise<void> {
+		/**
+		 * The hash of the correlationKey is used to determine the partition where this workflow will start.
+		 * So we assign a random uuid to balance workflow instances created via start message across partitions.
+		 *
+		 * We make the correlationKey optional, because the caller can specify a correlationKey + messageId
+		 * to guarantee an idempotent message.
+		 *
+		 * Multiple messages with the same correlationKey + messageId combination will only start a workflow once.
+		 * See: https://github.com/zeebe-io/zeebe/issues/1012 and https://github.com/zeebe-io/zeebe/issues/1022
+		 */
+
+		const publishMessageRequest: ZB.PublishMessageRequest = {
+			correlationKey: uuid(),
+			...publishStartMessageRequest,
+		}
+		return this.executeOperation(() =>
+			this.gRPCClient.publishMessageSync(
+				stringifyVariables(publishMessageRequest)
+			)
+		)
+	}
+
+	public resolveIncident(incidentKey: string): Promise<void> {
+		return this.executeOperation(() =>
+			this.gRPCClient.resolveIncidentSync(incidentKey)
 		)
 	}
 
@@ -537,9 +533,18 @@ export class ZBClient extends EventEmitter {
 		)
 	}
 
-	public resolveIncident(incidentKey: string): Promise<void> {
+	/**
+	 * Return the broker cluster topology
+	 */
+	public topology(): Promise<ZB.TopologyResponse> {
+		return this.executeOperation(this.gRPCClient.topologySync)
+	}
+
+	public updateJobRetries(
+		updateJobRetriesRequest: ZB.UpdateJobRetriesRequest
+	): Promise<void> {
 		return this.executeOperation(() =>
-			this.gRPCClient.resolveIncidentSync(incidentKey)
+			this.gRPCClient.updateJobRetriesSync(updateJobRetriesRequest)
 		)
 	}
 
@@ -569,6 +574,7 @@ export class ZBClient extends EventEmitter {
 			useTLS: this.useTLS,
 		}) as ZB.ZBGRPC
 	}
+
 	/**
 	 * If this.retry is set true, the operation will be wrapped in an configurable retry on exceptions
 	 * of gRPC error code 14 - Transient Network Failure.

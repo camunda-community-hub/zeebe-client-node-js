@@ -285,14 +285,14 @@ describe('ConfigurationHydrator', () => {
 		expect(conf.useTLS).toBeFalsy()
 	})
 	it('Can be secured via the environment', () => {
-		process.env.ZEEBE_INSECURE_CONNECTION = 'false'
-		const conf = ConfigurationHydrator.configure('localhost:26600', {})
-		expect(conf.useTLS).toBe(true)
-	})
-	it('Can be unsecured via the environment', () => {
-		process.env.ZEEBE_INSECURE_CONNECTION = 'true'
+		process.env.ZEEBE_SECURE_CONNECTION = 'false'
 		const conf = ConfigurationHydrator.configure('localhost:26600', {})
 		expect(conf.useTLS).toBe(false)
+	})
+	it('Can be unsecured via the environment', () => {
+		process.env.ZEEBE_SECURE_CONNECTION = 'true'
+		const conf = ConfigurationHydrator.configure('localhost:26600', {})
+		expect(conf.useTLS).toBe(true)
 	})
 	// const clientId = process.env.ZEEBE_CLIENT_ID
 	// const clientSecret = process.env.ZEEBE_CLIENT_SECRET
