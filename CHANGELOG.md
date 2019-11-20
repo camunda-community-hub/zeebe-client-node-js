@@ -16,7 +16,7 @@ _New shiny stuff._
 
 -   Add support for Basic Auth. See [this commit](https://github.com/jwulf/zeebe-client-node-js/commit/bd261a7417d68ff9c6739b3057a042aaade7eb4a) and the README for details.
 -   Awaitable workflow outcome. With a 0.22 broker, the client can initiate a workflow and receive the outcome of the workflow in the broker response. See [zeebe/#2896](https://github.com/zeebe-io/zeebe/issues/2896) and [this blog post](https://zeebe.io/blog/2019/10/0.22-awaitable-outcomes/).
--   Support `ZEEBE_INSECURE_CONNECTION` environment variable. See [#111](https://github.com/creditsenseau/zeebe-client-node-js/issues/111).
+-   Support `ZEEBE_SECURE_CONNECTION` environment variable to enable TLS. See [#111](https://github.com/creditsenseau/zeebe-client-node-js/issues/111).
 -   ZBClient and ZBWorker now extend `EventEmitter` and emit `ready` and `connectionError` events from their gRPC client channels. This is in addition to the existing callback handlers. See [#108](https://github.com/creditsenseau/zeebe-client-node-js/issues/108).
 -   ZBClient now has a `completeJob` method that allows you to complete a job "manually", outside a worker. This allows you to decouple your job implementation from the service worker across a memory boundary - for example, in another AWS Lambda. Thanks to GitHub user MainAero for this. See [#112](https://github.com/creditsenseau/zeebe-client-node-js/pull/112).
 
@@ -32,7 +32,8 @@ _Things that were broken and now are not._
 
 _Internal house-keeping with no end-user impact._
 
--   Upgrade TypeScript to 3.7
+-   Upgrade TypeScript to 3.7.
+-   Upgrade Prettier to 1.19.1.
 
 # Version 0.21.3
 

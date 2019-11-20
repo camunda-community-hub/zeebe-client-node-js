@@ -146,12 +146,20 @@ const zbWorker = zbc.createWorker(
 
 ### TLS
 
+The Node client does not use TLS by default.
+
 Enable a secure connection by setting `useTLS: true`:
 
 ```typescript
 const zbc = new ZB.ZBClient(tlsProxiedGatewayAddress, {
 	useTLS: true,
 })
+```
+
+Via environment variable:
+
+```bash
+ZEEBE_SECURE_CONNECTION=true
 ```
 
 ### OAuth
@@ -224,7 +232,7 @@ The following environment variable configurations are possible with the Zero-con
 Camunda Cloud:
 
 ```
-ZEEBE_GATEWAY_ADDRESS
+ZEEBE_ADDRESS
 ZEEBE_CLIENT_SECRET
 ZEEBE_CLIENT_ID
 ```
@@ -232,7 +240,7 @@ ZEEBE_CLIENT_ID
 Self-hosted or local broker (no TLS or OAuth):
 
 ```
-ZEEBE_GATEWAY_ADDRESS
+ZEEBE_ADDRESS
 ```
 
 Self-hosted or local broker with OAuth + TLS:
