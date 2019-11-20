@@ -1,15 +1,32 @@
-version: "2"
+# Basic Auth setup
+
+version: "3"
+
 services:
-  nginx-proxy:
-    image: jwilder/nginx-proxy:alpine
-    container_name: nginx-proxy
+  reverse-proxy:
+    # The official v2.0 Traefik docker image
+    image: traefik:v2.0
+    # Enables the web UI and tells Traefik to listen to docker
+    command: --api.insecure=true --providers.docker
     ports:
-      - "80:26500"
+      # The HTTP port
+      - "80:80"
+      # The Web UI (enabled by --api.insecure=true)
+      - "8080:8080"
     volumes:
-      - /var/run/docker.sock:/tmp/docker.sock:ro
+      # So that Traefik can listen to the Docker events
+      - /var/run/docker.sock:/var/run/docker.sock
 
   zeebe:
     image: camunda/zeebe:0.22.0-alpha1
-    environment:
-      - VIRTUAL_HOST=whoami.local
-      - VIRTUAL_PORT=26500
+    labels:
+      # Resolvable name, for routing the incoming connections
+      - "traefik.http.routers.zeebe.rule=Host(`zeebe.docker.localhost`)"
+      ## Unencrypted HTTP2 traffic between proxy and Zeebe
+      - "traefik.http.services.zeebe.loadbalancer.server.scheme=h2c"
+      # Note: all dollar signs in the hash need to be doubled for escaping.
+      # To create user:password pair, it's possible to use this command:
+      # echo $(htpasswd -nb user password) | sed -e s/\\$/\\$\\$/g
+      # test/test and test2/test2
+      - "traefik.http.middlewares.zeebe-auth.basicauth.users=test:$$apr1$$H6uskkkW$$IgXLP6ewTrSuBkTrqE8wj/,test2:$$apr1$$d9hr9HBB$$4HxwgUir3HP4EsggP/QNo0"
+      - "traefik.http.routers.zeebe.middlewares=zeebe-auth"

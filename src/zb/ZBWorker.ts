@@ -16,7 +16,7 @@ export class ZBWorker<
 	WorkerInputVariables,
 	CustomHeaderShape,
 	WorkerOutputVariables
-> {
+> extends EventEmitter {
 	public activeJobs = 0
 	public gRPCClient: ZBGRPC
 	public maxActiveJobs: number
@@ -68,6 +68,7 @@ export class ZBWorker<
 		onConnectionError: ZB.ConnectionErrorHandler | undefined
 		zbClient: ZBClient
 	}) {
+		super()
 		options = options || {}
 		if (!taskType) {
 			throw new Error('Missing taskType')
@@ -100,6 +101,7 @@ export class ZBWorker<
 			stdout: options.stdout || console,
 			taskType: this.taskType,
 		})
+
 		this.capacityEmitter = new EventEmitter()
 		// With long polling there are periods where no timers are running. This prevents the worker exiting.
 		this.keepAlive = setInterval(() => {
@@ -327,15 +329,23 @@ export class ZBWorker<
 					}
 				},
 				success: async (completedVariables = {}) => {
-					await this.zbClient.completeJob({
-						jobKey: job.key,
-						variables: completedVariables,
-					})
+					let res
+					try {
+						res = await this.zbClient.completeJob({
+							jobKey: job.key,
+							variables: completedVariables,
+						})
+						this.logger.debug(
+							`Completed task ${taskId} for ${this.taskType}`
+						)
+					} catch (e) {
+						res = e
+						this.logger.debug(
+							`Completing task ${taskId} for ${this.taskType} threw ${e.message}`
+						)
+					}
 					this.drainOne()
-					this.logger.debug(
-						`Completed task ${taskId} for ${this.taskType}`
-					)
-					return true
+					return res
 				},
 			}
 

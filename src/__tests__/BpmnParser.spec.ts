@@ -2,6 +2,7 @@ import { BpmnParser } from '..'
 
 const testBpmnFile = __dirname + '/testdata/BpmnParser2.bpmn'
 const simpleTestBpmnFile = __dirname + '/testdata/BpmnParser.bpmn'
+const modeller7File = __dirname + '/testdata/modeller7File.bpmn'
 
 describe('parseBpmn', () => {
 	const parsed = BpmnParser.parseBpmn(testBpmnFile)
@@ -10,6 +11,13 @@ describe('parseBpmn', () => {
 		it('parses a bpmn file to an Object', () => {
 			expect(typeof parsed).toBe('object')
 			expect(typeof parsedSimple).toBe('object')
+		})
+		it('can parse a file with a message with no name', async () => {
+			const parsedv7 = await BpmnParser.generateConstantsForBpmnFiles(
+				modeller7File
+			)
+			// console.log(parsedv7)
+			expect(typeof parsedv7).toBe('string')
 		})
 	})
 	describe('getTaskTypes', () => {

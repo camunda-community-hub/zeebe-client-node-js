@@ -11,6 +11,7 @@ export class ConfigurationHydrator {
 		const configuration = {
 			hostname: 'localhost',
 			port: '26500',
+			...ConfigurationHydrator.readBasicAuthFromEnvironment(),
 			...ConfigurationHydrator.readOAuthFromEnvironment(),
 			...ConfigurationHydrator.getGatewayFromEnvironment(),
 			...ConfigurationHydrator.readCamundaClusterConfFromEnv(
@@ -18,6 +19,7 @@ export class ConfigurationHydrator {
 			),
 			...ConfigurationHydrator.decodeConnectionString(gatewayAddress),
 			...ConfigurationHydrator.getCamundaCloudConfig(options),
+			...ConfigurationHydrator.readTLSFromEnvironment(),
 		}
 		return configuration
 	}
@@ -32,6 +34,18 @@ export class ConfigurationHydrator {
 	// Explicit gateway & options.camundaCloud
 
 	// }
+
+	private static readTLSFromEnvironment() {
+		const secureConnection = process.env.ZEEBE_INSECURE_CONNECTION
+		if (!secureConnection) {
+			return {}
+		}
+		const value = secureConnection.toLowerCase()
+		const useTLS = value === 'false' || !(value === 'true')
+		return {
+			useTLS,
+		}
+	}
 
 	private static readOAuthFromEnvironment(): OAuthProviderConfig | {} {
 		const clientId = process.env.ZEEBE_CLIENT_ID
@@ -52,6 +66,19 @@ export class ConfigurationHydrator {
 						clientSecret,
 						url: authServerUrl,
 						useTLS: true,
+					},
+			  }
+			: {}
+	}
+
+	private static readBasicAuthFromEnvironment(): ZB.BasicAuthConfig | {} {
+		const password = process.env.ZEEBE_BASIC_AUTH_PASSWORD
+		const username = process.env.ZEEBE_BASIC_AUTH_USERNAME
+		return password && username
+			? {
+					basicAuth: {
+						password,
+						username,
 					},
 			  }
 			: {}

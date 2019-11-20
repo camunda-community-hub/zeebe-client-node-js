@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_0l9ruks" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Zeebe Modeler" exporterVersion="0.7.0">
+ <bpmn:process id="arithmetic-operations" name="Arithmetic Operations" isExecutable="true">
+   <bpmn:startEvent id="arithmetic-operations-started" name="Started Arithmetic Operations">
+     <bpmn:outgoing>SequenceFlow_0ez5xop</bpmn:outgoing>
+     <bpmn:messageEventDefinition messageRef="Message_1f08gza" />
+   </bpmn:startEvent>
+   <bpmn:sequenceFlow id="SequenceFlow_0ez5xop" sourceRef="arithmetic-operations-started" targetRef="ExclusiveGateway_1ssk1wx" />
+   <bpmn:parallelGateway id="ExclusiveGateway_1ssk1wx" name="Parallely do arithmetic operations">
+     <bpmn:incoming>SequenceFlow_0ez5xop</bpmn:incoming>
+     <bpmn:outgoing>SequenceFlow_12olk0x</bpmn:outgoing>
+     <bpmn:outgoing>SequenceFlow_18aymwi</bpmn:outgoing>
+   </bpmn:parallelGateway>
+   <bpmn:serviceTask id="ServiceTask_1a3w79q" name="Sum1">
+     <bpmn:extensionElements>
+       <zeebe:taskDefinition type="sum1" retries="5" />
+     </bpmn:extensionElements>
+     <bpmn:incoming>SequenceFlow_12olk0x</bpmn:incoming>
+     <bpmn:outgoing>SequenceFlow_1iv5c6g</bpmn:outgoing>
+   </bpmn:serviceTask>
+   <bpmn:sequenceFlow id="SequenceFlow_12olk0x" sourceRef="ExclusiveGateway_1ssk1wx" targetRef="ServiceTask_1a3w79q" />
+   <bpmn:serviceTask id="ServiceTask_1yzmyv2" name="Product1">
+     <bpmn:extensionElements>
+       <zeebe:taskDefinition type="product1" retries="5" />
+     </bpmn:extensionElements>
+     <bpmn:incoming>SequenceFlow_18aymwi</bpmn:incoming>
+     <bpmn:outgoing>SequenceFlow_0v8ecel</bpmn:outgoing>
+   </bpmn:serviceTask>
+   <bpmn:sequenceFlow id="SequenceFlow_18aymwi" sourceRef="ExclusiveGateway_1ssk1wx" targetRef="ServiceTask_1yzmyv2" />
+   <bpmn:intermediateCatchEvent id="IntermediateCatchEvent_0b3xa7f" name="Sum 1 Computed">
+     <bpmn:incoming>SequenceFlow_1iv5c6g</bpmn:incoming>
+     <bpmn:outgoing>SequenceFlow_1ifc94a</bpmn:outgoing>
+     <bpmn:messageEventDefinition messageRef="Message_1v6ue6g" />
+   </bpmn:intermediateCatchEvent>
+   <bpmn:sequenceFlow id="SequenceFlow_1iv5c6g" sourceRef="ServiceTask_1a3w79q" targetRef="IntermediateCatchEvent_0b3xa7f" />
+   <bpmn:intermediateCatchEvent id="IntermediateCatchEvent_0yl46ns" name="Product 1 Computed">
+     <bpmn:incoming>SequenceFlow_0v8ecel</bpmn:incoming>
+     <bpmn:outgoing>SequenceFlow_1fkpi26</bpmn:outgoing>
+     <bpmn:messageEventDefinition messageRef="Message_1164z6v" />
+   </bpmn:intermediateCatchEvent>
+   <bpmn:sequenceFlow id="SequenceFlow_0v8ecel" sourceRef="ServiceTask_1yzmyv2" targetRef="IntermediateCatchEvent_0yl46ns" />
+   <bpmn:sequenceFlow id="SequenceFlow_1fkpi26" sourceRef="IntermediateCatchEvent_0yl46ns" targetRef="ExclusiveGateway_051xiwp" />
+   <bpmn:sequenceFlow id="SequenceFlow_1ifc94a" sourceRef="IntermediateCatchEvent_0b3xa7f" targetRef="ExclusiveGateway_051xiwp" />
+   <bpmn:serviceTask id="ServiceTask_19w53zs" name="Final Sum">
+     <bpmn:extensionElements>
+       <zeebe:taskDefinition type="finalsum" retries="5" />
+     </bpmn:extensionElements>
+     <bpmn:incoming>SequenceFlow_0baze6z</bpmn:incoming>
+     <bpmn:outgoing>SequenceFlow_06f6bzc</bpmn:outgoing>
+   </bpmn:serviceTask>
+   <bpmn:sequenceFlow id="SequenceFlow_0baze6z" sourceRef="ExclusiveGateway_051xiwp" targetRef="ServiceTask_19w53zs" />
+   <bpmn:intermediateCatchEvent id="IntermediateCatchEvent_1r1egx2" name="Final Sum">
+     <bpmn:incoming>SequenceFlow_06f6bzc</bpmn:incoming>
+     <bpmn:outgoing>SequenceFlow_0y28wju</bpmn:outgoing>
+     <bpmn:messageEventDefinition messageRef="Message_046ym5j" />
+   </bpmn:intermediateCatchEvent>
+   <bpmn:sequenceFlow id="SequenceFlow_06f6bzc" sourceRef="ServiceTask_19w53zs" targetRef="IntermediateCatchEvent_1r1egx2" />
+   <bpmn:endEvent id="EndEvent_03ilqe5" name="Arithmetic Operations Completed">
+     <bpmn:incoming>SequenceFlow_0y28wju</bpmn:incoming>
+   </bpmn:endEvent>
+   <bpmn:sequenceFlow id="SequenceFlow_0y28wju" sourceRef="IntermediateCatchEvent_1r1egx2" targetRef="EndEvent_03ilqe5" />
+   <bpmn:parallelGateway id="ExclusiveGateway_051xiwp" name="Wait for sum and product to be computed">
+     <bpmn:incoming>SequenceFlow_1fkpi26</bpmn:incoming>
+     <bpmn:incoming>SequenceFlow_1ifc94a</bpmn:incoming>
+     <bpmn:outgoing>SequenceFlow_0baze6z</bpmn:outgoing>
+   </bpmn:parallelGateway>
+ </bpmn:process>
+ <bpmn:message id="Message_0dwun4b" />
+ <bpmn:message id="Message_1f08gza" name="account-finalsum1-completed" />
+ <bpmn:message id="Message_046ym5j" name="finalsum-computed">
+   <bpmn:extensionElements>
+     <zeebe:subscription correlationKey="payload.instanceID" />
+   </bpmn:extensionElements>
+ </bpmn:message>
+ <bpmn:message id="Message_1164z6v" name="account-product1-completed">
+   <bpmn:extensionElements>
+     <zeebe:subscription correlationKey="payload.instanceID" />
+   </bpmn:extensionElements>
+ </bpmn:message>
+ <bpmn:message id="Message_1v6ue6g" name="account-sum1-completed">
+   <bpmn:extensionElements>
+     <zeebe:subscription correlationKey="payload.instanceID" />
+   </bpmn:extensionElements>
+ </bpmn:message>
+ <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+   <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="arithmetic-operations">
+     <bpmndi:BPMNShape id="StartEvent_0tq5w7z_di" bpmnElement="arithmetic-operations-started">
+       <dc:Bounds x="179" y="159" width="36" height="36" />
+       <bpmndi:BPMNLabel>
+         <dc:Bounds x="154" y="202" width="88" height="27" />
+       </bpmndi:BPMNLabel>
+     </bpmndi:BPMNShape>
+     <bpmndi:BPMNEdge id="SequenceFlow_0ez5xop_di" bpmnElement="SequenceFlow_0ez5xop">
+       <di:waypoint x="215" y="177" />
+       <di:waypoint x="265" y="177" />
+     </bpmndi:BPMNEdge>
+     <bpmndi:BPMNShape id="ParallelGateway_0j2ay4z_di" bpmnElement="ExclusiveGateway_1ssk1wx">
+       <dc:Bounds x="265" y="152" width="50" height="50" />
+       <bpmndi:BPMNLabel>
+         <dc:Bounds x="261" y="100" width="58" height="40" />
+       </bpmndi:BPMNLabel>
+     </bpmndi:BPMNShape>
+     <bpmndi:BPMNShape id="ServiceTask_1a3w79q_di" bpmnElement="ServiceTask_1a3w79q">
+       <dc:Bounds x="370" y="137" width="100" height="80" />
+     </bpmndi:BPMNShape>
+     <bpmndi:BPMNEdge id="SequenceFlow_12olk0x_di" bpmnElement="SequenceFlow_12olk0x">
+       <di:waypoint x="315" y="177" />

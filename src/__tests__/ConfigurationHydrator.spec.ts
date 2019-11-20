@@ -279,6 +279,21 @@ describe('ConfigurationHydrator', () => {
 			'WZahIGHjyj0-oQ7DZ_aH2wwNuZt5O8Sq0ZJTz0OaxfO7D6jaDBZxM_Q-BHRsiGO_'
 		)
 	})
+	it('Is insecure by default', () => {
+		delete process.env.ZEEBE_INSECURE_CONNECTION
+		const conf = ConfigurationHydrator.configure('localhost:26600', {})
+		expect(conf.useTLS).toBeFalsy()
+	})
+	it('Can be secured via the environment', () => {
+		process.env.ZEEBE_INSECURE_CONNECTION = 'false'
+		const conf = ConfigurationHydrator.configure('localhost:26600', {})
+		expect(conf.useTLS).toBe(true)
+	})
+	it('Can be unsecured via the environment', () => {
+		process.env.ZEEBE_INSECURE_CONNECTION = 'true'
+		const conf = ConfigurationHydrator.configure('localhost:26600', {})
+		expect(conf.useTLS).toBe(false)
+	})
 	// const clientId = process.env.ZEEBE_CLIENT_ID
 	// const clientSecret = process.env.ZEEBE_CLIENT_SECRET
 	// const audience = process.env.ZEEBE_TOKEN_AUDIENCE
