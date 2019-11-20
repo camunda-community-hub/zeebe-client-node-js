@@ -193,6 +193,7 @@ ${headerInterfaceDfnBody}
 		const messageNames = await BpmnParser.getMessageNames(parsed)
 		const files = filenames.map(f => path.basename(f))
 		const taskEnumMembers = taskTypes
+			.filter(t => !!t)
 			.map(
 				t =>
 					`    ${t
@@ -202,6 +203,7 @@ ${headerInterfaceDfnBody}
 			)
 			.join(',\n')
 		const messageEnumMembers = messageNames
+			.filter(m => !!m)
 			.map(
 				m =>
 					`    ${m

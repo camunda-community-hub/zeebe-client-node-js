@@ -1,4 +1,5 @@
 import chalk from 'chalk'
+import { EventEmitter } from 'events'
 import * as fs from 'fs'
 import * as path from 'path'
 import promiseRetry from 'promise-retry'
@@ -21,7 +22,7 @@ const idColors = [
 	chalk.blue,
 ]
 
-export class ZBClient {
+export class ZBClient extends EventEmitter {
 	public static readonly DEFAULT_CONNECTION_TOLERANCE = 3000
 	private static readonly DEFAULT_MAX_RETRIES = 50
 	private static readonly DEFAULT_MAX_RETRY_TIMEOUT = 5000
@@ -43,6 +44,7 @@ export class ZBClient {
 	private maxRetries: number
 	private maxRetryTimeout: number
 	private oAuth?: OAuthProvider
+	private basicAuth?: ZB.BasicAuthConfig
 	private useTLS: boolean
 	private stdout: any
 	private lastReady?: Date
@@ -59,6 +61,7 @@ export class ZBClient {
 		gatewayAddress?: string | ZB.ZBClientOptions,
 		options?: ZB.ZBClientOptions
 	) {
+		super()
 		if (typeof gatewayAddress === 'object') {
 			options = gatewayAddress
 			gatewayAddress = undefined
@@ -97,7 +100,7 @@ export class ZBClient {
 		this.useTLS =
 			this.options.useTLS === true ||
 			(!!this.options.oAuth && this.options.useTLS !== false)
-
+		this.basicAuth = this.options.basicAuth
 		this.connectionTolerance =
 			this.options.connectionTolerance || this.connectionTolerance
 		this.onConnectionError = this.options.onConnectionError
@@ -113,9 +116,15 @@ export class ZBClient {
 			this.options.maxRetries || ZBClient.DEFAULT_MAX_RETRIES
 		this.maxRetryTimeout =
 			this.options.maxRetryTimeout || ZBClient.DEFAULT_MAX_RETRY_TIMEOUT
-		if (this.onReady || this.onConnectionError) {
-			this.topology()
-		}
+		// Send command to broker to eagerly fail / prove connection.
+		// This is useful for, for example: the Node-Red client, which wants to
+		// display the connection status.
+		this.topology().catch(e => {
+			// Swallow exception to avoid throwing if retries are off
+			if (e.thisWillNeverHappenYo) {
+				this.emit('never')
+			}
+		})
 	}
 
 	/**
@@ -146,13 +155,9 @@ export class ZBClient {
 		const idColor = idColors[this.workerCount++ % idColors.length]
 		onConnectionError = onConnectionError || options.onConnectionError
 		const onReady = options.onReady
-		// We use the worker to notify up to the ZBClient when there is a connection failure
-		// Otherwise the ZBClient only knows there is a failure when it tries to execute a command
-		// This way, a top-level handler on the ZBClient can be informed whenever we know the connection
-		// has failed. Workers know about it fast.
 		// tslint:disable-next-line: variable-name
 		const _onConnectionError = (err?: any) => {
-			this._onConnectionError()
+			worker.emit('connectionError', err)
 			// Allow a per-worker handler for specialised behaviour
 			if (onConnectionError) {
 				onConnectionError(err)
@@ -160,7 +165,7 @@ export class ZBClient {
 		}
 		// tslint:disable-next-line: variable-name
 		const _onReady = () => {
-			this._onReady()
+			worker.emit('ready')
 			if (onReady) {
 				onReady()
 			}
@@ -341,6 +346,14 @@ export class ZBClient {
 		return this.executeOperation(() =>
 			this.gRPCClient.failJobSync(failJobRequest)
 		)
+	}
+
+	public completeJob(
+		completeJobRequest: ZB.CompleteJobRequest
+	): Promise<void> {
+		const withStringifiedVariables = stringifyVariables(completeJobRequest)
+		this.logger.debug(withStringifiedVariables)
+		return this.gRPCClient.completeJobSync(withStringifiedVariables)
 	}
 
 	// tslint:disable: no-object-literal-type-assertion
@@ -540,6 +553,7 @@ export class ZBClient {
 		tasktype: string
 	}) {
 		return new GRPCClient({
+			basicAuth: this.basicAuth,
 			connectionTolerance: this.connectionTolerance,
 			host: this.gatewayAddress,
 			loglevel: this.loglevel,
@@ -573,36 +587,44 @@ export class ZBClient {
 
 	private _onConnectionError() {
 		this.connected = false
-		if (this.onConnectionError) {
-			if (this.lastConnectionError) {
-				const now = new Date()
-				const delta = now.valueOf() - this.lastConnectionError.valueOf()
-				if (delta > this.connectionTolerance / 2) {
+		if (this.lastConnectionError) {
+			const now = new Date()
+			const delta = now.valueOf() - this.lastConnectionError.valueOf()
+			if (delta > this.connectionTolerance / 2) {
+				if (this.onConnectionError) {
 					// @TODO is this the right window?
 					this.onConnectionError()
 				}
-			} else {
+				this.emit('connectionError')
+			}
+		} else {
+			if (this.onConnectionError) {
 				this.onConnectionError()
 			}
-			this.lastConnectionError = new Date()
+			this.emit('connectionError')
 		}
+		this.lastConnectionError = new Date()
 	}
 
 	private _onReady() {
 		this.connected = true
-		if (this.onReady) {
-			if (this.lastReady) {
-				const now = new Date()
-				const delta = now.valueOf() - this.lastReady.valueOf()
-				if (delta > this.connectionTolerance / 2) {
-					// @TODO is this the right window?
+		if (this.lastReady) {
+			const now = new Date()
+			const delta = now.valueOf() - this.lastReady.valueOf()
+			if (delta > this.connectionTolerance / 2) {
+				// @TODO is this the right window?
+				if (this.onReady) {
 					this.onReady()
 				}
-			} else {
+				this.emit('ready')
+			}
+		} else {
+			if (this.onReady) {
 				this.onReady()
 			}
-			this.lastReady = new Date()
+			this.emit('ready')
 		}
+		this.lastReady = new Date()
 	}
 	/**
 	 * This function takes a gRPC operation that returns a Promise as a function, and invokes it.

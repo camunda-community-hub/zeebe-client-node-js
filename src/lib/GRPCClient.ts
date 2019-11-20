@@ -3,7 +3,7 @@ import { loadSync, Options, PackageDefinition } from '@grpc/proto-loader'
 import chalk from 'chalk'
 import { EventEmitter } from 'events'
 import { Client, credentials, loadPackageDefinition, Metadata } from 'grpc'
-import { Loglevel } from './interfaces'
+import { BasicAuthConfig, Loglevel } from './interfaces'
 import { OAuthProvider } from './OAuthProvider'
 import { ZBLogger } from './ZBLogger'
 
@@ -79,8 +79,10 @@ export class GRPCClient extends EventEmitter {
 	private failTimer?: NodeJS.Timeout
 	private connectionTolerance: number
 	private onConnectionError?: () => void
+	private basicAuth?: BasicAuthConfig
 
 	constructor({
+		basicAuth,
 		connectionTolerance,
 		host,
 		loglevel,
@@ -95,6 +97,7 @@ export class GRPCClient extends EventEmitter {
 		onConnectionError,
 		onReady,
 	}: {
+		basicAuth?: BasicAuthConfig
 		connectionTolerance: number
 		host: string
 		loglevel: Loglevel
@@ -111,6 +114,7 @@ export class GRPCClient extends EventEmitter {
 	}) {
 		super()
 		this.oAuth = oAuth
+		this.basicAuth = basicAuth
 		this.longPoll = options.longPoll
 		this.connectionTolerance = connectionTolerance
 
@@ -222,10 +226,12 @@ export class GRPCClient extends EventEmitter {
 					// return this.client[methodName](data, { deadline })
 					// } else {
 					try {
-						const metadata = await this.getJWT()
+						const metadata = await this.getAuthToken()
 						stream = this.client[methodName](data, metadata)
+						this.setReady()
 					} catch (e) {
 						this.logger.error(e)
+						this.setNotReady()
 					}
 					/**
 					 * Once this gets attached here, it is attached to *all* calls
@@ -245,7 +251,7 @@ export class GRPCClient extends EventEmitter {
 					const client = this.client
 					return new Promise(async (resolve, reject) => {
 						try {
-							const metadata = await this.getJWT()
+							const metadata = await this.getAuthToken()
 							client[methodName](data, metadata, (err, dat) => {
 								// This will error on network or business errors
 								if (err) {
@@ -333,12 +339,19 @@ export class GRPCClient extends EventEmitter {
 		})
 	}
 
-	private async getJWT() {
+	private async getAuthToken() {
 		let metadata
 		if (this.oAuth) {
 			const token = await this.oAuth.getToken()
 			metadata = new Metadata()
 			metadata.add('Authorization', `Bearer ${token}`)
+		}
+		if (this.basicAuth) {
+			const token = Buffer.from(
+				`${this.basicAuth.username}:${this.basicAuth.password}`
+			).toString('base64')
+			metadata = new Metadata()
+			metadata.add('Authorization', `Basic ${token}`)
 		}
 		return metadata
 	}

@@ -5,13 +5,17 @@
 
 This is a Node.js gRPC client for [Zeebe](https://zeebe.io). It is written in TypeScript and transpiled to JavaScript in the `dist` directory.
 
-Comprehensive API documentation is available [online](https://creditsenseau.github.io/zeebe-client-node-js/) and in the `docs` subdirectory.
+Comprehensive API documentation is available [online](https://creditsenseau.github.io/zeebe-client-node-js/).
+
+See CHANGELOG.md to see what has changed with each release.
 
 Docker-compose configurations for Zeebe are available at [https://github.com/zeebe-io/zeebe-docker-compose](https://github.com/zeebe-io/zeebe-docker-compose).
 
 ## Versioning
 
-To enable that the client libraries can be easily supported to the Zeebe server we are remapping the version numbers, so that Major, Minor match the server application. Patches will be independent and indicate client updates.
+To enable that the client libraries can be easily supported to the Zeebe server we map the version numbers, so that Major, Minor match the server application. Patches are independent and indicate client updates.
+
+NPM Package version 0.22.x supports Zeebe 0.22.x
 
 NPM Package version 0.21.x supports Zeebe 0.21.x
 
@@ -167,7 +171,25 @@ const zbc = new ZB.ZBClient("my-secure-broker.io:443", {
 }
 ```
 
-The `cacheOnDisk` option will cache the token on disk, which can be useful in development if you are restarting the service frequently.
+The `cacheOnDisk` option will cache the token on disk in `$HOME/.camunda`, which can be useful in development if you are restarting the service frequently, or are running in a serverless environment, like AWS Lambda.
+
+If the cache directory is not writable, the ZBClient constructor will throw an exception. This is considered fatal, as it can lead to denial of service or hefty bills if you think caching is on when it is not.
+
+## Basic Auth
+
+If you put a proxy in front of the broker with basic auth, you can pass in a username and password:
+
+```typescript
+const zbc = new ZB.ZBClient("my-broker-with-basic-auth.io:443", {
+	basicAuth: {
+		username: "user1",
+		password: "secret",
+	},
+	useTLS: true
+}
+```
+
+Basic Auth will also work without TLS.
 
 ### Camunda Cloud
 
@@ -221,6 +243,13 @@ ZEEBE_CLIENT_SECRET
 ZEEBE_TOKEN_AUDIENCE
 ZEEBE_AUTHORIZATION_SERVER_URL
 ZEEBE_GATEWAY_ADDRESS
+```
+
+Basic Auth:
+
+```
+ZEEBE_BASIC_AUTH_PASSWORD
+ZEEBE_BASIC_AUTH_USERNAME
 ```
 
 ### Create a Task Worker
@@ -296,7 +325,7 @@ zbc.createWorker('test-worker', 'console-log', maybeFaultyHandler, {
 
 ### Completing tasks with success or failure
 
-To complete a task, the task worker handler function receives a `complete` method. This method has a `success` and a `failure` method.
+To complete a task, the task worker handler function receives a `complete` parameter. The complete object has a `success` and a `failure` method.
 
 Call `complete.success()` passing in a optional plain old JavaScript object (POJO) - a key:value map. These are variable:value pairs that will be used to update the workflow state in the broker. They will be merged with existing values. You can set an existing key to `null` or `undefined`, but there is no way to delete a key.
 

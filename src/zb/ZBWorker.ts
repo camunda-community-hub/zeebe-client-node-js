@@ -1,7 +1,7 @@
 import { Chalk } from 'chalk'
 import { EventEmitter } from 'events'
 import * as uuid from 'uuid'
-import { parseVariables, stringifyVariables } from '../lib'
+import { parseVariables } from '../lib'
 import { GRPCClient } from '../lib/GRPCClient'
 import * as ZB from '../lib/interfaces'
 import { ZBLogger } from '../lib/ZBLogger'
@@ -16,7 +16,7 @@ export class ZBWorker<
 	WorkerInputVariables,
 	CustomHeaderShape,
 	WorkerOutputVariables
-> {
+> extends EventEmitter {
 	public activeJobs = 0
 	public gRPCClient: ZBGRPC
 	public maxActiveJobs: number
@@ -68,6 +68,7 @@ export class ZBWorker<
 		onConnectionError: ZB.ConnectionErrorHandler | undefined
 		zbClient: ZBClient
 	}) {
+		super()
 		options = options || {}
 		if (!taskType) {
 			throw new Error('Missing taskType')
@@ -100,6 +101,7 @@ export class ZBWorker<
 			stdout: options.stdout || console,
 			taskType: this.taskType,
 		})
+
 		this.capacityEmitter = new EventEmitter()
 		// With long polling there are periods where no timers are running. This prevents the worker exiting.
 		this.keepAlive = setInterval(() => {
@@ -148,14 +150,6 @@ export class ZBWorker<
 	public work = () => {
 		this.logger.log(`Ready for ${this.taskType}...`)
 		this.longPollLoop()
-	}
-
-	public completeJob(
-		completeJobRequest: ZB.CompleteJobRequest
-	): Promise<void> {
-		const withStringifiedVariables = stringifyVariables(completeJobRequest)
-		this.logger.debug(withStringifiedVariables)
-		return this.gRPCClient.completeJobSync(withStringifiedVariables)
 	}
 
 	public log(msg: any) {
@@ -335,15 +329,23 @@ export class ZBWorker<
 					}
 				},
 				success: async (completedVariables = {}) => {
-					await this.completeJob({
-						jobKey: job.key,
-						variables: completedVariables,
-					})
+					let res
+					try {
+						res = await this.zbClient.completeJob({
+							jobKey: job.key,
+							variables: completedVariables,
+						})
+						this.logger.debug(
+							`Completed task ${taskId} for ${this.taskType}`
+						)
+					} catch (e) {
+						res = e
+						this.logger.debug(
+							`Completing task ${taskId} for ${this.taskType} threw ${e.message}`
+						)
+					}
 					this.drainOne()
-					this.logger.debug(
-						`Completed task ${taskId} for ${this.taskType}`
-					)
-					return true
+					return res
 				},
 			}
 
