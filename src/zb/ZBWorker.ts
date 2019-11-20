@@ -1,7 +1,7 @@
 import { Chalk } from 'chalk'
 import { EventEmitter } from 'events'
 import * as uuid from 'uuid'
-import { parseVariables, stringifyVariables } from '../lib'
+import { parseVariables } from '../lib'
 import { GRPCClient } from '../lib/GRPCClient'
 import * as ZB from '../lib/interfaces'
 import { ZBLogger } from '../lib/ZBLogger'
@@ -150,14 +150,6 @@ export class ZBWorker<
 	public work = () => {
 		this.logger.log(`Ready for ${this.taskType}...`)
 		this.longPollLoop()
-	}
-
-	public completeJob(
-		completeJobRequest: ZB.CompleteJobRequest
-	): Promise<any> {
-		const withStringifiedVariables = stringifyVariables(completeJobRequest)
-		this.logger.debug(withStringifiedVariables)
-		return this.gRPCClient.completeJobSync(withStringifiedVariables)
 	}
 
 	public log(msg: any) {
@@ -337,14 +329,22 @@ export class ZBWorker<
 					}
 				},
 				success: async (completedVariables = {}) => {
-					const res = await this.completeJob({
-						jobKey: job.key,
-						variables: completedVariables,
-					})
+					let res
+					try {
+						res = await this.zbClient.completeJob({
+							jobKey: job.key,
+							variables: completedVariables,
+						})
+						this.logger.debug(
+							`Completed task ${taskId} for ${this.taskType}`
+						)
+					} catch (e) {
+						res = e
+						this.logger.debug(
+							`Completing task ${taskId} for ${this.taskType} threw ${e.message}`
+						)
+					}
 					this.drainOne()
-					this.logger.debug(
-						`Completed task ${taskId} for ${this.taskType}`
-					)
 					return res
 				},
 			}
