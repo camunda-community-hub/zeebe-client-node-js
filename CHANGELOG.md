@@ -5,7 +5,7 @@
 _Changes in APIs or behaviour that may affect existing applications that use zeebe-node._
 
 -   The signature for specifying a workflow definition version in `createWorkflowInstance` has changed. See the README for the new signature.
--   If the oAuth cacheOnDisk is true and the directory `$HOME/.camunda` is not writable, then the ZBClient constructor will now throw to prevent unbounded token requests. Thanks to GitHub user MainAero for reporting this. See [#110](https://github.com/creditsenseau/zeebe-client-node-js/issues/110).
+-   If the oAuth `cacheOnDisk` is true and the directory `$HOME/.camunda` is not writable, then the ZBClient constructor will now throw to prevent unbounded token requests. Thanks to GitHub user MainAero for reporting this. See [#110](https://github.com/creditsenseau/zeebe-client-node-js/issues/110).
 -   Change default long poll for workers to 30s. See [#101](https://github.com/creditsenseau/zeebe-client-node-js/issues/101).
 -   The ZBClient no longer bubbles up gRPC status from its workers. See [#109](https://github.com/creditsenseau/zeebe-client-node-js/issues/109) and [this comment](https://github.com/creditsenseau/zeebe-client-node-js/issues/99#issuecomment-554926818).
 -   Remove `pollMode` (it's now always long-poll), and add `pollInterval` in ZBLogger messages.
@@ -14,6 +14,7 @@ _Changes in APIs or behaviour that may affect existing applications that use zee
 
 _New shiny stuff._
 
+-   The oAuth token cache directory is now configurable via the ZBClient constructor parameter `oAuth.cacheDir` or the environment variable `ZEEBE_TOKEN_CACHE_DIR`.
 -   Add support for Basic Auth. See [this commit](https://github.com/jwulf/zeebe-client-node-js/commit/bd261a7417d68ff9c6739b3057a042aaade7eb4a) and the README for details.
 -   Awaitable workflow outcome. With a 0.22 broker, the client can initiate a workflow and receive the outcome of the workflow in the broker response. See [zeebe/#2896](https://github.com/zeebe-io/zeebe/issues/2896) and [this blog post](https://zeebe.io/blog/2019/10/0.22-awaitable-outcomes/).
 -   Support `ZEEBE_SECURE_CONNECTION` environment variable to enable TLS. See [#111](https://github.com/creditsenseau/zeebe-client-node-js/issues/111).
