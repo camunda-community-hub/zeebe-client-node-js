@@ -156,7 +156,7 @@ export class ZBWorker<
 		this.logger.log(msg)
 	}
 
-	public getNewLogger(options: ZB.ZBWorkerLoggerOptions) {
+	public getNewLogger(options: ZB.ZBLoggerOptions) {
 		return new ZBLogger({
 			...options,
 			id: this.id,

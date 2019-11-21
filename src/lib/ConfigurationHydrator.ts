@@ -22,21 +22,24 @@ export class ConfigurationHydrator {
 		}
 		return configuration
 	}
+	public static readonly getLogLevelFromEnv = () =>
+		process.env.ZEEBE_NODE_LOG_LEVEL as ZB.Loglevel | undefined
 
 	private static readonly DEFAULT_GATEWAY_PORT = '26500'
 	private static readonly CAMUNDA_CLOUD_AUTH_SERVER =
 		'https://login.cloud.camunda.io/oauth/token'
 
 	private static readonly defaultTokenCache = `${homedir}/.camunda`
-	private static readonly tokenCacheDirFromEnv = () =>
+	private static readonly getTokenCacheDirFromEnv = () =>
 		process.env.ZEEBE_TOKEN_CACHE_DIR ||
 		ConfigurationHydrator.defaultTokenCache
-	private static readonly clientIdFromEnv = () => process.env.ZEEBE_CLIENT_ID
-	private static readonly zeebeAddressFromEnv = () =>
+	private static readonly getClientIdFromEnv = () =>
+		process.env.ZEEBE_CLIENT_ID
+	private static readonly getZeebeAddressFromEnv = () =>
 		process.env.ZEEBE_ADDRESS || process.env.ZEEBE_GATEWAY_ADDRESS
-	private static readonly clientSecretFromEnv = () =>
+	private static readonly getClientSecretFromEnv = () =>
 		process.env.ZEEBE_CLIENT_SECRET
-	private static readonly tlsFromEnv = () =>
+	private static readonly getTlsFromEnv = () =>
 		(process.env.ZEEBE_SECURE_CONNECTION || '').toLowerCase() === 'true'
 			? true
 			: (process.env.ZEEBE_SECURE_CONNECTION || '').toLowerCase() ===
@@ -45,7 +48,7 @@ export class ConfigurationHydrator {
 			: undefined
 
 	private static readTLSFromEnvironment(options: any = {}) {
-		const useTLS = options.useTLS ?? ConfigurationHydrator.tlsFromEnv()
+		const useTLS = options.useTLS ?? ConfigurationHydrator.getTlsFromEnv()
 		return {
 			useTLS,
 		}
@@ -54,12 +57,12 @@ export class ConfigurationHydrator {
 	private static readOAuthFromEnvironment(
 		gatewayAddress
 	): OAuthProviderConfig | {} {
-		const clientId = ConfigurationHydrator.clientIdFromEnv()
-		const clientSecret = ConfigurationHydrator.clientSecretFromEnv()
+		const clientId = ConfigurationHydrator.getClientIdFromEnv()
+		const clientSecret = ConfigurationHydrator.getClientSecretFromEnv()
 		const audience = process.env.ZEEBE_TOKEN_AUDIENCE
 		const authServerUrl = process.env.ZEEBE_AUTHORIZATION_SERVER_URL
 		const clusterId = process.env.ZEEBE_CAMUNDA_CLOUD_CLUSTER_ID
-		const cacheDir = ConfigurationHydrator.tokenCacheDirFromEnv()
+		const cacheDir = ConfigurationHydrator.getTokenCacheDirFromEnv()
 
 		const isCamundaCloudShortcutConfig =
 			clusterId || (clientId && clientSecret && !audience)
@@ -104,16 +107,16 @@ export class ConfigurationHydrator {
 		// This env var is Node-client specific
 		const clusterId = process.env.ZEEBE_CAMUNDA_CLOUD_CLUSTER_ID
 		// This env var is compatible with zbctl and the Java and Go clients
-		const zeebeAddress = ConfigurationHydrator.zeebeAddressFromEnv()
+		const zeebeAddress = ConfigurationHydrator.getZeebeAddressFromEnv()
 		const name = clusterId ? clusterId : zeebeAddress
 		const hostname = `${ConfigurationHydrator.justClusterId(
 			name
 		)}.zeebe.camunda.io`
 		const audience = hostname
-		const cacheDir = ConfigurationHydrator.tokenCacheDirFromEnv()
+		const cacheDir = ConfigurationHydrator.getTokenCacheDirFromEnv()
 
-		const clientId = ConfigurationHydrator.clientIdFromEnv()
-		const clientSecret = ConfigurationHydrator.clientSecretFromEnv()
+		const clientId = ConfigurationHydrator.getClientIdFromEnv()
+		const clientSecret = ConfigurationHydrator.getClientSecretFromEnv()
 
 		const url =
 			process.env.ZEEBE_AUTHORIZATION_SERVER_URL ||
@@ -138,7 +141,7 @@ export class ConfigurationHydrator {
 	private static getGatewayFromEnvironment() {
 		// ZEEBE_GATEWAY_ADDRESS is for backward compatibility. ZEEBE_ADDRESS is for compatibility with
 		// the Java / Go clients (including zbctl)
-		const connectionString = ConfigurationHydrator.zeebeAddressFromEnv()
+		const connectionString = ConfigurationHydrator.getZeebeAddressFromEnv()
 
 		return connectionString
 			? ConfigurationHydrator.decodeConnectionString(connectionString)
@@ -149,7 +152,7 @@ export class ConfigurationHydrator {
 		connectionString: string | undefined
 	) {
 		if (!connectionString) {
-			connectionString = ConfigurationHydrator.zeebeAddressFromEnv()
+			connectionString = ConfigurationHydrator.getZeebeAddressFromEnv()
 			if (!connectionString) {
 				return {}
 			}
@@ -182,7 +185,7 @@ export class ConfigurationHydrator {
 					audience: `${clusterId}.zeebe.camunda.io`,
 					cacheDir:
 						camundaCloud.cacheDir ||
-						ConfigurationHydrator.tokenCacheDirFromEnv(),
+						ConfigurationHydrator.getTokenCacheDirFromEnv(),
 					cacheOnDisk: camundaCloud.cacheOnDisk !== false,
 					clientId: camundaCloud.clientId,
 					clientSecret: camundaCloud.clientSecret,
