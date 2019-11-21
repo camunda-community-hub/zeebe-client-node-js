@@ -258,7 +258,6 @@ export class GRPCClient extends EventEmitter {
 								// This will error on network or business errors
 								if (err) {
 									const code = err.code
-									this.logger.error('Error: ', code)
 									const isNetworkError =
 										code === GrpcError.UNAVAILABLE
 									if (isNetworkError) {
