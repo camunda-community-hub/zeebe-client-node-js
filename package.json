@@ -38,8 +38,7 @@
 	},
 	"husky": {
 		"hooks": {
-			"pre-commit": "npm test && npm run-script build && lint-staged",
-			"pre-push": "npm test && npm run-script build"
+			"pre-commit": "npm test && npm run-script build && lint-staged"
 		}
 	},
 	"lint-staged": {
