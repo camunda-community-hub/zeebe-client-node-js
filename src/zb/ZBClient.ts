@@ -137,7 +137,7 @@ export class ZBClient extends EventEmitter {
 		workflowInstanceKey: string | number
 	): Promise<void> {
 		Utils.validateNumber(workflowInstanceKey, 'workflowInstanceKey')
-		return this.executeOperation(() =>
+		return this.executeOperation('cancelWorkflowInstance', () =>
 			this.gRPCClient.cancelWorkflowInstanceSync({
 				workflowInstanceKey,
 			})
@@ -297,7 +297,7 @@ export class ZBClient extends EventEmitter {
 		}
 
 		return this.retry === true
-			? this.executeOperation(() =>
+			? this.executeOperation('createWorkflowInstance', () =>
 					this.gRPCClient.createWorkflowInstanceSync(
 						stringifyVariables(createWorkflowInstanceRequest)
 					)
@@ -382,7 +382,7 @@ export class ZBClient extends EventEmitter {
 		)
 
 		return this.retry === true
-			? this.executeOperation(() =>
+			? this.executeOperation('createWorkflowInstanceWithResult', () =>
 					this.gRPCClient.createWorkflowInstanceWithResultSync<
 						Result
 					>({
@@ -441,7 +441,7 @@ export class ZBClient extends EventEmitter {
 		)
 
 		if (workFlowRequests.length > 0) {
-			return this.executeOperation(() =>
+			return this.executeOperation('deployWorkflow', () =>
 				this.gRPCClient.deployWorkflowSync({
 					workflows: workFlowRequests,
 				})
@@ -455,7 +455,7 @@ export class ZBClient extends EventEmitter {
 	}
 
 	public failJob(failJobRequest: ZB.FailJobRequest): Promise<void> {
-		return this.executeOperation(() =>
+		return this.executeOperation('failJob', () =>
 			this.gRPCClient.failJobSync(failJobRequest)
 		)
 	}
@@ -478,7 +478,7 @@ export class ZBClient extends EventEmitter {
 	public publishMessage<T = ZB.GenericWorkflowVariables>(
 		publishMessageRequest: ZB.PublishMessageRequest<T>
 	): Promise<void> {
-		return this.executeOperation(() =>
+		return this.executeOperation('publishMessage', () =>
 			this.gRPCClient.publishMessageSync(
 				stringifyVariables(publishMessageRequest)
 			)
@@ -507,7 +507,7 @@ export class ZBClient extends EventEmitter {
 			correlationKey: uuid(),
 			...publishStartMessageRequest,
 		}
-		return this.executeOperation(() =>
+		return this.executeOperation('publishStartMessage', () =>
 			this.gRPCClient.publishMessageSync(
 				stringifyVariables(publishMessageRequest)
 			)
@@ -515,7 +515,7 @@ export class ZBClient extends EventEmitter {
 	}
 
 	public resolveIncident(incidentKey: string): Promise<void> {
-		return this.executeOperation(() =>
+		return this.executeOperation('resolveIncident', () =>
 			this.gRPCClient.resolveIncidentSync(incidentKey)
 		)
 	}
@@ -530,7 +530,7 @@ export class ZBClient extends EventEmitter {
 		if (typeof request.variables === 'object') {
 			request.variables = JSON.stringify(request.variables) as any
 		}
-		return this.executeOperation(() =>
+		return this.executeOperation('setVariables', () =>
 			this.gRPCClient.setVariablesSync(request)
 		)
 	}
@@ -539,13 +539,13 @@ export class ZBClient extends EventEmitter {
 	 * Return the broker cluster topology
 	 */
 	public topology(): Promise<ZB.TopologyResponse> {
-		return this.executeOperation(this.gRPCClient.topologySync)
+		return this.executeOperation('topology', this.gRPCClient.topologySync)
 	}
 
 	public updateJobRetries(
 		updateJobRetriesRequest: ZB.UpdateJobRetriesRequest
 	): Promise<void> {
-		return this.executeOperation(() =>
+		return this.executeOperation('updateJobRetries', () =>
 			this.gRPCClient.updateJobRetriesSync(updateJobRetriesRequest)
 		)
 	}
@@ -588,11 +588,12 @@ export class ZBClient extends EventEmitter {
 	 * @param operation A gRPC command operation
 	 */
 	private async executeOperation<T>(
+		operationName: string,
 		operation: () => Promise<T>,
 		retries?: number
 	): Promise<T> {
 		return this.retry
-			? this.retryOnFailure(operation, retries)
+			? this.retryOnFailure(operationName, operation, retries)
 			: operation()
 	}
 
@@ -644,6 +645,7 @@ export class ZBClient extends EventEmitter {
 	 * @param operation A gRPC command operation that may fail if the broker is not available
 	 */
 	private async retryOnFailure<T>(
+		operationName: string,
 		operation: () => Promise<T>,
 		retries = this.maxRetries
 	): Promise<T> {
@@ -654,7 +656,7 @@ export class ZBClient extends EventEmitter {
 				}
 				if (n > 1) {
 					this.logger.error(
-						`gRPC connection is in failed state. Attempt ${n}. Retrying in 5s...`
+						`[${operationName}]: Attempt ${n}. Retrying in 5s...`
 					)
 				}
 				return operation().catch(err => {
@@ -665,7 +667,7 @@ export class ZBClient extends EventEmitter {
 					const isBackpressure =
 						err.message.indexOf('8') === 0 || err.code === 8
 					if (isNetworkError || isBackpressure) {
-						this.logger.error(`${err.message}`)
+						this.logger.error(`[${operationName}]: ${err.message}`)
 						retry(err)
 					}
 					// The gRPC channel will be closed if close has been called
