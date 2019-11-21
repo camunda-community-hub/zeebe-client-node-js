@@ -209,7 +209,7 @@ export class ZBClient extends EventEmitter {
 			id,
 			idColor,
 			onConnectionError,
-			options: { logNamespace: 'ZBWorker', ...this.options, ...options },
+			options: { ...this.options, ...options },
 			taskHandler,
 			taskType,
 			zbClient: this,
