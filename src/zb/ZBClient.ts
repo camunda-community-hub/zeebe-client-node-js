@@ -33,6 +33,7 @@ export class ZBClient extends EventEmitter {
 	public loglevel: ZB.Loglevel
 	public onReady?: () => void
 	public onConnectionError?: () => void
+	public logger: ZBLogger
 	private closePromise?: Promise<any>
 	private closing = false
 	// A gRPC channel for the ZBClient to execute commands on
@@ -49,7 +50,6 @@ export class ZBClient extends EventEmitter {
 	private stdout: any
 	private lastReady?: Date
 	private lastConnectionError?: Date
-	private logger: ZBLogger
 
 	/**
 	 *

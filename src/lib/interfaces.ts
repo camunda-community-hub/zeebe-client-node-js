@@ -78,7 +78,7 @@ export interface ZBWorkerLoggerOptions {
 	stdout?: any
 	color?: Chalk
 	namespace?: string | string[]
-	pollInterval: number
+	pollInterval?: number
 	taskType: string
 }
 

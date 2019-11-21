@@ -10,7 +10,7 @@ export class ZBLogger {
 	private id?: string
 	private stdout: any
 	private colorise: boolean
-	private pollInterval: number
+	private pollInterval?: number
 
 	constructor({
 		loglevel,
@@ -107,17 +107,19 @@ export class ZBLogger {
 		...optionalParameters
 	) {
 		// tslint:disable: object-literal-sort-keys
-		const msg = {
+		const msg: any = {
 			timestamp: new Date(),
 			context: `${frame.getFileName()}:${frame.getLineNumber()}`,
 			id: this.id,
 			level,
 			message,
-			pollInterval: this.pollInterval,
 			taskType: this.taskType,
 			time: dayjs().format('YYYY MMM-DD HH:mm:ssA'),
 		}
 
+		if (this.pollInterval) {
+			msg.pollInterval = this.pollInterval
+		}
 		if (optionalParameters.length > 0) {
 			;(msg as any).data = optionalParameters
 		}
