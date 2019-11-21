@@ -58,10 +58,12 @@ export class OAuthProvider {
 
 		if (this.useFileCache) {
 			try {
-				fs.accessSync(OAuthProvider.cacheDir, fs.constants.W_OK)
+				if (!fs.existsSync(OAuthProvider.cacheDir)) {
+					fs.mkdirSync(OAuthProvider.cacheDir)
+				}
 			} catch (e) {
 				throw new Error(
-					`FATAL: Cannot write to OAuth cache dir ${OAuthProvider.cacheDir}\n` +
+					`FATAL: Cannot create the OAuth cache dir ${OAuthProvider.cacheDir}\n` +
 						'If you are running on AWS Lambda, set the HOME environment variable of your lambda function to /tmp'
 				)
 			}
@@ -131,9 +133,6 @@ export class OAuthProvider {
 	private toFileCache(token: Token) {
 		const d = new Date()
 		const file = OAuthProvider.cachedTokenFile(this.clientId)
-		if (!fs.existsSync(OAuthProvider.cacheDir)) {
-			fs.mkdirSync(OAuthProvider.cacheDir)
-		}
 		fs.writeFile(
 			file,
 			JSON.stringify({
