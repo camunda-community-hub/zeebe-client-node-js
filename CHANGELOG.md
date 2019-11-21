@@ -20,6 +20,7 @@ _New shiny stuff._
 -   Support `ZEEBE_SECURE_CONNECTION` environment variable to enable TLS. See [#111](https://github.com/creditsenseau/zeebe-client-node-js/issues/111).
 -   ZBClient and ZBWorker now extend `EventEmitter` and emit `ready` and `connectionError` events from their gRPC client channels. This is in addition to the existing callback handlers. See [#108](https://github.com/creditsenseau/zeebe-client-node-js/issues/108).
 -   ZBClient now has a `completeJob` method that allows you to complete a job "manually", outside a worker. This allows you to decouple your job implementation from the service worker across a memory boundary - for example, in another AWS Lambda. Thanks to GitHub user MainAero for this. See [#112](https://github.com/creditsenseau/zeebe-client-node-js/pull/112).
+-   The ZBLogger class is now available for you to instantiate a logger for application-level logging.
 
 ## Fixes
 
