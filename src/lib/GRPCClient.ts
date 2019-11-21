@@ -91,6 +91,7 @@ export class GRPCClient extends EventEmitter {
 		packageName,
 		protoPath,
 		service,
+		namespace,
 		tasktype,
 		useTLS,
 		stdout = console,
@@ -106,7 +107,8 @@ export class GRPCClient extends EventEmitter {
 		packageName: string
 		protoPath: string
 		service: string
-		tasktype: string
+		namespace: string
+		tasktype?: string
 		useTLS: boolean
 		stdout: any
 		onConnectionError?: () => void
@@ -127,7 +129,7 @@ export class GRPCClient extends EventEmitter {
 			color: chalk.green,
 			id: 'gRPC Channel',
 			loglevel,
-			namespace: tasktype,
+			namespace,
 			pollInterval: this.longPoll!,
 			stdout,
 			taskType: tasktype,

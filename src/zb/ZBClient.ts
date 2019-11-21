@@ -80,9 +80,10 @@ export class ZBClient extends EventEmitter {
 		this.loglevel = this.options.loglevel
 		this.stdout = this.options.stdout || console
 
+		const namespace = this.options.logNamespace || 'ZBClient'
 		this.logger = new ZBLogger({
 			loglevel: this.loglevel,
-			namespace: this.options.logNamespace || 'ZBClient',
+			namespace,
 			pollInterval: this.options.longPoll!,
 			stdout: this.stdout,
 		})
@@ -111,6 +112,7 @@ export class ZBClient extends EventEmitter {
 		this.onConnectionError = this.options.onConnectionError
 		this.onReady = this.options.onReady
 		this.gRPCClient = this.constructGrpcClient({
+			namespace,
 			onConnectionError: () => this._onConnectionError(),
 			onReady: () => this._onReady(),
 			tasktype: 'ZBClient',
@@ -195,6 +197,7 @@ export class ZBClient extends EventEmitter {
 		}
 		// Give worker its own gRPC connection
 		const workerGRPCClient = this.constructGrpcClient({
+			namespace: 'ZBWorker',
 			onConnectionError: _onConnectionError,
 			onReady: _onReady,
 			tasktype: taskType,
@@ -552,16 +555,19 @@ export class ZBClient extends EventEmitter {
 		onReady,
 		onConnectionError,
 		tasktype,
+		namespace,
 	}: {
 		onReady?: () => void
 		onConnectionError?: () => void
-		tasktype: string
+		tasktype?: string
+		namespace: string
 	}) {
 		return new GRPCClient({
 			basicAuth: this.basicAuth,
 			connectionTolerance: this.connectionTolerance,
 			host: this.gatewayAddress,
 			loglevel: this.loglevel,
+			namespace,
 			oAuth: this.oAuth,
 			onConnectionError,
 			onReady,
