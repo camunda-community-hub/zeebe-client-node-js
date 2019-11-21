@@ -115,7 +115,6 @@ export class ZBClient extends EventEmitter {
 			namespace,
 			onConnectionError: () => this._onConnectionError(),
 			onReady: () => this._onReady(),
-			tasktype: 'ZBClient',
 		})
 
 		this.retry = this.options.retry !== false
