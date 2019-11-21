@@ -656,7 +656,7 @@ export class ZBClient extends EventEmitter {
 				}
 				if (n > 1) {
 					this.logger.error(
-						`[${operationName}]: Attempt ${n}. Retrying in 5s...`
+						`[${operationName}]: Attempt ${n} (max: ${this.maxRetries}).`
 					)
 				}
 				return operation().catch(err => {
