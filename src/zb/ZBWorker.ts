@@ -96,7 +96,7 @@ export class ZBWorker<
 			color: idColor,
 			id: this.id,
 			loglevel,
-			namespace: 'ZBWorker',
+			namespace: options.logNamespace!,
 			pollInterval: this.longPoll,
 			stdout: options.stdout || console,
 			taskType: this.taskType,

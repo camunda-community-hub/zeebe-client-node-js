@@ -80,10 +80,9 @@ export class ZBClient extends EventEmitter {
 		this.loglevel = this.options.loglevel
 		this.stdout = this.options.stdout || console
 
-		const namespace = this.options.logNamespace || 'ZBClient'
 		this.logger = new ZBLogger({
 			loglevel: this.loglevel,
-			namespace,
+			namespace: this.options.logNamespace || 'ZBClient',
 			pollInterval: this.options.longPoll!,
 			stdout: this.stdout,
 		})
@@ -112,7 +111,7 @@ export class ZBClient extends EventEmitter {
 		this.onConnectionError = this.options.onConnectionError
 		this.onReady = this.options.onReady
 		this.gRPCClient = this.constructGrpcClient({
-			namespace,
+			namespace: this.options.logNamespace || 'ZBClient',
 			onConnectionError: () => this._onConnectionError(),
 			onReady: () => this._onReady(),
 		})
@@ -210,7 +209,7 @@ export class ZBClient extends EventEmitter {
 			id,
 			idColor,
 			onConnectionError,
-			options: { ...this.options, ...options },
+			options: { logNamespace: 'ZBWorker', ...this.options, ...options },
 			taskHandler,
 			taskType,
 			zbClient: this,
