@@ -4,6 +4,7 @@
 
 _Changes in APIs or behaviour that may affect existing applications that use zeebe-node._
 
+-   The default job activation timeout for the ZBWorker has been changed from 1s to 60s.
 -   The signature for specifying a workflow definition version in `createWorkflowInstance` has changed. See the README for the new signature.
 -   If the oAuth `cacheOnDisk` is true and the directory `$HOME/.camunda` is not writable, then the ZBClient constructor will now throw to prevent unbounded token requests. Thanks to GitHub user MainAero for reporting this. See [#110](https://github.com/creditsenseau/zeebe-client-node-js/issues/110).
 -   Change default long poll for workers to 30s. See [#101](https://github.com/creditsenseau/zeebe-client-node-js/issues/101).
