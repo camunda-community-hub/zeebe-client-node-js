@@ -60,6 +60,8 @@ export class OAuthProvider {
 			try {
 				if (!fs.existsSync(OAuthProvider.cacheDir)) {
 					fs.mkdirSync(OAuthProvider.cacheDir)
+				} else {
+					fs.accessSync(OAuthProvider.cacheDir, fs.constants.W_OK)
 				}
 			} catch (e) {
 				throw new Error(
