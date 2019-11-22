@@ -58,10 +58,8 @@ export class OAuthProvider {
 
 		if (this.useFileCache) {
 			try {
-				if (!fs.existsSync(OAuthProvider.cacheDir)) {
-					fs.mkdirSync(OAuthProvider.cacheDir)
-				} else {
-					fs.accessSync(OAuthProvider.cacheDir, fs.constants.W_OK)
+				if (!this.createCacheDirIfNotExists()) {
+					this.checkCacheDirAccess();
 				}
 			} catch (e) {
 				throw new Error(
@@ -167,5 +165,17 @@ export class OAuthProvider {
 			return
 		}
 		setTimeout(() => delete this.tokenCache[this.clientId], validityPeriod)
+	}
+
+	private createCacheDirIfNotExists(): boolean {
+		if (!fs.existsSync(OAuthProvider.cacheDir)) {
+			fs.mkdirSync(OAuthProvider.cacheDir);
+			return true;
+		}
+		return false;
+	}
+
+	private checkCacheDirAccess(): void {
+		fs.accessSync(OAuthProvider.cacheDir, fs.constants.W_OK)
 	}
 }
