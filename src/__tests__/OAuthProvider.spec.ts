@@ -21,6 +21,7 @@ describe('OAuthProvider', () => {
 			}
 		})
 	})
+
 	it("Creates the token cache dir if it doesn't exist", () => {
 		const tokenCache = path.join(__dirname, '.token-cache')
 		if (fs.existsSync(tokenCache)) {
