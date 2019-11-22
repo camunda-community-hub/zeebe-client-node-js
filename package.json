@@ -73,6 +73,7 @@
 	},
 	"devDependencies": {
 		"@types/debug": "0.0.31",
+		"@types/got": "^9.6.9",
 		"@types/jest": "^24.0.14",
 		"@types/node": "^10.12.18",
 		"@types/stack-trace": "0.0.29",

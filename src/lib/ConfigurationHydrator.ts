@@ -1,8 +1,6 @@
-import * as os from 'os'
 import { parse } from 'url'
 import * as ZB from './interfaces'
 import { OAuthProviderConfig } from './OAuthProvider'
-const homedir = os.homedir()
 
 export class ConfigurationHydrator {
 	public static configure(
@@ -29,10 +27,6 @@ export class ConfigurationHydrator {
 	private static readonly CAMUNDA_CLOUD_AUTH_SERVER =
 		'https://login.cloud.camunda.io/oauth/token'
 
-	private static readonly defaultTokenCache = `${homedir}/.camunda`
-	private static readonly getTokenCacheDirFromEnv = () =>
-		process.env.ZEEBE_TOKEN_CACHE_DIR ||
-		ConfigurationHydrator.defaultTokenCache
 	private static readonly getClientIdFromEnv = () =>
 		process.env.ZEEBE_CLIENT_ID
 	private static readonly getZeebeAddressFromEnv = () =>
@@ -62,7 +56,6 @@ export class ConfigurationHydrator {
 		const audience = process.env.ZEEBE_TOKEN_AUDIENCE
 		const authServerUrl = process.env.ZEEBE_AUTHORIZATION_SERVER_URL
 		const clusterId = process.env.ZEEBE_CAMUNDA_CLOUD_CLUSTER_ID
-		const cacheDir = ConfigurationHydrator.getTokenCacheDirFromEnv()
 
 		const isCamundaCloudShortcutConfig =
 			clusterId || (clientId && clientSecret && !audience)
@@ -75,7 +68,6 @@ export class ConfigurationHydrator {
 			? {
 					oAuth: {
 						audience,
-						cacheDir,
 						cacheOnDisk: true,
 						clientId: clientId!,
 						clientSecret,
@@ -113,7 +105,6 @@ export class ConfigurationHydrator {
 			name
 		)}.zeebe.camunda.io`
 		const audience = hostname
-		const cacheDir = ConfigurationHydrator.getTokenCacheDirFromEnv()
 
 		const clientId = ConfigurationHydrator.getClientIdFromEnv()
 		const clientSecret = ConfigurationHydrator.getClientSecretFromEnv()
@@ -126,7 +117,7 @@ export class ConfigurationHydrator {
 					hostname,
 					oAuth: {
 						audience,
-						cacheDir,
+						cacheDir: undefined, // will be set in OAuthProvider
 						cacheOnDisk: true,
 						clientId: clientId!,
 						clientSecret: clientSecret!,
@@ -183,9 +174,7 @@ export class ConfigurationHydrator {
 				hostname: `${clusterId}.zeebe.camunda.io`,
 				oAuth: {
 					audience: `${clusterId}.zeebe.camunda.io`,
-					cacheDir:
-						camundaCloud.cacheDir ||
-						ConfigurationHydrator.getTokenCacheDirFromEnv(),
+					cacheDir: camundaCloud.cacheDir,
 					cacheOnDisk: camundaCloud.cacheOnDisk !== false,
 					clientId: camundaCloud.clientId,
 					clientSecret: camundaCloud.clientSecret,

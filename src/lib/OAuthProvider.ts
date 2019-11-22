@@ -1,5 +1,7 @@
 import * as fs from 'fs'
 import * as got from 'got'
+import * as os from 'os'
+const homedir = os.homedir()
 
 interface Token {
 	access_token: string
@@ -23,6 +25,9 @@ export interface OAuthProviderConfig {
 }
 
 export class OAuthProvider {
+	private static readonly defaultTokenCache = `${homedir}/.camunda`
+	private static readonly getTokenCacheDirFromEnv = () =>
+		process.env.ZEEBE_TOKEN_CACHE_DIR || OAuthProvider.defaultTokenCache
 	public cacheDir: string
 	public audience: string
 	public url: string
@@ -44,7 +49,7 @@ export class OAuthProvider {
 	}: {
 		url: string
 		audience: string
-		cacheDir: string
+		cacheDir?: string
 		clientId: string
 		clientSecret: string
 		cacheOnDisk: boolean
@@ -54,10 +59,14 @@ export class OAuthProvider {
 		this.clientId = clientId
 		this.clientSecret = clientSecret
 		this.useFileCache = cacheOnDisk
+		this.cacheDir = cacheDir || OAuthProvider.getTokenCacheDirFromEnv()
 
 		if (this.useFileCache) {
 			try {
-				fs.accessSync(cacheDir, fs.constants.W_OK)
+				if (!fs.existsSync(this.cacheDir)) {
+					fs.mkdirSync(this.cacheDir)
+				}
+				fs.accessSync(this.cacheDir, fs.constants.W_OK)
 			} catch (e) {
 				throw new Error(
 					`FATAL: Cannot write to OAuth cache dir ${cacheDir}\n` +
@@ -65,7 +74,6 @@ export class OAuthProvider {
 				)
 			}
 		}
-		this.cacheDir = cacheDir
 	}
 
 	public async getToken(): Promise<string> {
@@ -129,9 +137,7 @@ export class OAuthProvider {
 	private toFileCache(token: Token) {
 		const d = new Date()
 		const file = this.cachedTokenFile(this.clientId)
-		if (!fs.existsSync(this.cacheDir)) {
-			fs.mkdirSync(this.cacheDir)
-		}
+
 		fs.writeFile(
 			file,
 			JSON.stringify({
@@ -143,7 +149,7 @@ export class OAuthProvider {
 					return
 				}
 				// tslint:disable-next-line
-				console.log('Error writing OAuth token to file' + file)
+				console.error('Error writing OAuth token to file' + file)
 				// tslint:disable-next-line
 				console.error(e)
 			}
