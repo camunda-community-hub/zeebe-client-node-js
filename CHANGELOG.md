@@ -27,6 +27,7 @@ _New shiny stuff._
 
 _Things that were broken and now are not._
 
+-   Respect `ZEEBE_AUTHORIZATION_SERVER_URL` setting from the environment.
 -   Correctly log task type from gRPC client in ZBLogger. See [#98](https://github.com/creditsenseau/zeebe-client-node-js/issues/98).
 -   A message with no name would break `BpmnParser.generateConstantsForBpmnFiles`. Now it handles this correctly. Thanks to T.V. Vignesh for reporting this. See [#106](https://github.com/creditsenseau/zeebe-client-node-js/issues/106).
 -   The `onReady` handler was not called for workers on initial start. Now it is. Thanks to Patrick Dehn for reporting this. See [#97](https://github.com/creditsenseau/zeebe-client-node-js/issues/97).
