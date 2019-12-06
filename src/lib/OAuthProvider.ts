@@ -1,7 +1,6 @@
 import * as fs from 'fs'
 import * as got from 'got'
-
-import os = require('os')
+import * as os from 'os'
 const homedir = os.homedir()
 
 interface Token {
@@ -20,13 +19,16 @@ export interface OAuthProviderConfig {
 	clientId: string
 	clientSecret: string
 	/** Cache token in memory and on filesystem? */
-	cacheOnDisk: boolean
+	cacheOnDisk?: boolean
+	/** Override default token cache directory */
+	cacheDir?: string
 }
 
 export class OAuthProvider {
-	private static readonly cacheDir = `${homedir}/.camunda`
-	private static cachedTokenFile = (clientId: string) =>
-		`${OAuthProvider.cacheDir}/oauth-token-${clientId}.json`
+	private static readonly defaultTokenCache = `${homedir}/.camunda`
+	private static readonly getTokenCacheDirFromEnv = () =>
+		process.env.ZEEBE_TOKEN_CACHE_DIR || OAuthProvider.defaultTokenCache
+	public cacheDir: string
 	public audience: string
 	public url: string
 	public clientId: string
@@ -39,6 +41,7 @@ export class OAuthProvider {
 		url,
 		/** OAuth Audience */
 		audience,
+		cacheDir,
 		clientId,
 		clientSecret,
 		/** Cache token in memory and on filesystem? */
@@ -46,6 +49,7 @@ export class OAuthProvider {
 	}: {
 		url: string
 		audience: string
+		cacheDir?: string
 		clientId: string
 		clientSecret: string
 		cacheOnDisk: boolean
@@ -55,13 +59,17 @@ export class OAuthProvider {
 		this.clientId = clientId
 		this.clientSecret = clientSecret
 		this.useFileCache = cacheOnDisk
+		this.cacheDir = cacheDir || OAuthProvider.getTokenCacheDirFromEnv()
 
 		if (this.useFileCache) {
 			try {
-				fs.accessSync(OAuthProvider.cacheDir, fs.constants.W_OK)
+				if (!fs.existsSync(this.cacheDir)) {
+					fs.mkdirSync(this.cacheDir)
+				}
+				fs.accessSync(this.cacheDir, fs.constants.W_OK)
 			} catch (e) {
 				throw new Error(
-					`FATAL: Cannot write to OAuth cache dir ${OAuthProvider.cacheDir}\n` +
+					`FATAL: Cannot write to OAuth cache dir ${cacheDir}\n` +
 						'If you are running on AWS Lambda, set the HOME environment variable of your lambda function to /tmp'
 				)
 			}
@@ -107,15 +115,13 @@ export class OAuthProvider {
 
 	private fromFileCache(clientId: string) {
 		let token: Token
-		const tokenCachedInFile = fs.existsSync(
-			OAuthProvider.cachedTokenFile(clientId)
-		)
+		const tokenCachedInFile = fs.existsSync(this.cachedTokenFile(clientId))
 		if (!tokenCachedInFile) {
 			return null
 		}
 		try {
 			token = JSON.parse(
-				fs.readFileSync(OAuthProvider.cachedTokenFile(clientId), 'utf8')
+				fs.readFileSync(this.cachedTokenFile(clientId), 'utf8')
 			)
 
 			if (this.isExpired(token)) {
@@ -130,10 +136,8 @@ export class OAuthProvider {
 
 	private toFileCache(token: Token) {
 		const d = new Date()
-		const file = OAuthProvider.cachedTokenFile(this.clientId)
-		if (!fs.existsSync(OAuthProvider.cacheDir)) {
-			fs.mkdirSync(OAuthProvider.cacheDir)
-		}
+		const file = this.cachedTokenFile(this.clientId)
+
 		fs.writeFile(
 			file,
 			JSON.stringify({
@@ -145,7 +149,7 @@ export class OAuthProvider {
 					return
 				}
 				// tslint:disable-next-line
-				console.log('Error writing OAuth token to file' + file)
+				console.error('Error writing OAuth token to file' + file)
 				// tslint:disable-next-line
 				console.error(e)
 			}
@@ -167,4 +171,7 @@ export class OAuthProvider {
 		}
 		setTimeout(() => delete this.tokenCache[this.clientId], validityPeriod)
 	}
+
+	private cachedTokenFile = (clientId: string) =>
+		`${this.cacheDir}/oauth-token-${clientId}.json`
 }

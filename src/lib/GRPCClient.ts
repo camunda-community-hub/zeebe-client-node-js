@@ -91,6 +91,7 @@ export class GRPCClient extends EventEmitter {
 		packageName,
 		protoPath,
 		service,
+		namespace,
 		tasktype,
 		useTLS,
 		stdout = console,
@@ -106,7 +107,8 @@ export class GRPCClient extends EventEmitter {
 		packageName: string
 		protoPath: string
 		service: string
-		tasktype: string
+		namespace: string
+		tasktype?: string
 		useTLS: boolean
 		stdout: any
 		onConnectionError?: () => void
@@ -127,7 +129,7 @@ export class GRPCClient extends EventEmitter {
 			color: chalk.green,
 			id: 'gRPC Channel',
 			loglevel,
-			namespace: tasktype,
+			namespace,
 			pollInterval: this.longPoll!,
 			stdout,
 			taskType: tasktype,
@@ -256,7 +258,6 @@ export class GRPCClient extends EventEmitter {
 								// This will error on network or business errors
 								if (err) {
 									const code = err.code
-									this.logger.error('Error: ', code)
 									const isNetworkError =
 										code === GrpcError.UNAVAILABLE
 									if (isNetworkError) {

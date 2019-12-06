@@ -73,13 +73,13 @@ export type ZBWorkerTaskHandler<
 	>
 ) => void
 
-export interface ZBWorkerLoggerOptions {
-	loglevel: Loglevel
+export interface ZBLoggerOptions {
+	loglevel?: Loglevel
 	stdout?: any
 	color?: Chalk
-	namespace?: string | string[]
-	pollInterval: number
-	taskType: string
+	namespace: string | string[]
+	pollInterval?: number
+	taskType?: string
 }
 
 export type ConnectionErrorHandler = (error?: any) => void
@@ -426,6 +426,7 @@ export interface CamundaCloudConfig {
 	clusterId: string
 	clientId: string
 	clientSecret: string
+	cacheDir?: string
 	cacheOnDisk?: boolean
 }
 
@@ -442,6 +443,7 @@ export interface ZBClientOptions {
 		password: string
 	}
 	useTLS?: boolean
+	logNamespace?: string
 	longPoll?: number
 	camundaCloud?: CamundaCloudConfig
 	hostname?: string

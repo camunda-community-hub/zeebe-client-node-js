@@ -17,13 +17,14 @@ export class ZBWorker<
 	CustomHeaderShape,
 	WorkerOutputVariables
 > extends EventEmitter {
+	private static readonly DEFAULT_JOB_ACTIVATION_TIMEOUT = 60000
+	private static readonly DEFAULT_MAX_ACTIVE_JOBS = 32
 	public activeJobs = 0
 	public gRPCClient: ZBGRPC
 	public maxActiveJobs: number
 	public taskType: string
 	public timeout: number
 	public pollCount = 0
-
 	private closeCallback?: () => void
 	private closePromise?: Promise<undefined>
 	private closing = false
@@ -78,8 +79,10 @@ export class ZBWorker<
 		}
 		this.taskHandler = taskHandler
 		this.taskType = taskType
-		this.maxActiveJobs = options.maxJobsToActivate || 32
-		this.timeout = options.timeout || 1000
+		this.maxActiveJobs =
+			options.maxJobsToActivate || ZBWorker.DEFAULT_MAX_ACTIVE_JOBS
+		this.timeout =
+			options.timeout || ZBWorker.DEFAULT_JOB_ACTIVATION_TIMEOUT
 		this.longPoll =
 			options.longPoll || ZBClient.DEFAULT_CONNECTION_TOLERANCE
 		this.id = id || uuid.v4()
@@ -96,7 +99,7 @@ export class ZBWorker<
 			color: idColor,
 			id: this.id,
 			loglevel,
-			namespace: 'ZBWorker',
+			namespace: ['ZBWorker', options.logNamespace].join(' ').trim(),
 			pollInterval: this.longPoll,
 			stdout: options.stdout || console,
 			taskType: this.taskType,
@@ -156,7 +159,7 @@ export class ZBWorker<
 		this.logger.log(msg)
 	}
 
-	public getNewLogger(options: ZB.ZBWorkerLoggerOptions) {
+	public getNewLogger(options: ZB.ZBLoggerOptions) {
 		return new ZBLogger({
 			...options,
 			id: this.id,

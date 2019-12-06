@@ -1,16 +1,18 @@
 import { Chalk } from 'chalk'
 import dayjs from 'dayjs'
 import * as stackTrace from 'stack-trace'
-import { Loglevel, ZBWorkerLoggerOptions } from './interfaces'
+import { ConfigurationHydrator } from './ConfigurationHydrator'
+import { Loglevel, ZBLoggerOptions } from './interfaces'
 
 export class ZBLogger {
 	public loglevel: Loglevel
 	private colorFn: Chalk
-	private taskType: string
+	private taskType?: string
 	private id?: string
 	private stdout: any
 	private colorise: boolean
-	private pollInterval: number
+	private pollInterval?: number
+	private namespace: string | undefined
 
 	constructor({
 		loglevel,
@@ -21,7 +23,7 @@ export class ZBLogger {
 		taskType,
 		colorise,
 		pollInterval,
-	}: ZBWorkerLoggerOptions & {
+	}: ZBLoggerOptions & {
 		id?: string
 		colorise?: boolean
 	}) {
@@ -31,7 +33,9 @@ export class ZBLogger {
 		if (Array.isArray(namespace)) {
 			namespace = namespace.join(' ')
 		}
-		this.loglevel = loglevel
+		this.namespace = namespace
+		this.loglevel =
+			ConfigurationHydrator.getLogLevelFromEnv() || loglevel || 'INFO'
 		this.stdout = stdout || console
 		this.colorise = colorise !== false
 		this.pollInterval = pollInterval
@@ -107,17 +111,24 @@ export class ZBLogger {
 		...optionalParameters
 	) {
 		// tslint:disable: object-literal-sort-keys
-		const msg = {
+		const msg: any = {
 			timestamp: new Date(),
 			context: `${frame.getFileName()}:${frame.getLineNumber()}`,
 			id: this.id,
 			level,
 			message,
-			pollInterval: this.pollInterval,
-			taskType: this.taskType,
 			time: dayjs().format('YYYY MMM-DD HH:mm:ssA'),
 		}
 
+		if (this.pollInterval) {
+			msg.pollInterval = this.pollInterval
+		}
+		if (this.namespace) {
+			msg.namespace = this.namespace
+		}
+		if (this.taskType) {
+			msg.taskType = this.taskType
+		}
 		if (optionalParameters.length > 0) {
 			;(msg as any).data = optionalParameters
 		}

@@ -12,50 +12,57 @@ export class ConfigurationHydrator {
 			hostname: 'localhost',
 			port: '26500',
 			...ConfigurationHydrator.readBasicAuthFromEnvironment(),
-			...ConfigurationHydrator.readOAuthFromEnvironment(),
+			...ConfigurationHydrator.readOAuthFromEnvironment(gatewayAddress),
 			...ConfigurationHydrator.getGatewayFromEnvironment(),
-			...ConfigurationHydrator.readCamundaClusterConfFromEnv(
-				gatewayAddress
-			),
 			...ConfigurationHydrator.decodeConnectionString(gatewayAddress),
 			...ConfigurationHydrator.getCamundaCloudConfig(options),
-			...ConfigurationHydrator.readTLSFromEnvironment(),
+			...ConfigurationHydrator.readTLSFromEnvironment(options),
 		}
 		return configuration
 	}
+	public static readonly getLogLevelFromEnv = () =>
+		process.env.ZEEBE_NODE_LOG_LEVEL as ZB.Loglevel | undefined
 
 	private static readonly DEFAULT_GATEWAY_PORT = '26500'
 	private static readonly CAMUNDA_CLOUD_AUTH_SERVER =
 		'https://login.cloud.camunda.io/oauth/token'
 
-	// private static warnOnAmbiguousConfig() {
-	// Ambiguous confs:
-	// No explicit gateway. ZEEBE_GATEWAY_ADDRESS & CLUSTER_ID set
-	// Explicit gateway & options.camundaCloud
+	private static readonly getClientIdFromEnv = () =>
+		process.env.ZEEBE_CLIENT_ID
+	private static readonly getZeebeAddressFromEnv = () =>
+		process.env.ZEEBE_ADDRESS || process.env.ZEEBE_GATEWAY_ADDRESS
+	private static readonly getClientSecretFromEnv = () =>
+		process.env.ZEEBE_CLIENT_SECRET
+	private static readonly getTlsFromEnv = () =>
+		(process.env.ZEEBE_SECURE_CONNECTION || '').toLowerCase() === 'true'
+			? true
+			: (process.env.ZEEBE_SECURE_CONNECTION || '').toLowerCase() ===
+			  'false'
+			? false
+			: undefined
 
-	// }
-
-	private static readTLSFromEnvironment() {
-		const secureConnection = process.env.ZEEBE_INSECURE_CONNECTION
-		if (!secureConnection) {
-			return {}
-		}
-		const value = secureConnection.toLowerCase()
-		const useTLS = value === 'false' || !(value === 'true')
+	private static readTLSFromEnvironment(options: any = {}) {
+		const useTLS = options.useTLS ?? ConfigurationHydrator.getTlsFromEnv()
 		return {
 			useTLS,
 		}
 	}
 
-	private static readOAuthFromEnvironment(): OAuthProviderConfig | {} {
-		const clientId = process.env.ZEEBE_CLIENT_ID
-		const clientSecret = process.env.ZEEBE_CLIENT_SECRET
+	private static readOAuthFromEnvironment(
+		gatewayAddress
+	): OAuthProviderConfig | {} {
+		const clientId = ConfigurationHydrator.getClientIdFromEnv()
+		const clientSecret = ConfigurationHydrator.getClientSecretFromEnv()
 		const audience = process.env.ZEEBE_TOKEN_AUDIENCE
 		const authServerUrl = process.env.ZEEBE_AUTHORIZATION_SERVER_URL
 		const clusterId = process.env.ZEEBE_CAMUNDA_CLOUD_CLUSTER_ID
 
-		if (clusterId) {
-			return {} // will be handled in the CamundaCloud Config
+		const isCamundaCloudShortcutConfig =
+			clusterId || (clientId && clientSecret && !audience)
+		if (isCamundaCloudShortcutConfig) {
+			return ConfigurationHydrator.readCamundaClusterConfFromEnv(
+				gatewayAddress
+			)
 		}
 		return clientId && clientSecret && audience && authServerUrl
 			? {
@@ -65,8 +72,8 @@ export class ConfigurationHydrator {
 						clientId: clientId!,
 						clientSecret,
 						url: authServerUrl,
-						useTLS: true,
 					},
+					useTLS: true,
 			  }
 			: {}
 	}
@@ -92,24 +99,29 @@ export class ConfigurationHydrator {
 		// This env var is Node-client specific
 		const clusterId = process.env.ZEEBE_CAMUNDA_CLOUD_CLUSTER_ID
 		// This env var is compatible with zbctl and the Java and Go clients
-		const zeebeAddress = process.env.ZEEBE_ADDRESS
+		const zeebeAddress = ConfigurationHydrator.getZeebeAddressFromEnv()
 		const name = clusterId ? clusterId : zeebeAddress
 		const hostname = `${ConfigurationHydrator.justClusterId(
 			name
 		)}.zeebe.camunda.io`
 		const audience = hostname
 
-		const clientId = process.env.ZEEBE_CLIENT_ID
-		const clientSecret = process.env.ZEEBE_CLIENT_SECRET
+		const clientId = ConfigurationHydrator.getClientIdFromEnv()
+		const clientSecret = ConfigurationHydrator.getClientSecretFromEnv()
+
+		const url =
+			process.env.ZEEBE_AUTHORIZATION_SERVER_URL ||
+			ConfigurationHydrator.CAMUNDA_CLOUD_AUTH_SERVER
 		return clientId
 			? {
 					hostname,
 					oAuth: {
 						audience,
+						cacheDir: undefined, // will be set in OAuthProvider
 						cacheOnDisk: true,
 						clientId: clientId!,
 						clientSecret: clientSecret!,
-						url: ConfigurationHydrator.CAMUNDA_CLOUD_AUTH_SERVER,
+						url,
 					},
 					port: '443',
 					useTLS: true,
@@ -120,8 +132,8 @@ export class ConfigurationHydrator {
 	private static getGatewayFromEnvironment() {
 		// ZEEBE_GATEWAY_ADDRESS is for backward compatibility. ZEEBE_ADDRESS is for compatibility with
 		// the Java / Go clients (including zbctl)
-		const connectionString =
-			process.env.ZEEBE_GATEWAY_ADDRESS || process.env.ZEEBE_ADDRESS
+		const connectionString = ConfigurationHydrator.getZeebeAddressFromEnv()
+
 		return connectionString
 			? ConfigurationHydrator.decodeConnectionString(connectionString)
 			: {}
@@ -131,7 +143,7 @@ export class ConfigurationHydrator {
 		connectionString: string | undefined
 	) {
 		if (!connectionString) {
-			connectionString = process.env.ZEEBE_GATEWAY_ADDRESS
+			connectionString = ConfigurationHydrator.getZeebeAddressFromEnv()
 			if (!connectionString) {
 				return {}
 			}
@@ -162,6 +174,7 @@ export class ConfigurationHydrator {
 				hostname: `${clusterId}.zeebe.camunda.io`,
 				oAuth: {
 					audience: `${clusterId}.zeebe.camunda.io`,
+					cacheDir: camundaCloud.cacheDir,
 					cacheOnDisk: camundaCloud.cacheOnDisk !== false,
 					clientId: camundaCloud.clientId,
 					clientSecret: camundaCloud.clientSecret,
