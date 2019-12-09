@@ -90,7 +90,7 @@
 		"tsc-watch": "^1.0.31",
 		"tslint": "^5.16.0",
 		"tslint-config-prettier": "^1.18.0",
-		"typedoc": "^0.15.0",
+		"typedoc": "^0.15.4",
 		"typedoc-plugin-sourcefile-url": "^1.0.4",
 		"typescript": "^3.7.2"
 	},
