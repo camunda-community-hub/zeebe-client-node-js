@@ -60,21 +60,9 @@ export class BpmnParser {
 
 		await scanForHeadersRecursively(bpmnObject)
 
-		const importStmnt = `import { ZBClient, Auth } from "zeebe-node"
+		const importStmnt = `import { ZBClient } from "zeebe-node"
 
-const getToken = new Auth().getToken({
-	url: "https://login.cloud.camunda.io/oauth/token",
-	audience: "817d8be9-25e2-42f1-81b8-c8cfbd2adb75.zeebe.camunda.io",
-	clientId: "YaNx4Qf0uQSBcPDW9qQk6Q4SZaRUA7SK",
-	clientSecret:
-		"llKhkB_r7PsfnaWnQVDbdU9aXPAIjhTKiqLwsAySZI6XRgcs0pHofCBqT1j54amF",
-	cache: true
-});
-
-// @TODO Point to your Zeebe contact point
-const zbc = new ZBClient('0.0.0.0', {
-
-}) 
+const zbc = new ZBClient()
 `
 		const genericWorkflowVariables = `// @TODO Update with the shape of your job variables
 // For better intellisense and type-safety
@@ -92,8 +80,8 @@ ${
 }
 
 export const ${getSafeName(t)}Worker = zbc.createWorker<
-WorkflowVariables, 
-${getSafeName(t)}CustomHeaders, 
+WorkflowVariables,
+${getSafeName(t)}CustomHeaders,
 WorkflowVariables
 >(null, "${t}", (job, complete, worker) => {
 	worker.log(job)
@@ -105,7 +93,7 @@ WorkflowVariables
 
 		return `${importStmnt}
 ${genericWorkflowVariables}
-${interfaces} 
+${interfaces}
 ${workers}`
 
 		async function scanForHeadersRecursively(obj: object) {
@@ -208,6 +196,8 @@ ${headerInterfaceDfnBody}
 				m =>
 					`    ${m
 						.split('-')
+						.join('_')
+						.split(' ')
 						.join('_')
 						.toUpperCase()} = "${m}"`
 			)
