@@ -52,9 +52,21 @@ export class BpmnParser {
 
 	// Produce a starter worker file from a BPMN file
 	public static async scaffold(filename: string) {
+		const removeUndefined = t => !!t
+
+		const buildEnumDictionaryFromArray = (a: string[]) =>
+			a
+				.filter(removeUndefined)
+				.map(t => ({ [t]: getConstantName(t) }))
+				.reduce((prev, curr) => ({ ...prev, ...curr }), {})
+
 		const bpmnObject = BpmnParser.parseBpmn(filename)[0]
 
 		const taskTypes = await BpmnParser.getTaskTypes(bpmnObject)
+		const taskEnumDict = buildEnumDictionaryFromArray(taskTypes)
+		// tslint:disable-next-line: no-console
+		console.log(taskEnumDict) // @DEBUG
+
 		const interfaces = await BpmnParser.generateConstantsForBpmnFiles(
 			filename
 		)
@@ -86,7 +98,7 @@ export const ${getSafeName(t)}Worker = zbc.createWorker<
 WorkflowVariables,
 ${getSafeName(t)}CustomHeaders,
 WorkflowVariables
->(null, "${t}", (job, complete, worker) => {
+>(null, TaskType.${taskEnumDict[t]}, (job, complete, worker) => {
 	worker.log(job)
 	complete.success()
 })
@@ -164,9 +176,11 @@ ${headerInterfaceDfnBody}
 	public static async generateConstantsForBpmnFiles(
 		filenames: string | string[]
 	): Promise<string> {
+		const removeUndefined = t => !!t
+
 		const buildEnumListFromArray = a =>
 			a
-				.filter(t => !!t)
+				.filter(removeUndefined)
 				.map(t => `    ${getConstantName(t)} = "${t}"`)
 				.join(',\n')
 
