@@ -15,6 +15,7 @@ _Changes in APIs or behaviour that may affect existing applications that use zee
 
 _New shiny stuff._
 
+-   If you install the package globally with `npm i -g zeebe-node`, you get the command `zeebe-node <filename>` that parses a BPMN file and emits type definitions.
 -   The oAuth token cache directory is now configurable via the ZBClient constructor parameter `oAuth.cacheDir` or the environment variable `ZEEBE_TOKEN_CACHE_DIR`.
 -   Add support for Basic Auth. See [this commit](https://github.com/jwulf/zeebe-client-node-js/commit/bd261a7417d68ff9c6739b3057a042aaade7eb4a) and the README for details.
 -   Awaitable workflow outcome. With a 0.22 broker, the client can initiate a workflow and receive the outcome of the workflow in the broker response. See [zeebe/#2896](https://github.com/zeebe-io/zeebe/issues/2896) and [this blog post](https://zeebe.io/blog/2019/10/0.22-awaitable-outcomes/).

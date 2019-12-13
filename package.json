@@ -1,6 +1,6 @@
 {
 	"name": "zeebe-node",
-	"version": "v0.22.0-alpha.4",
+	"version": "v0.22.0-alpha.5",
 	"description": "A Node.js client library for the Zeebe Microservices Orchestration Engine.",
 	"keywords": [
 		"zeebe",
@@ -24,7 +24,7 @@
 		"url": "https://github.com/creditsenseau/zeebe-client-node-js"
 	},
 	"main": "dist/index.js",
-	"bin": "bin/zeebe-node-cli",
+	"bin": "./bin/zeebe-node-cli",
 	"scripts": {
 		"build": "tsc",
 		"watch": "tsc -w",

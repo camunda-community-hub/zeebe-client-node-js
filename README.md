@@ -472,7 +472,21 @@ zbc.close().then(() => console.log('All workers closed'))
 
 ### Generating TypeScript constants for BPMN Processes
 
-Message names and Task Types are untyped magic strings. The `BpmnParser` class provides a static method `generateConstantsForBpmnFiles()`.
+Message names and Task Types are untyped magic strings. You can generate type information to avoid some classes of errors.
+
+#### 0.22.0-alpha.5 and above
+
+Install the package globally:
+
+```
+npm i -g zeebe-node
+```
+
+Now you have the command `zeebe-node <filename>` that parses a BPMN file and emits type definitions.
+
+#### All versions
+
+The `BpmnParser` class provides a static method `generateConstantsForBpmnFiles()`.
 This method takes a filepath and returns TypeScript definitions that you can use to avoid typos in your code, and to reason about the completeness of your task worker coverage.
 
 ```javascript
