@@ -277,7 +277,7 @@ function handler(job, complete) {
 		updatedProperty: 'newValue',
 	}
 
-	complete(updateToBrokerVariables)
+	complete.success(updateToBrokerVariables)
 }
 ```
 
