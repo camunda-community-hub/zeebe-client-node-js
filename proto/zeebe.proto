@@ -1,4 +1,3 @@
-// From: https://github.com/zeebe-io/zeebe/blob/develop/gateway-protocol/src/main/proto/gateway.proto
 syntax = 'proto3';
 package gateway_protocol;
 
@@ -24,8 +23,8 @@ message ActivateJobsRequest {
   // the time of activation for the scope of the job will be returned
   repeated string fetchVariable = 5;
   // The request will be completed when at least one job is activated or after the requestTimeout.
-  // if the requestTimeout = 0, the request will be completed after a default configured timeout in the broker.
-  // To immediately complete the request when no job is activated set the requestTimeout to a negative value
+  // if the requestTimeout = 0, a default timeout is used.
+  // if the requestTimeout < 0, long polling is disabled and the request is completed immediately, even when no job is activated.
   int64 requestTimeout = 6;
 }
 
@@ -136,8 +135,10 @@ message CreateWorkflowInstanceWithResultResponse {
   // the unique identifier of the created workflow instance; to be used wherever a request
   // needs a workflow instance key (e.g. CancelWorkflowInstanceRequest)
   int64 workflowInstanceKey = 4;
-  // consisting of all visible variables to the root scope
+  // JSON document
+  // consists of visible variables in the root scope
   string variables = 5;
+
 }
 
 message DeployWorkflowRequest {
@@ -195,6 +196,18 @@ message FailJobRequest {
 }
 
 message FailJobResponse {
+}
+
+message ThrowErrorRequest {
+  // the unique job identifier, as obtained when activating the job
+  int64 jobKey = 1;
+  // the error code that will be matched with an error catch event
+  string errorCode = 2;
+  // an optional error message that provides additional context
+  string errorMessage = 3;
+}
+
+message ThrowErrorResponse {
 }
 
 message PublishMessageRequest {
@@ -290,6 +303,16 @@ message SetVariablesRequest {
 }
 
 message SetVariablesResponse {
+  // the unique key of the set variables command
+  int64 key = 1;
+}
+
+message GatewayVersionRequest {
+}
+
+message GatewayVersionResponse {
+  // version of the gateway
+  string version = 1;
 }
 
 service Gateway {
@@ -356,7 +379,7 @@ service Gateway {
   rpc CreateWorkflowInstance (CreateWorkflowInstanceRequest) returns (CreateWorkflowInstanceResponse) {
   }
 
-   /*
+  /*
     Behaves similarly to `rpc CreateWorkflowInstance`, except that a successful response is received when the workflow completes successfully.
   */
   rpc CreateWorkflowInstanceWithResult (CreateWorkflowInstanceWithResultRequest) returns (CreateWorkflowInstanceWithResultResponse) {
@@ -392,6 +415,20 @@ service Gateway {
         - the job is already in a failed state, i.e. ran out of retries
    */
   rpc FailJob (FailJobRequest) returns (FailJobResponse) {
+  }
+
+  /*
+    Reports a business error (i.e. non-technical) that occurs while processing a job. The error is handled in the workflow by an error catch event. 
+    If there is no error catch event with the specified errorCode then an incident will be raised instead.
+   
+    Errors:
+      NOT_FOUND:
+        - no job was found with the given key
+
+      FAILED_PRECONDITION:
+        - the job is not in an activated state
+   */
+  rpc ThrowError (ThrowErrorRequest) returns (ThrowErrorResponse) {
   }
 
   /*
@@ -449,5 +486,11 @@ service Gateway {
         - retries is not greater than 0
    */
   rpc UpdateJobRetries (UpdateJobRetriesRequest) returns (UpdateJobRetriesResponse) {
+  }
+
+  /* 
+    Returns the version of the gateway.
+  */
+  rpc GatewayVersion (GatewayVersionRequest) returns (GatewayVersionResponse) {
   }
 }

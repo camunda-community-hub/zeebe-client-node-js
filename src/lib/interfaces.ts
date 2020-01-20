@@ -27,6 +27,13 @@ export interface CompleteFn<WorkerOutputVariables> {
 	 * count is decremented. Pass in `0`for retries to raise an incident in Operate.
 	 */
 	failure: (errorMessage: string, retries?: number) => void
+	/**
+	 *
+	 * Report a business error (i.e. non-technical) that occurs while processing a job.
+	 * The error is handled in the workflow by an error catch event.
+	 * If there is no error catch event with the specified errorCode then an incident will be raised instead.
+	 */
+	error: (errorCode: string, errorMessage?: string) => void
 }
 
 export interface OperationOptionsWithRetry {
