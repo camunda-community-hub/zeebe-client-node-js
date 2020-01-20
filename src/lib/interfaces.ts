@@ -383,6 +383,15 @@ export interface FailJobRequest {
 	errorMessage: string
 }
 
+export interface ThrowErrorRequest {
+	// the unique job identifier, as obtained when activating the job
+	jobKey: string
+	// the error code that will be matched with an error catch event
+	errorCode: string
+	// an optional error message that provides additional context
+	errorMessage: string
+}
+
 export interface CompleteJobRequest<Variables = KeyedObject> {
 	readonly jobKey: string
 	variables: Variables
@@ -458,6 +467,7 @@ export interface ZBGRPC extends GRPCClient {
 	publishMessageSync(
 		publishMessageRequest: PublishMessageRequest
 	): Promise<void>
+	throwErrorSync(throwErrorRequest: ThrowErrorRequest): Promise<void>
 	topologySync(): Promise<TopologyResponse>
 	updateJobRetriesSync(
 		updateJobRetriesRequest: UpdateJobRetriesRequest
