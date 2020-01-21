@@ -16,7 +16,7 @@ describe('onReady Handler', () => {
 			expect(zbc2.connected).toBe(false)
 			await zbc2.close()
 			done()
-		}, 4000)
+		}, 5000)
 	})
 
 	it(`Does emit the connectionError event if there is no broker`, done => {
@@ -33,6 +33,6 @@ describe('onReady Handler', () => {
 			expect(zbc2.connected).toBe(false)
 			await zbc2.close()
 			done()
-		}, 4000)
+		}, 5000)
 	})
 })

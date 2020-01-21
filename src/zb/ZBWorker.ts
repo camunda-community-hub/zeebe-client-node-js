@@ -314,6 +314,20 @@ export class ZBWorker<
 			 */
 
 			const workerCallback = {
+				error: async (errorCode: string, errorMessage: string = '') => {
+					try {
+						await this.zbClient.throwError({
+							errorCode,
+							errorMessage,
+							jobKey: job.key,
+						})
+					} finally {
+						this.logger.debug(
+							`Errored job ${job.key} - ${errorMessage}`
+						)
+						this.drainOne()
+					}
+				},
 				failure: async (
 					errorMessage,
 					retries = Math.max(0, job.retries - 1)

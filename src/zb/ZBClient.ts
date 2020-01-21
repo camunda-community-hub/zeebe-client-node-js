@@ -535,6 +535,18 @@ export class ZBClient extends EventEmitter {
 	}
 
 	/**
+	 *
+	 * Report a business error (i.e. non-technical) that occurs while processing a job.
+	 * The error is handled in the workflow by an error catch event.
+	 * If there is no error catch event with the specified errorCode then an incident will be raised instead.
+	 */
+	public throwError(throwErrorRequest: ZB.ThrowErrorRequest) {
+		return this.executeOperation('throwError', () =>
+			this.gRPCClient.throwErrorSync(throwErrorRequest)
+		)
+	}
+
+	/**
 	 * Return the broker cluster topology
 	 */
 	public topology(): Promise<ZB.TopologyResponse> {

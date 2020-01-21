@@ -331,13 +331,15 @@ zbc.createWorker('test-worker', 'console-log', maybeFaultyHandler, {
 })
 ```
 
-### Completing tasks with success or failure
+### Completing tasks with success, failure, or error
 
-To complete a task, the task worker handler function receives a `complete` parameter. The complete object has a `success` and a `failure` method.
+To complete a task, the task worker handler function receives a `complete` parameter. The complete object has `success`, `failure`, and `error` methods.
 
 Call `complete.success()` passing in a optional plain old JavaScript object (POJO) - a key:value map. These are variable:value pairs that will be used to update the workflow state in the broker. They will be merged with existing values. You can set an existing key to `null` or `undefined`, but there is no way to delete a key.
 
 Call `complete.failure()` to fail the task. You must pass in a string message describing the failure. The client library decrements the retry count, and the broker handles the retry logic. If the failure is a hard failure and should cause an incident to be raised in Operate, then pass in `0` for the optional second parameter, `retries`:
+
+Call `complete.error()` to trigger a BPMN error throw event. You must pass in a string error code for the error code, and you can pass an optional error message as the second parameter. If no BPMN error catch event exists for the error code, an incident will be raised.
 
 ```javascript
 complete.failure('This is a critical failure and will raise an incident', 0)

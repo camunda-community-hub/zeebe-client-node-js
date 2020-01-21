@@ -27,6 +27,13 @@ export interface CompleteFn<WorkerOutputVariables> {
 	 * count is decremented. Pass in `0`for retries to raise an incident in Operate.
 	 */
 	failure: (errorMessage: string, retries?: number) => void
+	/**
+	 *
+	 * Report a business error (i.e. non-technical) that occurs while processing a job.
+	 * The error is handled in the workflow by an error catch event.
+	 * If there is no error catch event with the specified errorCode then an incident will be raised instead.
+	 */
+	error: (errorCode: string, errorMessage?: string) => void
 }
 
 export interface OperationOptionsWithRetry {
@@ -383,6 +390,15 @@ export interface FailJobRequest {
 	errorMessage: string
 }
 
+export interface ThrowErrorRequest {
+	// the unique job identifier, as obtained when activating the job
+	jobKey: string
+	// the error code that will be matched with an error catch event
+	errorCode: string
+	// an optional error message that provides additional context
+	errorMessage: string
+}
+
 export interface CompleteJobRequest<Variables = KeyedObject> {
 	readonly jobKey: string
 	variables: Variables
@@ -458,6 +474,7 @@ export interface ZBGRPC extends GRPCClient {
 	publishMessageSync(
 		publishMessageRequest: PublishMessageRequest
 	): Promise<void>
+	throwErrorSync(throwErrorRequest: ThrowErrorRequest): Promise<void>
 	topologySync(): Promise<TopologyResponse>
 	updateJobRetriesSync(
 		updateJobRetriesRequest: UpdateJobRetriesRequest
