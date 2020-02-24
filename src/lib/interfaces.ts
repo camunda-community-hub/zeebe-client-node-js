@@ -28,6 +28,11 @@ export interface CompleteFn<WorkerOutputVariables> {
 	 */
 	failure: (errorMessage: string, retries?: number) => void
 	/**
+	 * Mark this job as forwarded to another system for completion. No action is taken by the broker.
+	 * This method releases worker capacity to handle another job.
+	 */
+	forwarded: () => void
+	/**
 	 *
 	 * Report a business error (i.e. non-technical) that occurs while processing a job.
 	 * The error is handled in the workflow by an error catch event.
