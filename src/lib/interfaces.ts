@@ -8,6 +8,15 @@ export interface BasicAuthConfig {
 	username: string
 }
 
+export interface ZBLogMessage {
+	timestamp: Date
+	context: string
+	id: string
+	level: Loglevel
+	message: string
+	time: string
+}
+
 export interface KeyedObject {
 	[key: string]: any
 }
@@ -446,10 +455,15 @@ export interface CamundaCloudConfig {
 	cacheOnDisk?: boolean
 }
 
+export interface ZBCustomLogger {
+	info: (message: ZBLogMessage) => void
+	error: (message: ZBLogMessage) => void
+}
+
 export interface ZBClientOptions {
 	connectionTolerance?: number
 	loglevel?: Loglevel
-	stdout?: any
+	stdout?: ZBCustomLogger
 	retry?: boolean
 	maxRetries?: number
 	maxRetryTimeout?: number
