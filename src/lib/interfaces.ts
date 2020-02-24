@@ -7,7 +7,7 @@ export interface BasicAuthConfig {
 	password: string
 	username: string
 }
-
+// The JSON-stringified version of this is sent to the ZBCustomLogger
 export interface ZBLogMessage {
 	timestamp: Date
 	context: string
@@ -456,8 +456,14 @@ export interface CamundaCloudConfig {
 }
 
 export interface ZBCustomLogger {
-	info: (message: ZBLogMessage) => void
-	error: (message: ZBLogMessage) => void
+	/**
+	 * Receives a JSON-stringified ZBLogMessage
+	 */
+	info: (message: string) => void
+	/**
+	 * Receives a JSON-stringified ZBLogMessage
+	 */
+	error: (message: string) => void
 }
 
 export interface ZBClientOptions {
