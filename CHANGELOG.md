@@ -2,7 +2,7 @@
 
 ## New Features
 
--   There is now a `ZBLogMessage` interface to help you implement a custom logger. For an example of a custom logger, see the [Zeebe GitHub Action implementation](https://github.com/jwulf/zeebe-action/blob/master/src/log/logger.ts).
+-   There is now a `ZBLogMessage` interface to help you implement a custom logger [#127](https://github.com/creditsenseau/zeebe-client-node-js/issues/127). For an example of a custom logger, see the [Zeebe GitHub Action implementation](https://github.com/jwulf/zeebe-action/blob/master/src/log/logger.ts).
 
 # Version 0.22.1
 
