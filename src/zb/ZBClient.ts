@@ -241,7 +241,9 @@ export class ZBClient extends EventEmitter {
 	): Promise<void> {
 		const withStringifiedVariables = stringifyVariables(completeJobRequest)
 		this.logger.debug(withStringifiedVariables)
-		return this.gRPCClient.completeJobSync(withStringifiedVariables)
+		return this.executeOperation('completeJob', () =>
+			this.gRPCClient.completeJobSync(withStringifiedVariables)
+		)
 	}
 
 	// tslint:disable: no-object-literal-type-assertion
