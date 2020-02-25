@@ -1,4 +1,5 @@
-export class MockStdOut {
+import { ZBCustomLogger } from './interfaces'
+export class MockStdOut implements ZBCustomLogger {
 	public messages: string[] = []
 
 	public info(message: string) {

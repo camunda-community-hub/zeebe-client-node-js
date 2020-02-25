@@ -7,6 +7,15 @@ export interface BasicAuthConfig {
 	password: string
 	username: string
 }
+// The JSON-stringified version of this is sent to the ZBCustomLogger
+export interface ZBLogMessage {
+	timestamp: Date
+	context: string
+	id: string
+	level: Loglevel
+	message: string
+	time: string
+}
 
 export interface KeyedObject {
 	[key: string]: any
@@ -451,10 +460,21 @@ export interface CamundaCloudConfig {
 	cacheOnDisk?: boolean
 }
 
+export interface ZBCustomLogger {
+	/**
+	 * Receives a JSON-stringified ZBLogMessage
+	 */
+	info: (message: string) => void
+	/**
+	 * Receives a JSON-stringified ZBLogMessage
+	 */
+	error: (message: string) => void
+}
+
 export interface ZBClientOptions {
 	connectionTolerance?: number
 	loglevel?: Loglevel
-	stdout?: any
+	stdout?: ZBCustomLogger
 	retry?: boolean
 	maxRetries?: number
 	maxRetryTimeout?: number

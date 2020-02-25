@@ -47,7 +47,7 @@ export class ZBClient extends EventEmitter {
 	private oAuth?: OAuthProvider
 	private basicAuth?: ZB.BasicAuthConfig
 	private useTLS: boolean
-	private stdout: any
+	private stdout: ZB.ZBCustomLogger
 	private lastReady?: Date
 	private lastConnectionError?: Date
 
