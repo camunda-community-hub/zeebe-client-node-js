@@ -11,8 +11,12 @@ import { BpmnParser, parseVariables, stringifyVariables } from '../lib'
 import { ConfigurationHydrator } from '../lib/ConfigurationHydrator'
 import { GRPCClient } from '../lib/GRPCClient'
 import * as ZB from '../lib/interfaces'
-import { OAuthProvider, OAuthProviderConfig } from '../lib/OAuthProvider'
 // tslint:disable-next-line: no-duplicate-imports
+import {
+	CreateWorkflowInstance,
+	CreateWorkflowInstanceWithResult,
+} from '../lib/interfaces'
+import { OAuthProvider, OAuthProviderConfig } from '../lib/OAuthProvider'
 import { Utils } from '../lib/utils'
 import { ZBLogger } from '../lib/ZBLogger'
 import { ZBWorker } from './ZBWorker'
@@ -260,65 +264,44 @@ export class ZBClient extends EventEmitter {
 		version: number
 	}): Promise<ZB.CreateWorkflowInstanceResponse>
 	public createWorkflowInstance<Variables = ZB.GenericWorkflowVariables>(
-		configOrbpmnProcessId:
-			| string
-			| {
-					bpmnProcessId: string
-					variables: Variables
-					version: number
-			  },
+		configOrbpmnProcessId: string | CreateWorkflowInstance<Variables>,
 		variables?: Variables
 	): Promise<ZB.CreateWorkflowInstanceResponse> {
 		const isConfigObject = (
-			conf:
-				| {
-						bpmnProcessId: string
-						variables: Variables
-						version: number
-				  }
-				| string
-		): conf is {
-			bpmnProcessId: string
-			variables: Variables
-			version: number
-		} => typeof conf === 'object'
+			conf: CreateWorkflowInstance<Variables> | string
+		): conf is CreateWorkflowInstance<Variables> => typeof conf === 'object'
 
-		const version = isConfigObject(configOrbpmnProcessId)
-			? configOrbpmnProcessId.version || -1
-			: -1
-		const bpmnProcessId = isConfigObject(configOrbpmnProcessId)
-			? configOrbpmnProcessId.bpmnProcessId
-			: configOrbpmnProcessId
-		const variablesConcrete = isConfigObject(configOrbpmnProcessId)
-			? configOrbpmnProcessId.variables
-			: variables
+		const request = isConfigObject(configOrbpmnProcessId)
+			? {
+					bpmnProcessId: configOrbpmnProcessId.bpmnProcessId,
+					variables: configOrbpmnProcessId.variables,
+					version: configOrbpmnProcessId.version || -1,
+			  }
+			: {
+					bpmnProcessId: configOrbpmnProcessId,
+					variables,
+					version: -1,
+			  }
+
 		const createWorkflowInstanceRequest: ZB.CreateWorkflowInstanceRequest = {
-			bpmnProcessId,
-			variables: (variablesConcrete as unknown) as object,
-			version,
+			bpmnProcessId: request.bpmnProcessId,
+			variables: (request.variables as unknown) as object,
+			version: request.version,
 		}
 
-		return this.retry === true
-			? this.executeOperation('createWorkflowInstance', () =>
-					this.gRPCClient.createWorkflowInstanceSync(
-						stringifyVariables(createWorkflowInstanceRequest)
-					)
-			  )
-			: this.gRPCClient.createWorkflowInstanceSync(
-					stringifyVariables(createWorkflowInstanceRequest)
-			  )
+		return this.executeOperation('createWorkflowInstance', () =>
+			this.gRPCClient.createWorkflowInstanceSync(
+				stringifyVariables(createWorkflowInstanceRequest)
+			)
+		)
 	}
 
 	public createWorkflowInstanceWithResult<
 		Variables = ZB.GenericWorkflowVariables,
 		Result = ZB.GenericWorkerOutputVariables
-	>(config: {
-		bpmnProcessId: string
-		version?: number
-		variables: Variables
-		requestTimeout?: number
-		fetchVariables?: string[]
-	}): Promise<ZB.CreateWorkflowInstanceWithResultResponse<Result>>
+	>(
+		config: CreateWorkflowInstanceWithResult<Variables>
+	): Promise<ZB.CreateWorkflowInstanceWithResultResponse<Result>>
 	public createWorkflowInstanceWithResult<
 		Variables = ZB.GenericWorkflowVariables,
 		Result = ZB.GenericWorkerOutputVariables
@@ -331,82 +314,51 @@ export class ZBClient extends EventEmitter {
 		Result = ZB.GenericWorkerOutputVariables
 	>(
 		configOrBpmnProcessId:
-			| {
-					bpmnProcessId: string
-					version?: number
-					variables: Variables
-					requestTimeout?: number
-					fetchVariables?: string[]
-			  }
+			| CreateWorkflowInstanceWithResult<Variables>
 			| string,
 		variables?: Variables
 	) {
 		const isConfigObject = (
-			config:
-				| {
-						bpmnProcessId: string
-						variables: Variables
-						version?: number
-						requestTimeout?: number
-						fetchVariables?: string[]
-				  }
-				| string
-		): config is {
-			bpmnProcessId: string
-			variables: Variables
-			version?: number
-			requestTimeout?: number
-			fetchVariables?: string[]
-		} => typeof config === 'object'
+			config: CreateWorkflowInstanceWithResult<Variables> | string
+		): config is CreateWorkflowInstanceWithResult<Variables> =>
+			typeof config === 'object'
 
-		const bpmnProcessIdConcrete = isConfigObject(configOrBpmnProcessId)
-			? configOrBpmnProcessId.bpmnProcessId
-			: configOrBpmnProcessId
-		const variablesConcrete = isConfigObject(configOrBpmnProcessId)
-			? configOrBpmnProcessId.variables
-			: variables
-		const versionConcrete = isConfigObject(configOrBpmnProcessId)
-			? configOrBpmnProcessId.version || -1
-			: -1
-		const requestTimeoutConcrete = isConfigObject(configOrBpmnProcessId)
-			? configOrBpmnProcessId.requestTimeout || 0
-			: 0
-		const fetchVariables = isConfigObject(configOrBpmnProcessId)
-			? configOrBpmnProcessId.fetchVariables
-			: undefined
+		const request = isConfigObject(configOrBpmnProcessId)
+			? {
+					bpmnProcessId: configOrBpmnProcessId.bpmnProcessId,
+					fetchVariables: configOrBpmnProcessId.fetchVariables,
+					requestTimeout: configOrBpmnProcessId.requestTimeout || 0,
+					variables: configOrBpmnProcessId.variables,
+					version: configOrBpmnProcessId.version || -1,
+			  }
+			: {
+					bpmnProcessId: configOrBpmnProcessId,
+					fetchVariables: undefined,
+					requestTimeout: 0,
+					variables,
+					version: -1,
+			  }
 
 		const createWorkflowInstanceRequest: ZB.CreateWorkflowInstanceRequest = stringifyVariables(
 			{
-				bpmnProcessId: bpmnProcessIdConcrete,
-				variables: (variablesConcrete as unknown) as object,
-				version: versionConcrete,
+				bpmnProcessId: request.bpmnProcessId,
+				variables: (request.variables as unknown) as object,
+				version: request.version,
 			}
 		)
 
-		return this.retry === true
-			? this.executeOperation('createWorkflowInstanceWithResult', () =>
-					this.gRPCClient.createWorkflowInstanceWithResultSync<
-						Result
-					>({
-						fetchVariables,
-						request: createWorkflowInstanceRequest,
-						requestTimeout: requestTimeoutConcrete,
-					})
-			  ).then(res => parseVariables(res as any))
-			: this.gRPCClient
-					.createWorkflowInstanceWithResultSync<Result>({
-						fetchVariables,
-						request: createWorkflowInstanceRequest,
-						requestTimeout: requestTimeoutConcrete,
-					})
-					.then(res => parseVariables(res as any))
+		return this.executeOperation('createWorkflowInstanceWithResult', () =>
+			this.gRPCClient.createWorkflowInstanceWithResultSync<Result>({
+				fetchVariables: request.fetchVariables,
+				request: createWorkflowInstanceRequest,
+				requestTimeout: request.requestTimeout,
+			})
+		).then(res => parseVariables(res as any))
 	}
 
 	/**
 	 *
 	 * @param workflow - A path or array of paths to .bpmn files or an object describing the workflow
-	 * @param {redeploy?: boolean} - Redeploy workflow. Defaults to true.
-	 * If set false, will not redeploy a workflow that exists.
 	 */
 	public async deployWorkflow(
 		workflow: ZB.DeployWorkflowFiles | ZB.DeployWorkflowBuffer

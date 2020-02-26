@@ -20,6 +20,20 @@ export interface DeployWorkflowBuffer {
 	name: string
 }
 
+export interface CreateWorkflowInstance<T> {
+	bpmnProcessId: string
+	variables: T
+	version: number
+}
+
+export interface CreateWorkflowInstanceWithResult<T> {
+	bpmnProcessId: string
+	version?: number
+	variables: T
+	requestTimeout?: number
+	fetchVariables?: string[]
+}
+
 export interface CompleteFn<WorkerOutputVariables> {
 	/**
 	 * Complete the job with a success, optionally passing in a state update to merge

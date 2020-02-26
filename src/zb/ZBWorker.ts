@@ -303,8 +303,6 @@ export class ZBWorker<
 			`Setting ${this.taskType} task timeout for ${taskId} to ${this.timeout}`
 		)
 
-		// Any unhandled exception thrown by the user-supplied code will bubble up and throw here.
-		// The task timeout handler above will deal with it.
 		try {
 			/**
 			 * complete.success(variables?: object) and complete.failure(errorMessage: string, retries?: number)
@@ -314,55 +312,58 @@ export class ZBWorker<
 			 */
 
 			const workerCallback = {
-				error: async (errorCode: string, errorMessage: string = '') => {
-					try {
-						await this.zbClient.throwError({
+				error: (errorCode: string, errorMessage: string = '') => {
+					this.zbClient
+						.throwError({
 							errorCode,
 							errorMessage,
 							jobKey: job.key,
 						})
-					} finally {
-						this.logger.debug(
-							`Errored job ${job.key} - ${errorMessage}`
-						)
-						this.drainOne()
-					}
+						.finally(() => {
+							this.logger.debug(
+								`Errored job ${job.key} - ${errorMessage}`
+							)
+							this.drainOne()
+						})
 				},
-				failure: async (
+				failure: (
 					errorMessage,
 					retries = Math.max(0, job.retries - 1)
 				) => {
-					try {
-						await this.zbClient.failJob({
+					this.zbClient
+						.failJob({
 							errorMessage,
 							jobKey: job.key,
 							retries,
 						})
-					} finally {
-						this.logger.debug(
-							`Failed job ${job.key} - ${errorMessage}`
-						)
-						this.drainOne()
-					}
+						.finally(() => {
+							this.logger.debug(
+								`Failed job ${job.key} - ${errorMessage}`
+							)
+							this.drainOne()
+						})
 				},
-				success: async (completedVariables = {}) => {
-					let res
-					try {
-						res = await this.zbClient.completeJob({
+				success: (completedVariables = {}) => {
+					return this.zbClient
+						.completeJob({
 							jobKey: job.key,
 							variables: completedVariables,
 						})
-						this.logger.debug(
-							`Completed task ${taskId} for ${this.taskType}`
-						)
-					} catch (e) {
-						res = e
-						this.logger.debug(
-							`Completing task ${taskId} for ${this.taskType} threw ${e.message}`
-						)
-					}
-					this.drainOne()
-					return res
+						.then(res => {
+							this.logger.debug(
+								`Completed task ${taskId} for ${this.taskType}`
+							)
+							return res
+						})
+						.catch(e => {
+							this.logger.debug(
+								`Completing task ${taskId} for ${this.taskType} threw ${e.message}`
+							)
+							return e
+						})
+						.finally(() => {
+							this.drainOne()
+						})
 				},
 			}
 
