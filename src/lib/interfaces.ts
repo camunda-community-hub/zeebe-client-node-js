@@ -13,6 +13,13 @@ export interface KeyedObject {
 }
 export type Loglevel = 'INFO' | 'DEBUG' | 'NONE' | 'ERROR'
 
+export type DeployWorkflowFiles = string | string[]
+
+export interface DeployWorkflowBuffer {
+	definition: Buffer
+	name: string
+}
+
 export interface CompleteFn<WorkerOutputVariables> {
 	/**
 	 * Complete the job with a success, optionally passing in a state update to merge

@@ -1,5 +1,7 @@
 import chalk from 'chalk'
 import { EventEmitter } from 'events'
+import { either as E, pipeable } from 'fp-ts'
+import { array } from 'fp-ts/lib/Array'
 import * as fs from 'fs'
 import * as path from 'path'
 import promiseRetry from 'promise-retry'
@@ -406,51 +408,53 @@ export class ZBClient extends EventEmitter {
 	 * If set false, will not redeploy a workflow that exists.
 	 */
 	public async deployWorkflow(
-		workflow: string | string[] | { definition: Buffer; name: string }
+		workflow: ZB.DeployWorkflowFiles | ZB.DeployWorkflowBuffer
 	): Promise<ZB.DeployWorkflowResponse> {
-		const workflows = Array.isArray(workflow) ? workflow : [workflow]
+		const isBuffer = (
+			wf: ZB.DeployWorkflowBuffer | ZB.DeployWorkflowFiles
+		): wf is ZB.DeployWorkflowBuffer =>
+			!!(wf as ZB.DeployWorkflowBuffer).definition
 
-		const readFile = (filename: string) => {
-			if (fs.existsSync(filename)) {
-				return fs.readFileSync(filename)
-			}
-			const name = `${filename}.bpmn`
-			if (fs.existsSync(name)) {
-				return fs.readFileSync(name)
-			}
-			throw new Error(`${filename} not found.`)
-		}
+		const coerceFilenamesToArray = (wf: string | string[]): string[] =>
+			Array.isArray(wf) ? wf : [wf]
 
-		const workFlowRequests: ZB.WorkflowRequestObject[] = workflows.map(
-			wf => {
-				if (typeof wf === 'object') {
-					return {
-						definition: wf.definition,
-						name: wf.name,
-						type: 1,
-					}
-				} else {
-					return {
-						definition: readFile(wf),
-						name: path.basename(wf),
-						type: 1,
-					}
-				}
-			}
-		)
+		const bufferOrFiles = (
+			wf: ZB.DeployWorkflowFiles | ZB.DeployWorkflowBuffer
+		): E.Either<ZB.DeployWorkflowBuffer[], string[]> =>
+			isBuffer(wf) ? E.left([wf]) : E.right(coerceFilenamesToArray(wf))
 
-		if (workFlowRequests.length > 0) {
-			return this.executeOperation('deployWorkflow', () =>
-				this.gRPCClient.deployWorkflowSync({
-					workflows: workFlowRequests,
+		const loadBpmnFiles = (
+			files: string[]
+		): E.Either<Error, ZB.WorkflowRequestObject[]> =>
+			array.sequence(E.either)(
+				files.map(wf => {
+					const definition = fs.existsSync(wf)
+						? fs.readFileSync(wf)
+						: undefined
+					return definition
+						? E.right({
+								definition,
+								name: path.basename(wf),
+								type: 1,
+						  })
+						: E.left(new Error(`File ${wf} not found!`))
 				})
 			)
-		} else {
-			return {
-				key: '-1',
-				workflows: [],
-			}
-		}
+
+		const deploy = (workflows: ZB.WorkflowRequestObject[]) =>
+			this.executeOperation('deployWorkflow', () =>
+				this.gRPCClient.deployWorkflowSync({
+					workflows,
+				})
+			)
+		const error = (e: Error) => Promise.reject(e.message)
+
+		return pipeable.pipe(
+			bufferOrFiles(workflow),
+			E.fold(deploy, files =>
+				pipeable.pipe(loadBpmnFiles(files), E.fold(error, deploy))
+			)
+		)
 	}
 
 	public failJob(failJobRequest: ZB.FailJobRequest): Promise<void> {
@@ -464,10 +468,8 @@ export class ZBClient extends EventEmitter {
 	 * @param file - Path to bpmn file.
 	 */
 	public getServiceTypesFromBpmn(files: string | string[]) {
-		if (typeof files === 'string') {
-			files = [files]
-		}
-		return BpmnParser.getTaskTypes(BpmnParser.parseBpmn(files))
+		const fileArray = typeof files === 'string' ? [files] : files
+		return BpmnParser.getTaskTypes(BpmnParser.parseBpmn(fileArray))
 	}
 
 	/**
