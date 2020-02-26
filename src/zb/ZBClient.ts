@@ -1,7 +1,8 @@
 import chalk from 'chalk'
 import { EventEmitter } from 'events'
 import { either as E, pipeable } from 'fp-ts'
-import { array } from 'fp-ts/lib/Array'
+import * as A from 'fp-ts/lib/Array'
+import * as NEA from 'fp-ts/lib/NonEmptyArray'
 import * as fs from 'fs'
 import * as path from 'path'
 import promiseRetry from 'promise-retry'
@@ -423,23 +424,16 @@ export class ZBClient extends EventEmitter {
 		): E.Either<ZB.DeployWorkflowBuffer[], string[]> =>
 			isBuffer(wf) ? E.left([wf]) : E.right(coerceFilenamesToArray(wf))
 
-		const loadBpmnFiles = (
-			files: string[]
-		): E.Either<Error, ZB.WorkflowRequestObject[]> =>
-			array.sequence(E.either)(
-				files.map(wf => {
-					const definition = fs.existsSync(wf)
-						? fs.readFileSync(wf)
-						: undefined
-					return definition
-						? E.right({
-								definition,
-								name: path.basename(wf),
-								type: 1,
-						  })
-						: E.left(new Error(`File ${wf} not found!`))
-				})
-			)
+		const readDefinitionFromFile = (
+			file: string
+		): E.Either<string, ZB.WorkflowRequestObject> =>
+			fs.existsSync(file)
+				? E.right({
+						definition: fs.readFileSync(file),
+						name: path.basename(file),
+						type: 1,
+				  })
+				: E.left(`File ${file} not found!`)
 
 		const deploy = (workflows: ZB.WorkflowRequestObject[]) =>
 			this.executeOperation('deployWorkflow', () =>
@@ -447,12 +441,26 @@ export class ZBClient extends EventEmitter {
 					workflows,
 				})
 			)
-		const error = (e: Error) => Promise.reject(e.message)
+
+		const error = (e: NEA.NonEmptyArray<string>) => Promise.reject(e)
+
+		const readBpmnFiles = <Path, Err, Wfd>(
+			paths: Path[],
+			read: (path: Path) => E.Either<Err, Wfd>
+		): E.Either<NEA.NonEmptyArray<Err>, Wfd[]> =>
+			A.array.traverse(E.getValidation(NEA.getSemigroup<Err>()))(
+				paths,
+				(filepath: Path) =>
+					pipeable.pipe(read(filepath), E.mapLeft(NEA.of))
+			)
 
 		return pipeable.pipe(
 			bufferOrFiles(workflow),
 			E.fold(deploy, files =>
-				pipeable.pipe(loadBpmnFiles(files), E.fold(error, deploy))
+				pipeable.pipe(
+					readBpmnFiles(files, readDefinitionFromFile),
+					E.fold(error, deploy)
+				)
 			)
 		)
 	}
