@@ -308,7 +308,7 @@ export class ZBWorker<
 			 * complete.success(variables?: object) and complete.failure(errorMessage: string, retries?: number)
 			 *
 			 * To halt execution of the business process and raise an incident in Operate, call
-			 * complete(errorMessage, 0)
+			 * complete.failure(errorMessage, 0)
 			 */
 
 			const workerCallback = {
@@ -343,6 +343,7 @@ export class ZBWorker<
 							this.drainOne()
 						})
 				},
+				forwarded: () => this.drainOne(),
 				success: (completedVariables = {}) => {
 					return this.zbClient
 						.completeJob({

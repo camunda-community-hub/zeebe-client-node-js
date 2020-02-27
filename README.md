@@ -332,7 +332,7 @@ zbc.createWorker('test-worker', 'console-log', maybeFaultyHandler, {
 })
 ```
 
-### Completing tasks with success, failure, or error
+### Completing tasks with success, failure, error, or forwarded
 
 To complete a task, the task worker handler function receives a `complete` parameter. The complete object has `success`, `failure`, and `error` methods.
 
@@ -340,11 +340,17 @@ Call `complete.success()` passing in a optional plain old JavaScript object (POJ
 
 Call `complete.failure()` to fail the task. You must pass in a string message describing the failure. The client library decrements the retry count, and the broker handles the retry logic. If the failure is a hard failure and should cause an incident to be raised in Operate, then pass in `0` for the optional second parameter, `retries`:
 
-Call `complete.error()` to trigger a BPMN error throw event. You must pass in a string error code for the error code, and you can pass an optional error message as the second parameter. If no BPMN error catch event exists for the error code, an incident will be raised.
-
 ```javascript
 complete.failure('This is a critical failure and will raise an incident', 0)
 ```
+
+Call `complete.error()` to trigger a BPMN error throw event. You must pass in a string error code for the error code, and you can pass an optional error message as the second parameter. If no BPMN error catch event exists for the error code, an incident will be raised.
+
+Call `complete.forwarded()` to release worker capacity to handle another job, without completing the job in any way with the Zeebe broker. This method supports the _decoupled job completion_ pattern. In this pattern, the worker forwards the job to another system - a lambda or a RabbitMQ queue. Some other process is ultimately responsible for completing the job.
+
+## Completing jobs in the decoupled job completion pattern
+
+You can use the ZBClient methods `completeJob()`, `failJob()`, and `throwError()` in the decoupled pattern to complete jobs that were activated by another process. In contrast to the worker `complete` methods, the ZBClient methods require a specific job key, so you must pass the job key with the job data when forwarding the job from the worker that activates it to a remote system.
 
 ### Long polling
 

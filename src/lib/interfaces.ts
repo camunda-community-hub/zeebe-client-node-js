@@ -7,6 +7,15 @@ export interface BasicAuthConfig {
 	password: string
 	username: string
 }
+// The JSON-stringified version of this is sent to the ZBCustomLogger
+export interface ZBLogMessage {
+	timestamp: Date
+	context: string
+	id: string
+	level: Loglevel
+	message: string
+	time: string
+}
 
 export interface KeyedObject {
 	[key: string]: any
@@ -48,6 +57,11 @@ export interface CompleteFn<WorkerOutputVariables> {
 	 * count is decremented. Pass in `0`for retries to raise an incident in Operate.
 	 */
 	failure: (errorMessage: string, retries?: number) => void
+	/**
+	 * Mark this job as forwarded to another system for completion. No action is taken by the broker.
+	 * This method releases worker capacity to handle another job.
+	 */
+	forwarded: () => void
 	/**
 	 *
 	 * Report a business error (i.e. non-technical) that occurs while processing a job.
@@ -467,10 +481,21 @@ export interface CamundaCloudConfig {
 	cacheOnDisk?: boolean
 }
 
+export interface ZBCustomLogger {
+	/**
+	 * Receives a JSON-stringified ZBLogMessage
+	 */
+	info: (message: string) => void
+	/**
+	 * Receives a JSON-stringified ZBLogMessage
+	 */
+	error: (message: string) => void
+}
+
 export interface ZBClientOptions {
 	connectionTolerance?: number
 	loglevel?: Loglevel
-	stdout?: any
+	stdout?: ZBCustomLogger
 	retry?: boolean
 	maxRetries?: number
 	maxRetryTimeout?: number

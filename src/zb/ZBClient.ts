@@ -54,7 +54,7 @@ export class ZBClient extends EventEmitter {
 	private oAuth?: OAuthProvider
 	private basicAuth?: ZB.BasicAuthConfig
 	private useTLS: boolean
-	private stdout: any
+	private stdout: ZB.ZBCustomLogger
 	private lastReady?: Date
 	private lastConnectionError?: Date
 
@@ -248,7 +248,9 @@ export class ZBClient extends EventEmitter {
 	): Promise<void> {
 		const withStringifiedVariables = stringifyVariables(completeJobRequest)
 		this.logger.debug(withStringifiedVariables)
-		return this.gRPCClient.completeJobSync(withStringifiedVariables)
+		return this.executeOperation('completeJob', () =>
+			this.gRPCClient.completeJobSync(withStringifiedVariables)
+		)
 	}
 
 	// tslint:disable: no-object-literal-type-assertion
