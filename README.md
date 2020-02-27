@@ -12,6 +12,8 @@ See CHANGELOG.md to see what has changed with each release.
 
 Docker-compose configurations for Zeebe are available at [https://github.com/zeebe-io/zeebe-docker-compose](https://github.com/zeebe-io/zeebe-docker-compose).
 
+Get a hosted instance of Zeebe on [Camunda Cloud](https://camunda.io).
+
 ## Table of Contents
 
 -   [ Versioning ](#versioning)
@@ -319,10 +321,12 @@ ZEEBE_BASIC_AUTH_USERNAME
 
 ### Create a Task Worker
 
+The simplest signature for a worker takes a string task type, and a job handler function. The job handler receives the job object, and a callback that it can use to complete or fail the job.
+
 ```javascript
 const ZB = require('zeebe-node')
 
-const zbc = new ZB.ZBClient('localhost:26500')
+const zbc = new ZB.ZBClient()
 
 const zbWorker = zbc.createWorker('demo-service', handler)
 
