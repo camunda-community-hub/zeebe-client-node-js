@@ -1,6 +1,6 @@
 import { ZBClient } from '../..'
 
-jest.setTimeout(10000)
+jest.setTimeout(30000)
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 
 describe('Worker onReady Handler', () => {

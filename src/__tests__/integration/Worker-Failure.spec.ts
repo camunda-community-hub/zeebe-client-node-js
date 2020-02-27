@@ -98,7 +98,7 @@ describe('ZBWorker', () => {
 	})
 
 	it('Fails a workflow when the handler throws and options.failWorkflowOnException is set', async done => {
-		jest.setTimeout(10000)
+		jest.setTimeout(20000)
 
 		const res = await zbc.deployWorkflow(
 			'./src/__tests__/testdata/Worker-Failure3.bpmn'
