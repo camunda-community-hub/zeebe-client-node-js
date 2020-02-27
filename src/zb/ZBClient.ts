@@ -432,7 +432,7 @@ export class ZBClient extends EventEmitter {
 						name: path.basename(file),
 						type: 1,
 				  })
-				: E.left(`File ${file} not found!`)
+				: E.left(file)
 
 		const deploy = (workflows: ZB.WorkflowRequestObject[]) =>
 			this.executeOperation('deployWorkflow', () =>
@@ -441,7 +441,12 @@ export class ZBClient extends EventEmitter {
 				})
 			)
 
-		const error = (e: NEA.NonEmptyArray<string>) => Promise.reject(e)
+		const error = (e: NEA.NonEmptyArray<string>) =>
+			Promise.reject(
+				`Deployment failed. The following files were not found: ${e.join(
+					', '
+				)}.`
+			)
 
 		const readBpmnFiles = <Path, Err, Wfd>(
 			paths: Path[],
