@@ -1,14 +1,13 @@
 import { ZBClient } from '../..'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
-const gatewayAddress = process.env.ZEEBE_GATEWAY_ADDRESS || '0.0.0.0:26500'
-
+jest.setTimeout(15000)
 describe('ZBClient', () => {
 	let zbc: ZBClient
 	let wf
 
 	beforeEach(async () => {
-		zbc = new ZBClient(gatewayAddress)
+		zbc = new ZBClient()
 	})
 
 	afterEach(async () => {
@@ -32,14 +31,6 @@ describe('ZBClient', () => {
 		)
 		expect(res.workflows.length).toBe(1)
 		expect(res.workflows[0].bpmnProcessId).toBe('hello-world')
-	})
-
-	it('Does not redeploy a workflow when that workflow is already deployed', async () => {
-		const res = await zbc.deployWorkflow(
-			'./src/__tests__/testdata/hello-world.bpmn'
-		)
-		expect(res.workflows.length).toBe(1)
-		expect(res.workflows[0].version > 1).toBe(false)
 	})
 
 	it('Can create a worker', () => {

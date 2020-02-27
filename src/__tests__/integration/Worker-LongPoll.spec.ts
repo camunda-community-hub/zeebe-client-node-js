@@ -1,20 +1,19 @@
 import { ZBClient } from '../..'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
-const gatewayAddress = process.env.ZEEBE_GATEWAY_ADDRESS || '0.0.0.0:26500'
 
 describe('ZBWorker', () => {
 	let wf2
 
 	afterAll(async () => {
-		const zbc = new ZBClient(gatewayAddress)
+		const zbc = new ZBClient()
 		await zbc.cancelWorkflowInstance(wf2.workflowInstanceKey)
 		await zbc.close()
 	})
 
 	it('Does long poll by default', async done => {
 		jest.setTimeout(30000)
-		const zbcLongPoll = new ZBClient(gatewayAddress)
+		const zbcLongPoll = new ZBClient()
 		const res = await zbcLongPoll.deployWorkflow(
 			'./src/__tests__/testdata/Worker-LongPoll.bpmn'
 		)

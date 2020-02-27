@@ -368,13 +368,13 @@ export class ZBClient extends EventEmitter {
 		): wf is ZB.DeployWorkflowBuffer =>
 			!!(wf as ZB.DeployWorkflowBuffer).definition
 
-		const coerceFilenamesToArray = (wf: string | string[]): string[] =>
-			Array.isArray(wf) ? wf : [wf]
-
 		const bufferOrFiles = (
 			wf: ZB.DeployWorkflowFiles | ZB.DeployWorkflowBuffer
 		): E.Either<ZB.DeployWorkflowBuffer[], string[]> =>
 			isBuffer(wf) ? E.left([wf]) : E.right(coerceFilenamesToArray(wf))
+
+		const coerceFilenamesToArray = (wf: string | string[]): string[] =>
+			Array.isArray(wf) ? wf : [wf]
 
 		const readDefinitionFromFile = (
 			file: string

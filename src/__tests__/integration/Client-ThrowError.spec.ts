@@ -1,13 +1,12 @@
 import { ZBClient } from '../..'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
-const gatewayAddress = process.env.ZEEBE_GATEWAY_ADDRESS || '0.0.0.0:26500'
 
 describe('ZBClient.throwError', () => {
 	let zbc: ZBClient
 
 	beforeEach(async () => {
-		zbc = new ZBClient(gatewayAddress)
+		zbc = new ZBClient()
 	})
 
 	afterEach(async () => {
