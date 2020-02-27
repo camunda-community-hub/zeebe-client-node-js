@@ -1,7 +1,8 @@
-name: "Test on Camunda Cloud"
-on: # rebuild any PRs and main branch changes
-  pull_request:
-  push:
+name: "Canary Test on Camunda Cloud (Hourly)"
+on:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron: "*/15 * * * *"
 
 jobs:
   test: # make sure build/ci work properly
