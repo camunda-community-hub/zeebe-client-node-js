@@ -68,18 +68,10 @@ describe('ZBClient', () => {
 		const wfi = wf.workflowInstanceKey
 		expect(wfi).toBeTruthy()
 
-		// tslint:disable-next-line: no-console
-		console.log(wfi) // @DEBUG
-
 		await zbc.cancelWorkflowInstance(wfi)
-
-		// tslint:disable-next-line: no-console
-		console.log('Cancelled') // @DEBUG
 
 		try {
 			await zbc.cancelWorkflowInstance(wfi) // A call to cancel a workflow that doesn't exist should throw
-			// tslint:disable-next-line: no-console
-			console.log('Second cancel did not throw') // @DEBUG
 		} catch (e) {
 			done()
 		}
