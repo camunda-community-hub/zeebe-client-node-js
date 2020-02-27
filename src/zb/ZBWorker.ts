@@ -56,7 +56,7 @@ export class ZBWorker<
 		taskType,
 		zbClient,
 	}: {
-		gRPCClient: any
+		gRPCClient: ZBGRPC
 		id: string | null
 		taskType: string
 		taskHandler: ZB.ZBWorkerTaskHandler<
@@ -299,10 +299,6 @@ export class ZBWorker<
 		const customHeaders = JSON.parse(job.customHeaders || '{}')
 
 		const taskId = uuid.v4()
-		this.logger.debug(
-			`Setting ${this.taskType} task timeout for ${taskId} to ${this.timeout}`
-		)
-
 		try {
 			/**
 			 * complete.success(variables?: object) and complete.failure(errorMessage: string, retries?: number)

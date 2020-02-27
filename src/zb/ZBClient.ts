@@ -17,8 +17,10 @@ import {
 	CreateWorkflowInstanceWithResult,
 } from '../lib/interfaces'
 import { OAuthProvider, OAuthProviderConfig } from '../lib/OAuthProvider'
+import { ZBSimpleLogger } from '../lib/SimpleLogger'
 import { Utils } from '../lib/utils'
 import { ZBLogger } from '../lib/ZBLogger'
+import { decodeCreateZBWorkerSig } from '../lib/ZBWorkerSignature'
 import { ZBWorker } from './ZBWorker'
 
 const idColors = [
@@ -85,7 +87,8 @@ export class ZBClient extends EventEmitter {
 			this.options.loglevel ||
 			'INFO'
 		this.loglevel = this.options.loglevel
-		this.stdout = this.options.stdout || console
+		this.options.stdout = this.options.stdout || ZBSimpleLogger
+		this.stdout = this.options.stdout
 
 		this.logger = new ZBLogger({
 			loglevel: this.loglevel,
@@ -150,17 +153,10 @@ export class ZBClient extends EventEmitter {
 		)
 	}
 
-	/**
-	 *
-	 * @param id - A unique identifier for this worker.
-	 * @param taskType - The BPMN Zeebe task type that this worker services.
-	 * @param taskHandler - A handler for activated jobs.
-	 * @param options - Configuration options for the worker.
-	 */
 	public createWorker<
-		WorkerInputVariables = ZB.GenericWorkerInputVariables,
-		CustomHeaderShape = ZB.GenericCustomHeaderShape,
-		WorkerOutputVariables = ZB.GenericWorkerOutputVariables
+		WorkerInputVariables = ZB.InputVariables,
+		CustomHeaderShape = ZB.CustomHeaders,
+		WorkerOutputVariables = ZB.OutputVariables
 	>(
 		id: string | null,
 		taskType: string,
@@ -169,21 +165,72 @@ export class ZBClient extends EventEmitter {
 			CustomHeaderShape,
 			WorkerOutputVariables
 		>,
-		options: ZB.ZBWorkerOptions & ZB.ZBClientOptions = {} as any,
+		options?: ZB.ZBWorkerOptions & ZB.ZBClientOptions,
 		onConnectionError?: ZB.ConnectionErrorHandler | undefined
-	) {
+	): ZBWorker<WorkerInputVariables, CustomHeaderShape, WorkerOutputVariables>
+	public createWorker<
+		WorkerInputVariables = ZB.InputVariables,
+		CustomHeaderShape = ZB.CustomHeaders,
+		WorkerOutputVariables = ZB.OutputVariables
+	>(
+		taskType: string,
+		taskHandler: ZB.ZBWorkerTaskHandler<
+			WorkerInputVariables,
+			CustomHeaderShape,
+			WorkerOutputVariables
+		>,
+		options?: ZB.ZBWorkerOptions & ZB.ZBClientOptions,
+		onConnectionError?: ZB.ConnectionErrorHandler | undefined
+	): ZBWorker<WorkerInputVariables, CustomHeaderShape, WorkerOutputVariables>
+	public createWorker<
+		WorkerInputVariables = ZB.InputVariables,
+		CustomHeaderShape = ZB.CustomHeaders,
+		WorkerOutputVariables = ZB.OutputVariables
+	>(
+		idOrTaskType: string | null,
+		taskTypeOrTaskHandler:
+			| string
+			| ZB.ZBWorkerTaskHandler<
+					WorkerInputVariables,
+					CustomHeaderShape,
+					WorkerOutputVariables
+			  >,
+		taskHandlerOrOptions:
+			| ZB.ZBWorkerTaskHandler<
+					WorkerInputVariables,
+					CustomHeaderShape,
+					WorkerOutputVariables
+			  >
+			| (ZB.ZBWorkerOptions & ZB.ZBClientOptions)
+			| undefined,
+		optionsOrOnConnectionError:
+			| (ZB.ZBWorkerOptions & ZB.ZBClientOptions)
+			| ZB.ConnectionErrorHandler
+			| undefined,
+		onConnectionError?: ZB.ConnectionErrorHandler | undefined
+	): ZBWorker<
+		WorkerInputVariables,
+		CustomHeaderShape,
+		WorkerOutputVariables
+	> {
 		if (this.closing) {
 			throw new Error('Client is closing. No worker creation allowed!')
 		}
 		const idColor = idColors[this.workerCount++ % idColors.length]
-		onConnectionError = onConnectionError || options.onConnectionError
-		const onReady = options.onReady
+		const config = decodeCreateZBWorkerSig({
+			idOrTaskType,
+			optionsOrOnConnectionError,
+			taskHandlerOrOptions,
+			taskTypeOrTaskHandler,
+		})
+
+		const onReady = config.onReady
 		// tslint:disable-next-line: variable-name
 		const _onConnectionError = (err?: any) => {
 			worker.emit('connectionError', err)
 			// Allow a per-worker handler for specialised behaviour
 			if (onConnectionError) {
-				onConnectionError(err)
+				config.onConnectionError(err)
 			}
 		}
 		// tslint:disable-next-line: variable-name
@@ -194,18 +241,18 @@ export class ZBClient extends EventEmitter {
 			}
 		}
 		// Merge parent client options with worker override
-		options = {
+		const options = {
 			...this.options,
 			loglevel: this.loglevel,
 			onReady: undefined, // Do not inherit client handler
-			...options,
+			...config.options,
 		}
 		// Give worker its own gRPC connection
 		const workerGRPCClient = this.constructGrpcClient({
 			namespace: 'ZBWorker',
 			onConnectionError: _onConnectionError,
 			onReady: _onReady,
-			tasktype: taskType,
+			tasktype: config.taskType,
 		})
 		const worker = new ZBWorker<
 			WorkerInputVariables,
@@ -213,12 +260,12 @@ export class ZBClient extends EventEmitter {
 			WorkerOutputVariables
 		>({
 			gRPCClient: workerGRPCClient,
-			id,
+			id: config.id,
 			idColor,
 			onConnectionError,
 			options: { ...this.options, ...options },
-			taskHandler,
-			taskType,
+			taskHandler: config.taskHandler,
+			taskType: config.taskType,
 			zbClient: this,
 		})
 		this.workers.push(worker)
@@ -254,18 +301,16 @@ export class ZBClient extends EventEmitter {
 	}
 
 	// tslint:disable: no-object-literal-type-assertion
-	public createWorkflowInstance<Variables = ZB.GenericWorkflowVariables>(
+	public createWorkflowInstance<Variables = ZB.WorkflowVariables>(
 		bpmnProcessId: string,
 		variables: Variables
 	): Promise<ZB.CreateWorkflowInstanceResponse>
-	public createWorkflowInstance<
-		Variables = ZB.GenericWorkflowVariables
-	>(config: {
+	public createWorkflowInstance<Variables = ZB.WorkflowVariables>(config: {
 		bpmnProcessId: string
 		variables: Variables
 		version: number
 	}): Promise<ZB.CreateWorkflowInstanceResponse>
-	public createWorkflowInstance<Variables = ZB.GenericWorkflowVariables>(
+	public createWorkflowInstance<Variables = ZB.WorkflowVariables>(
 		configOrbpmnProcessId: string | CreateWorkflowInstance<Variables>,
 		variables?: Variables
 	): Promise<ZB.CreateWorkflowInstanceResponse> {
@@ -299,21 +344,21 @@ export class ZBClient extends EventEmitter {
 	}
 
 	public createWorkflowInstanceWithResult<
-		Variables = ZB.GenericWorkflowVariables,
-		Result = ZB.GenericWorkerOutputVariables
+		Variables = ZB.WorkflowVariables,
+		Result = ZB.OutputVariables
 	>(
 		config: CreateWorkflowInstanceWithResult<Variables>
 	): Promise<ZB.CreateWorkflowInstanceWithResultResponse<Result>>
 	public createWorkflowInstanceWithResult<
-		Variables = ZB.GenericWorkflowVariables,
-		Result = ZB.GenericWorkerOutputVariables
+		Variables = ZB.WorkflowVariables,
+		Result = ZB.OutputVariables
 	>(
 		bpmnProcessId: string,
 		variables: Variables
 	): Promise<ZB.CreateWorkflowInstanceWithResultResponse<Result>>
 	public createWorkflowInstanceWithResult<
-		Variables = ZB.GenericWorkflowVariables,
-		Result = ZB.GenericWorkerOutputVariables
+		Variables = ZB.WorkflowVariables,
+		Result = ZB.OutputVariables
 	>(
 		configOrBpmnProcessId:
 			| CreateWorkflowInstanceWithResult<Variables>
@@ -438,7 +483,7 @@ export class ZBClient extends EventEmitter {
 	 * Publish a message to the broker for correlation with a workflow instance.
 	 * @param publishMessageRequest - The message to publish.
 	 */
-	public publishMessage<T = ZB.GenericWorkflowVariables>(
+	public publishMessage<T = ZB.WorkflowVariables>(
 		publishMessageRequest: ZB.PublishMessageRequest<T>
 	): Promise<void> {
 		return this.executeOperation('publishMessage', () =>
@@ -452,7 +497,7 @@ export class ZBClient extends EventEmitter {
 	 * Publish a message to the broker for correlation with a workflow message start event.
 	 * @param publishStartMessageRequest - The message to publish.
 	 */
-	public publishStartMessage<T = ZB.GenericWorkflowVariables>(
+	public publishStartMessage<T = ZB.WorkflowVariables>(
 		publishStartMessageRequest: ZB.PublishStartMessageRequest<T>
 	): Promise<void> {
 		/**
@@ -483,7 +528,7 @@ export class ZBClient extends EventEmitter {
 		)
 	}
 
-	public setVariables<Variables = ZB.GenericWorkflowVariables>(
+	public setVariables<Variables = ZB.WorkflowVariables>(
 		request: ZB.SetVariablesRequest<Variables>
 	): Promise<void> {
 		/*

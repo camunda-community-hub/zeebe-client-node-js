@@ -1,3 +1,4 @@
+export { ZBJsonLogger } from './lib/ZBJsonLogger'
 export { BpmnParser } from './lib/BpmnParser'
 export * from './lib/interfaces'
 export * from './zb/ZBClient'

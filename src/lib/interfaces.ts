@@ -86,25 +86,25 @@ export type OperationOptions =
 	| OperationOptionsWithRetry
 	| OperationOptionsNoRetry
 
-export interface GenericWorkerInputVariables {
+export interface InputVariables {
 	[key: string]: any
 }
 
-export interface GenericWorkflowVariables {
+export interface WorkflowVariables {
 	[key: string]: any
 }
 
-export interface GenericWorkerOutputVariables {
+export interface OutputVariables {
 	[key: string]: any
 }
 
-export interface GenericCustomHeaderShape {
+export interface CustomHeaders {
 	[key: string]: any
 }
 export type ZBWorkerTaskHandler<
-	WorkerInputVariables = GenericWorkerInputVariables,
-	CustomHeaderShape = GenericWorkerOutputVariables,
-	WorkerOutputVariables = GenericCustomHeaderShape
+	WorkerInputVariables = InputVariables,
+	CustomHeaderShape = OutputVariables,
+	WorkerOutputVariables = CustomHeaders
 > = (
 	job: Job<WorkerInputVariables, CustomHeaderShape>,
 	complete: CompleteFn<WorkerOutputVariables>,
@@ -209,7 +209,7 @@ export interface ActivatedJob {
 	readonly variables: string
 }
 
-export interface Job<Variables = KeyedObject, CustomHeaders = KeyedObject> {
+export interface Job<Variables = KeyedObject, CustomHeaderShape = KeyedObject> {
 	/** The key, a unique identifier for the job */
 	readonly key: string
 	/**
@@ -235,7 +235,7 @@ export interface Job<Variables = KeyedObject, CustomHeaders = KeyedObject> {
 	/**
 	 * A set of custom headers defined during modelling
 	 */
-	readonly customHeaders: CustomHeaders
+	readonly customHeaders: CustomHeaderShape
 	/** The name of the worker that activated this job */
 	readonly worker: string
 	/* The amount of retries left to this job (should always be positive) */
@@ -254,7 +254,7 @@ export interface ZBWorkerOptions {
 	 */
 	maxJobsToActivate?: number
 	/**
-	 * Max ms to allow before time out of a task given to this worker. Default: 30000ms.
+	 * Max seconds to allow before time out of a task given to this worker. Default: 30000ms.
 	 * The broker checks deadline timeouts every 30 seconds, so an
 	 */
 	timeout?: number
@@ -398,6 +398,7 @@ export interface PublishMessageRequest<Variables = KeyedObject> {
 	name: string
 	/** The value to match with the field specified as "Subscription Correlation Key" in BPMN */
 	correlationKey: string
+	/** The number of seconds for the message to buffer on the broker, awaiting correlation. Omit or set to zero for no buffering. */
 	timeToLive: number
 	/** Unique ID for this message */
 	messageId?: string
@@ -407,6 +408,7 @@ export interface PublishMessageRequest<Variables = KeyedObject> {
 export interface PublishStartMessageRequest<Variables = KeyedObject> {
 	/** Should match the "Message Name" in a BPMN Message Catch  */
 	name: string
+	/** The number of seconds for the message to buffer on the broker, awaiting correlation. Omit or set to zero for no buffering. */
 	timeToLive: number
 	/** Unique ID for this message */
 	messageId?: string

@@ -1,8 +1,16 @@
 # Version 0.23.0-alpha.1
 
+## Breaking Changes
+
+-   The library nows logs with the simplified `ZBSimpleLogger` by default, for friendly human-readable logs. To get the previous structured log behaviour, pass in `stdout: ZBJsonLogger` to the `ZBClient` constructor options. See the "Logging" section in the README.
+
 ## New Features
 
+-   `ZBClient.createWorker` has a new, additional, method signature that elides the `id` for the worker. You can now create a worker with just a task type and a job handler. A UUID is assigned as the worker id. This is the equivalent of passing in `null` as the first parameter to the original signature. The previous method signature still works, allowing you to specify an id if you want.
 -   There is now a `ZBLogMessage` interface to help you implement a custom logger [#127](https://github.com/creditsenseau/zeebe-client-node-js/issues/127). For an example of a custom logger, see the [Zeebe GitHub Action implementation](https://github.com/jwulf/zeebe-action/blob/master/src/log/logger.ts).
+-   There is new custom logger implementation `ZBSimpleLogger` that produces flat string output. If you are not interested in structured logs for analysis, this log is easier for humans to read.
+-   The README now contains a section "Writing Strongly-typed Job Workers", on writing typed workers in TypeScript.
+-   The README also has a shiny TOC. It has grown in size such that one is needed.
 
 # Version 0.22.1
 

@@ -12,6 +12,41 @@ See CHANGELOG.md to see what has changed with each release.
 
 Docker-compose configurations for Zeebe are available at [https://github.com/zeebe-io/zeebe-docker-compose](https://github.com/zeebe-io/zeebe-docker-compose).
 
+## Table of Contents
+
+-   [ Versioning ](#versioning)
+-   [ Type difference from other Zeebe clients ](#type-difference)
+-   [ Example Use ](#example-use)
+-   [ Get Broker Topology ](#get-topology)
+-   [ Deploy a workflow ](#deploy-workflow)
+-   [ Client-side gRPC retry in ZBClient ](#client-side-retry)
+-   [ onReady(), onConnectionError(), and connected ](#on-ready)
+-   [ TLS ](#tls)
+-   [ OAuth ](#oauth)
+-   [ Basic Auth ](#basic-auth)
+-   [ Camunda Cloud ](#camunda-cloud)
+-   [ Zero-conf constructor ](#zero-conf)
+-   [ Create a Task Worker ](#create-worker)
+-   [ Unhandled Exceptions in Task Handlers ](#unhandled-exceptions)
+-   [ Completing tasks with success, failure, error, or forwarded ](#complete-tasks)
+-   [ Completing jobs in the "decoupled job completion" pattern ](#decoupled-complete)
+-   [ Long polling ](#long-polling)
+-   [ Start a Workflow Instance ](#start-workflow)
+-   [ Start a Workflow Instance of a specific version of a Workflow definition ](#start-specific-version)
+-   [ Start a workflow instance and await the workflow outcome ](#start-await)
+-   [ Publish a Message ](#publish-message)
+-   [ Graceful Shutdown ](#graceful-shutdown)
+-   [ Logging ](#logging)
+-   [ Generating TypeScript constants for BPMN Models ](#generate-constants)
+-   [ Generating code from a BPM Model file ](#generate-code)
+-   [ Writing Strongly-typed Job Workers ](#strongly-typed)
+-   [ Developing Zeebe Node ](#developing)
+    -   [ Tests ](#tests)
+    -   [ Writing Tests ](#writing-tests)
+-   [ Contributors ](#contributors)
+
+<a name = "versioning"></a>
+
 ## Versioning
 
 To enable that the client libraries can be easily supported to the Zeebe server we map the version numbers, so that Major, Minor match the server application. Patches are independent and indicate client updates.
@@ -28,13 +63,13 @@ NPM Package version 2.x.x supports Zeebe 0.18.
 
 NPM Package version 1.x.x supports Zeebe 0.15/0.16.
 
+<a name = "type-difference"></a>
+
 ## Type difference from other Zeebe clients
 
 Protobuf fields of type `int64` are serialised as type string in the Node library. These fields are serialised as numbers (long) in the Go and Java client. See [grpc/#7229](https://github.com/grpc/grpc/issues/7229) for why the Node library serialises them as string. The Workflow instance key, and other fields that are of type long in other client libraries, are type string in this library. Fields of type `int32` are serialised as type number in the Node library.
 
-## Scaffolding code from a BPM file
-
-You can scaffold your worker code from a BPMN file with the `bin/zeebe-node-cli` command. Pass in the path to the BPMN file, and it will produce a file to implement it.
+<a name = "example-use"></a>
 
 ## Example Use
 
@@ -43,6 +78,8 @@ You can scaffold your worker code from a BPMN file with the `bin/zeebe-node-cli`
 ```bash
 npm i zeebe-node
 ```
+
+<a name = "get-topology"></a>
 
 ### Get Broker Topology
 
@@ -55,6 +92,8 @@ const ZB = require('zeebe-node')
 	console.log(JSON.stringify(topology, null, 2))
 })()
 ```
+
+<a name = "deploy-workflow"></a>
 
 ### Deploy a workflow
 
@@ -77,6 +116,8 @@ const fs = require('fs')
 	await zbc.deployWorkflow({ definition: buffer, name: 'wf3.bpmn' })
 })()
 ```
+
+<a name = "client-side-retry"></a>
 
 ### Client-side gRPC retry in ZBClient
 
@@ -103,6 +144,8 @@ Retry is provided by [promise-retry](https://www.npmjs.com/package/promise-retry
 
 Additionally, the gRPC Client will continually reconnect when in a failed state, such as when the gateway goes away due to pod rescheduling on Kubernetes.
 
+<a name = "on-ready"></a>
+
 ### onReady(), onConnectionError(), and connected
 
 The client has a `connected` property that can be examined to determine if it has a gRPC connection to the gateway.
@@ -116,7 +159,6 @@ const zbc = new ZB.ZBClient({
 })
 
 const zbWorker = zbc.createWorker(
-	null,
 	'demo-service',
 	handler,
 	{
@@ -135,7 +177,6 @@ const zbc = new ZB.ZBClient({
 })
 
 const zbWorker = zbc.createWorker(
-	null,
 	'demo-service',
 	handler,
 	{
@@ -144,6 +185,8 @@ const zbWorker = zbc.createWorker(
 		connectionTolerance: 35000
 	})
 ```
+
+<a name = "tls"></a>
 
 ### TLS
 
@@ -162,6 +205,8 @@ Via environment variable:
 ```bash
 ZEEBE_SECURE_CONNECTION=true
 ```
+
+<a name = "oauth"></a>
 
 ### OAuth
 
@@ -184,6 +229,8 @@ The `cacheOnDisk` option will cache the token on disk in `$HOME/.camunda`, which
 
 If the cache directory is not writable, the ZBClient constructor will throw an exception. This is considered fatal, as it can lead to denial of service or hefty bills if you think caching is on when it is not.
 
+<a name = "basic-auth"></a>
+
 ## Basic Auth
 
 If you put a proxy in front of the broker with basic auth, you can pass in a username and password:
@@ -200,9 +247,13 @@ const zbc = new ZB.ZBClient("my-broker-with-basic-auth.io:443", {
 
 Basic Auth will also work without TLS.
 
+<a name = "camunda-cloud"></a>
+
 ### Camunda Cloud
 
-You can connect to Camunda Cloud by using the `camundaCloud` configuration option, using the `clusterId`, `clientSecret`, and `clientId` from the Camunda Cloud Console, like this:
+[Camunda Cloud](https://camunda.io) is a hosted SaaS instance of Zeebe. The easiest way to connect is to use the [Zero-conf constructor](#zero-conf) with the Client Credentials from the Camunda Cloud console as environment variables.
+
+You can also connect to Camunda Cloud by using the `camundaCloud` configuration option, using the `clusterId`, `clientSecret`, and `clientId` from the Camunda Cloud Console, like this:
 
 ```typescript
 const zbc = new ZB.ZBClient({
@@ -215,6 +266,8 @@ const zbc = new ZB.ZBClient({
 ```
 
 That's it! Under the hood, the client lib will construct the OAuth configuration for Camunda Cloud and set the gateway address and port for you.
+
+<a name = "zero-conf"></a>
 
 ## Zero-Conf constructor
 
@@ -234,6 +287,7 @@ Camunda Cloud:
 
 ```
 ZEEBE_ADDRESS
+ZEEBE_AUTHORIZATION_SERVER_URL
 ZEEBE_CLIENT_SECRET
 ZEEBE_CLIENT_ID
 ```
@@ -251,7 +305,7 @@ ZEEBE_CLIENT_ID
 ZEEBE_CLIENT_SECRET
 ZEEBE_TOKEN_AUDIENCE
 ZEEBE_AUTHORIZATION_SERVER_URL
-ZEEBE_GATEWAY_ADDRESS
+ZEEBE_ADDRESS
 ```
 
 Basic Auth:
@@ -261,6 +315,8 @@ ZEEBE_BASIC_AUTH_PASSWORD
 ZEEBE_BASIC_AUTH_USERNAME
 ```
 
+<a name = "create-worker"></a>
+
 ### Create a Task Worker
 
 ```javascript
@@ -268,7 +324,7 @@ const ZB = require('zeebe-node')
 
 const zbc = new ZB.ZBClient('localhost:26500')
 
-const zbWorker = zbc.createWorker(null, 'demo-service', handler)
+const zbWorker = zbc.createWorker('demo-service', handler)
 
 function handler(job, complete) {
 	console.log('Task variables', job.variables)
@@ -308,13 +364,12 @@ The worker can be configured with options. Shown below are the defaults that app
 ```javascript
 const workerOptions = {
 	maxActiveJobs: 32, // the number of simultaneous tasks this worker can handle
-	timeout: 1000, // the maximum amount of time the broker should allow this worker to complete a task
+	timeout: 30, // the number of seconds the broker should allow this worker to complete a task
 }
 
 const onConnectionError = err => console.log(err) // Called when the connection to the broker cannot be established, or fails
 
 const zbWorker = zbc.createWorker(
-	'test-worker',
 	'demo-service',
 	handler,
 	workerOptions,
@@ -322,15 +377,19 @@ const zbWorker = zbc.createWorker(
 )
 ```
 
+<a name = "unhandled-exceptions"></a>
+
 #### Unhandled Exceptions in Task Handlers
 
 When a task handler throws an unhandled exception, the library will fail the job. Zeebe will then retry the job according to the retry settings of the task. Sometimes you want to halt the entire workflow so you can investigate. To have the library cancel the workflow on an unhandled exception, pass in `{failWorkflowOnException: true}` to the `createWorker` call:
 
 ```typescript
-zbc.createWorker('test-worker', 'console-log', maybeFaultyHandler, {
+zbc.createWorker('console-log', maybeFaultyHandler, {
 	failWorkflowOnException: true,
 })
 ```
+
+<a name = "complete-tasks"></a>
 
 ### Completing tasks with success, failure, error, or forwarded
 
@@ -348,9 +407,13 @@ Call `complete.error()` to trigger a BPMN error throw event. You must pass in a 
 
 Call `complete.forwarded()` to release worker capacity to handle another job, without completing the job in any way with the Zeebe broker. This method supports the _decoupled job completion_ pattern. In this pattern, the worker forwards the job to another system - a lambda or a RabbitMQ queue. Some other process is ultimately responsible for completing the job.
 
-## Completing jobs in the decoupled job completion pattern
+<a name = "decoupled-complete"></a>
+
+## Completing jobs in the "decoupled job completion" pattern
 
 You can use the ZBClient methods `completeJob()`, `failJob()`, and `throwError()` in the decoupled pattern to complete jobs that were activated by another process. In contrast to the worker `complete` methods, the ZBClient methods require a specific job key, so you must pass the job key with the job data when forwarding the job from the worker that activates it to a remote system.
+
+<a name = "long-polling"></a>
 
 ### Long polling
 
@@ -364,13 +427,15 @@ Long polling for workers is configured in the ZBClient like this:
 
 ```typescript
 const zbc = new ZBClient('serverAddress', {
-	longPoll: 600000, // Ten minutes in millis - inherited by workers
+	longPoll: 6000, // Ten minutes in seconds - inherited by workers
 })
 
-const longPollingWorker = zbc.createWorker(null, 'task-type', handler, {
-	longPoll: 120000, // override client, poll 2m
+const longPollingWorker = zbc.createWorker('task-type', handler, {
+	longPoll: 120, // override client, poll 2m
 })
 ```
+
+<a name = "start-workflow"></a>
 
 ### Start a Workflow Instance
 
@@ -397,6 +462,8 @@ Example output:
 
 ```
 
+<a name = "start-specific-version"></a>
+
 ### Start a Workflow Instance of a specific version of a Workflow definition
 
 From version 0.22 of the client onward:
@@ -417,17 +484,24 @@ const ZB = require('zeebe-node')
 })()
 ```
 
-### Start a workflow instance and await the workflow outcome
+<a name = "start-await"></a>
 
-From version 0.22 of the broker and client:
+### Start a Workflow Instance and await the Workflow Outcome
+
+From version 0.22 of the broker and client, you can await the outcome of a workflow end-to-end execution:
 
 ```typescript
-const result = await zbc.createWorkflowInstanceWithResult(processId, {
-	sourceValue: 5,
-})
+async function getOutcome() {
+	const result = await zbc.createWorkflowInstanceWithResult(processId, {
+		sourceValue: 5,
+	})
+	return result
+}
 ```
 
-Overriding the gateway's default timeout for a workflow that needs more time to complete:
+Be aware that by default, **this will throw an exception if the workflow takes longer than 15 seconds to complete**.
+
+To override the gateway's default timeout for a workflow that needs more time to complete:
 
 ```typescript
 const result = await zbc.createWorkflowInstanceWithResult({
@@ -436,9 +510,11 @@ const result = await zbc.createWorkflowInstanceWithResult({
 		sourceValue: 5,
 		otherValue: 'rome',
 	},
-	requestTimeout: 25000,
+	requestTimeout: 25,
 })
 ```
+
+<a name = "publish-message"></a>
 
 ### Publish a Message
 
@@ -449,7 +525,7 @@ zbc.publishMessage({
 	messageId: uuid.v4(),
 	name: 'message-name',
 	variables: { valueToAddToWorkflowVariables: 'here', status: 'PROCESSED' },
-	timeToLive: 10000,
+	timeToLive: 10, // seconds
 })
 ```
 
@@ -464,11 +540,13 @@ zbc.publishStartMessage({
 	messageId: uuid.v4(),
 	name: 'message-name',
 	variables: { initialWorkflowVariable: 'here' },
-	timeToLive: 10000,
+	timeToLive: 10, // seconds
 })
 ```
 
 Both normal messages and start messages can be published idempotently by setting both the `messageId` and the `correlationKey`. They will only ever be correlated once. See: [A message can be published idempotent](https://github.com/zeebe-io/zeebe/issues/1012).
+
+<a name = "graceful-shutdown"></a>
 
 ### Graceful Shutdown
 
@@ -479,7 +557,39 @@ console.log('Closing client...')
 zbc.close().then(() => console.log('All workers closed'))
 ```
 
-### Generating TypeScript constants for BPMN Processes
+<a name = "logging"></a>
+
+## Logging
+
+Control the log output for the client library by setting the ZBClient log level. Valid log levels are `NONE` (supress all logging), `ERROR` (log only exceptions), `INFO` (general logging), or `DEBUG` (verbose logging). You can set this in the client constructor:
+
+```typescript
+const zbc = new ZBClient('localhost', { loglevel: 'DEBUG' })
+```
+
+And also via the environment:
+
+```bash
+ZEEBE_NODE_LOG_LEVEL='ERROR' node start.js
+```
+
+By default the library uses `console.info` and `console.error` for logging. You can also pass in a custom logger, such as [pino](https://github.com/pinojs/pino):
+
+```typescript
+const logger = require('pino')()
+const zbc = new ZBClient({ stdout: logger })
+```
+
+From version v0.23.0-alpha.1, the library logs human-readable logs by default, using the `ZBSimpleLogger`. If you want structured logs as stringified JSON, pass in `ZBJSONLogger` to the constructor `stdout` option, like this:
+
+```typescript
+const { ZBJsonLogger, ZBClient } = require('zeebe-node')
+const zbc = new ZBClient({ stdout: ZBJsonLogger })
+```
+
+<a name = "generate-constants"></a>
+
+### Generating TypeScript constants for BPMN Models
 
 Message names and Task Types are untyped magic strings. You can generate type information to avoid some classes of errors.
 
@@ -520,28 +630,75 @@ export enum MessageName = {
 };
 ```
 
-## Logging
+<a name = "generate-code"></a>
 
-Control the log output for the client library by setting the ZBClient log level. Valid log levels are `NONE` (supress all logging), `ERROR` (log only exceptions), `INFO` (general logging), or `DEBUG` (verbose logging). You can set this in the client constructor:
+## Generating code from a BPM Model file
 
-```typescript
-const zbc = new ZBClient('localhost', { loglevel: 'DEBUG' })
-```
-
-And also via the environment:
+You can scaffold your worker code from a BPMN file with the `zeebe-node` command. To use this command, install the package globally with:
 
 ```bash
-ZEEBE_NODE_LOG_LEVEL='ERROR' node start.js
+npm i -g zeebe-node
 ```
 
-By default the library uses `console.info` and `console.error` for logging. You can also pass in a custom logger, such as [pino](https://github.com/pinojs/pino):
+Pass in the path to the BPMN file, and it will output a file to implement it:
 
-```typescript
-const logger = require('pino')()
-const zbc = new ZBClient('0.0.0.0:26500', { stdout: logger })
+```bash
+zeebe-node my-model.bpmn
 ```
 
-## Developing
+<a name = "strongly-typed"></a>
+
+### Writing Strongly-typed Job Workers
+
+You can provide interfaces to get design-time type safety and intellisense on the workflow variables passed in the a worker job handler, the custom headers that it will receive, and the variables that it will pass back to Zeebe in the `complete.success` call:
+
+```TypeScript
+interface InputVariables {
+    name: string,
+    age: number,
+    preferences: {
+        beverage: 'Coffee' | 'Tea' | 'Beer' | 'Water',
+        color: string
+    }
+}
+
+interface OutputVariables {
+    suggestedGift: string
+}
+
+interface CustomHeaders {
+    occasion: 'Birthday' | 'Christmas' | 'Hannukah' | 'Diwali'
+}
+
+const giftSuggester = zbc.createWorker<
+    InputVariables,
+    CustomHeaders,
+    OutputVariables>
+    ('get-gift-suggestion', (job, complete) => {
+        const suggestedGift = `${job.customHeaders.occasion} ${job.variables.preferences.beverage}`
+        complete.success({ suggestedGift })
+})
+```
+
+If you decouple the declaration of the job handler from the `createWorker` call, you will need to explicitly specify its type, like this:
+
+```TypeScript
+import { ZBWorkerTaskHandler } from 'zeebe-node'
+
+function getGiftSuggestion(job, complete): ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariables> {
+    const suggestedGift = `${job.customHeaders.occasion} ${job.variables.preferences.beverage}`
+    complete.success({ suggestedGift })
+}
+
+const giftSuggester = zbc.createWorker('get-gift-suggestion', getGiftSuggestion)
+
+```
+
+This does not give you any run-time safety. If you want to validate inputs and outputs to your system at runtime, you can use [io-ts](https://github.com/gcanti/io-ts).
+
+<a name = "developing"></a>
+
+## Developing Zeebe Node
 
 The source is written in TypeScript in `src`, and compiled to ES6 in the `dist` directory.
 
@@ -556,6 +713,8 @@ To start a watcher to build the source and API docs while you are developing:
 ```bash
 npm run dev
 ```
+
+<a name = "tests"></a>
 
 ### Tests
 
@@ -588,6 +747,8 @@ npm run test:integration
 
 For the failure test, you need to run Operate ([docker-compose config](https://github.com/zeebe-io/zeebe-docker-compose/blob/master/operate/docker-compose.yml)) and manually verify that an incident has been raised at [http://localhost:8080](http://localhost:8080).
 
+<a name = "writing-tests"></a>
+
 ### Writing Tests
 
 Zeebe is inherently stateful, so integration tests need to be carefully isolated so that workers from one test do not service tasks in another test. Jest runs tests in a random order, so intermittent failures are the outcome of tests that mutate shared state.
@@ -598,6 +759,8 @@ For each feature:
 -   Name the task types with a namespace that matches the test name. This avoids workers from one test servicing tasks from another test, which causes unpredictable behaviour.
 -   Cancel any workflows that do not run to completion in an `AfterAll` or `AfterEach` block. This avoids subsequent test runs interacting with workflows from a previous test run.
 -   Ensure that there no Active workflows in the engine after running the integration tests have run. This manual check is to verify that there is no left-over state. (Note one exception: the Raise Incident test leaves the workflow open for manual verification in Operate).
+
+<a name = "contributors"></a>
 
 ## Contributors
 

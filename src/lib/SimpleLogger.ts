@@ -19,7 +19,7 @@ const logger = (loglevel: Loglevel): LogFn => (logMessage: string): void => {
 		const taskType = parsedMessage.taskType
 			? ` [${parsedMessage.taskType}]`
 			: ''
-		message = `${gRPC}${taskType} ${parsedMessage.message}`
+		message = `| zeebe | ${gRPC}${taskType} ${parsedMessage.message}`
 	} catch (e) {
 		message = logMessage
 	}
