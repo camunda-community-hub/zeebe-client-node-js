@@ -10,10 +10,6 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - run: |
-          echo $ZEEBE_CLIENT_SECRET
-          echo $ZEEBE_CLIENT_ID
-          echo $ZEEBE_AUTHORIZATION_SERVER_URL
-          echo $ZEEBE_ADDRESS
           npm install
           npm run build
           npm run test:integration
