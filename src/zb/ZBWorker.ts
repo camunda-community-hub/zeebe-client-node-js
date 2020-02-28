@@ -46,6 +46,7 @@ export class ZBWorker<
 	// Used to prevent worker from exiting when no timers active
 	private alivenessBit: number = 0
 	private stalled = false
+	private onConnectionError: ZB.ConnectionErrorHandler | undefined
 
 	constructor({
 		gRPCClient,
@@ -55,6 +56,7 @@ export class ZBWorker<
 		taskHandler,
 		taskType,
 		zbClient,
+		onConnectionError,
 	}: {
 		gRPCClient: ZBGRPC
 		id: string | null
@@ -95,6 +97,7 @@ export class ZBWorker<
 			options.failWorkflowOnException || false
 		this.zbClient = zbClient
 
+		this.onConnectionError = onConnectionError
 		this.logger = new ZBLogger({
 			color: idColor,
 			id: this.id,
@@ -171,6 +174,7 @@ export class ZBWorker<
 		if (this.stalled) {
 			return
 		}
+		this.onConnectionError?.()
 		this.stalled = true
 		this.logger.error(`Stalled on gRPC error`)
 		this.gRPCClient.once('ready', () => {

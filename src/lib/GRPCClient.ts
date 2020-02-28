@@ -218,15 +218,6 @@ export class GRPCClient extends EventEmitter {
 
 				this[`${methodName}Stream`] = async data => {
 					let stream
-					// if (this.longPoll) {
-					// This is a client-side deadline timeout
-					// Let the server manage the deadline.
-					// See: https://github.com/zeebe-io/zeebe/issues/2987
-					// const deadline = new Date().setSeconds(
-					// 	new Date().getSeconds() + this.longPoll / 1000
-					// )
-					// return this.client[methodName](data, { deadline })
-					// } else {
 					try {
 						const metadata = await this.getAuthToken()
 						stream = this.client[methodName](data, metadata)
@@ -257,9 +248,8 @@ export class GRPCClient extends EventEmitter {
 							client[methodName](data, metadata, (err, dat) => {
 								// This will error on network or business errors
 								if (err) {
-									const code = err.code
 									const isNetworkError =
-										code === GrpcError.UNAVAILABLE
+										err.code === GrpcError.UNAVAILABLE
 									if (isNetworkError) {
 										this.setNotReady()
 									} else {

@@ -1,14 +1,15 @@
 import chalk from 'chalk'
 import { EventEmitter } from 'events'
-import { either as E, pipeable } from 'fp-ts'
-import * as A from 'fp-ts/lib/Array'
+import { either as E } from 'fp-ts'
 import * as NEA from 'fp-ts/lib/NonEmptyArray'
-import * as fs from 'fs'
+import { pipe } from 'fp-ts/lib/pipeable'
 import * as path from 'path'
 import promiseRetry from 'promise-retry'
 import { v4 as uuid } from 'uuid'
 import { BpmnParser, parseVariables, stringifyVariables } from '../lib'
 import { ConfigurationHydrator } from '../lib/ConfigurationHydrator'
+import { readDefinitionFromFile } from '../lib/deployWorkflow/impure'
+import { bufferOrFiles, mapThese } from '../lib/deployWorkflow/pure'
 import { GRPCClient } from '../lib/GRPCClient'
 import * as ZB from '../lib/interfaces'
 // tslint:disable-next-line: no-duplicate-imports
@@ -219,17 +220,19 @@ export class ZBClient extends EventEmitter {
 		const idColor = idColors[this.workerCount++ % idColors.length]
 		const config = decodeCreateZBWorkerSig({
 			idOrTaskType,
+			onConnectionError,
 			optionsOrOnConnectionError,
 			taskHandlerOrOptions,
 			taskTypeOrTaskHandler,
 		})
 
 		const onReady = config.onReady
+
 		// tslint:disable-next-line: variable-name
 		const _onConnectionError = (err?: any) => {
 			worker.emit('connectionError', err)
 			// Allow a per-worker handler for specialised behaviour
-			if (onConnectionError) {
+			if (config.onConnectionError) {
 				config.onConnectionError(err)
 			}
 		}
@@ -250,7 +253,10 @@ export class ZBClient extends EventEmitter {
 		// Give worker its own gRPC connection
 		const workerGRPCClient = this.constructGrpcClient({
 			namespace: 'ZBWorker',
-			onConnectionError: _onConnectionError,
+			onConnectionError: () => {
+				options.onConnectionError?.()
+				_onConnectionError()
+			},
 			onReady: _onReady,
 			tasktype: config.taskType,
 		})
@@ -410,30 +416,6 @@ export class ZBClient extends EventEmitter {
 	public async deployWorkflow(
 		workflow: ZB.DeployWorkflowFiles | ZB.DeployWorkflowBuffer
 	): Promise<ZB.DeployWorkflowResponse> {
-		const isBuffer = (
-			wf: ZB.DeployWorkflowBuffer | ZB.DeployWorkflowFiles
-		): wf is ZB.DeployWorkflowBuffer =>
-			!!(wf as ZB.DeployWorkflowBuffer).definition
-
-		const bufferOrFiles = (
-			wf: ZB.DeployWorkflowFiles | ZB.DeployWorkflowBuffer
-		): E.Either<ZB.DeployWorkflowBuffer[], string[]> =>
-			isBuffer(wf) ? E.left([wf]) : E.right(coerceFilenamesToArray(wf))
-
-		const coerceFilenamesToArray = (wf: string | string[]): string[] =>
-			Array.isArray(wf) ? wf : [wf]
-
-		const readDefinitionFromFile = (
-			file: string
-		): E.Either<string, ZB.WorkflowRequestObject> =>
-			fs.existsSync(file)
-				? E.right({
-						definition: fs.readFileSync(file),
-						name: path.basename(file),
-						type: 1,
-				  })
-				: E.left(file)
-
 		const deploy = (workflows: ZB.WorkflowRequestObject[]) =>
 			this.executeOperation('deployWorkflow', () =>
 				this.gRPCClient.deployWorkflowSync({
@@ -447,22 +429,11 @@ export class ZBClient extends EventEmitter {
 					', '
 				)}.`
 			)
-
-		const readBpmnFiles = <Path, Err, Wfd>(
-			paths: Path[],
-			read: (path: Path) => E.Either<Err, Wfd>
-		): E.Either<NEA.NonEmptyArray<Err>, Wfd[]> =>
-			A.array.traverse(E.getValidation(NEA.getSemigroup<Err>()))(
-				paths,
-				(filepath: Path) =>
-					pipeable.pipe(read(filepath), E.mapLeft(NEA.of))
-			)
-
-		return pipeable.pipe(
+		return pipe(
 			bufferOrFiles(workflow),
 			E.fold(deploy, files =>
-				pipeable.pipe(
-					readBpmnFiles(files, readDefinitionFromFile),
+				pipe(
+					mapThese(files, readDefinitionFromFile),
 					E.fold(error, deploy)
 				)
 			)
@@ -674,6 +645,7 @@ export class ZBClient extends EventEmitter {
 		operation: () => Promise<T>,
 		retries = this.maxRetries
 	): Promise<T> {
+		let connectionErrorCount = 0
 		return promiseRetry(
 			(retry, n) => {
 				if (this.closing || this.gRPCClient.channelClosed) {
@@ -691,6 +663,12 @@ export class ZBClient extends EventEmitter {
 						err.message.indexOf('Stream removed') !== -1
 					const isBackpressure =
 						err.message.indexOf('8') === 0 || err.code === 8
+					if (isNetworkError) {
+						if (connectionErrorCount < 0) {
+							this._onConnectionError()
+						}
+						connectionErrorCount++
+					}
 					if (isNetworkError || isBackpressure) {
 						this.logger.error(`[${operationName}]: ${err.message}`)
 						retry(err)

@@ -19,7 +19,11 @@ const logger = (loglevel: Loglevel): LogFn => (logMessage: string): void => {
 		const taskType = parsedMessage.taskType
 			? ` [${parsedMessage.taskType}]`
 			: ''
-		message = `| zeebe | ${gRPC}${taskType} ${parsedMessage.message}`
+		const msg =
+			typeof parsedMessage.message === 'object'
+				? JSON.stringify(parsedMessage.message)
+				: parsedMessage.message
+		message = `| zeebe | ${gRPC}${taskType} ${msg}`
 	} catch (e) {
 		message = logMessage
 	}

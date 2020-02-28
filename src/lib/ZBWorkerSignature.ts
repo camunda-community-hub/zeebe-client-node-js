@@ -33,7 +33,9 @@ export function decodeCreateZBWorkerSig<
 			: config.optionsOrOnConnectionError) || {}
 	const onConnectionError = isShorthandSig
 		? config.optionsOrOnConnectionError
-		: config.onConnectionError || options.onConnectionError
+		: config.onConnectionError ||
+		  options.onConnectionError ||
+		  config.onConnectionError
 	const onReady = options.onReady
 	return {
 		id,
