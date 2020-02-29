@@ -1,7 +1,7 @@
 import { ZBClient } from '../..'
 
 jest.setTimeout(30000)
-process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
+process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'INFO'
 
 describe('onConnectionError Handler', () => {
 	it(`Calls the onConnectionError handler if there is no broker`, async done => {
@@ -10,7 +10,7 @@ describe('onConnectionError Handler', () => {
 			onConnectionError: () => {
 				called++
 			},
-		}) // Doesn't exist!!!
+		})
 		setTimeout(async () => {
 			expect(called).toBe(1)
 			expect(zbc2.connected).toBe(false)
