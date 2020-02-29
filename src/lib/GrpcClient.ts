@@ -22,6 +22,11 @@ export const MiddlewareSignals = {
 	},
 }
 
+const InternalSignals = {
+	Error: 'INTERNAL_ERROR',
+	Ready: 'INTERNAL_READY',
+}
+
 const GrpcError = {
 	OK: 0 as 0,
 	CANCELLED: 1 as 1,
@@ -129,8 +134,8 @@ export class GrpcClient extends EventEmitter {
 
 		this.onReady = onReady
 		this.onConnectionError = onConnectionError
-		this.on(MiddlewareSignals.Event.Ready, () => this.setReady())
-		this.on(MiddlewareSignals.Event.Error, () => this.setNotReady())
+		this.on(InternalSignals.Ready, () => this.setReady())
+		this.on(InternalSignals.Error, () => this.setNotReady())
 
 		this.packageDefinition = loadSync(protoPath, {
 			defaults: options.defaults === undefined ? true : options.defaults,
@@ -367,6 +372,7 @@ export class GrpcClient extends EventEmitter {
 			if (state === GrpcState.IDLE || state === GrpcState.READY) {
 				return resolve(state)
 			}
+
 			gRPC.getChannel().watchConnectivityState(
 				state,
 				deadline,
@@ -376,7 +382,7 @@ export class GrpcClient extends EventEmitter {
 					}
 					this.gRPCRetryCount++
 					if (error) {
-						this.emit(MiddlewareSignals.Log.Error, { error })
+						this.emit(MiddlewareSignals.Log.Error, error)
 					}
 					const newState = gRPC
 						.getChannel()
@@ -415,6 +421,7 @@ export class GrpcClient extends EventEmitter {
 		this.readyTimer = setTimeout(() => {
 			this.readyTimer = undefined
 			this.connected = true
+			this.emit(MiddlewareSignals.Event.Ready)
 			if (this.onReady) {
 				this.onReady()
 			}
@@ -433,6 +440,7 @@ export class GrpcClient extends EventEmitter {
 		this.connected = false
 		if (!this.failTimer) {
 			this.failTimer = setTimeout(() => {
+				this.emit(MiddlewareSignals.Event.Error)
 				if (this.onConnectionError) {
 					this.onConnectionError()
 				}
@@ -441,7 +449,7 @@ export class GrpcClient extends EventEmitter {
 	}
 
 	private handleGrpcError = (stream: any) => async (err: any) => {
-		this.emit(MiddlewareSignals.Event.Error, err)
+		this.emit(MiddlewareSignals.Event.Error)
 		this.emit(MiddlewareSignals.Log.Error, `GRPC ERROR: ${err.message}`)
 		const channelState = await this.watchGrpcChannel()
 		this.emit(

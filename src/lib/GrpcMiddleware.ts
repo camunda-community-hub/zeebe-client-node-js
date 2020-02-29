@@ -7,7 +7,9 @@ type Characteristics = any
 const ConnectionCharacteristics: {
 	[key in GrpcConnectionProfile]: Characteristics
 } = {
-	CAMUNDA_CLOUD: {},
+	CAMUNDA_CLOUD: {
+		startupTime: 3000,
+	},
 	VANILLA: {},
 }
 
@@ -42,7 +44,7 @@ export class GrpcMiddleware {
 		const grpcClient = new GrpcClient(config)
 		grpcClient.on(MiddlewareSignals.Log.Debug, this.debug)
 		grpcClient.on(MiddlewareSignals.Log.Info, this.info)
-		grpcClient.on(MiddlewareSignals.Event.Error, this.error)
+		grpcClient.on(MiddlewareSignals.Log.Error, this.error)
 		grpcClient.on(MiddlewareSignals.Event.Error, this.emitError)
 		grpcClient.on(MiddlewareSignals.Event.Ready, this.emitReady)
 		return grpcClient
@@ -50,6 +52,6 @@ export class GrpcMiddleware {
 	private info = (msg: any) => this.characteristics && this.log.info(msg)
 	private debug = (msg: any) => this.log.debug(msg)
 	private error = (msg: any) => this.log.error(msg)
-	private emitError = () => this.grpcClient.emit('error')
+	private emitError = () => this.grpcClient.emit('connectionError')
 	private emitReady = () => this.grpcClient.emit('ready')
 }

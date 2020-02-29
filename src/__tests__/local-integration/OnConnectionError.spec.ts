@@ -1,7 +1,7 @@
 import { ZBClient } from '../..'
 
 jest.setTimeout(30000)
-process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'INFO'
+process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 
 describe('onConnectionError Handler', () => {
 	it(`Calls the onConnectionError handler if there is no broker`, async done => {
@@ -10,6 +10,7 @@ describe('onConnectionError Handler', () => {
 			onConnectionError: () => {
 				called++
 			},
+			retry: false,
 		})
 		setTimeout(async () => {
 			expect(called).toBe(1)
@@ -86,15 +87,9 @@ describe('onConnectionError Handler', () => {
 	it(`Trailing parameter worker onConnectionError handler API works`, async done => {
 		let called = 0
 		const zbc2 = new ZBClient('localtoast:234532534', {})
-		zbc2.createWorker(
-			null,
-			'whatever',
-			(_, complete) => complete.success,
-			{},
-			() => {
-				called++
-			}
-		)
+		zbc2.createWorker('whatever', (_, complete) => complete.success, {
+			onConnectionError: () => called++,
+		})
 
 		setTimeout(async () => {
 			expect(zbc2.connected).toBe(false)
