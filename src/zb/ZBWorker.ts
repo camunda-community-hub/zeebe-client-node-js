@@ -2,12 +2,12 @@ import { Chalk } from 'chalk'
 import { EventEmitter } from 'events'
 import * as uuid from 'uuid'
 import { parseVariables } from '../lib'
-import { GRPCClient } from '../lib/GRPCClient'
+import { GrpcClient } from '../lib/GrpcClient'
 import * as ZB from '../lib/interfaces'
 import { ZBLogger } from '../lib/ZBLogger'
 import { ZBClient } from './ZBClient'
 
-interface ZBGRPC extends GRPCClient {
+interface ZBGrpc extends GrpcClient {
 	completeJobSync: any
 	activateJobsStream: any
 }
@@ -20,7 +20,7 @@ export class ZBWorker<
 	private static readonly DEFAULT_JOB_ACTIVATION_TIMEOUT = 60000
 	private static readonly DEFAULT_MAX_ACTIVE_JOBS = 32
 	public activeJobs = 0
-	public gRPCClient: ZBGRPC
+	public gRPCClient: ZBGrpc
 	public maxActiveJobs: number
 	public taskType: string
 	public timeout: number
@@ -58,7 +58,7 @@ export class ZBWorker<
 		zbClient,
 		onConnectionError,
 	}: {
-		gRPCClient: ZBGRPC
+		gRPCClient: ZBGrpc
 		id: string | null
 		taskType: string
 		taskHandler: ZB.ZBWorkerTaskHandler<

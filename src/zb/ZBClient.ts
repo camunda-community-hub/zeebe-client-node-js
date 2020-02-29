@@ -10,6 +10,7 @@ import { BpmnParser, parseVariables, stringifyVariables } from '../lib'
 import { ConfigurationHydrator } from '../lib/ConfigurationHydrator'
 import { readDefinitionFromFile } from '../lib/deployWorkflow/impure'
 import { bufferOrFiles, mapThese } from '../lib/deployWorkflow/pure'
+import { GrpcConnectionFactory } from '../lib/GrpcConnectionFactory'
 import * as ZB from '../lib/interfaces'
 // tslint:disable-next-line: no-duplicate-imports
 import {
@@ -22,7 +23,6 @@ import { Utils } from '../lib/utils'
 import { ZBLogger } from '../lib/ZBLogger'
 import { decodeCreateZBWorkerSig } from '../lib/ZBWorkerSignature'
 import { ZBWorker } from './ZBWorker'
-import { GrpcConnectionFactory } from '../lib/GRPCConnectionFactory'
 
 const idColors = [
 	chalk.yellow,

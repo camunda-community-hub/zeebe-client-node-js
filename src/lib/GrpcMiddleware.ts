@@ -47,7 +47,7 @@ export class GrpcMiddleware {
 		grpcClient.on(MiddlewareSignals.Event.Ready, this.emitReady)
 		return grpcClient
 	}
-	private info = (msg: any) => this.log.info(msg)
+	private info = (msg: any) => this.characteristics && this.log.info(msg)
 	private debug = (msg: any) => this.log.debug(msg)
 	private error = (msg: any) => this.log.error(msg)
 	private emitError = () => this.grpcClient.emit('error')

@@ -1,6 +1,6 @@
 import { Chalk } from 'chalk'
 import { ZBWorker } from '../zb/ZBWorker'
-import { GrpcClient } from './GRPCClient'
+import { GrpcClient } from './GrpcClient'
 import { OAuthProviderConfig } from './OAuthProvider'
 
 export interface BasicAuthConfig {
