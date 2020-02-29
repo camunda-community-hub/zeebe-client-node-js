@@ -1,6 +1,6 @@
 import { Chalk } from 'chalk'
 import { ZBWorker } from '../zb/ZBWorker'
-import { GRPCClient } from './GRPCClient'
+import { GrpcClient } from './GRPCClient'
 import { OAuthProviderConfig } from './OAuthProvider'
 
 export interface BasicAuthConfig {
@@ -516,7 +516,7 @@ export interface ZBClientOptions {
 	onConnectionError?: () => void
 }
 
-export interface ZBGRPC extends GRPCClient {
+export interface ZBGrpc extends GrpcClient {
 	completeJobSync: any
 	activateJobsStream: any
 	publishMessageSync(

@@ -10,7 +10,6 @@ import { BpmnParser, parseVariables, stringifyVariables } from '../lib'
 import { ConfigurationHydrator } from '../lib/ConfigurationHydrator'
 import { readDefinitionFromFile } from '../lib/deployWorkflow/impure'
 import { bufferOrFiles, mapThese } from '../lib/deployWorkflow/pure'
-import { GRPCClient } from '../lib/GRPCClient'
 import * as ZB from '../lib/interfaces'
 // tslint:disable-next-line: no-duplicate-imports
 import {
@@ -23,6 +22,7 @@ import { Utils } from '../lib/utils'
 import { ZBLogger } from '../lib/ZBLogger'
 import { decodeCreateZBWorkerSig } from '../lib/ZBWorkerSignature'
 import { ZBWorker } from './ZBWorker'
+import { GrpcConnectionFactory } from '../lib/GRPCConnectionFactory'
 
 const idColors = [
 	chalk.yellow,
@@ -47,7 +47,7 @@ export class ZBClient extends EventEmitter {
 	private closePromise?: Promise<any>
 	private closing = false
 	// A gRPC channel for the ZBClient to execute commands on
-	private gRPCClient: ZB.ZBGRPC
+	private grpc: ZB.ZBGrpc
 	private options: ZB.ZBClientOptions
 	private workerCount = 0
 	private workers: Array<ZBWorker<any, any, any>> = []
@@ -121,7 +121,7 @@ export class ZBClient extends EventEmitter {
 			this.options.connectionTolerance || this.connectionTolerance
 		this.onConnectionError = this.options.onConnectionError
 		this.onReady = this.options.onReady
-		this.gRPCClient = this.constructGrpcClient({
+		this.grpc = this.constructGrpcClient({
 			namespace: this.options.logNamespace || 'ZBClient',
 			onConnectionError: () => this._onConnectionError(),
 			onReady: () => this._onReady(),
@@ -148,7 +148,7 @@ export class ZBClient extends EventEmitter {
 	): Promise<void> {
 		Utils.validateNumber(workflowInstanceKey, 'workflowInstanceKey')
 		return this.executeOperation('cancelWorkflowInstance', () =>
-			this.gRPCClient.cancelWorkflowInstanceSync({
+			this.grpc.cancelWorkflowInstanceSync({
 				workflowInstanceKey,
 			})
 		)
@@ -290,7 +290,7 @@ export class ZBClient extends EventEmitter {
 				// Prevent the creation of more workers
 				this.closing = true
 				await Promise.all(this.workers.map(w => w.close(timeout)))
-				await this.gRPCClient.close(timeout) // close the client GRPC channel
+				await this.grpc.close(timeout) // close the client GRPC channel
 				resolve()
 			})
 		return this.closePromise
@@ -302,7 +302,7 @@ export class ZBClient extends EventEmitter {
 		const withStringifiedVariables = stringifyVariables(completeJobRequest)
 		this.logger.debug(withStringifiedVariables)
 		return this.executeOperation('completeJob', () =>
-			this.gRPCClient.completeJobSync(withStringifiedVariables)
+			this.grpc.completeJobSync(withStringifiedVariables)
 		)
 	}
 
@@ -343,7 +343,7 @@ export class ZBClient extends EventEmitter {
 		}
 
 		return this.executeOperation('createWorkflowInstance', () =>
-			this.gRPCClient.createWorkflowInstanceSync(
+			this.grpc.createWorkflowInstanceSync(
 				stringifyVariables(createWorkflowInstanceRequest)
 			)
 		)
@@ -401,7 +401,7 @@ export class ZBClient extends EventEmitter {
 		)
 
 		return this.executeOperation('createWorkflowInstanceWithResult', () =>
-			this.gRPCClient.createWorkflowInstanceWithResultSync<Result>({
+			this.grpc.createWorkflowInstanceWithResultSync<Result>({
 				fetchVariables: request.fetchVariables,
 				request: createWorkflowInstanceRequest,
 				requestTimeout: request.requestTimeout,
@@ -418,7 +418,7 @@ export class ZBClient extends EventEmitter {
 	): Promise<ZB.DeployWorkflowResponse> {
 		const deploy = (workflows: ZB.WorkflowRequestObject[]) =>
 			this.executeOperation('deployWorkflow', () =>
-				this.gRPCClient.deployWorkflowSync({
+				this.grpc.deployWorkflowSync({
 					workflows,
 				})
 			)
@@ -442,7 +442,7 @@ export class ZBClient extends EventEmitter {
 
 	public failJob(failJobRequest: ZB.FailJobRequest): Promise<void> {
 		return this.executeOperation('failJob', () =>
-			this.gRPCClient.failJobSync(failJobRequest)
+			this.grpc.failJobSync(failJobRequest)
 		)
 	}
 
@@ -463,7 +463,7 @@ export class ZBClient extends EventEmitter {
 		publishMessageRequest: ZB.PublishMessageRequest<T>
 	): Promise<void> {
 		return this.executeOperation('publishMessage', () =>
-			this.gRPCClient.publishMessageSync(
+			this.grpc.publishMessageSync(
 				stringifyVariables(publishMessageRequest)
 			)
 		)
@@ -492,7 +492,7 @@ export class ZBClient extends EventEmitter {
 			...publishStartMessageRequest,
 		}
 		return this.executeOperation('publishStartMessage', () =>
-			this.gRPCClient.publishMessageSync(
+			this.grpc.publishMessageSync(
 				stringifyVariables(publishMessageRequest)
 			)
 		)
@@ -500,7 +500,7 @@ export class ZBClient extends EventEmitter {
 
 	public resolveIncident(incidentKey: string): Promise<void> {
 		return this.executeOperation('resolveIncident', () =>
-			this.gRPCClient.resolveIncidentSync(incidentKey)
+			this.grpc.resolveIncidentSync(incidentKey)
 		)
 	}
 
@@ -515,7 +515,7 @@ export class ZBClient extends EventEmitter {
 			request.variables = JSON.stringify(request.variables) as any
 		}
 		return this.executeOperation('setVariables', () =>
-			this.gRPCClient.setVariablesSync(request)
+			this.grpc.setVariablesSync(request)
 		)
 	}
 
@@ -527,7 +527,7 @@ export class ZBClient extends EventEmitter {
 	 */
 	public throwError(throwErrorRequest: ZB.ThrowErrorRequest) {
 		return this.executeOperation('throwError', () =>
-			this.gRPCClient.throwErrorSync(throwErrorRequest)
+			this.grpc.throwErrorSync(throwErrorRequest)
 		)
 	}
 
@@ -535,14 +535,14 @@ export class ZBClient extends EventEmitter {
 	 * Return the broker cluster topology
 	 */
 	public topology(): Promise<ZB.TopologyResponse> {
-		return this.executeOperation('topology', this.gRPCClient.topologySync)
+		return this.executeOperation('topology', this.grpc.topologySync)
 	}
 
 	public updateJobRetries(
 		updateJobRetriesRequest: ZB.UpdateJobRetriesRequest
 	): Promise<void> {
 		return this.executeOperation('updateJobRetries', () =>
-			this.gRPCClient.updateJobRetriesSync(updateJobRetriesRequest)
+			this.grpc.updateJobRetriesSync(updateJobRetriesRequest)
 		)
 	}
 
@@ -557,7 +557,7 @@ export class ZBClient extends EventEmitter {
 		tasktype?: string
 		namespace: string
 	}) {
-		return new GRPCClient({
+		return GrpcConnectionFactory.getGrpcClient({
 			basicAuth: this.basicAuth,
 			connectionTolerance: this.connectionTolerance,
 			host: this.gatewayAddress,
@@ -573,7 +573,7 @@ export class ZBClient extends EventEmitter {
 			stdout: this.stdout,
 			tasktype,
 			useTLS: this.useTLS,
-		}) as ZB.ZBGRPC
+		}) as ZB.ZBGrpc
 	}
 
 	/**
@@ -648,7 +648,7 @@ export class ZBClient extends EventEmitter {
 		let connectionErrorCount = 0
 		return promiseRetry(
 			(retry, n) => {
-				if (this.closing || this.gRPCClient.channelClosed) {
+				if (this.closing || this.grpc.channelClosed) {
 					return Promise.resolve() as any
 				}
 				if (n > 1) {
@@ -674,7 +674,7 @@ export class ZBClient extends EventEmitter {
 						retry(err)
 					}
 					// The gRPC channel will be closed if close has been called
-					if (this.gRPCClient.channelClosed) {
+					if (this.grpc.channelClosed) {
 						return Promise.resolve() as any
 					}
 					throw err
