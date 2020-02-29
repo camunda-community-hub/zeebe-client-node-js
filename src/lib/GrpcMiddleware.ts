@@ -30,7 +30,7 @@ export class GrpcMiddleware {
 			loglevel: config.loglevel,
 			namespace: config.namespace,
 			pollInterval: config.options.longPoll!,
-			stdout: config,
+			stdout: config.stdout,
 			taskType: config.tasktype,
 		})
 
