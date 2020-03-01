@@ -210,6 +210,7 @@ export class GrpcClient extends EventEmitter {
 			 * pings without sending data.
 			 */
 			'grpc.http2.max_pings_without_data': 0,
+			interceptors: [this.interceptor],
 		})
 		this.listNameMethods = []
 
@@ -247,32 +248,25 @@ export class GrpcClient extends EventEmitter {
 					return new Promise(async (resolve, reject) => {
 						try {
 							const metadata = await this.getAuthToken()
-							client[methodName](
-								data,
-								{
-									...metadata,
-									interceptors: [this.interceptor],
-								},
-								(err, dat) => {
-									// This will error on network or business errors
-									if (err) {
-										const isNetworkError =
-											err.code === GrpcError.UNAVAILABLE
-										if (isNetworkError) {
-											// this.emit(
-											// 	MiddlewareSignals.Event.Error
-											// ) // @DEBUG
-											this.setNotReady()
-										} else {
-											this.setReady()
-										}
-										return reject(err)
+							client[methodName](data, metadata, (err, dat) => {
+								// This will error on network or business errors
+								if (err) {
+									const isNetworkError =
+										err.code === GrpcError.UNAVAILABLE
+									if (isNetworkError) {
+										// this.emit(
+										// 	MiddlewareSignals.Event.Error
+										// ) // @DEBUG
+										this.setNotReady()
+									} else {
+										this.setReady()
 									}
-									this.emit(MiddlewareSignals.Event.Ready)
-									this.setReady()
-									resolve(dat)
+									return reject(err)
 								}
-							)
+								this.emit(MiddlewareSignals.Event.Ready)
+								this.setReady()
+								resolve(dat)
+							})
 						} catch (e) {
 							reject(e)
 						}
