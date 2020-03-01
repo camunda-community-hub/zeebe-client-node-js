@@ -1,7 +1,14 @@
 // import { Client, credentials, loadPackageDefinition } from '@grpc/grpc-js'
 import { loadSync, Options, PackageDefinition } from '@grpc/proto-loader'
 import { EventEmitter } from 'events'
-import { Client, credentials, loadPackageDefinition, Metadata } from 'grpc'
+import {
+	Client,
+	credentials,
+	InterceptingCall,
+	loadPackageDefinition,
+	Metadata,
+	status,
+} from 'grpc'
 import { BasicAuthConfig, Loglevel } from './interfaces'
 import { OAuthProvider } from './OAuthProvider'
 
@@ -19,6 +26,7 @@ export const MiddlewareSignals = {
 	Event: {
 		Error: 'MIDDLEWARE_EVENT_ERROR',
 		Ready: 'MIDDLEWARE_EVENT_READY',
+		GrpcInterceptError: 'MIDDLEWARE_GRPC_INTERCEPT_ERROR',
 	},
 }
 
@@ -216,7 +224,6 @@ export class GrpcClient extends EventEmitter {
 					try {
 						const metadata = await this.getAuthToken()
 						stream = this.client[methodName](data, metadata)
-						this.setReady()
 					} catch (e) {
 						this.emit(MiddlewareSignals.Event.Error)
 						this.setNotReady()
@@ -240,22 +247,32 @@ export class GrpcClient extends EventEmitter {
 					return new Promise(async (resolve, reject) => {
 						try {
 							const metadata = await this.getAuthToken()
-							client[methodName](data, metadata, (err, dat) => {
-								// This will error on network or business errors
-								if (err) {
-									const isNetworkError =
-										err.code === GrpcError.UNAVAILABLE
-									if (isNetworkError) {
-										this.setNotReady()
-									} else {
-										this.setReady()
+							client[methodName](
+								data,
+								{
+									...metadata,
+									interceptors: [this.interceptor],
+								},
+								(err, dat) => {
+									// This will error on network or business errors
+									if (err) {
+										const isNetworkError =
+											err.code === GrpcError.UNAVAILABLE
+										if (isNetworkError) {
+											// this.emit(
+											// 	MiddlewareSignals.Event.Error
+											// ) // @DEBUG
+											this.setNotReady()
+										} else {
+											this.setReady()
+										}
+										return reject(err)
 									}
-									return reject(err)
+									this.emit(MiddlewareSignals.Event.Ready)
+									this.setReady()
+									resolve(dat)
 								}
-								this.emit(MiddlewareSignals.Event.Ready)
-								this.setReady()
-								resolve(dat)
-							})
+							)
 						} catch (e) {
 							reject(e)
 						}
@@ -452,5 +469,35 @@ export class GrpcClient extends EventEmitter {
 			this.emit(MiddlewareSignals.Log.Info, 'Grpc channel connected')
 			this.emit(MiddlewareSignals.Event.Ready)
 		}
+	}
+
+	// https://github.com/grpc/proposal/blob/master/L5-node-client-interceptors.md#proposal
+	private interceptor = (options, nextCall) => {
+		const requester = {
+			start: (metadata, _, next) => {
+				const newListener = {
+					onReceiveStatus: (callStatus: any, nxt: any) => {
+						const isError = callStatus.code !== status.OK
+						if (isError) {
+							if (
+								callStatus.code === 1 &&
+								callStatus.details.includes('503') // ||
+								// callStatus.code === 13
+							) {
+								return this.emit(
+									MiddlewareSignals.Event.GrpcInterceptError,
+									{ callStatus, options }
+								)
+							}
+							// this.emit(MiddlewareSignals.Log.Error, options)
+							// this.emit(MiddlewareSignals.Log.Error, callStatus)
+						}
+						return nxt(callStatus)
+					},
+				}
+				next(metadata, newListener)
+			},
+		}
+		return new InterceptingCall(nextCall(options), requester)
 	}
 }

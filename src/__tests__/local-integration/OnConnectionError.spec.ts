@@ -1,6 +1,6 @@
 import { ZBClient } from '../..'
 
-jest.setTimeout(30000)
+jest.setTimeout(16000)
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 
 describe('onConnectionError Handler', () => {
@@ -10,14 +10,13 @@ describe('onConnectionError Handler', () => {
 			onConnectionError: () => {
 				called++
 			},
-			retry: false,
 		})
 		setTimeout(async () => {
 			expect(called).toBe(1)
 			expect(zbc2.connected).toBe(false)
 			await zbc2.close()
 			done()
-		}, 10000)
+		}, 5000)
 	})
 
 	it(`Does not call the onConnectionError handler if there is a broker`, async done => {
@@ -32,7 +31,7 @@ describe('onConnectionError Handler', () => {
 			expect(zbc2.connected).toBe(true)
 			await zbc2.close()
 			done()
-		}, 10000)
+		}, 5000)
 	})
 	it(`Calls ZBClient onConnectionError once when there is no broker, and workers with no handler`, async done => {
 		let called = 0
@@ -90,27 +89,6 @@ describe('onConnectionError Handler', () => {
 		zbc2.createWorker('whatever', (_, complete) => complete.success, {
 			onConnectionError: () => called++,
 		})
-
-		setTimeout(async () => {
-			expect(zbc2.connected).toBe(false)
-			await zbc2.close()
-			expect(called).toBe(1)
-			done()
-		}, 10000)
-	})
-	it(`Trailing parameter worker onConnectionError handler API works`, async done => {
-		let called = 0
-		const zbc2 = new ZBClient('localtoast:234532534', {})
-		zbc2.createWorker(
-			'whatever',
-			(_, complete) => complete.success,
-			{
-				onConnectionError: () => called--,
-			},
-			() => {
-				called++
-			}
-		)
 
 		setTimeout(async () => {
 			expect(zbc2.connected).toBe(false)

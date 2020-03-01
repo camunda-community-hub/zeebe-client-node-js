@@ -32,7 +32,7 @@ const idColors = [
 	chalk.blue,
 ]
 
-const ConnectionStatusEvent = {
+export const ConnectionStatusEvent = {
 	ConnectionError: 'connectionError',
 	Ready: 'ready',
 }
@@ -43,7 +43,8 @@ export class ZBClient extends EventEmitter {
 	private static readonly DEFAULT_MAX_RETRY_TIMEOUT = 5000
 	private static readonly DEFAULT_LONGPOLL_PERIOD = 30000
 	public connectionTolerance: number = ZBClient.DEFAULT_CONNECTION_TOLERANCE
-	public connected = false
+	public connected = true
+	public readied = false
 	public gatewayAddress: string
 	public loglevel: ZB.Loglevel
 	public onReady?: () => void
@@ -63,8 +64,6 @@ export class ZBClient extends EventEmitter {
 	private basicAuth?: ZB.BasicAuthConfig
 	private useTLS: boolean
 	private stdout: ZB.ZBCustomLogger
-	private lastReady?: Date
-	private lastConnectionError?: Date
 
 	/**
 	 *
@@ -81,6 +80,7 @@ export class ZBClient extends EventEmitter {
 			options = gatewayAddress
 			gatewayAddress = undefined
 		}
+
 		const opts = options ? options : {}
 		this.options = {
 			longPoll: ZBClient.DEFAULT_LONGPOLL_PERIOD,
@@ -122,8 +122,6 @@ export class ZBClient extends EventEmitter {
 		const { grpcClient, log } = this.constructGrpcClient({
 			grpcConfig: {
 				namespace: this.options.logNamespace || 'ZBClient',
-				onConnectionError: () => this._onConnectionError(),
-				onReady: () => this._onReady(),
 			},
 			logConfig: {
 				_tag: 'ZBCLIENT',
@@ -132,6 +130,23 @@ export class ZBClient extends EventEmitter {
 				pollInterval: this.options.longPoll!,
 				stdout: this.stdout,
 			},
+		})
+
+		grpcClient.on(ConnectionStatusEvent.ConnectionError, () => {
+			if (this.connected) {
+				this.onConnectionError?.()
+				this.emit(ConnectionStatusEvent.ConnectionError)
+			}
+			this.connected = false
+			this.readied = false
+		})
+		grpcClient.on(ConnectionStatusEvent.Ready, () => {
+			if (!this.readied) {
+				this.onReady?.()
+				this.emit(ConnectionStatusEvent.Ready)
+			}
+			this.connected = true
+			this.readied = true
 		})
 		this.grpc = grpcClient
 		this.logger = log
@@ -175,6 +190,17 @@ export class ZBClient extends EventEmitter {
 		CustomHeaderShape = ZB.CustomHeaders,
 		WorkerOutputVariables = ZB.OutputVariables
 	>(
+		config: ZB.ZBWorkerConfig<
+			WorkerInputVariables,
+			CustomHeaderShape,
+			WorkerOutputVariables
+		>
+	): ZBWorker<WorkerInputVariables, CustomHeaderShape, WorkerOutputVariables>
+	public createWorker<
+		WorkerInputVariables = ZB.InputVariables,
+		CustomHeaderShape = ZB.CustomHeaders,
+		WorkerOutputVariables = ZB.OutputVariables
+	>(
 		id: string | null,
 		taskType: string,
 		taskHandler: ZB.ZBWorkerTaskHandler<
@@ -204,27 +230,32 @@ export class ZBClient extends EventEmitter {
 		CustomHeaderShape = ZB.CustomHeaders,
 		WorkerOutputVariables = ZB.OutputVariables
 	>(
-		idOrTaskType: string | null,
-		taskTypeOrTaskHandler:
+		idOrTaskTypeOrConfig:
+			| string
+			| null
+			| ZB.ZBWorkerConfig<
+					WorkerInputVariables,
+					CustomHeaderShape,
+					WorkerOutputVariables
+			  >,
+		taskTypeOrTaskHandler?:
 			| string
 			| ZB.ZBWorkerTaskHandler<
 					WorkerInputVariables,
 					CustomHeaderShape,
 					WorkerOutputVariables
 			  >,
-		taskHandlerOrOptions:
+		taskHandlerOrOptions?:
 			| ZB.ZBWorkerTaskHandler<
 					WorkerInputVariables,
 					CustomHeaderShape,
 					WorkerOutputVariables
 			  >
+			| (ZB.ZBWorkerOptions & ZB.ZBClientOptions),
+		optionsOrOnConnectionError?:
 			| (ZB.ZBWorkerOptions & ZB.ZBClientOptions)
-			| undefined,
-		optionsOrOnConnectionError:
-			| (ZB.ZBWorkerOptions & ZB.ZBClientOptions)
-			| ZB.ConnectionErrorHandler
-			| undefined,
-		onConnectionError?: ZB.ConnectionErrorHandler | undefined
+			| ZB.ConnectionErrorHandler,
+		onConnectionError?: ZB.ConnectionErrorHandler | null
 	): ZBWorker<
 		WorkerInputVariables,
 		CustomHeaderShape,
@@ -235,34 +266,18 @@ export class ZBClient extends EventEmitter {
 		}
 		const idColor = idColors[this.workerCount++ % idColors.length]
 		const config = decodeCreateZBWorkerSig({
-			idOrTaskType,
+			idOrTaskTypeOrConfig,
 			onConnectionError,
 			optionsOrOnConnectionError,
 			taskHandlerOrOptions,
 			taskTypeOrTaskHandler,
 		})
 
-		const onReady = config.onReady
-
-		// tslint:disable-next-line: variable-name
-		const _onConnectionError = (err?: any) => {
-			worker.emit('connectionError', err)
-			// Allow a per-worker handler for specialised behaviour
-			if (config.onConnectionError) {
-				config.onConnectionError(err)
-			}
-		}
-		// tslint:disable-next-line: variable-name
-		const _onReady = () => {
-			worker.emit('ready')
-			if (onReady) {
-				onReady()
-			}
-		}
 		// Merge parent client options with worker override
 		const options = {
 			...this.options,
 			loglevel: this.loglevel,
+			onConnectionError: undefined, // Do not inherit client handler
 			onReady: undefined, // Do not inherit client handler
 			...config.options,
 		}
@@ -270,20 +285,16 @@ export class ZBClient extends EventEmitter {
 		const { grpcClient: workerGRPCClient, log } = this.constructGrpcClient({
 			grpcConfig: {
 				namespace: 'ZBWorker',
-				onConnectionError: () => {
-					options.onConnectionError?.()
-					_onConnectionError()
-				},
-				onReady: _onReady,
 				tasktype: config.taskType,
 			},
 			logConfig: {
 				_tag: 'ZBWORKER',
 				colorise: true,
 				id: config.id!,
-				loglevel: config.options.loglevel,
+				loglevel: options.loglevel,
 				namespace: ['ZBWorker', options.logNamespace].join(' ').trim(),
-				pollInterval: options.longPoll,
+				pollInterval:
+					options.longPoll || ZBClient.DEFAULT_LONGPOLL_PERIOD,
 				stdout: options.stdout,
 				taskType: config.taskType,
 			},
@@ -293,11 +304,10 @@ export class ZBClient extends EventEmitter {
 			CustomHeaderShape,
 			WorkerOutputVariables
 		>({
-			gRPCClient: workerGRPCClient,
-			id: config.id,
+			grpcClient: workerGRPCClient,
+			id: config.id || null,
 			idColor,
 			log,
-			onConnectionError,
 			options: { ...this.options, ...options },
 			taskHandler: config.taskHandler,
 			taskType: config.taskType,
@@ -320,6 +330,7 @@ export class ZBClient extends EventEmitter {
 				this.closing = true
 				await Promise.all(this.workers.map(w => w.close(timeout)))
 				await this.grpc.close(timeout) // close the client GRPC channel
+				this.grpc.removeAllListeners()
 				resolve()
 			})
 		return this.closePromise
@@ -635,31 +646,21 @@ export class ZBClient extends EventEmitter {
 	}
 
 	private _onConnectionError() {
-		this.connected = false
-		const debounce =
-			this.lastConnectionError &&
-			new Date().valueOf() - this.lastConnectionError.valueOf() >
-				this.connectionTolerance / 2
-		if (!debounce) {
-			this.onConnectionError?.()
-			this.emit(ConnectionStatusEvent.ConnectionError)
+		if (!this.connected) {
+			return
 		}
-		this.lastConnectionError = new Date()
+		this.connected = false
+		// const debounce =
+		// 	this.lastConnectionError &&
+		// 	new Date().valueOf() - this.lastConnectionError.valueOf() >
+		// 		this.connectionTolerance / 2
+		// if (!debounce) {
+		this.onConnectionError?.()
+		this.emit(ConnectionStatusEvent.ConnectionError)
+		// }
+		// this.lastConnectionError = new Date()
 	}
 
-	private _onReady() {
-		this.connected = true
-		const debounce =
-			this.lastReady &&
-			new Date().valueOf() - this.lastReady.valueOf() <
-				this.connectionTolerance / 2
-		if (!debounce) {
-			// @TODO is this the right window?
-			this.onReady?.()
-			this.emit(ConnectionStatusEvent.Ready)
-		}
-		this.lastReady = new Date()
-	}
 	/**
 	 * This function takes a gRPC operation that returns a Promise as a function, and invokes it.
 	 * If the operation throws gRPC error 14, this function will continue to try it until it succeeds

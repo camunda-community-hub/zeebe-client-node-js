@@ -4,7 +4,12 @@ import * as uuid from 'uuid'
 import { parseVariables } from '../lib'
 import * as ZB from '../lib/interfaces'
 import { StatefulLogInterceptor } from '../lib/StatefulLogInterceptor'
-import { ZBClient } from './ZBClient'
+import { ConnectionStatusEvent, ZBClient } from './ZBClient'
+
+const CapacityEvent = {
+	Available: 'AVAILABLE',
+	Empty: 'CAPACITY_EMPTY',
+}
 
 export class ZBWorker<
 	WorkerInputVariables,
@@ -14,7 +19,7 @@ export class ZBWorker<
 	private static readonly DEFAULT_JOB_ACTIVATION_TIMEOUT = 60000
 	private static readonly DEFAULT_MAX_ACTIVE_JOBS = 32
 	public activeJobs = 0
-	public gRPCClient: ZB.ZBGrpc
+	public grpcClient: ZB.ZBGrpc
 	public maxActiveJobs: number
 	public taskType: string
 	public timeout: number
@@ -40,19 +45,19 @@ export class ZBWorker<
 	// Used to prevent worker from exiting when no timers active
 	private alivenessBit: number = 0
 	private stalled = false
-	private onConnectionError: ZB.ConnectionErrorHandler | undefined
+	private connected = true
+	private readied = false
 
 	constructor({
-		gRPCClient,
+		grpcClient,
 		id,
 		log,
 		options,
 		taskHandler,
 		taskType,
 		zbClient,
-		onConnectionError,
 	}: {
-		gRPCClient: ZB.ZBGrpc
+		grpcClient: ZB.ZBGrpc
 		id: string | null
 		taskType: string
 		taskHandler: ZB.ZBWorkerTaskHandler<
@@ -62,7 +67,6 @@ export class ZBWorker<
 		>
 		options: ZB.ZBWorkerOptions & ZB.ZBClientOptions
 		idColor: Chalk
-		onConnectionError: ZB.ConnectionErrorHandler | undefined
 		zbClient: ZBClient
 		log: StatefulLogInterceptor
 	}) {
@@ -80,25 +84,50 @@ export class ZBWorker<
 			options.maxJobsToActivate || ZBWorker.DEFAULT_MAX_ACTIVE_JOBS
 		this.timeout =
 			options.timeout || ZBWorker.DEFAULT_JOB_ACTIVATION_TIMEOUT
-		this.longPoll =
-			options.longPoll || ZBClient.DEFAULT_CONNECTION_TOLERANCE
+		this.longPoll = options.longPoll!
 		this.id = id || uuid.v4()
 		// Set options.debug to true to count the number of poll requests for testing
 		// See the Worker-LongPoll test
 		this.debug = options.debug === true
-		this.gRPCClient = gRPCClient
+		this.grpcClient = grpcClient
+		const onError = () => {
+			if (this.connected) {
+				this.emit(ConnectionStatusEvent.ConnectionError, onError)
+				options.onConnectionError?.()
+				this.connected = false
+				this.readied = false
+			}
+		}
+		this.grpcClient.on(ConnectionStatusEvent.ConnectionError, onError)
+		const onReady = async () => {
+			if (!this.readied) {
+				this.emit(ConnectionStatusEvent.Ready, onReady)
+				options.onReady?.()
+				this.readied = true
+				this.connected = true
+			}
+		}
+		this.grpcClient.on(ConnectionStatusEvent.Ready, onReady)
 		this.cancelWorkflowOnException =
 			options.failWorkflowOnException || false
 		this.zbClient = zbClient
+		this.grpcClient.topologySync().catch(e => {
+			// Swallow exception to avoid throwing if retries are off
+			if (e.thisWillNeverHappenYo) {
+				this.emit('never')
+			}
+		})
+
 		this.logger = log
-		this.onConnectionError = onConnectionError
 
 		this.capacityEmitter = new EventEmitter()
 		// With long polling there are periods where no timers are running. This prevents the worker exiting.
 		this.keepAlive = setInterval(() => {
 			this.alivenessBit = (this.alivenessBit + 1) % 1
 		}, 10000)
-		this.gRPCClient.on('error', (/*err*/) => this.stall(/*err*/))
+		this.grpcClient.on(ConnectionStatusEvent.ConnectionError, () =>
+			this.stall()
+		)
 		this.work()
 	}
 
@@ -116,21 +145,16 @@ export class ZBWorker<
 			if (this.restartPollingAfterLongPollTimeout) {
 				clearTimeout(this.restartPollingAfterLongPollTimeout)
 			}
-			// If we have no active tasks right now, resolve immediately.
-			// There could be a race condition here if we just polled the server and it is about to return jobs.
-			// In any case, we do not start working on those jobs, so they will time out on the server.
-			// console.log(
-			// 	`Closing ${this.taskType} with ${this.activeJobs} jobs active`
-			// ) // @DEBUG
 
 			if (this.activeJobs <= 0) {
 				clearInterval(this.keepAlive)
-				await this.gRPCClient.close(timeout)
+				await this.grpcClient.close(timeout)
 				resolve()
 			} else {
-				this.capacityEmitter.once('empty', async () => {
+				this.capacityEmitter.once(CapacityEvent.Empty, async () => {
 					clearInterval(this.keepAlive)
-					await this.gRPCClient.close(timeout)
+					await this.grpcClient.close(timeout)
+					this.grpcClient.removeAllListeners()
 					resolve()
 				})
 			}
@@ -147,14 +171,13 @@ export class ZBWorker<
 		this.logger.logInfo(msg)
 	}
 
-	private stall(/*error: any*/) {
+	private stall() {
 		if (this.stalled) {
 			return
 		}
-		this.onConnectionError?.()
 		this.stalled = true
-		this.logger.logError(`Stalled on gRPC error`)
-		this.gRPCClient.once('ready', () => {
+		this.logger.logError(`Stalled on Grpc Error`)
+		this.grpcClient.once(ConnectionStatusEvent.Ready, () => {
 			this.stalled = false
 			this.longPollLoop()
 		})
@@ -189,7 +212,9 @@ export class ZBWorker<
 			}
 		}
 		if (result.atCapacity) {
-			result.atCapacity.once('available', () => this.longPollLoop())
+			result.atCapacity.once(CapacityEvent.Available, () =>
+				this.longPollLoop()
+			)
 		}
 		if (result.error) {
 			this.logger.logError(result.error.message)
@@ -233,7 +258,7 @@ export class ZBWorker<
 		)
 
 		try {
-			stream = await this.gRPCClient.activateJobsStream(
+			stream = await this.grpcClient.activateJobsStream(
 				activateJobsRequest
 			)
 			if (this.debug) {
@@ -263,10 +288,10 @@ export class ZBWorker<
 		this.activeJobs--
 		this.logger.logDebug(`Load: ${this.activeJobs}/${this.maxActiveJobs}`)
 		if (!this.closing && this.activeJobs < this.maxActiveJobs * 0.75) {
-			this.capacityEmitter.emit('available')
+			this.capacityEmitter.emit(CapacityEvent.Available)
 		}
 		if (this.closing && this.activeJobs === 0) {
-			this.capacityEmitter.emit('empty')
+			this.capacityEmitter.emit(CapacityEvent.Empty)
 		}
 		// If we are closing and hit zero active jobs, resolve the closing promise.
 		if (this.activeJobs <= 0 && this.closing) {

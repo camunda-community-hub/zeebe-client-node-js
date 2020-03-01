@@ -286,6 +286,54 @@ export interface ZBWorkerOptions {
 	debug?: boolean
 }
 
+export interface ZBWorkerConfig<
+	WorkerInputVariables,
+	CustomHeaderShape,
+	WorkerOutputVariables
+> extends ZBWorkerOptions {
+	/**
+	 * A custom id for the worker. If none is supplied, a UUID will be generated.
+	 */
+	id?: string
+	logNamespace?: string
+	/**
+	 * A custom longpoll timeout. By default long polling is every 59 seconds.
+	 */
+	longPoll?: number
+	/**
+	 * If your Grpc connection jitters, this is the window before the connectionError
+	 */
+	connectionTolerance?: number
+	/**
+	 * A log level if you want it to differ from the ZBClient
+	 */
+	loglevel?: Loglevel
+	/**
+	 * An implementation of the ZBCustomLogger interface for logging
+	 */
+	stdout?: ZBCustomLogger
+	/**
+	 * A job handler.
+	 */
+	taskHandler: ZBWorkerTaskHandler<
+		WorkerInputVariables,
+		CustomHeaderShape,
+		WorkerOutputVariables
+	>
+	/**
+	 * The task type that this worker will request jobs for.
+	 */
+	taskType: string
+	/**
+	 * This handler is called when the worker (re)establishes its connection to the broker
+	 */
+	onReady?: () => void
+	/**
+	 * This handler is called when the worker cannot connect to the broker, or loses its connection.
+	 */
+	onConnectionError?: () => void
+}
+
 export interface CreateWorkflowInstanceRequest<Variables = KeyedObject> {
 	bpmnProcessId: string
 	version?: number
