@@ -174,6 +174,20 @@ export class ZBClient extends EventEmitter {
 			})
 	}
 
+	public activateJobs(request: Array<ZB.ActivatedJob & { variables: any }>) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				const stream = await this.grpc.activateJobsStream(request)
+				stream.on('data', (res: ZB.ActivateJobsResponse) => {
+					const parsedVariables = res.jobs.map(parseVariables)
+					resolve(parsedVariables)
+				})
+			} catch (e) {
+				reject(e)
+			}
+		})
+	}
+
 	public async cancelWorkflowInstance(
 		workflowInstanceKey: string | number
 	): Promise<void> {
