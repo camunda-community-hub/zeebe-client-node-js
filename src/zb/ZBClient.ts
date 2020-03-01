@@ -174,7 +174,9 @@ export class ZBClient extends EventEmitter {
 			})
 	}
 
-	public activateJobs(request: Array<ZB.ActivatedJob & { variables: any }>) {
+	public activateJobs<T = any>(
+		request: ZB.ActivateJobsRequest
+	): Promise<Array<ZB.ActivatedJob & { variables: T }>> {
 		return new Promise(async (resolve, reject) => {
 			try {
 				const stream = await this.grpc.activateJobsStream(request)
