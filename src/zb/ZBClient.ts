@@ -8,9 +8,9 @@ import promiseRetry from 'promise-retry'
 import { v4 as uuid } from 'uuid'
 import { BpmnParser, parseVariables, stringifyVariables } from '../lib'
 import { ConfigurationHydrator } from '../lib/ConfigurationHydrator'
+import { ConnectionFactory } from '../lib/ConnectionFactory'
 import { readDefinitionFromFile } from '../lib/deployWorkflow/impure'
 import { bufferOrFiles, mapThese } from '../lib/deployWorkflow/pure'
-import { GrpcConnectionFactory } from '../lib/GrpcConnectionFactory'
 import * as ZB from '../lib/interfaces'
 // tslint:disable-next-line: no-duplicate-imports
 import {
@@ -19,8 +19,8 @@ import {
 } from '../lib/interfaces'
 import { OAuthProvider, OAuthProviderConfig } from '../lib/OAuthProvider'
 import { ZBSimpleLogger } from '../lib/SimpleLogger'
+import { StatefulLogInterceptor } from '../lib/StatefulLogInterceptor'
 import { Utils } from '../lib/utils'
-import { ZBLogger } from '../lib/ZBLogger'
 import { decodeCreateZBWorkerSig } from '../lib/ZBWorkerSignature'
 import { ZBWorker } from './ZBWorker'
 
@@ -31,6 +31,11 @@ const idColors = [
 	chalk.magenta,
 	chalk.blue,
 ]
+
+const ConnectionStatusEvent = {
+	ConnectionError: 'connectionError',
+	Ready: 'ready',
+}
 
 export class ZBClient extends EventEmitter {
 	public static readonly DEFAULT_CONNECTION_TOLERANCE = 3000
@@ -43,7 +48,7 @@ export class ZBClient extends EventEmitter {
 	public loglevel: ZB.Loglevel
 	public onReady?: () => void
 	public onConnectionError?: () => void
-	private logger: ZBLogger
+	private logger: StatefulLogInterceptor
 	private closePromise?: Promise<any>
 	private closing = false
 	// A gRPC channel for the ZBClient to execute commands on
@@ -91,13 +96,6 @@ export class ZBClient extends EventEmitter {
 		this.options.stdout = this.options.stdout || ZBSimpleLogger
 		this.stdout = this.options.stdout
 
-		this.logger = new ZBLogger({
-			loglevel: this.loglevel,
-			namespace: this.options.logNamespace || 'ZBClient',
-			pollInterval: this.options.longPoll!,
-			stdout: this.stdout,
-		})
-
 		this.options = ConfigurationHydrator.configure(
 			gatewayAddress,
 			this.options
@@ -121,11 +119,22 @@ export class ZBClient extends EventEmitter {
 			this.options.connectionTolerance || this.connectionTolerance
 		this.onConnectionError = this.options.onConnectionError
 		this.onReady = this.options.onReady
-		this.grpc = this.constructGrpcClient({
-			namespace: this.options.logNamespace || 'ZBClient',
-			onConnectionError: () => this._onConnectionError(),
-			onReady: () => this._onReady(),
+		const { grpcClient, log } = this.constructGrpcClient({
+			grpcConfig: {
+				namespace: this.options.logNamespace || 'ZBClient',
+				onConnectionError: () => this._onConnectionError(),
+				onReady: () => this._onReady(),
+			},
+			logConfig: {
+				_tag: 'ZBCLIENT',
+				loglevel: this.loglevel,
+				namespace: this.options.logNamespace || 'ZBClient',
+				pollInterval: this.options.longPoll!,
+				stdout: this.stdout,
+			},
 		})
+		this.grpc = grpcClient
+		this.logger = log
 
 		this.retry = this.options.retry !== false
 		this.maxRetries =
@@ -135,12 +144,19 @@ export class ZBClient extends EventEmitter {
 		// Send command to broker to eagerly fail / prove connection.
 		// This is useful for, for example: the Node-Red client, which wants to
 		// display the connection status.
-		this.topology().catch(e => {
-			// Swallow exception to avoid throwing if retries are off
-			if (e.thisWillNeverHappenYo) {
-				this.emit('never')
-			}
-		})
+		this.topology()
+			.then(res => {
+				this.logger.logDirect(
+					chalk.blueBright('Zeebe cluster topology:')
+				)
+				this.logger.logDirect(res.brokers)
+			})
+			.catch(e => {
+				// Swallow exception to avoid throwing if retries are off
+				if (e.thisWillNeverHappenYo) {
+					this.emit('never')
+				}
+			})
 	}
 
 	public async cancelWorkflowInstance(
@@ -251,14 +267,26 @@ export class ZBClient extends EventEmitter {
 			...config.options,
 		}
 		// Give worker its own gRPC connection
-		const workerGRPCClient = this.constructGrpcClient({
-			namespace: 'ZBWorker',
-			onConnectionError: () => {
-				options.onConnectionError?.()
-				_onConnectionError()
+		const { grpcClient: workerGRPCClient, log } = this.constructGrpcClient({
+			grpcConfig: {
+				namespace: 'ZBWorker',
+				onConnectionError: () => {
+					options.onConnectionError?.()
+					_onConnectionError()
+				},
+				onReady: _onReady,
+				tasktype: config.taskType,
 			},
-			onReady: _onReady,
-			tasktype: config.taskType,
+			logConfig: {
+				_tag: 'ZBWORKER',
+				colorise: true,
+				id: config.id!,
+				loglevel: config.options.loglevel,
+				namespace: ['ZBWorker', options.logNamespace].join(' ').trim(),
+				pollInterval: options.longPoll,
+				stdout: options.stdout,
+				taskType: config.taskType,
+			},
 		})
 		const worker = new ZBWorker<
 			WorkerInputVariables,
@@ -268,6 +296,7 @@ export class ZBClient extends EventEmitter {
 			gRPCClient: workerGRPCClient,
 			id: config.id,
 			idColor,
+			log,
 			onConnectionError,
 			options: { ...this.options, ...options },
 			taskHandler: config.taskHandler,
@@ -300,7 +329,7 @@ export class ZBClient extends EventEmitter {
 		completeJobRequest: ZB.CompleteJobRequest
 	): Promise<void> {
 		const withStringifiedVariables = stringifyVariables(completeJobRequest)
-		this.logger.debug(withStringifiedVariables)
+		this.logger.logDebug(withStringifiedVariables)
 		return this.executeOperation('completeJob', () =>
 			this.grpc.completeJobSync(withStringifiedVariables)
 		)
@@ -547,33 +576,45 @@ export class ZBClient extends EventEmitter {
 	}
 
 	private constructGrpcClient({
-		onReady,
-		onConnectionError,
-		tasktype,
-		namespace,
+		grpcConfig,
+		logConfig,
 	}: {
-		onReady?: () => void
-		onConnectionError?: () => void
-		tasktype?: string
-		namespace: string
+		grpcConfig: {
+			onReady?: () => void
+			onConnectionError?: () => void
+			tasktype?: string
+			namespace: string
+		}
+		logConfig: ZB.ZBLoggerConfig
 	}) {
-		return GrpcConnectionFactory.getGrpcClient({
-			basicAuth: this.basicAuth,
-			connectionTolerance: this.connectionTolerance,
-			host: this.gatewayAddress,
-			loglevel: this.loglevel,
-			namespace,
-			oAuth: this.oAuth,
-			onConnectionError,
-			onReady,
-			options: { longPoll: this.options.longPoll },
-			packageName: 'gateway_protocol',
-			protoPath: path.join(__dirname, '../../proto/zeebe.proto'),
-			service: 'Gateway',
-			stdout: this.stdout,
-			tasktype,
-			useTLS: this.useTLS,
-		}) as ZB.ZBGrpc
+		const { grpcClient, log } = ConnectionFactory.getGrpcClient({
+			grpcConfig: {
+				basicAuth: this.basicAuth,
+				connectionTolerance: this.connectionTolerance,
+				host: this.gatewayAddress,
+				loglevel: this.loglevel,
+				namespace: grpcConfig.namespace,
+				oAuth: this.oAuth,
+				options: { longPoll: this.options.longPoll },
+				packageName: 'gateway_protocol',
+				protoPath: path.join(__dirname, '../../proto/zeebe.proto'),
+				service: 'Gateway',
+				stdout: this.stdout,
+				tasktype: grpcConfig.tasktype,
+				useTLS: this.useTLS,
+			},
+			logConfig,
+		})
+		if (grpcConfig.onConnectionError) {
+			grpcClient.on(
+				ConnectionStatusEvent.ConnectionError,
+				grpcConfig.onConnectionError
+			)
+		}
+		if (grpcConfig.onReady) {
+			grpcClient.on(ConnectionStatusEvent.Ready, grpcConfig.onReady)
+		}
+		return { grpcClient: grpcClient as ZB.ZBGrpc, log }
 	}
 
 	/**
@@ -595,42 +636,27 @@ export class ZBClient extends EventEmitter {
 
 	private _onConnectionError() {
 		this.connected = false
-		if (this.lastConnectionError) {
-			const now = new Date()
-			const delta = now.valueOf() - this.lastConnectionError.valueOf()
-			if (delta > this.connectionTolerance / 2) {
-				if (this.onConnectionError) {
-					// @TODO is this the right window?
-					this.onConnectionError()
-				}
-				this.emit('connectionError')
-			}
-		} else {
-			if (this.onConnectionError) {
-				this.onConnectionError()
-			}
-			this.emit('connectionError')
+		const debounce =
+			this.lastConnectionError &&
+			new Date().valueOf() - this.lastConnectionError.valueOf() >
+				this.connectionTolerance / 2
+		if (!debounce) {
+			this.onConnectionError?.()
+			this.emit(ConnectionStatusEvent.ConnectionError)
 		}
 		this.lastConnectionError = new Date()
 	}
 
 	private _onReady() {
 		this.connected = true
-		if (this.lastReady) {
-			const now = new Date()
-			const delta = now.valueOf() - this.lastReady.valueOf()
-			if (delta > this.connectionTolerance / 2) {
-				// @TODO is this the right window?
-				if (this.onReady) {
-					this.onReady()
-				}
-				this.emit('ready')
-			}
-		} else {
-			if (this.onReady) {
-				this.onReady()
-			}
-			this.emit('ready')
+		const debounce =
+			this.lastReady &&
+			new Date().valueOf() - this.lastReady.valueOf() <
+				this.connectionTolerance / 2
+		if (!debounce) {
+			// @TODO is this the right window?
+			this.onReady?.()
+			this.emit(ConnectionStatusEvent.Ready)
 		}
 		this.lastReady = new Date()
 	}
@@ -652,7 +678,7 @@ export class ZBClient extends EventEmitter {
 					return Promise.resolve() as any
 				}
 				if (n > 1) {
-					this.logger.error(
+					this.logger.logError(
 						`[${operationName}]: Attempt ${n} (max: ${this.maxRetries}).`
 					)
 				}
@@ -670,7 +696,9 @@ export class ZBClient extends EventEmitter {
 						connectionErrorCount++
 					}
 					if (isNetworkError || isBackpressure) {
-						this.logger.error(`[${operationName}]: ${err.message}`)
+						this.logger.logError(
+							`[${operationName}]: ${err.message}`
+						)
 						retry(err)
 					}
 					// The gRPC channel will be closed if close has been called

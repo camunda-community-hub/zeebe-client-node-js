@@ -137,13 +137,12 @@ describe('ZBClient', () => {
 		})
 
 		zbc.createWorker(
-			'test2',
 			'wait',
 			async (job, complete) => {
 				expect(job.workflowInstanceKey).toBe(wfi)
 				complete.success(job)
 			},
-			{ loglevel: 'NONE' }
+			{ loglevel: 'INFO' }
 		)
 
 		zbc.createWorker(

@@ -1,57 +1,64 @@
-import chalk from 'chalk'
-import { ZBLogger } from '..'
+import { Characteristics, State } from './ConnectionFactory'
 import { GrpcClient, GrpcClientCtor, MiddlewareSignals } from './GrpcClient'
-
-export type GrpcConnectionProfile = 'CAMUNDA_CLOUD' | 'VANILLA'
-type Characteristics = any
-const ConnectionCharacteristics: {
-	[key in GrpcConnectionProfile]: Characteristics
-} = {
-	CAMUNDA_CLOUD: {
-		startupTime: 3000,
-	},
-	VANILLA: {},
-}
+import { StatefulLogInterceptor } from './StatefulLogInterceptor'
 
 export class GrpcMiddleware {
+	public blocking: boolean
+	public state: State
+	public log: StatefulLogInterceptor
 	private grpcClient: GrpcClient
 	private characteristics: Characteristics
-	private log: ZBLogger
+
 	constructor({
-		profile,
+		characteristics,
 		config,
+		log,
 	}: {
-		profile: GrpcConnectionProfile
+		characteristics: Characteristics
 		config: GrpcClientCtor
+		log: StatefulLogInterceptor
 	}) {
-		this.characteristics = ConnectionCharacteristics[profile]
-
-		this.log = new ZBLogger({
-			color: chalk.green,
-			id: 'gRPC Channel',
-			loglevel: config.loglevel,
-			namespace: config.namespace,
-			pollInterval: config.options.longPoll!,
-			stdout: config.stdout,
-			taskType: config.tasktype,
-		})
-
+		this.characteristics = characteristics
+		this.blocking = this.characteristics.startupTime > 0
+		this.state = this.blocking ? 'ERROR' : 'CONNECTED'
+		if (this.blocking) {
+			setTimeout(() => {
+				this.blocking = false
+				if (this.state === 'ERROR') {
+					this.emitError()
+				} else {
+					this.emitReady()
+				}
+			}, this.characteristics.startupTime)
+		}
+		this.log = log
 		this.grpcClient = this.createInterceptedGrpcClient(config)
 	}
 	public getGrpcClient = () => this.grpcClient
 
 	private createInterceptedGrpcClient(config: GrpcClientCtor) {
 		const grpcClient = new GrpcClient(config)
-		grpcClient.on(MiddlewareSignals.Log.Debug, this.debug)
-		grpcClient.on(MiddlewareSignals.Log.Info, this.info)
-		grpcClient.on(MiddlewareSignals.Log.Error, this.error)
-		grpcClient.on(MiddlewareSignals.Event.Error, this.emitError)
-		grpcClient.on(MiddlewareSignals.Event.Ready, this.emitReady)
+		const logInterceptor = this.log
+		grpcClient.on(MiddlewareSignals.Log.Debug, logInterceptor.logDebug)
+		grpcClient.on(MiddlewareSignals.Log.Info, logInterceptor.logInfo)
+		grpcClient.on(MiddlewareSignals.Log.Error, logInterceptor.logError)
+		grpcClient.on(MiddlewareSignals.Event.Error, () => {
+			this.state = 'ERROR'
+			logInterceptor.connectionError()
+			if (!this.blocking) {
+				this.emitError()
+			}
+		})
+		grpcClient.on(MiddlewareSignals.Event.Ready, () => {
+			this.state = 'CONNECTED'
+			logInterceptor.ready()
+			if (!this.blocking) {
+				this.emitReady()
+			}
+		})
 		return grpcClient
 	}
-	private info = (msg: any) => this.characteristics && this.log.info(msg)
-	private debug = (msg: any) => this.log.debug(msg)
-	private error = (msg: any) => this.log.error(msg)
+
 	private emitError = () => this.grpcClient.emit('connectionError')
 	private emitReady = () => this.grpcClient.emit('ready')
 }

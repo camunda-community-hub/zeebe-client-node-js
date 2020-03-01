@@ -2,15 +2,9 @@ import { Chalk } from 'chalk'
 import { EventEmitter } from 'events'
 import * as uuid from 'uuid'
 import { parseVariables } from '../lib'
-import { GrpcClient } from '../lib/GrpcClient'
 import * as ZB from '../lib/interfaces'
-import { ZBLogger } from '../lib/ZBLogger'
+import { StatefulLogInterceptor } from '../lib/StatefulLogInterceptor'
 import { ZBClient } from './ZBClient'
-
-interface ZBGrpc extends GrpcClient {
-	completeJobSync: any
-	activateJobsStream: any
-}
 
 export class ZBWorker<
 	WorkerInputVariables,
@@ -20,7 +14,7 @@ export class ZBWorker<
 	private static readonly DEFAULT_JOB_ACTIVATION_TIMEOUT = 60000
 	private static readonly DEFAULT_MAX_ACTIVE_JOBS = 32
 	public activeJobs = 0
-	public gRPCClient: ZBGrpc
+	public gRPCClient: ZB.ZBGrpc
 	public maxActiveJobs: number
 	public taskType: string
 	public timeout: number
@@ -37,7 +31,7 @@ export class ZBWorker<
 	>
 	private cancelWorkflowOnException = false
 	private zbClient: ZBClient
-	private logger: ZBLogger
+	private logger: StatefulLogInterceptor
 	private longPoll: number
 	private debug: boolean
 	private restartPollingAfterLongPollTimeout?: NodeJS.Timeout
@@ -51,14 +45,14 @@ export class ZBWorker<
 	constructor({
 		gRPCClient,
 		id,
-		idColor,
+		log,
 		options,
 		taskHandler,
 		taskType,
 		zbClient,
 		onConnectionError,
 	}: {
-		gRPCClient: ZBGrpc
+		gRPCClient: ZB.ZBGrpc
 		id: string | null
 		taskType: string
 		taskHandler: ZB.ZBWorkerTaskHandler<
@@ -70,6 +64,7 @@ export class ZBWorker<
 		idColor: Chalk
 		onConnectionError: ZB.ConnectionErrorHandler | undefined
 		zbClient: ZBClient
+		log: StatefulLogInterceptor
 	}) {
 		super()
 		options = options || {}
@@ -92,21 +87,11 @@ export class ZBWorker<
 		// See the Worker-LongPoll test
 		this.debug = options.debug === true
 		this.gRPCClient = gRPCClient
-		const loglevel = options.loglevel!
 		this.cancelWorkflowOnException =
 			options.failWorkflowOnException || false
 		this.zbClient = zbClient
-
+		this.logger = log
 		this.onConnectionError = onConnectionError
-		this.logger = new ZBLogger({
-			color: idColor,
-			id: this.id,
-			loglevel,
-			namespace: ['ZBWorker', options.logNamespace].join(' ').trim(),
-			pollInterval: this.longPoll,
-			stdout: options.stdout || console,
-			taskType: this.taskType,
-		})
 
 		this.capacityEmitter = new EventEmitter()
 		// With long polling there are periods where no timers are running. This prevents the worker exiting.
@@ -154,20 +139,12 @@ export class ZBWorker<
 	}
 
 	public work = () => {
-		this.logger.log(`Ready for ${this.taskType}...`)
+		this.logger.logInfo(`Ready for ${this.taskType}...`)
 		this.longPollLoop()
 	}
 
 	public log(msg: any) {
-		this.logger.log(msg)
-	}
-
-	public getNewLogger(options: ZB.ZBLoggerOptions) {
-		return new ZBLogger({
-			...options,
-			id: this.id,
-			taskType: this.taskType,
-		})
+		this.logger.logInfo(msg)
 	}
 
 	private stall(/*error: any*/) {
@@ -176,7 +153,7 @@ export class ZBWorker<
 		}
 		this.onConnectionError?.()
 		this.stalled = true
-		this.logger.error(`Stalled on gRPC error`)
+		this.logger.logError(`Stalled on gRPC error`)
 		this.gRPCClient.once('ready', () => {
 			this.stalled = false
 			this.longPollLoop()
@@ -186,7 +163,7 @@ export class ZBWorker<
 	private async longPollLoop() {
 		const result = await this.activateJobs()
 		const start = Date.now()
-		this.logger.debug(
+		this.logger.logDebug(
 			`Long poll loop. this.longPoll: ${this.longPoll}`,
 			Object.keys(result)[0],
 			start
@@ -195,7 +172,7 @@ export class ZBWorker<
 			// This event happens when the server cancels the call after the deadline
 			// And when it has completed a response with work
 			result.stream.on('end', () => {
-				this.logger.debug(
+				this.logger.logDebug(
 					`Stream ended after ${(Date.now() - start) / 1000} seconds`
 				)
 				clearTimeout(this.restartPollingAfterLongPollTimeout!)
@@ -215,7 +192,7 @@ export class ZBWorker<
 			result.atCapacity.once('available', () => this.longPollLoop())
 		}
 		if (result.error) {
-			this.logger.error(result.error.message)
+			this.logger.logError(result.error.message)
 			setTimeout(() => this.longPollLoop(), 1000) // @TODO implement backoff
 		}
 	}
@@ -230,11 +207,11 @@ export class ZBWorker<
 			}
 		}
 		if (this.debug) {
-			this.logger.debug('Activating Jobs')
+			this.logger.logDebug('Activating Jobs')
 		}
 		let stream: any
 		if (this.activeJobs >= this.maxActiveJobs) {
-			this.logger.log(
+			this.logger.logInfo(
 				`Worker at max capacity - ${this.taskType} has ${this.activeJobs} and a capacity of ${this.maxActiveJobs}.`
 			)
 			return { atCapacity: this.capacityEmitter }
@@ -251,7 +228,7 @@ export class ZBWorker<
 			type: this.taskType,
 			worker: this.id,
 		}
-		this.logger.debug(
+		this.logger.logDebug(
 			`Requesting ${amount} jobs with requestTimeout ${requestTimeout}`
 		)
 
@@ -284,7 +261,7 @@ export class ZBWorker<
 
 	private drainOne() {
 		this.activeJobs--
-		this.logger.debug(`Load: ${this.activeJobs}/${this.maxActiveJobs}`)
+		this.logger.logDebug(`Load: ${this.activeJobs}/${this.maxActiveJobs}`)
 		if (!this.closing && this.activeJobs < this.maxActiveJobs * 0.75) {
 			this.capacityEmitter.emit('available')
 		}
@@ -320,7 +297,7 @@ export class ZBWorker<
 							jobKey: job.key,
 						})
 						.finally(() => {
-							this.logger.debug(
+							this.logger.logDebug(
 								`Errored job ${job.key} - ${errorMessage}`
 							)
 							this.drainOne()
@@ -337,7 +314,7 @@ export class ZBWorker<
 							retries,
 						})
 						.finally(() => {
-							this.logger.debug(
+							this.logger.logDebug(
 								`Failed job ${job.key} - ${errorMessage}`
 							)
 							this.drainOne()
@@ -351,13 +328,13 @@ export class ZBWorker<
 							variables: completedVariables,
 						})
 						.then(res => {
-							this.logger.debug(
+							this.logger.logDebug(
 								`Completed task ${taskId} for ${this.taskType}`
 							)
 							return res
 						})
 						.catch(e => {
-							this.logger.debug(
+							this.logger.logDebug(
 								`Completing task ${taskId} for ${this.taskType} threw ${e.message}`
 							)
 							return e
@@ -374,14 +351,14 @@ export class ZBWorker<
 				this
 			)
 		} catch (e) {
-			this.logger.error(
+			this.logger.logError(
 				`Caught an unhandled exception in a task handler for workflow instance ${job.workflowInstanceKey}:`
 			)
-			this.logger.debug(job)
-			this.logger.error(e.message)
+			this.logger.logDebug(job)
+			this.logger.logError(e.message)
 			if (this.cancelWorkflowOnException) {
 				const { workflowInstanceKey } = job
-				this.logger.debug(
+				this.logger.logDebug(
 					`Cancelling workflow instance ${workflowInstanceKey}`
 				)
 				try {
@@ -392,7 +369,7 @@ export class ZBWorker<
 					this.drainOne()
 				}
 			} else {
-				this.logger.info(`Failing job ${job.key}`)
+				this.logger.logInfo(`Failing job ${job.key}`)
 				const retries = job.retries - 1
 				try {
 					this.zbClient.failJob({
@@ -401,15 +378,15 @@ export class ZBWorker<
 						retries,
 					})
 				} catch (e) {
-					this.logger.debug(e)
+					this.logger.logDebug(e)
 				} finally {
 					this.drainOne()
 					if (retries > 0) {
-						this.logger.debug(
+						this.logger.logDebug(
 							`The Zeebe engine will handle the retry. Retries left: ${retries}`
 						)
 					} else {
-						this.logger.debug('No retries left for this task')
+						this.logger.logDebug('No retries left for this task')
 					}
 				}
 			}

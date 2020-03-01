@@ -102,7 +102,6 @@ describe('onConnectionError Handler', () => {
 		let called = 0
 		const zbc2 = new ZBClient('localtoast:234532534', {})
 		zbc2.createWorker(
-			null,
 			'whatever',
 			(_, complete) => complete.success,
 			{

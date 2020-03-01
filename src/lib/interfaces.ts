@@ -124,6 +124,12 @@ export interface ZBLoggerOptions {
 	taskType?: string
 }
 
+export interface ZBLoggerConfig extends ZBLoggerOptions {
+	id?: string
+	colorise?: boolean
+	_tag: 'ZBCLIENT' | 'ZBWORKER'
+}
+
 export type ConnectionErrorHandler = (error?: any) => void
 
 export interface ActivateJobsResponse {

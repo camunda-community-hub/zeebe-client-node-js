@@ -93,8 +93,6 @@ export interface GrpcClientCtor {
 	tasktype?: string
 	useTLS: boolean
 	stdout: any
-	onConnectionError?: () => void
-	onReady?: () => void
 }
 
 export class GrpcClient extends EventEmitter {
@@ -102,7 +100,6 @@ export class GrpcClient extends EventEmitter {
 	public longPoll?: number
 	public connected: boolean = false
 	public client: Client
-	public onReady?: () => void
 	private packageDefinition: PackageDefinition
 	private listNameMethods: string[]
 	private gRPCRetryCount = 0
@@ -110,7 +107,6 @@ export class GrpcClient extends EventEmitter {
 	private readyTimer?: NodeJS.Timeout
 	private failTimer?: NodeJS.Timeout
 	private connectionTolerance: number
-	private onConnectionError?: () => void
 	private basicAuth?: BasicAuthConfig
 
 	constructor({
@@ -123,8 +119,6 @@ export class GrpcClient extends EventEmitter {
 		protoPath,
 		service,
 		useTLS,
-		onConnectionError,
-		onReady,
 	}: GrpcClientCtor) {
 		super()
 		this.oAuth = oAuth
@@ -132,8 +126,6 @@ export class GrpcClient extends EventEmitter {
 		this.longPoll = options.longPoll
 		this.connectionTolerance = connectionTolerance
 
-		this.onReady = onReady
-		this.onConnectionError = onConnectionError
 		this.on(InternalSignals.Ready, () => this.setReady())
 		this.on(InternalSignals.Error, () => this.setNotReady())
 
@@ -260,6 +252,7 @@ export class GrpcClient extends EventEmitter {
 									}
 									return reject(err)
 								}
+								this.emit(MiddlewareSignals.Event.Ready)
 								this.setReady()
 								resolve(dat)
 							})
@@ -388,23 +381,23 @@ export class GrpcClient extends EventEmitter {
 						.getChannel()
 						.getConnectivityState(false)
 					this.emit(
-						MiddlewareSignals.Log.Info,
-						`gRPC Channel State: ${connectivityState[newState]}`
+						MiddlewareSignals.Log.Error,
+						`Grpc Channel State: ${connectivityState[newState]}`
 					)
 					this.emit(
-						MiddlewareSignals.Log.Info,
-						`gRPC Retry count: ${this.gRPCRetryCount}`
+						MiddlewareSignals.Log.Error,
+						`Grpc Retry count: ${this.gRPCRetryCount}`
 					)
 					if (
 						newState === GrpcState.READY ||
 						newState === GrpcState.IDLE
 					) {
-						this.emit(
-							MiddlewareSignals.Log.Info,
-							'gRPC reconnected'
-						)
 						return resolve(newState)
 					} else {
+						this.emit(
+							MiddlewareSignals.Log.Error,
+							`Grpc Retry count: ${this.gRPCRetryCount}`
+						)
 						return resolve(await this.watchGrpcChannel())
 					}
 				}
@@ -422,9 +415,6 @@ export class GrpcClient extends EventEmitter {
 			this.readyTimer = undefined
 			this.connected = true
 			this.emit(MiddlewareSignals.Event.Ready)
-			if (this.onReady) {
-				this.onReady()
-			}
 			if (this.failTimer) {
 				clearTimeout(this.failTimer)
 				this.failTimer = undefined
@@ -439,12 +429,10 @@ export class GrpcClient extends EventEmitter {
 		}
 		this.connected = false
 		if (!this.failTimer) {
-			this.failTimer = setTimeout(() => {
-				this.emit(MiddlewareSignals.Event.Error)
-				if (this.onConnectionError) {
-					this.onConnectionError()
-				}
-			}, this.connectionTolerance)
+			this.failTimer = setTimeout(
+				() => this.emit(MiddlewareSignals.Event.Error),
+				this.connectionTolerance
+			)
 		}
 	}
 
@@ -461,7 +449,7 @@ export class GrpcClient extends EventEmitter {
 			channelState === GrpcState.READY ||
 			channelState === GrpcState.IDLE
 		) {
-			this.emit(MiddlewareSignals.Log.Info, 'gRPC Channel reconnected')
+			this.emit(MiddlewareSignals.Log.Info, 'Grpc channel connected')
 			this.emit(MiddlewareSignals.Event.Ready)
 		}
 	}
