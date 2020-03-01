@@ -181,8 +181,8 @@ export class ZBClient extends EventEmitter {
 			try {
 				const stream = await this.grpc.activateJobsStream(request)
 				stream.on('data', (res: ZB.ActivateJobsResponse) => {
-					const parsedVariables = res.jobs.map(parseVariables)
-					resolve(parsedVariables)
+					const jobs = res.jobs.map(parseVariables)
+					resolve(jobs)
 				})
 			} catch (e) {
 				reject(e)
