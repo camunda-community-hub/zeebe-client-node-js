@@ -524,6 +524,8 @@ const RabbitMQListener.listen({
 
 <a name = "zbbatchworker"></a>
 
+## The `ZBBatchWorker` Job Worker
+
 The `ZBBatchWorker` Job Worker batches jobs before calling the job handler. Its fundamental differences from the ZBWorker are:
 
 -   Its job handler receives an _array_ of one or more jobs.
