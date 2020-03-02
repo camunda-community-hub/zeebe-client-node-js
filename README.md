@@ -28,10 +28,12 @@ Get a hosted instance of Zeebe on [Camunda Cloud](https://camunda.io).
 -   [ Basic Auth ](#basic-auth)
 -   [ Camunda Cloud ](#camunda-cloud)
 -   [ Zero-conf constructor ](#zero-conf)
--   [ Create a Task Worker ](#create-worker)
+-   [ Job Workers](#job-workers)
+-   [ The `ZBWorker` Job Worker ](#create-zbworker)
 -   [ Unhandled Exceptions in Task Handlers ](#unhandled-exceptions)
 -   [ Completing tasks with success, failure, error, or forwarded ](#complete-tasks)
--   [ Completing jobs in the "decoupled job completion" pattern ](#decoupled-complete)
+-   [ The "Decoupled Job Completion" pattern ](#decoupled-complete)
+-   [ The `ZBBatchWorker` Job Worker ](#zbbatchworker)
 -   [ Long polling ](#long-polling)
 -   [ Start a Workflow Instance ](#start-workflow)
 -   [ Start a Workflow Instance of a specific version of a Workflow definition ](#start-specific-version)
@@ -53,17 +55,11 @@ Get a hosted instance of Zeebe on [Camunda Cloud](https://camunda.io).
 
 To enable that the client libraries can be easily supported to the Zeebe server we map the version numbers, so that Major, Minor match the server application. Patches are independent and indicate client updates.
 
+NPM Package version 0.23.x supports Zeebe 0.22.x and above
+
 NPM Package version 0.22.x supports Zeebe 0.22.x
 
 NPM Package version 0.21.x supports Zeebe 0.21.x
-
-NPM Package version 0.20.x supports Zeebe 0.20.x
-
-NPM Package version 0.19.x supports Zeebe 0.19.x
-
-NPM Package version 2.x.x supports Zeebe 0.18.
-
-NPM Package version 1.x.x supports Zeebe 0.15/0.16.
 
 <a name = "type-difference"></a>
 
@@ -152,7 +148,7 @@ Additionally, the gRPC Client will continually reconnect when in a failed state,
 
 The client has a `connected` property that can be examined to determine if it has a gRPC connection to the gateway.
 
-The client and the worker can take an optional `onReady()` and `onConnectionError()` handler in their options, like this:
+The client and the worker can take an optional `onReady()` and `onConnectionError()` handler in their constructors, like this:
 
 ```TypeScript
 const zbc = new ZB.ZBClient({
@@ -160,16 +156,17 @@ const zbc = new ZB.ZBClient({
 	onConnectionError: () => console.log(`Disconnected!`)
 })
 
-const zbWorker = zbc.createWorker(
-	'demo-service',
-	handler,
-	{
-		onReady: () => console.log(`Worker connected!`),
-		onConnectionError: () => console.log(`Worker disconnected!`)
-	})
+const zbWorker = zbc.createWorker({
+    taskType: 'demo-service',
+	taskHandler: handler,
+    onReady: () => console.log(`Worker connected!`),
+    onConnectionError: () => console.log(`Worker disconnected!`)
+})
 ```
 
-These handlers are called whenever the gRPC channel is established or lost. As the channel will jitter when it is lost, there is a `connectionTolerance` property that determines how long the connection must be in a connected or failed state before the handler is called. By default this is 3000ms. You can specify another value like this:
+These handlers are called whenever the gRPC channel is established or lost. As the grpc channel will often "jitter" when it is lost (rapidly emitting READY and ERROR events at the transport layer), there is a `connectionTolerance` property that determines how long the connection must be in a connected or failed state before the handler is called. By default this is 3000ms.
+
+You can specify another value like this:
 
 ```TypeScript
 const zbc = new ZB.ZBClient({
@@ -178,14 +175,26 @@ const zbc = new ZB.ZBClient({
 	connectionTolerance: 5000
 })
 
-const zbWorker = zbc.createWorker(
-	'demo-service',
-	handler,
-	{
-		onReady: () => console.log(`Worker connected!`),
-		onConnectionError: () => console.log(`Worker disconnected!`),
-		connectionTolerance: 35000
-	})
+const zbWorker = zbc.createWorker({
+	taskType: 'demo-service',
+	taskHandler: handler,
+    onReady: () => console.log(`Worker connected!`),
+    onConnectionError: () => console.log(`Worker disconnected!`),
+    connectionTolerance: 35000
+})
+```
+
+As well as the callback handlers, the client and workers extend the [`EventEmitter`](https://nodejs.org/api/events.html#events_class_eventemitter) class, and you can attach listeners to them for the 'ready' and 'connectionError' events:
+
+```TypeScript
+const zbWorker = zbc.createWorker({
+	taskType: 'demo-service',
+	taskHandler: handler,
+    connectionTolerance: 35000
+})
+
+zbWorker.on('ready', () => console.log(`Worker connected!`))
+zbWorker.on('connectionError', () => console.log(`Worker disconnected!`))
 ```
 
 <a name = "tls"></a>
@@ -317,9 +326,22 @@ ZEEBE_BASIC_AUTH_PASSWORD
 ZEEBE_BASIC_AUTH_USERNAME
 ```
 
-<a name = "create-worker"></a>
+<a name ="job-workers"></a>
 
-### Create a Task Worker
+### Job Workers
+
+There are two different types of job worker provided by the Zeebe Node client:
+
+-   The `ZBWorker` - this worker operates on individual jobs.
+-   The `ZBBatchWorker` - this worker batches jobs on the client, to allow you to batch operations that pool resources. (_This worker was introduced in 0.23.0 of the client_).
+
+Much of the information in the following [`ZBWorker` section](#create-zbworker) applies also to the `ZBBatchWorker`. The `ZBBatchWorker` section covers the features that differ from the `ZBWorker`.
+
+<a name = "create-zbworker"></a>
+
+### The `ZBWorker` Job Worker
+
+The `ZBWorker` takes a job handler function that is invoked for each job. It is invoked as soon as the worker retrieves a job from the broker. The worker can retrieve any number of jobs in a response from the broker, and the handler is invoked for each one, independently.
 
 The simplest signature for a worker takes a string task type, and a job handler function. The job handler receives the job object, and a callback that it can use to complete or fail the job.
 
@@ -363,22 +385,25 @@ Here is an example job:
 
 ```
 
-The worker can be configured with options. Shown below are the defaults that apply if you don't supply them:
+The worker can be configured with options. To do this, you should use the object parameter constructor.
+
+Shown below are the defaults that apply if you don't supply them:
 
 ```javascript
-const workerOptions = {
-	maxActiveJobs: 32, // the number of simultaneous tasks this worker can handle
-	timeout: 30, // the number of seconds the broker should allow this worker to complete a task
-}
-
-const onConnectionError = err => console.log(err) // Called when the connection to the broker cannot be established, or fails
-
-const zbWorker = zbc.createWorker(
-	'demo-service',
-	handler,
-	workerOptions,
-	onConnectionError
-)
+const zbWorker = zbc.createWorker({
+	taskType: 'demo-service',
+    taskHandler: handler,
+    // the number of simultaneous tasks this worker can handle
+    maxJobsToActivate: 32,
+    // the number of seconds the broker should allow this worker to complete a task
+    timeout: 30,
+    // One of 'DEBUG', 'INFO', 'NONE'
+    loglevel: 'INFO',
+    // Called when the connection to the broker cannot be established, or fails
+    onConnectionError: () => zbWorker.log('Disconnected')
+    // Called when the connection to the broker is (re-)established
+    onReady: () => zbWorker.log('Connected.')
+})
 ```
 
 <a name = "unhandled-exceptions"></a>
@@ -413,9 +438,150 @@ Call `complete.forwarded()` to release worker capacity to handle another job, wi
 
 <a name = "decoupled-complete"></a>
 
-## Completing jobs in the "decoupled job completion" pattern
+## The "Decoupled Job Completion" pattern
 
-You can use the ZBClient methods `completeJob()`, `failJob()`, and `throwError()` in the decoupled pattern to complete jobs that were activated by another process. In contrast to the worker `complete` methods, the ZBClient methods require a specific job key, so you must pass the job key with the job data when forwarding the job from the worker that activates it to a remote system.
+The _Decoupled Job Completion_ pattern uses a Zeebe Job Worker to activate jobs from the broker, and some other asynchronous (remote) system to do the work.
+
+You might activate jobs and then send them to a RabbitMQ queue, or to an AWS lambda. In this case, there may be no outcome about the job that this worker can report back to the broker about success or failure. That will be the responsibility of another part of your distributed system.
+
+The first thing you should do is call `complete.forwarded()` in your job worker handler. This has no side-effect with the broker - so nothing is communicated to Zeebe. The job is still out there with your worker as far as Zeebe is concerned. What this call does is release worker capacity to request more jobs.
+
+If you are using the Zeebe Node library in the remote system, or if the remote system eventually reports back to you (perhaps over a different RabbitMQ queue), you can use the ZBClient methods `completeJob()`, `failJob()`, and `throwError()` to report the outcome back to the broker.
+
+You need at least the `job.key`, to be able to correlate the result back to Zeebe. Presumably you also want the information from the remote system about the outcome, and any updated variables.
+
+Here is an example:
+
+-   You have a COBOL system that runs a database.
+-   Somebody wrote an adapter for this COBOL database. In executes commands over SSH.
+-   The adapter is accessible via a RabbitMQ "request" queue, which takes a command and a correlation id, so that its response can be correlated to this request.
+-   The adapter sends back the COBOL database system response on a RabbitMQ "response" queue, with the correlation id.
+
+You want to put this system into a Zeebe-orchestrated BPMN model as a task.
+
+Rather than injecting a RabbitMQ listener into the job handler, you can "_fire and forget_" the request using the decoupled job completion pattern.
+
+Here is how you do it:
+
+-   Your worker gets the job from Zeebe.
+-   Your worker makes the command and sends it down the RabbitMQ "request" queue, with the `job.jobKey` as the correlation id.
+-   Your worker calls `complete.forwarded()`
+
+Here is what that looks like in code:
+
+```TypeScript
+import { RabbitMQSender } from './lib/my-awesome-rabbitmq-api'
+import { ZBClient } from 'zeebe-node'
+
+const zbc = new ZBClient()
+
+const cobolWorker = zbc.createWorker('cobol-insert', (job, complete) => {
+    const { jobKey, variables } = job
+    const request = {
+        correlationId: jobKey,
+        command: `INSERT ${variables.customer} INTO CUSTOMERS`
+    }
+    RabbitMQSender.send({
+        channel: 'COBOL_REQ',
+        request
+    })
+    // Call forwarded() to release worker capacity
+    complete.forwarded()
+})
+```
+
+Now for the response part:
+
+-   Another part of your system listens to the RabbitMQ response queue.
+-   It gets a response back from the COBOL adapter.
+-   It examines the response, then sends the appropriate outcome to Zeebe, using the jobKey that has been attached as the correlationId
+
+```TypeScript
+import { RabbitMQSender } from './lib/my-awesome-rabbitmq-api'
+import { ZBClient } from 'zeebe-node'
+
+const zbc = new ZBClient()
+
+const RabbitMQListener.listen({
+    channel: 'COBOL_RES',
+    handler: message => {
+        const { outcome, correlationId } = message
+        if (outcome.SUCCESS) {
+            zbc.completeJob({
+                jobKey: correlationId,
+            })
+        }
+        if (outcome.ERROR) {
+            zbc.throwError({
+                jobKey: correlationId,
+                errorCode: "5",
+                errorMessage: "The COBOL Database reported an error. Boo!"
+            })
+        }
+    })
+}
+```
+
+<a name = "zbbatchworker"></a>
+
+The `ZBBatchWorker` Job Worker batches jobs before calling the job handler. Its fundamental differences from the ZBWorker are:
+
+-   Its job handler receives an _array_ of one or more jobs.
+-   The jobs have `success`, `failure`, `error`, and `forwarded` methods _attached_ to them.
+-   The handler is not invoked immediately, but rather when enough jobs are batch, or a job in the batch is at risk of being timed out by the Zeebe broker.
+
+You can use the batch worker if you have tasks that _benefit from processing together_, but are _not related in the BPMN model_.
+
+An example would be a high volume of jobs that require calls to an external system, where you have to pay per call to that system. In that case, you may want to batch up jobs, make one call to the external system, then update all the jobs and send them on their way.
+
+The batch worker works on a _first-of_ batch size or batch timeout basis.
+
+You must configure both `jobBatchMinSize` and `jobBatchMaxTime`. Whichever condition is met first will trigger the processing of the jobs:
+
+-   Enough jobs are available to the worker to satisfy the minimum job batch size;
+-   The batch has been building for the maximum amount of time - "we're doing this now, before the earliest jobs in the batch time out on the broker".
+
+You should be sure to specify a `timeout` for your worker that is `jobBatchMaxTime` plus the expected latency of the external call plus your processing time and network latency, to avoid the broker timing your batch worker's lock and making the jobs available to another worker. That would defeat the whole purpose.
+
+Here is an example of using the `ZBBatchWorker`:
+
+```TypeScript
+import { API } from './lib/my-awesome-external-api'
+import { ZBClient, BatchedJob } from 'zeebe-node'
+
+const zbc = new ZBClient()
+
+// Helper function to find a job by its key
+const findJobByKey = jobs => key => jobs.filter(job => job.jobKey === id)[0]
+
+const handler = async (jobs: BatchedJob[], worker: ZBBatchWorker) => {
+    worker.log("Let's do this!")
+    const {jobKey, variables} = job
+    // Construct some hypothetical payload with correlation ids and requests
+    const req = jobs.map(job => ({id: jobKey, data: variables.request}))
+    // An uncaught exception will not be managed by the library
+    try {
+        // Our API wrapper turns that into a request, and returns
+        // an array of results with ids
+        const outcomes = await API.post(req)
+        // Construct a find function for these jobs
+        const getJob = findJobByKey(jobs)
+        // Iterate over the results and call the succeed method on the corresponding job,
+        // passing in the correlated outcome of the API call
+        outcomes.forEach(res => getJob(res.id).success(res.data))
+    } catch (e) {
+        jobs.forEach(job => job.failure(e.message))
+    }
+}
+
+const batchWorker = zbc.createBatchWorker({
+    taskType: 'get-data-from-external-api',
+    taskHandler: handler,
+    jobBatchMinSize: 10, // at least 10 at a time
+    jobBatchMaxTime: 60, // or every 60 seconds, whichever comes first
+    timeout: 80 // 80 second timeout means we have 20 seconds to process at least
+})
+```
 
 <a name = "long-polling"></a>
 

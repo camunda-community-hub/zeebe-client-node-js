@@ -268,7 +268,7 @@ export interface ZBWorkerOptions {
 	 * when it has capacity for this many jobs. Defaults to 0, meaning the worker will
 	 * fetch more jobs as soon as it as any capacity.
 	 */
-	minJobBatchSize?: number
+	jobBatchMinSize?: number
 	/**
 	 * Max seconds to allow before time out of a task given to this worker. Default: 30000ms.
 	 * The broker checks deadline timeouts every 30 seconds, so an
@@ -296,8 +296,11 @@ export interface ZBWorkerOptions {
 	debug?: boolean
 }
 
-export interface BatchedJob<Variables, Headers, Output>
-	extends Job<Variables, Headers> {
+export interface BatchedJob<
+	Variables = KeyedObject,
+	Headers = KeyedObject,
+	Output = KeyedObject
+> extends Job<Variables, Headers> {
 	success: (updatedVariables?: Output) => Promise<void>
 	failure: (message: string, retries?: number) => void
 	error: (errorCode: string, errorMessage?: string) => Promise<void>
@@ -321,18 +324,23 @@ export interface ZBBatchWorkerConfig<
 		CustomHeaderShape,
 		WorkerOutputVariables
 	>
+	/**
+	 * The minimum amount of jobs to batch before calling the job handler.
+	 */
+	jobBatchMinSize: number
+	/**
+	 * The max timeout in seconds to wait for a batch to populate. If there are less than `minJobBatchSize` jobs
+	 * available when this timeout is reached, all currently batched jobs will be processed, regardless.
+	 * You should set this higher than the worker timeout, to avoid batched jobs timing out before they are executed.
+	 */
+	jobBatchMaxTime: number
 }
 export interface ZBWorkerBaseConfig extends ZBWorkerOptions {
 	/**
 	 * A custom id for the worker. If none is supplied, a UUID will be generated.
 	 */
 	id?: string
-	/**
-	 * The minimum amount of jobs to fetch. The worker will request more jobs only
-	 * when it has capacity for this many jobs. Defaults to 0, meaning the worker will
-	 * fetch more jobs as soon as it as any capacity.
-	 */
-	minJobBatchSize?: number
+
 	logNamespace?: string
 	/**
 	 * A custom longpoll timeout. By default long polling is every 59 seconds.
@@ -346,6 +354,11 @@ export interface ZBWorkerBaseConfig extends ZBWorkerOptions {
 	 * A log level if you want it to differ from the ZBClient
 	 */
 	loglevel?: Loglevel
+	/**
+	 * The capacity of the worker. When it is servicing this many jobs, it will not ask for more.
+	 * It will also ask for a number of jobs that is the delta between this number and its currently
+	 * active jobs, when activating jobs from the broker.
+	 */
 	/**
 	 * An implementation of the ZBCustomLogger interface for logging
 	 */
@@ -377,6 +390,12 @@ export interface ZBWorkerConfig<
 		CustomHeaderShape,
 		WorkerOutputVariables
 	>
+	/**
+	 * The minimum amount of jobs to fetch. The worker will request more jobs only
+	 * when it has capacity for this many jobs. Defaults to 0, meaning the worker will
+	 * fetch more jobs as soon as it as _any_ capacity.
+	 */
+	jobBatchMinSize?: number
 }
 
 export interface CreateWorkflowInstanceRequest<Variables = KeyedObject> {

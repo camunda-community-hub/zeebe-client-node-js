@@ -221,45 +221,7 @@ export class ZBClient extends EventEmitter {
 		CustomHeaderShape = ZB.CustomHeaders,
 		WorkerOutputVariables = ZB.OutputVariables
 	>(
-		config: ZB.ZBBatchWorkerConfig<
-			WorkerInputVariables,
-			CustomHeaderShape,
-			WorkerOutputVariables
-		>
-	): ZBBatchWorker<
-		WorkerInputVariables,
-		CustomHeaderShape,
-		WorkerOutputVariables
-	>
-	public createBatchWorker<
-		WorkerInputVariables = ZB.InputVariables,
-		CustomHeaderShape = ZB.CustomHeaders,
-		WorkerOutputVariables = ZB.OutputVariables
-	>(
-		taskType: string,
-		taskHandler: ZB.ZBBatchWorkerTaskHandler<
-			WorkerInputVariables,
-			CustomHeaderShape,
-			WorkerOutputVariables
-		>
-	): ZBBatchWorker<
-		WorkerInputVariables,
-		CustomHeaderShape,
-		WorkerOutputVariables
-	>
-	public createBatchWorker<
-		WorkerInputVariables = ZB.InputVariables,
-		CustomHeaderShape = ZB.CustomHeaders,
-		WorkerOutputVariables = ZB.OutputVariables
-	>(
-		taskTypeOrConfig:
-			| string
-			| ZB.ZBBatchWorkerConfig<
-					WorkerInputVariables,
-					CustomHeaderShape,
-					WorkerOutputVariables
-			  >,
-		taskHandler?: ZB.ZBBatchWorkerTaskHandler<
+		conf: ZB.ZBBatchWorkerConfig<
 			WorkerInputVariables,
 			CustomHeaderShape,
 			WorkerOutputVariables
@@ -273,9 +235,14 @@ export class ZBClient extends EventEmitter {
 			throw new Error('Client is closing. No worker creation allowed!')
 		}
 		const config = decodeCreateZBWorkerSig({
-			idOrTaskTypeOrConfig: taskTypeOrConfig,
-			taskTypeOrTaskHandler: taskHandler,
+			idOrTaskTypeOrConfig: conf,
 		})
+		// tslint:disable-next-line: no-console
+		console.log(config) // @DEBUG
+
+		// tslint:disable-next-line: no-console
+		console.log(conf) // @DEBUG
+
 		// Merge parent client options with worker override
 		const options = {
 			...this.options,

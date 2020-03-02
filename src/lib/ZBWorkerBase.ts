@@ -26,6 +26,8 @@ export interface ZBBatchWorkerConstructorConfig<
 	CustomHeaderShape,
 	WorkerOutputVariables
 > extends ZBWorkerBaseConstructor {
+	options: ZB.ZBWorkerOptions &
+		ZB.ZBClientOptions & { jobBatchMaxTime: number }
 	taskHandler: ZB.ZBBatchWorkerTaskHandler<
 		WorkerInputVariables,
 		CustomHeaderShape,
@@ -50,12 +52,12 @@ export class ZBWorkerBase<
 	CustomHeaderShape,
 	WorkerOutputVariables
 > extends EventEmitter {
-	private static readonly DEFAULT_JOB_ACTIVATION_TIMEOUT = 60000
+	private static readonly DEFAULT_JOB_ACTIVATION_TIMEOUT = 60
 	private static readonly DEFAULT_MAX_ACTIVE_JOBS = 32
 	public activeJobs = 0
 	public grpcClient: ZB.ZBGrpc
-	public maxActiveJobs: number
-	public minJobBatchSize: number
+	public maxJobsToActivate: number
+	public jobBatchMinSize: number
 	public taskType: string
 	public timeout: number
 	public pollCount = 0
@@ -79,7 +81,7 @@ export class ZBWorkerBase<
 	private closed = false
 	private id = uuid.v4()
 	private longPoll: number
-	private debug: boolean
+	private debugMode: boolean
 	private restartPollingAfterLongPollTimeout?: NodeJS.Timeout
 	private capacityEmitter: EventEmitter
 	private keepAlive: NodeJS.Timer
@@ -118,11 +120,11 @@ export class ZBWorkerBase<
 		}
 		this.taskHandler = taskHandler
 		this.taskType = taskType
-		this.maxActiveJobs =
+		this.maxJobsToActivate =
 			options.maxJobsToActivate || ZBWorkerBase.DEFAULT_MAX_ACTIVE_JOBS
-		this.minJobBatchSize = Math.min(
-			options.minJobBatchSize ?? 0,
-			this.maxActiveJobs
+		this.jobBatchMinSize = Math.min(
+			options.jobBatchMinSize ?? 0,
+			this.maxJobsToActivate
 		)
 		this.timeout =
 			options.timeout || ZBWorkerBase.DEFAULT_JOB_ACTIVATION_TIMEOUT
@@ -130,7 +132,7 @@ export class ZBWorkerBase<
 		this.id = id || uuid.v4()
 		// Set options.debug to true to count the number of poll requests for testing
 		// See the Worker-LongPoll test
-		this.debug = options.debug === true
+		this.debugMode = options.debug === true
 		this.grpcClient = grpcClient
 		const onError = () => {
 			if (this.connected) {
@@ -213,10 +215,20 @@ export class ZBWorkerBase<
 		this.logger.logInfo(msg)
 	}
 
+	public debug(msg: any) {
+		this.logger.logDebug(msg)
+	}
+
+	public error(msg: any) {
+		this.logger.logError(msg)
+	}
+
 	protected drainOne() {
 		this.activeJobs--
-		this.logger.logDebug(`Load: ${this.activeJobs}/${this.maxActiveJobs}`)
-		if (!this.closing && this.activeJobs < this.maxActiveJobs * 0.75) {
+		this.logger.logDebug(
+			`Load: ${this.activeJobs}/${this.maxJobsToActivate}`
+		)
+		if (!this.closing && this.activeJobs < this.maxJobsToActivate * 0.75) {
 			this.capacityEmitter.emit(CapacityEvent.Available)
 		}
 		if (this.closing && this.activeJobs === 0) {
@@ -393,18 +405,18 @@ export class ZBWorkerBase<
 				closing: true,
 			}
 		}
-		if (this.debug) {
+		if (this.debugMode) {
 			this.logger.logDebug('Activating Jobs')
 		}
 		let stream: any
-		if (this.activeJobs >= this.maxActiveJobs - this.minJobBatchSize) {
+		if (this.activeJobs >= this.maxJobsToActivate - this.jobBatchMinSize) {
 			this.logger.logInfo(
-				`Worker at max capacity - ${this.taskType} has ${this.activeJobs}, a capacity of ${this.maxActiveJobs}, and a minimum job batch size of ${this.minJobBatchSize}.`
+				`Worker at max capacity - ${this.taskType} has ${this.activeJobs}, a capacity of ${this.maxJobsToActivate}, and a minimum job batch size of ${this.jobBatchMinSize}.`
 			)
 			return { atCapacity: this.capacityEmitter }
 		}
 
-		const amount = this.maxActiveJobs - this.activeJobs
+		const amount = this.maxJobsToActivate - this.activeJobs
 
 		const requestTimeout = this.longPoll || -1
 
@@ -423,7 +435,7 @@ export class ZBWorkerBase<
 			stream = await this.grpcClient.activateJobsStream(
 				activateJobsRequest
 			)
-			if (this.debug) {
+			if (this.debugMode) {
 				this.pollCount++
 			}
 		} catch (error) {

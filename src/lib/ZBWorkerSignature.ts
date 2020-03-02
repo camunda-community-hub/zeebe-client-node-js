@@ -1,6 +1,8 @@
 import * as ZB from './interfaces'
 
-function isConfig(config: any): config is ZB.ZBWorkerConfig<any, any, any> {
+function isConfig(
+	config: any
+): config is ZB.ZBBatchWorkerConfig<any, any, any> {
 	return typeof config === 'object'
 }
 
@@ -22,10 +24,16 @@ export function decodeCreateZBWorkerSig<
 			onConnectionError: conf.onConnectionError,
 			onReady: conf.onReady,
 			options: {
-				logNamespace: config.logNamespace,
-				loglevel: config.loglevel,
-				longPoll: config.longPoll,
-				stdout: config.stdout,
+				debug: conf.debug,
+				loglevel: conf.loglevel,
+				// tslint:disable-next-line: object-literal-sort-keys
+				logNamespace: conf.logNamespace,
+				longPoll: conf.longPoll,
+				maxJobsToActivate: conf.maxJobsToActivate,
+				jobBatchMinSize: conf.jobBatchMinSize,
+				stdout: conf.stdout,
+				timeout: conf.timeout,
+				jobBatchMaxTime: conf.jobBatchMaxTime,
 			},
 			taskHandler: conf.taskHandler,
 			taskType: conf.taskType,
