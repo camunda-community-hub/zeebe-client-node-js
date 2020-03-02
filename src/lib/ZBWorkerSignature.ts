@@ -1,4 +1,5 @@
 import * as ZB from './interfaces'
+import { ZBClientOptions } from './interfaces-published-contract'
 
 function isConfig(
 	config: any
@@ -61,7 +62,7 @@ export function decodeCreateZBWorkerSig<
 	const taskType: string = isShorthandSig
 		? (config.idOrTaskTypeOrConfig as string)
 		: (config.taskTypeOrTaskHandler as string)
-	const options: ZB.ZBWorkerOptions & ZB.ZBClientOptions =
+	const options: ZB.ZBWorkerOptions<WorkerInputVariables> & ZBClientOptions =
 		(isShorthandSig
 			? config.taskHandlerOrOptions
 			: config.optionsOrOnConnectionError) || {}

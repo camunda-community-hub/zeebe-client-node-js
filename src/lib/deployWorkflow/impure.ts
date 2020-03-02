@@ -1,11 +1,11 @@
 import { either as E } from 'fp-ts'
 import * as fs from 'fs'
 import * as path from 'path'
-import * as ZB from '../interfaces'
+import { WorkflowRequestObject } from '../interfaces-grpc'
 
 export const readDefinitionFromFile = (
 	file: string
-): E.Either<string, ZB.WorkflowRequestObject> =>
+): E.Either<string, WorkflowRequestObject> =>
 	fs.existsSync(file)
 		? E.right({
 				definition: fs.readFileSync(file),

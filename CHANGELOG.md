@@ -2,6 +2,8 @@
 
 ## Breaking Changes
 
+-   The `job.variables` and `job.customHeaders` in the worker job handler are now typed as read-only structures.
+-   The default generic type for worker variables and custom headers has been changed from `any` to `JSONDoc`. Untyped workers will now start to complain about access to variable methods, such as `Array.join`, that may fail at runtime. You will need to either provide an interface describing the payload, or else type the worker as `any`. See the section "Working with Workflow Variables and Custom Headers" in the README.
 -   The library nows logs with the simplified `ZBSimpleLogger` by default, for friendly human-readable logs. To get the previous structured log behaviour, pass in `stdout: ZBJsonLogger` to the `ZBClient` constructor options. See the "Logging" section in the README.
 
 ## New Features

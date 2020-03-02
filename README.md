@@ -32,6 +32,8 @@ Get a hosted instance of Zeebe on [Camunda Cloud](https://camunda.io).
 -   [ The `ZBWorker` Job Worker ](#create-zbworker)
 -   [ Unhandled Exceptions in Task Handlers ](#unhandled-exceptions)
 -   [ Completing tasks with success, failure, error, or forwarded ](#complete-tasks)
+-   [ Working with Workflow Variables and Custom Headers ](#working-with-variables)
+-   [ Constraining the Variables Fetched by the Worker ](#fetch-variable)
 -   [ The "Decoupled Job Completion" pattern ](#decoupled-complete)
 -   [ The `ZBBatchWorker` Job Worker ](#zbbatchworker)
 -   [ Long polling ](#long-polling)
@@ -44,6 +46,7 @@ Get a hosted instance of Zeebe on [Camunda Cloud](https://camunda.io).
 -   [ Generating TypeScript constants for BPMN Models ](#generate-constants)
 -   [ Generating code from a BPM Model file ](#generate-code)
 -   [ Writing Strongly-typed Job Workers ](#strongly-typed)
+-   [ Run-time Type Safety ](#run-time-safety)
 -   [ Developing Zeebe Node ](#developing)
     -   [ Tests ](#tests)
     -   [ Writing Tests ](#writing-tests)
@@ -352,8 +355,8 @@ const zbc = new ZB.ZBClient()
 
 const zbWorker = zbc.createWorker('demo-service', handler)
 
-function handler(job, complete) {
-	console.log('Task variables', job.variables)
+function handler(job, complete, worker) {
+	worker.log('Task variables', job.variables)
 
 	// Task worker business logic goes here
 	const updateToBrokerVariables = {
@@ -435,6 +438,92 @@ complete.failure('This is a critical failure and will raise an incident', 0)
 Call `complete.error()` to trigger a BPMN error throw event. You must pass in a string error code for the error code, and you can pass an optional error message as the second parameter. If no BPMN error catch event exists for the error code, an incident will be raised.
 
 Call `complete.forwarded()` to release worker capacity to handle another job, without completing the job in any way with the Zeebe broker. This method supports the _decoupled job completion_ pattern. In this pattern, the worker forwards the job to another system - a lambda or a RabbitMQ queue. Some other process is ultimately responsible for completing the job.
+
+<a name = "working-with-variables"></a>
+
+## Working with Workflow Variables and Custom Headers
+
+Workflow variables are available in your worker job handler callback as `job.variables`, and any custom headers are available as `job.customHeaders`.
+
+These are read-only JavaScript objects in the Zeebe Node client. However, they are not stored that way in the broker.
+
+Both workflow variables and custom headers are stored in the broker as a dictionary of named strings. That means that the variables and custom headers are JSON.parsed in the Node client when it fetches the job, and any update passed to the `success()` function is JSON.stringified.
+
+If you accidentally pass in a circular JSON structure to `complete()` - like, for example the response object from an HTTP call - it will throw, as this cannot be serialised to a string.
+
+When setting custom headers in BPMN tasks, while designing your model, you can put stringified JSON as the value for a custom header, and it will show up in the client as a JavaScript object.
+
+Workflow variables and custom headers are untyped in the Zeebe broker, however the Node client in TypeScript mode provides the option to type them to provide safety. You can type your worker as `any` to turn that off:
+
+```TypeScript
+zbc.createWorker<any>({
+    ...
+```
+
+See the section [Writing Strongly-typed Job Workers](#strongly-typed) for more details.
+
+<a name = "fetch-variables"></a>
+
+## Constraining the Variables Fetched by the Worker
+
+Sometimes you only need a few specific workflow variables to service a job. One way you can achieve constraint on the workflow variables received by a worker is by using [input variable mappings](https://docs.zeebe.io/reference/variables.html#inputoutput-variable-mappings) on the task in the model.
+
+You can also use the `fetchVariable` parameter when creating a worker. Pass an array of strings, containing the names of the variables to fetch, to the `fetchVariable` parameter when creating a worker. Here is an example, in JavaScript:
+
+```javascript
+zbc.createWorker({
+	taskType: 'process-favorite-albums',
+	taskHandler: (job, complete, worker) => {
+		const { name, albums } = job.variables
+		worker.log(`${name} has the following albums: ${albums.join(', ')}`)
+		complete.success()
+	},
+	fetchVariable: ['name', 'albums'],
+})
+```
+
+If you are using TypeScript, you can supply an interface describing the workflow variables, and parameterize the worker:
+
+```TypeScript
+interface Variables {
+    name: string
+    albums: string[]
+}
+
+zbc.createWorker<Variables>({
+    taskType: 'process-favorite-albums',
+    taskHandler: (job, complete, worker) => {
+        const { name, albums = [] } = job.variables
+        worker.log(`${name} has the following albums: ${albums?.join?.(', ')}`)
+        complete.success()
+    },
+    fetchVariable: ['name', 'albums'],
+})
+```
+
+This parameterization does two things:
+
+-   It informs the worker about the expected types of the variables. For example, if `albums` is a string, calling `join` on it will fail at runtime. Providing the type allows the compiler to reason about the valid methods that can be applied to the variables.
+-   It allows the type-checker to pick up spelling errors in the strings in `fetchVariable`, by comparing them with the Variables typing.
+
+Note, that this does not protect you against run-time exceptions where your typings are incorrect, or the payload simply does not match the definition that you provided.
+
+See the section [ Writing Strongly-typed Job Workers ](#strongly-typed) for more details on run-time safety.
+
+You can turn off the type-safety by typing the worker as `any`:
+
+```TypeScript
+zbc.createWorker<any>({
+    taskType: 'process-favorite-albums',
+    taskHandler: (job, complete, worker) => {
+        const { name, albums = [] } = job.variables
+        // TS 3.7 safe access to .join _and_ safe call, to prevent run-time exceptions
+        worker.log(`${name} has the following albums: ${albums?.join?.(', ')}`)
+        complete.success()
+    },
+    fetchVariable: ['name', 'albums'],
+})
+```
 
 <a name = "decoupled-complete"></a>
 
@@ -530,20 +619,20 @@ The `ZBBatchWorker` Job Worker batches jobs before calling the job handler. Its 
 
 -   Its job handler receives an _array_ of one or more jobs.
 -   The jobs have `success`, `failure`, `error`, and `forwarded` methods _attached_ to them.
--   The handler is not invoked immediately, but rather when enough jobs are batch, or a job in the batch is at risk of being timed out by the Zeebe broker.
+-   The handler is not invoked immediately, but rather when enough jobs are batched, or a job in the batch is at risk of being timed out by the Zeebe broker.
 
 You can use the batch worker if you have tasks that _benefit from processing together_, but are _not related in the BPMN model_.
 
 An example would be a high volume of jobs that require calls to an external system, where you have to pay per call to that system. In that case, you may want to batch up jobs, make one call to the external system, then update all the jobs and send them on their way.
 
-The batch worker works on a _first-of_ batch size or batch timeout basis.
+The batch worker works on a _first-of_ batch size _or_ batch timeout basis.
 
 You must configure both `jobBatchMinSize` and `jobBatchMaxTime`. Whichever condition is met first will trigger the processing of the jobs:
 
 -   Enough jobs are available to the worker to satisfy the minimum job batch size;
--   The batch has been building for the maximum amount of time - "we're doing this now, before the earliest jobs in the batch time out on the broker".
+-   The batch has been building for the maximum amount of time - "_we're doing this now, before the earliest jobs in the batch time out on the broker_".
 
-You should be sure to specify a `timeout` for your worker that is `jobBatchMaxTime` plus the expected latency of the external call plus your processing time and network latency, to avoid the broker timing your batch worker's lock and making the jobs available to another worker. That would defeat the whole purpose.
+You should be sure to specify a `timeout` for your worker that is `jobBatchMaxTime` _plus_ the expected latency of the external call _plus_ your processing time and network latency, to avoid the broker timing your batch worker's lock and making the jobs available to another worker. That would defeat the whole purpose.
 
 Here is an example of using the `ZBBatchWorker`:
 
@@ -554,7 +643,7 @@ import { ZBClient, BatchedJob } from 'zeebe-node'
 const zbc = new ZBClient()
 
 // Helper function to find a job by its key
-const findJobByKey = jobs => key => jobs.filter(job => job.jobKey === id)[0]
+const findJobByKey = jobs => key => jobs.filter(job => job.jobKey === id)?.[0] ?? []
 
 const handler = async (jobs: BatchedJob[], worker: ZBBatchWorker) => {
     worker.log("Let's do this!")
@@ -570,7 +659,7 @@ const handler = async (jobs: BatchedJob[], worker: ZBBatchWorker) => {
         const getJob = findJobByKey(jobs)
         // Iterate over the results and call the succeed method on the corresponding job,
         // passing in the correlated outcome of the API call
-        outcomes.forEach(res => getJob(res.id).success(res.data))
+        outcomes.forEach(res => getJob(res.id)?.success(res.data))
     } catch (e) {
         jobs.forEach(job => job.failure(e.message))
     }
@@ -866,7 +955,31 @@ const giftSuggester = zbc.createWorker('get-gift-suggestion', getGiftSuggestion)
 
 ```
 
-This does not give you any run-time safety. If you want to validate inputs and outputs to your system at runtime, you can use [io-ts](https://github.com/gcanti/io-ts).
+<a name = "run-time-safety"></a>
+
+## Run-time Type Safety
+
+The parameterization of the client and workers helps to catch errors in code, and if your interface definitions are good, can go a long way to making sure that your workers and client emit the correct payloads and have a strong expectation about what they will receive, but it does not give you any _run-time safety_.
+
+Your type definition may be incorrect, or the variables or custom headers may simply not be there at run-time, as there is no type checking in the broker, and other factors are involved, such as tasks with input and output mappings, and data added to the workflow variables by REST calls and other workers.
+
+You should consider:
+
+-   Writing interface definitions for your payloads to get design-time assist for protection against spelling errors as you demarshal and update variables.
+-   Testing for the existence of variables and properties on payloads, and writing defensive pathways to deal with missing properties. If you mark _everything_ as optional in your interfaces, the type-checker will force you to write that code.
+-   Surfacing code exceptions operationally to detect and diagnose mismatched expectations.
+-   If you want to validate inputs and outputs to your system at runtime, you can use [io-ts](https://github.com/gcanti/io-ts). Once data goes into that, it either exits through an exception handler, or is guaranteed to have the shape of the defined codec at run-time.
+
+As with everything, it is a balancing act / trade-off between correctness, safety, and speed. You do not want to lock everything down while you are still exploring.
+
+I recommend the following scale, to match the maturity of your system:
+
+-   Starting with `any` typing; then
+-   Developing interfaces to describe the DTOs represented in your workflow variables;
+-   Using optional types on those interfaces to check your defensive programming structures;
+-   Locking down the run-time behaviour with io-ts as the boundary validator.
+
+You may choose to start with the DTOs. Anyway, there are options.
 
 <a name = "developing"></a>
 

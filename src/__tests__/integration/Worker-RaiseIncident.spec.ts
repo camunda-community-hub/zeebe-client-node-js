@@ -40,7 +40,7 @@ describe('ZBWorker', () => {
 			'wait-raise-incident',
 			async (job, complete) => {
 				expect(job.workflowInstanceKey).toBe(wfi)
-				complete.success(job)
+				complete.success(job.variables)
 			},
 			{ loglevel: 'NONE' }
 		)

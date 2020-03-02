@@ -5,17 +5,19 @@ import { parseVariablesAndCustomHeadersToJSON } from '../lib'
 import * as ZB from '../lib/interfaces'
 import { StatefulLogInterceptor } from '../lib/StatefulLogInterceptor'
 import { ConnectionStatusEvent, ZBClient } from '../zb/ZBClient'
+import { ActivateJobsRequest, ActivateJobsResponse } from './interfaces-grpc'
+import { ZBClientOptions } from './interfaces-published-contract'
 
 const CapacityEvent = {
 	Available: 'AVAILABLE',
 	Empty: 'CAPACITY_EMPTY',
 }
 
-export interface ZBWorkerBaseConstructor {
+export interface ZBWorkerBaseConstructor<T> {
 	grpcClient: ZB.ZBGrpc
 	id: string | null
 	taskType: string
-	options: ZB.ZBWorkerOptions & ZB.ZBClientOptions
+	options: ZB.ZBWorkerOptions<T> & ZBClientOptions
 	idColor: Chalk
 	zbClient: ZBClient
 	log: StatefulLogInterceptor
@@ -25,9 +27,9 @@ export interface ZBBatchWorkerConstructorConfig<
 	WorkerInputVariables,
 	CustomHeaderShape,
 	WorkerOutputVariables
-> extends ZBWorkerBaseConstructor {
-	options: ZB.ZBWorkerOptions &
-		ZB.ZBClientOptions & { jobBatchMaxTime: number }
+> extends ZBWorkerBaseConstructor<WorkerInputVariables> {
+	options: ZB.ZBWorkerOptions<WorkerInputVariables> &
+		ZBClientOptions & { jobBatchMaxTime: number }
 	taskHandler: ZB.ZBBatchWorkerTaskHandler<
 		WorkerInputVariables,
 		CustomHeaderShape,
@@ -39,7 +41,7 @@ export interface ZBWorkerConstructorConfig<
 	WorkerInputVariables,
 	CustomHeaderShape,
 	WorkerOutputVariables
-> extends ZBWorkerBaseConstructor {
+> extends ZBWorkerBaseConstructor<WorkerInputVariables> {
 	taskHandler: ZB.ZBWorkerTaskHandler<
 		WorkerInputVariables,
 		CustomHeaderShape,
@@ -248,14 +250,14 @@ export class ZBWorkerBase<
 		)
 	}
 
-	protected makeCompleteHandlers(thisJob: ZB.Job) {
+	protected makeCompleteHandlers<T>(thisJob: ZB.Job): ZB.CompleteFn<T> {
 		const failJob = (job: ZB.Job) => (
 			errorMessage: string,
 			retries?: number
 		) => this.failJob({ job, errorMessage, retries })
 
-		const succeedJob = (job: ZB.Job) => (completedVariables = {}) =>
-			this.completeJob(job.key, completedVariables)
+		const succeedJob = (job: ZB.Job) => (completedVariables?: Partial<T>) =>
+			this.completeJob(job.key, completedVariables ?? {})
 
 		const errorJob = (job: ZB.Job) => (
 			errorCode: string,
@@ -420,7 +422,7 @@ export class ZBWorkerBase<
 
 		const requestTimeout = this.longPoll || -1
 
-		const activateJobsRequest: ZB.ActivateJobsRequest = {
+		const activateJobsRequest: ActivateJobsRequest = {
 			maxJobsToActivate: amount,
 			requestTimeout,
 			timeout: this.timeout,
@@ -444,7 +446,7 @@ export class ZBWorkerBase<
 			}
 		}
 
-		stream.on('data', (res: ZB.ActivateJobsResponse) => {
+		stream.on('data', (res: ActivateJobsResponse) => {
 			// If we are closing, don't start working on these jobs. They will have to be timed out by the server.
 			if (this.closing) {
 				return

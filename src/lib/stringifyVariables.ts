@@ -1,4 +1,5 @@
-import { ActivatedJob, Job } from './interfaces'
+import { Job } from './interfaces'
+import { ActivatedJob } from './interfaces-grpc'
 
 export function stringifyVariables<
 	T extends { variables: { [key: string]: any } }

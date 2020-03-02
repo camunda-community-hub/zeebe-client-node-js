@@ -2,7 +2,8 @@ import { Chalk } from 'chalk'
 import dayjs from 'dayjs'
 import * as stackTrace from 'stack-trace'
 import { ConfigurationHydrator } from './ConfigurationHydrator'
-import { Loglevel, ZBLoggerConfig } from './interfaces'
+import { ZBLoggerConfig } from './interfaces'
+import { Loglevel } from './interfaces-published-contract'
 
 export class ZBLogger {
 	// tslint:disable-next-line: variable-name

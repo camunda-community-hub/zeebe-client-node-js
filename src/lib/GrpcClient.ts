@@ -9,7 +9,8 @@ import {
 	Metadata,
 	status,
 } from 'grpc'
-import { BasicAuthConfig, Loglevel } from './interfaces'
+import { BasicAuthConfig } from './interfaces'
+import { Loglevel } from './interfaces-published-contract'
 import { OAuthProvider } from './OAuthProvider'
 
 export interface GrpcClientExtendedOptions {

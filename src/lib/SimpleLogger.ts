@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { Loglevel } from './interfaces'
+import { Loglevel } from './interfaces-published-contract'
 
 export interface Logger {
 	error: LogFn

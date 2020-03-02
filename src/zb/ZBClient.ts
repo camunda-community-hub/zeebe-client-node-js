@@ -22,6 +22,12 @@ import {
 	CreateWorkflowInstance,
 	CreateWorkflowInstanceWithResult,
 } from '../lib/interfaces'
+import * as Grpc from '../lib/interfaces-grpc'
+import {
+	Loglevel,
+	ZBClientOptions,
+	ZBCustomLogger,
+} from '../lib/interfaces-published-contract'
 import { OAuthProvider, OAuthProviderConfig } from '../lib/OAuthProvider'
 import { ZBSimpleLogger } from '../lib/SimpleLogger'
 import { StatefulLogInterceptor } from '../lib/StatefulLogInterceptor'
@@ -52,7 +58,7 @@ export class ZBClient extends EventEmitter {
 	public connected = true
 	public readied = false
 	public gatewayAddress: string
-	public loglevel: ZB.Loglevel
+	public loglevel: Loglevel
 	public onReady?: () => void
 	public onConnectionError?: () => void
 	private logger: StatefulLogInterceptor
@@ -60,7 +66,7 @@ export class ZBClient extends EventEmitter {
 	private closing = false
 	// A gRPC channel for the ZBClient to execute commands on
 	private grpc: ZB.ZBGrpc
-	private options: ZB.ZBClientOptions
+	private options: ZBClientOptions
 	private workerCount = 0
 	private workers: Array<
 		ZBWorker<any, any, any> | ZBBatchWorker<any, any, any>
@@ -71,17 +77,17 @@ export class ZBClient extends EventEmitter {
 	private oAuth?: OAuthProvider
 	private basicAuth?: ZB.BasicAuthConfig
 	private useTLS: boolean
-	private stdout: ZB.ZBCustomLogger
+	private stdout: ZBCustomLogger
 
 	/**
 	 *
 	 * @param options Zero-conf constructor. The entire ZBClient connection config can be passed in via the environment.
 	 */
-	constructor(options?: ZB.ZBClientOptions)
-	constructor(gatewayAddress: string, options?: ZB.ZBClientOptions)
+	constructor(options?: ZBClientOptions)
+	constructor(gatewayAddress: string, options?: ZBClientOptions)
 	constructor(
-		gatewayAddress?: string | ZB.ZBClientOptions,
-		options?: ZB.ZBClientOptions
+		gatewayAddress?: string | ZBClientOptions,
+		options?: ZBClientOptions
 	) {
 		super()
 		if (typeof gatewayAddress === 'object') {
@@ -96,8 +102,8 @@ export class ZBClient extends EventEmitter {
 			retry: (opts as any).retry !== false,
 		}
 		this.options.loglevel =
-			(process.env.ZB_NODE_LOG_LEVEL as ZB.Loglevel) ||
-			(process.env.ZEEBE_NODE_LOG_LEVEL as ZB.Loglevel) ||
+			(process.env.ZB_NODE_LOG_LEVEL as Loglevel) ||
+			(process.env.ZEEBE_NODE_LOG_LEVEL as Loglevel) ||
 			this.options.loglevel ||
 			'INFO'
 		this.loglevel = this.options.loglevel
@@ -185,11 +191,11 @@ export class ZBClient extends EventEmitter {
 	public activateJobs<
 		Variables = ZB.KeyedObject,
 		CustomHeaders = ZB.KeyedObject
-	>(request: ZB.ActivateJobsRequest): Promise<ZB.Job[]> {
+	>(request: Grpc.ActivateJobsRequest): Promise<ZB.Job[]> {
 		return new Promise(async (resolve, reject) => {
 			try {
 				const stream = await this.grpc.activateJobsStream(request)
-				stream.on('data', (res: ZB.ActivateJobsResponse) => {
+				stream.on('data', (res: Grpc.ActivateJobsResponse) => {
 					const jobs = res.jobs.map(job =>
 						parseVariablesAndCustomHeadersToJSON<
 							Variables,
@@ -237,12 +243,6 @@ export class ZBClient extends EventEmitter {
 		const config = decodeCreateZBWorkerSig({
 			idOrTaskTypeOrConfig: conf,
 		})
-		// tslint:disable-next-line: no-console
-		console.log(config) // @DEBUG
-
-		// tslint:disable-next-line: no-console
-		console.log(conf) // @DEBUG
-
 		// Merge parent client options with worker override
 		const options = {
 			...this.options,
@@ -317,7 +317,7 @@ export class ZBClient extends EventEmitter {
 			CustomHeaderShape,
 			WorkerOutputVariables
 		>,
-		options?: ZB.ZBWorkerOptions & ZB.ZBClientOptions,
+		options?: ZB.ZBWorkerOptions<WorkerInputVariables> & ZBClientOptions,
 		onConnectionError?: ZB.ConnectionErrorHandler | undefined
 	): ZBWorker<WorkerInputVariables, CustomHeaderShape, WorkerOutputVariables>
 	public createWorker<
@@ -331,7 +331,7 @@ export class ZBClient extends EventEmitter {
 			CustomHeaderShape,
 			WorkerOutputVariables
 		>,
-		options?: ZB.ZBWorkerOptions & ZB.ZBClientOptions,
+		options?: ZB.ZBWorkerOptions<WorkerInputVariables> & ZBClientOptions,
 		onConnectionError?: ZB.ConnectionErrorHandler | undefined
 	): ZBWorker<WorkerInputVariables, CustomHeaderShape, WorkerOutputVariables>
 	public createWorker<
@@ -360,9 +360,9 @@ export class ZBClient extends EventEmitter {
 					CustomHeaderShape,
 					WorkerOutputVariables
 			  >
-			| (ZB.ZBWorkerOptions & ZB.ZBClientOptions),
+			| (ZB.ZBWorkerOptions<WorkerInputVariables> & ZBClientOptions),
 		optionsOrOnConnectionError?:
-			| (ZB.ZBWorkerOptions & ZB.ZBClientOptions)
+			| (ZB.ZBWorkerOptions<WorkerInputVariables> & ZBClientOptions)
 			| ZB.ConnectionErrorHandler,
 		onConnectionError?: ZB.ConnectionErrorHandler | null
 	): ZBWorker<
@@ -451,7 +451,7 @@ export class ZBClient extends EventEmitter {
 	}
 
 	public completeJob(
-		completeJobRequest: ZB.CompleteJobRequest
+		completeJobRequest: Grpc.CompleteJobRequest
 	): Promise<void> {
 		const withStringifiedVariables = stringifyVariables(completeJobRequest)
 		this.logger.logDebug(withStringifiedVariables)
@@ -464,16 +464,16 @@ export class ZBClient extends EventEmitter {
 	public createWorkflowInstance<Variables = ZB.WorkflowVariables>(
 		bpmnProcessId: string,
 		variables: Variables
-	): Promise<ZB.CreateWorkflowInstanceResponse>
+	): Promise<Grpc.CreateWorkflowInstanceResponse>
 	public createWorkflowInstance<Variables = ZB.WorkflowVariables>(config: {
 		bpmnProcessId: string
 		variables: Variables
 		version: number
-	}): Promise<ZB.CreateWorkflowInstanceResponse>
+	}): Promise<Grpc.CreateWorkflowInstanceResponse>
 	public createWorkflowInstance<Variables = ZB.WorkflowVariables>(
 		configOrbpmnProcessId: string | CreateWorkflowInstance<Variables>,
 		variables?: Variables
-	): Promise<ZB.CreateWorkflowInstanceResponse> {
+	): Promise<Grpc.CreateWorkflowInstanceResponse> {
 		const isConfigObject = (
 			conf: CreateWorkflowInstance<Variables> | string
 		): conf is CreateWorkflowInstance<Variables> => typeof conf === 'object'
@@ -490,7 +490,7 @@ export class ZBClient extends EventEmitter {
 					version: -1,
 			  }
 
-		const createWorkflowInstanceRequest: ZB.CreateWorkflowInstanceRequest = {
+		const createWorkflowInstanceRequest: Grpc.CreateWorkflowInstanceRequest = {
 			bpmnProcessId: request.bpmnProcessId,
 			variables: (request.variables as unknown) as object,
 			version: request.version,
@@ -508,14 +508,14 @@ export class ZBClient extends EventEmitter {
 		Result = ZB.OutputVariables
 	>(
 		config: CreateWorkflowInstanceWithResult<Variables>
-	): Promise<ZB.CreateWorkflowInstanceWithResultResponse<Result>>
+	): Promise<Grpc.CreateWorkflowInstanceWithResultResponse<Result>>
 	public createWorkflowInstanceWithResult<
 		Variables = ZB.WorkflowVariables,
 		Result = ZB.OutputVariables
 	>(
 		bpmnProcessId: string,
 		variables: Variables
-	): Promise<ZB.CreateWorkflowInstanceWithResultResponse<Result>>
+	): Promise<Grpc.CreateWorkflowInstanceWithResultResponse<Result>>
 	public createWorkflowInstanceWithResult<
 		Variables = ZB.WorkflowVariables,
 		Result = ZB.OutputVariables
@@ -546,7 +546,7 @@ export class ZBClient extends EventEmitter {
 					version: -1,
 			  }
 
-		const createWorkflowInstanceRequest: ZB.CreateWorkflowInstanceRequest = stringifyVariables(
+		const createWorkflowInstanceRequest: Grpc.CreateWorkflowInstanceRequest = stringifyVariables(
 			{
 				bpmnProcessId: request.bpmnProcessId,
 				variables: (request.variables as unknown) as object,
@@ -569,8 +569,8 @@ export class ZBClient extends EventEmitter {
 	 */
 	public async deployWorkflow(
 		workflow: ZB.DeployWorkflowFiles | ZB.DeployWorkflowBuffer
-	): Promise<ZB.DeployWorkflowResponse> {
-		const deploy = (workflows: ZB.WorkflowRequestObject[]) =>
+	): Promise<Grpc.DeployWorkflowResponse> {
+		const deploy = (workflows: Grpc.WorkflowRequestObject[]) =>
 			this.executeOperation('deployWorkflow', () =>
 				this.grpc.deployWorkflowSync({
 					workflows,
@@ -594,7 +594,7 @@ export class ZBClient extends EventEmitter {
 		)
 	}
 
-	public failJob(failJobRequest: ZB.FailJobRequest): Promise<void> {
+	public failJob(failJobRequest: Grpc.FailJobRequest): Promise<void> {
 		return this.executeOperation('failJob', () =>
 			this.grpc.failJobSync(failJobRequest)
 		)
@@ -614,7 +614,7 @@ export class ZBClient extends EventEmitter {
 	 * @param publishMessageRequest - The message to publish.
 	 */
 	public publishMessage<T = ZB.WorkflowVariables>(
-		publishMessageRequest: ZB.PublishMessageRequest<T>
+		publishMessageRequest: Grpc.PublishMessageRequest<T>
 	): Promise<void> {
 		return this.executeOperation('publishMessage', () =>
 			this.grpc.publishMessageSync(
@@ -628,7 +628,7 @@ export class ZBClient extends EventEmitter {
 	 * @param publishStartMessageRequest - The message to publish.
 	 */
 	public publishStartMessage<T = ZB.WorkflowVariables>(
-		publishStartMessageRequest: ZB.PublishStartMessageRequest<T>
+		publishStartMessageRequest: Grpc.PublishStartMessageRequest<T>
 	): Promise<void> {
 		/**
 		 * The hash of the correlationKey is used to determine the partition where this workflow will start.
@@ -641,7 +641,7 @@ export class ZBClient extends EventEmitter {
 		 * See: https://github.com/zeebe-io/zeebe/issues/1012 and https://github.com/zeebe-io/zeebe/issues/1022
 		 */
 
-		const publishMessageRequest: ZB.PublishMessageRequest = {
+		const publishMessageRequest: Grpc.PublishMessageRequest = {
 			correlationKey: uuid(),
 			...publishStartMessageRequest,
 		}
@@ -659,7 +659,7 @@ export class ZBClient extends EventEmitter {
 	}
 
 	public setVariables<Variables = ZB.WorkflowVariables>(
-		request: ZB.SetVariablesRequest<Variables>
+		request: Grpc.SetVariablesRequest<Variables>
 	): Promise<void> {
 		/*
 		We allow developers to interact with variables as a native JS object, but the Zeebe server needs it as a JSON document
@@ -679,7 +679,7 @@ export class ZBClient extends EventEmitter {
 	 * The error is handled in the workflow by an error catch event.
 	 * If there is no error catch event with the specified errorCode then an incident will be raised instead.
 	 */
-	public throwError(throwErrorRequest: ZB.ThrowErrorRequest) {
+	public throwError(throwErrorRequest: Grpc.ThrowErrorRequest) {
 		return this.executeOperation('throwError', () =>
 			this.grpc.throwErrorSync(throwErrorRequest)
 		)
@@ -688,12 +688,12 @@ export class ZBClient extends EventEmitter {
 	/**
 	 * Return the broker cluster topology
 	 */
-	public topology(): Promise<ZB.TopologyResponse> {
+	public topology(): Promise<Grpc.TopologyResponse> {
 		return this.executeOperation('topology', this.grpc.topologySync)
 	}
 
 	public updateJobRetries(
-		updateJobRetriesRequest: ZB.UpdateJobRetriesRequest
+		updateJobRetriesRequest: Grpc.UpdateJobRetriesRequest
 	): Promise<void> {
 		return this.executeOperation('updateJobRetries', () =>
 			this.grpc.updateJobRetriesSync(updateJobRetriesRequest)

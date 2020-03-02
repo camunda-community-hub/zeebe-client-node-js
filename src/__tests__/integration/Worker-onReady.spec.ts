@@ -22,7 +22,7 @@ describe('Worker onReady Handler', () => {
 			expect(zbc2.connected).toBe(true)
 			await zbc2.close()
 			done()
-		}, 5000)
+		}, 6000)
 	})
 
 	it(`Does emit the ready event if there is a broker`, done => {
@@ -40,7 +40,7 @@ describe('Worker onReady Handler', () => {
 			expect(zbc2.connected).toBe(true)
 			await zbc2.close()
 			done()
-		}, 5000)
+		}, 6000)
 	})
 
 	it(`Does not call the onReady handler if there is no broker`, done => {
