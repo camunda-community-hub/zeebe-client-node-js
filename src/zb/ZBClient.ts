@@ -6,7 +6,12 @@ import { pipe } from 'fp-ts/lib/pipeable'
 import * as path from 'path'
 import promiseRetry from 'promise-retry'
 import { v4 as uuid } from 'uuid'
-import { BpmnParser, parseVariables, stringifyVariables } from '../lib'
+import {
+	BpmnParser,
+	parseVariables,
+	parseVariablesAndCustomHeadersToJSON,
+	stringifyVariables,
+} from '../lib'
 import { ConfigurationHydrator } from '../lib/ConfigurationHydrator'
 import { ConnectionFactory } from '../lib/ConnectionFactory'
 import { readDefinitionFromFile } from '../lib/deployWorkflow/impure'
@@ -22,6 +27,7 @@ import { ZBSimpleLogger } from '../lib/SimpleLogger'
 import { StatefulLogInterceptor } from '../lib/StatefulLogInterceptor'
 import { Utils } from '../lib/utils'
 import { decodeCreateZBWorkerSig } from '../lib/ZBWorkerSignature'
+import { ZBBatchWorker } from './ZBBatchWorker'
 import { ZBWorker } from './ZBWorker'
 
 const idColors = [
@@ -56,7 +62,9 @@ export class ZBClient extends EventEmitter {
 	private grpc: ZB.ZBGrpc
 	private options: ZB.ZBClientOptions
 	private workerCount = 0
-	private workers: Array<ZBWorker<any, any, any>> = []
+	private workers: Array<
+		ZBWorker<any, any, any> | ZBBatchWorker<any, any, any>
+	> = []
 	private retry: boolean
 	private maxRetries: number
 	private maxRetryTimeout: number
@@ -174,14 +182,21 @@ export class ZBClient extends EventEmitter {
 			})
 	}
 
-	public activateJobs<T = any>(
-		request: ZB.ActivateJobsRequest
-	): Promise<Array<ZB.ActivatedJob & { variables: T }>> {
+	public activateJobs<
+		Variables = ZB.KeyedObject,
+		CustomHeaders = ZB.KeyedObject
+	>(request: ZB.ActivateJobsRequest): Promise<ZB.Job[]> {
 		return new Promise(async (resolve, reject) => {
 			try {
 				const stream = await this.grpc.activateJobsStream(request)
 				stream.on('data', (res: ZB.ActivateJobsResponse) => {
-					const jobs = res.jobs.map(parseVariables)
+					const jobs = res.jobs.map(job =>
+						parseVariablesAndCustomHeadersToJSON<
+							Variables,
+							CustomHeaders
+						>(job)
+					)
+
 					resolve(jobs)
 				})
 			} catch (e) {
@@ -199,6 +214,117 @@ export class ZBClient extends EventEmitter {
 				workflowInstanceKey,
 			})
 		)
+	}
+
+	public createBatchWorker<
+		WorkerInputVariables = ZB.InputVariables,
+		CustomHeaderShape = ZB.CustomHeaders,
+		WorkerOutputVariables = ZB.OutputVariables
+	>(
+		config: ZB.ZBBatchWorkerConfig<
+			WorkerInputVariables,
+			CustomHeaderShape,
+			WorkerOutputVariables
+		>
+	): ZBBatchWorker<
+		WorkerInputVariables,
+		CustomHeaderShape,
+		WorkerOutputVariables
+	>
+	public createBatchWorker<
+		WorkerInputVariables = ZB.InputVariables,
+		CustomHeaderShape = ZB.CustomHeaders,
+		WorkerOutputVariables = ZB.OutputVariables
+	>(
+		taskType: string,
+		taskHandler: ZB.ZBBatchWorkerTaskHandler<
+			WorkerInputVariables,
+			CustomHeaderShape,
+			WorkerOutputVariables
+		>
+	): ZBBatchWorker<
+		WorkerInputVariables,
+		CustomHeaderShape,
+		WorkerOutputVariables
+	>
+	public createBatchWorker<
+		WorkerInputVariables = ZB.InputVariables,
+		CustomHeaderShape = ZB.CustomHeaders,
+		WorkerOutputVariables = ZB.OutputVariables
+	>(
+		taskTypeOrConfig:
+			| string
+			| ZB.ZBBatchWorkerConfig<
+					WorkerInputVariables,
+					CustomHeaderShape,
+					WorkerOutputVariables
+			  >,
+		taskHandler?: ZB.ZBBatchWorkerTaskHandler<
+			WorkerInputVariables,
+			CustomHeaderShape,
+			WorkerOutputVariables
+		>
+	): ZBBatchWorker<
+		WorkerInputVariables,
+		CustomHeaderShape,
+		WorkerOutputVariables
+	> {
+		if (this.closing) {
+			throw new Error('Client is closing. No worker creation allowed!')
+		}
+		const config = decodeCreateZBWorkerSig({
+			idOrTaskTypeOrConfig: taskTypeOrConfig,
+			taskTypeOrTaskHandler: taskHandler,
+		})
+		// Merge parent client options with worker override
+		const options = {
+			...this.options,
+			loglevel: this.loglevel,
+			onConnectionError: undefined, // Do not inherit client handler
+			onReady: undefined, // Do not inherit client handler
+			...config.options,
+		}
+
+		const idColor = idColors[this.workerCount++ % idColors.length]
+
+		// Give worker its own gRPC connection
+		const { grpcClient: workerGRPCClient, log } = this.constructGrpcClient({
+			grpcConfig: {
+				namespace: 'ZBWorker',
+				tasktype: config.taskType,
+			},
+			logConfig: {
+				_tag: 'ZBWORKER',
+				colorise: true,
+				id: config.id ?? uuid(),
+				loglevel: options.loglevel,
+				namespace: ['ZBWorker', options.logNamespace].join(' ').trim(),
+				pollInterval:
+					options.longPoll || ZBClient.DEFAULT_LONGPOLL_PERIOD,
+				stdout: options.stdout,
+				taskType: `${config.taskType} (batch)`,
+			},
+		})
+		const worker = new ZBBatchWorker<
+			WorkerInputVariables,
+			CustomHeaderShape,
+			WorkerOutputVariables
+		>({
+			grpcClient: workerGRPCClient,
+			id: config.id || null,
+			idColor,
+			log,
+			options: { ...this.options, ...options },
+			taskHandler: config.taskHandler as ZB.ZBBatchWorkerTaskHandler<
+				WorkerInputVariables,
+				CustomHeaderShape,
+				WorkerOutputVariables
+			>,
+			taskType: config.taskType,
+			zbClient: this,
+		})
+		this.workers.push(worker)
+		return worker
 	}
 
 	public createWorker<
@@ -297,6 +423,7 @@ export class ZBClient extends EventEmitter {
 			onReady: undefined, // Do not inherit client handler
 			...config.options,
 		}
+
 		// Give worker its own gRPC connection
 		const { grpcClient: workerGRPCClient, log } = this.constructGrpcClient({
 			grpcConfig: {
@@ -325,7 +452,11 @@ export class ZBClient extends EventEmitter {
 			idColor,
 			log,
 			options: { ...this.options, ...options },
-			taskHandler: config.taskHandler,
+			taskHandler: config.taskHandler as ZB.ZBWorkerTaskHandler<
+				WorkerInputVariables,
+				CustomHeaderShape,
+				WorkerOutputVariables
+			>,
 			taskType: config.taskType,
 			zbClient: this,
 		})

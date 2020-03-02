@@ -4,6 +4,11 @@ function isConfig(config: any): config is ZB.ZBWorkerConfig<any, any, any> {
 	return typeof config === 'object'
 }
 
+const cleanEmpty = obj =>
+	Object.entries(obj)
+		.map(([k, v]) => [k, v && typeof v === 'object' ? cleanEmpty(v) : v])
+		.reduce((a, [k, v]) => (v == null ? a : { ...a, [k]: v }), {})
+
 export function decodeCreateZBWorkerSig<
 	WorkerInputVariables,
 	CustomHeaderShape,
@@ -12,7 +17,7 @@ export function decodeCreateZBWorkerSig<
 	const coerceConf = config.idOrTaskTypeOrConfig
 	const conf = isConfig(coerceConf) ? coerceConf : undefined
 	if (conf) {
-		return {
+		return cleanEmpty({
 			id: conf.id,
 			onConnectionError: conf.onConnectionError,
 			onReady: conf.onReady,
@@ -24,7 +29,7 @@ export function decodeCreateZBWorkerSig<
 			},
 			taskHandler: conf.taskHandler,
 			taskType: conf.taskType,
-		}
+		})
 	}
 	const isShorthandSig = typeof config.taskTypeOrTaskHandler === 'function'
 	const taskHandler: ZB.ZBWorkerTaskHandler<
@@ -58,12 +63,12 @@ export function decodeCreateZBWorkerSig<
 		  options.onConnectionError ||
 		  config.onConnectionError
 	const onReady = options.onReady
-	return {
+	return cleanEmpty({
 		id,
 		onConnectionError,
 		onReady,
 		options,
 		taskHandler,
 		taskType,
-	}
+	})
 }

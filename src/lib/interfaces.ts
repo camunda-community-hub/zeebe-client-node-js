@@ -1,4 +1,5 @@
 import { Chalk } from 'chalk'
+import { ZBBatchWorker } from '../zb/ZBBatchWorker'
 import { ZBWorker } from '../zb/ZBWorker'
 import { GrpcClient } from './GrpcClient'
 import { OAuthProviderConfig } from './OAuthProvider'
@@ -17,9 +18,11 @@ export interface ZBLogMessage {
 	time: string
 }
 
-export interface KeyedObject {
-	[key: string]: any
-}
+export type KeyedObject =
+	| {
+			[key: string]: any
+	  }
+	| {}
 export type Loglevel = 'INFO' | 'DEBUG' | 'NONE' | 'ERROR'
 
 export type DeployWorkflowFiles = string | string[]
@@ -101,10 +104,11 @@ export interface OutputVariables {
 export interface CustomHeaders {
 	[key: string]: any
 }
+
 export type ZBWorkerTaskHandler<
 	WorkerInputVariables = InputVariables,
-	CustomHeaderShape = OutputVariables,
-	WorkerOutputVariables = CustomHeaders
+	CustomHeaderShape = CustomHeaders,
+	WorkerOutputVariables = OutputVariables
 > = (
 	job: Job<WorkerInputVariables, CustomHeaderShape>,
 	complete: CompleteFn<WorkerOutputVariables>,
@@ -260,6 +264,12 @@ export interface ZBWorkerOptions {
 	 */
 	maxJobsToActivate?: number
 	/**
+	 * The minimum amount of jobs to fetch. The worker will request more jobs only
+	 * when it has capacity for this many jobs. Defaults to 0, meaning the worker will
+	 * fetch more jobs as soon as it as any capacity.
+	 */
+	minJobBatchSize?: number
+	/**
 	 * Max seconds to allow before time out of a task given to this worker. Default: 30000ms.
 	 * The broker checks deadline timeouts every 30 seconds, so an
 	 */
@@ -286,15 +296,43 @@ export interface ZBWorkerOptions {
 	debug?: boolean
 }
 
-export interface ZBWorkerConfig<
+export interface BatchedJob<Variables, Headers, Output>
+	extends Job<Variables, Headers> {
+	success: (updatedVariables?: Output) => Promise<void>
+	failure: (message: string, retries?: number) => void
+	error: (errorCode: string, errorMessage?: string) => Promise<void>
+}
+
+export type ZBBatchWorkerTaskHandler<V, H, O> = (
+	jobs: Array<BatchedJob<V, H, O>>,
+	worker: ZBBatchWorker<V, H, O>
+) => void
+
+export interface ZBBatchWorkerConfig<
 	WorkerInputVariables,
 	CustomHeaderShape,
 	WorkerOutputVariables
-> extends ZBWorkerOptions {
+> extends ZBWorkerBaseConfig {
+	/**
+	 * A job handler.
+	 */
+	taskHandler: ZBBatchWorkerTaskHandler<
+		WorkerInputVariables,
+		CustomHeaderShape,
+		WorkerOutputVariables
+	>
+}
+export interface ZBWorkerBaseConfig extends ZBWorkerOptions {
 	/**
 	 * A custom id for the worker. If none is supplied, a UUID will be generated.
 	 */
 	id?: string
+	/**
+	 * The minimum amount of jobs to fetch. The worker will request more jobs only
+	 * when it has capacity for this many jobs. Defaults to 0, meaning the worker will
+	 * fetch more jobs as soon as it as any capacity.
+	 */
+	minJobBatchSize?: number
 	logNamespace?: string
 	/**
 	 * A custom longpoll timeout. By default long polling is every 59 seconds.
@@ -313,14 +351,6 @@ export interface ZBWorkerConfig<
 	 */
 	stdout?: ZBCustomLogger
 	/**
-	 * A job handler.
-	 */
-	taskHandler: ZBWorkerTaskHandler<
-		WorkerInputVariables,
-		CustomHeaderShape,
-		WorkerOutputVariables
-	>
-	/**
 	 * The task type that this worker will request jobs for.
 	 */
 	taskType: string
@@ -332,6 +362,21 @@ export interface ZBWorkerConfig<
 	 * This handler is called when the worker cannot connect to the broker, or loses its connection.
 	 */
 	onConnectionError?: () => void
+}
+
+export interface ZBWorkerConfig<
+	WorkerInputVariables,
+	CustomHeaderShape,
+	WorkerOutputVariables
+> extends ZBWorkerBaseConfig {
+	/**
+	 * A job handler.
+	 */
+	taskHandler: ZBWorkerTaskHandler<
+		WorkerInputVariables,
+		CustomHeaderShape,
+		WorkerOutputVariables
+	>
 }
 
 export interface CreateWorkflowInstanceRequest<Variables = KeyedObject> {
