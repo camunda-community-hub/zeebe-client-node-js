@@ -32,6 +32,7 @@ import { OAuthProvider, OAuthProviderConfig } from '../lib/OAuthProvider'
 import { ZBSimpleLogger } from '../lib/SimpleLogger'
 import { StatefulLogInterceptor } from '../lib/StatefulLogInterceptor'
 import { Utils } from '../lib/utils'
+import { ZBJsonLogger } from '../lib/ZBJsonLogger'
 import { decodeCreateZBWorkerSig } from '../lib/ZBWorkerSignature'
 import { ZBBatchWorker } from './ZBBatchWorker'
 import { ZBWorker } from './ZBWorker'
@@ -102,13 +103,19 @@ export class ZBClient extends EventEmitter {
 			retry: (opts as any).retry !== false,
 		}
 		this.options.loglevel =
-			(process.env.ZB_NODE_LOG_LEVEL as Loglevel) ||
 			(process.env.ZEEBE_NODE_LOG_LEVEL as Loglevel) ||
 			this.options.loglevel ||
 			'INFO'
 		this.loglevel = this.options.loglevel
-		this.options.stdout = this.options.stdout || ZBSimpleLogger
-		this.stdout = this.options.stdout
+
+		const logTypeFromEnvironment = () =>
+			({
+				JSON: ZBJsonLogger,
+				SIMPLE: ZBSimpleLogger,
+			}[process.env.ZEEBE_NODE_LOG_TYPE || 'NONE'])
+
+		this.options.stdout = this.options.stdout || logTypeFromEnvironment()
+		this.stdout = this.options.stdout || ZBSimpleLogger
 
 		this.options = ConfigurationHydrator.configure(
 			gatewayAddress,

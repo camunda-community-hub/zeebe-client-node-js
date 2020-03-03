@@ -8,9 +8,9 @@ This is a Node.js gRPC client for [Zeebe](https://zeebe.io). It is written in Ty
 
 Comprehensive API documentation is available [online](https://creditsenseau.github.io/zeebe-client-node-js/).
 
-See CHANGELOG.md to see what has changed with each release.
+See [CHANGELOG.md](./CHANGELOG.md) to see what has changed with each release.
 
-Docker-compose configurations for Zeebe are available at [https://github.com/zeebe-io/zeebe-docker-compose](https://github.com/zeebe-io/zeebe-docker-compose).
+Docker-compose configurations for Zeebe are available at [zeebe-docker-compose](https://github.com/zeebe-io/zeebe-docker-compose).
 
 Get a hosted instance of Zeebe on [Camunda Cloud](https://camunda.io).
 
@@ -18,16 +18,28 @@ Get a hosted instance of Zeebe on [Camunda Cloud](https://camunda.io).
 
 -   [ Versioning ](#versioning)
 -   [ Type difference from other Zeebe clients ](#type-difference)
+
+**Quick Start**
+
 -   [ Example Use ](#example-use)
 -   [ Get Broker Topology ](#get-topology)
 -   [ Deploy a workflow ](#deploy-workflow)
+
+**Connection Behaviour**
+
 -   [ Client-side gRPC retry in ZBClient ](#client-side-retry)
 -   [ onReady(), onConnectionError(), and connected ](#on-ready)
+
+**Connecting to a Broker**
+
 -   [ TLS ](#tls)
 -   [ OAuth ](#oauth)
 -   [ Basic Auth ](#basic-auth)
 -   [ Camunda Cloud ](#camunda-cloud)
 -   [ Zero-conf constructor ](#zero-conf)
+
+**Job Workers**
+
 -   [ Job Workers](#job-workers)
 -   [ The `ZBWorker` Job Worker ](#create-zbworker)
 -   [ Unhandled Exceptions in Task Handlers ](#unhandled-exceptions)
@@ -37,16 +49,28 @@ Get a hosted instance of Zeebe on [Camunda Cloud](https://camunda.io).
 -   [ The "Decoupled Job Completion" pattern ](#decoupled-complete)
 -   [ The `ZBBatchWorker` Job Worker ](#zbbatchworker)
 -   [ Long polling ](#long-polling)
+
+**Client Commands**
+
 -   [ Start a Workflow Instance ](#start-workflow)
 -   [ Start a Workflow Instance of a specific version of a Workflow definition ](#start-specific-version)
 -   [ Start a workflow instance and await the workflow outcome ](#start-await)
 -   [ Publish a Message ](#publish-message)
+
+**Other Concerns**
+
 -   [ Graceful Shutdown ](#graceful-shutdown)
 -   [ Logging ](#logging)
+
+**Programming with Safety**
+
 -   [ Generating TypeScript constants for BPMN Models ](#generate-constants)
 -   [ Generating code from a BPM Model file ](#generate-code)
 -   [ Writing Strongly-typed Job Workers ](#strongly-typed)
 -   [ Run-time Type Safety ](#run-time-safety)
+
+**Development of the Library itself**
+
 -   [ Developing Zeebe Node ](#developing)
     -   [ Tests ](#tests)
     -   [ Writing Tests ](#writing-tests)
@@ -344,9 +368,11 @@ Much of the information in the following [`ZBWorker` section](#create-zbworker) 
 
 ### The `ZBWorker` Job Worker
 
-The `ZBWorker` takes a job handler function that is invoked for each job. It is invoked as soon as the worker retrieves a job from the broker. The worker can retrieve any number of jobs in a response from the broker, and the handler is invoked for each one, independently.
+The `ZBWorker` takes a _job handler function_ that is invoked for each job. It is invoked as soon as the worker retrieves a job from the broker. The worker can retrieve any number of jobs in a response from the broker, and the handler is invoked for each one, independently.
 
-The simplest signature for a worker takes a string task type, and a job handler function. The job handler receives the job object, and a callback that it can use to complete or fail the job.
+The simplest signature for a worker takes a string task type, and a job handler function.
+
+The job handler receives the job object, a callback that it can use to complete or fail the job, and a reference to the worker itself, which you can use to log using the worker's configured logger (See [Logging](#logging)).
 
 ```javascript
 const ZB = require('zeebe-node')
@@ -468,11 +494,15 @@ When setting custom headers in BPMN tasks, while designing your model, you can p
 Workflow variables and custom headers are untyped in the Zeebe broker, however the Node client in TypeScript mode provides the option to type them to provide safety. You can type your worker as `any` to turn that off:
 
 ```TypeScript
+// No type checking - totally dynamic and unchecked
 zbc.createWorker<any>({
-    ...
+    taskType: 'yolo-jobs',
+    taskHandler: (job, complete, worker) => {
+        worker.log(`Look ma - ${job.variables.anything.goes.toUpperCase()}`)
+        complete.success({what: job.variables.could.possibly.go.wrong})
+    }
+})
 ```
-
-A more run-time safe typing is provided by the library: `JSONDoc` - this will force safe access and type validation in your code.
 
 See the section [Writing Strongly-typed Job Workers](#strongly-typed) for more details.
 
@@ -600,7 +630,7 @@ Now for the response part:
 -   It examines the response, then sends the appropriate outcome to Zeebe, using the jobKey that has been attached as the correlationId
 
 ```TypeScript
-import { RabbitMQSender } from './lib/my-awesome-rabbitmq-api'
+import { RabbitMQListener } from './lib/my-awesome-rabbitmq-api'
 import { ZBClient } from 'zeebe-node'
 
 const zbc = new ZBClient()
@@ -624,6 +654,8 @@ const RabbitMQListener.listen({
     })
 }
 ```
+
+See also the section "[Publish a Message](#publish-message)", for a pattern that you can use when it is not possible to attach the job key to the round trip data response.
 
 <a name = "zbbatchworker"></a>
 
@@ -793,8 +825,10 @@ const result = await zbc.createWorkflowInstanceWithResult({
 
 ### Publish a Message
 
+You can publish a message to the Zeebe broker that will be correlated with a running workflow instance:
+
 ```javascript
-const zbc = new ZB.ZBClient('localhost:26500')
+const zbc = new ZB.ZBClient()
 zbc.publishMessage({
 	correlationKey: 'value-to-correlate-with-workflow-variable',
 	messageId: uuid.v4(),
@@ -803,6 +837,32 @@ zbc.publishMessage({
 	timeToLive: 10, // seconds
 })
 ```
+
+When would you do this? Well, the sky is not even the limit when it comes to thinking creatively about building a system with Zeebe - _and_ here's one concrete example to get you thinking:
+
+Recall the example of the _remote COBOL database_ in the section "[The "Decoupled Job Completion" pattern](#decoupled-complete)". We're writing code to allow that system to be participate in a BPMN-modelling workflow orchestrated by Zeebe.
+
+But what happens if the adapter for that system has been written in such a way that there is no opportunity to attach metadata to it? In that case we have no opportunity to attach a job key. Maybe you send the fixed data for the command, and you have to correlate the response based on those fields.
+
+Another example: think of a system that emits events, and has no knowledge of a running workflow. An example from one system that I orchestrate with Zeebe is Minecraft. A logged-in user in the game performs some action, and code in the game emits an event. I can catch that event in my Node-based application, but I have no knowledge of which running workflow to target - _and_ the event was not generated from a BPMN task providing a worker with the complete context of a workflow.
+
+In these two cases, I can publish a message to Zeebe, and let the broker figure out which workflows are:
+
+-   Sitting at an intermediate message catch event waiting for this message; or
+-   In a sub-process that has a boundary event that will be triggered by this message; or
+-   Would be started by a message start event, on receiving this message.
+
+The Zeebe broker correlates a message to a running workflow instance _not on the job key_ - but on _the value of one of the workflow variables_ (for intermediate message events) and _the message name_ (for all message events, including start messages).
+
+So the response from your COBOL database system, sans job key, is sent back to Zeebe from the RabbitMQListener not via `completeJob()`, but with `publishMessage()`, and the value of the payload is used to figure out which workflow it is for.
+
+In the case of the Minecraft event, a message is published to Zeebe with the Minecraft username, and that is used by Zeebe to determine which workflows are running for that user and are interested in that event.
+
+See the article "[Zeebe Message Correlation](https://zeebe.io/blog/2019/08/zeebe-message-correlation/)" for a complete example with code.
+
+<a name="publish-start-message"></a>
+
+### Publish a Start Message
 
 You can also publish a message targeting a [Message Start Event](https://github.com/zeebe-io/zeebe/issues/1858).
 In this case, the correlation key is optional, and all Message Start events that match the `name` property will receive the message.
@@ -860,6 +920,13 @@ From version v0.23.0-alpha.1, the library logs human-readable logs by default, u
 ```typescript
 const { ZBJsonLogger, ZBClient } = require('zeebe-node')
 const zbc = new ZBClient({ stdout: ZBJsonLogger })
+```
+
+You can also control this via environment variables:
+
+```bash
+export ZEEBE_NODE_LOG_TYPE=SIMPLE  # Simple Logger (default)
+export ZEEBE_NODE_LOG_TYPE=JSON  # JSON Logger
 ```
 
 <a name = "generate-constants"></a>
@@ -988,7 +1055,7 @@ As with everything, it is a balancing act / trade-off between correctness, safet
 
 I recommend the following scale, to match the maturity of your system:
 
--   Start with `<JSONDoc>` typing for the workers - this will give you more type hinting for defensive coding than `any`; then
+-   Start with `<any>` typing for the workers; then
 -   Develop interfaces to describe the DTOs represented in your workflow variables;
 -   Use optional types on those interfaces to check your defensive programming structures;
 -   Lock down the run-time behaviour with io-ts as the boundary validator.

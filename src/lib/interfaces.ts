@@ -100,14 +100,8 @@ export type OperationOptions =
 	| OperationOptionsWithRetry
 	| OperationOptionsNoRetry
 
-export type JSON =
-	| string
-	| number
-	| boolean
-	| JSON[]
-	| JSONDoc[]
-	| JSONDoc
-	| undefined
+export type JSON = string | number | boolean | JSON[] | JSONDoc[] | JSONDoc
+
 export interface JSONDoc {
 	[key: string]: JSON | undefined
 }
