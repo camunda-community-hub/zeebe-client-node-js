@@ -451,6 +451,18 @@ Both workflow variables and custom headers are stored in the broker as a diction
 
 If you accidentally pass in a circular JSON structure to `complete()` - like, for example the response object from an HTTP call - it will throw, as this cannot be serialised to a string.
 
+To update a key deep in the object structure of a workflow variable, you can use the [deepmerge utility](https://www.npmjs.com/package/deepmerge):
+
+```TypeScript
+const merge = require('deepmerge')
+
+zbc.createWorker('some-task', (job, complete) => {
+    const { people } = job.variables
+    // update bob's age, keeping all his other properties the same
+    complete.success(merge(people, { bob: { age: 23 } }))
+})
+```
+
 When setting custom headers in BPMN tasks, while designing your model, you can put stringified JSON as the value for a custom header, and it will show up in the client as a JavaScript object.
 
 Workflow variables and custom headers are untyped in the Zeebe broker, however the Node client in TypeScript mode provides the option to type them to provide safety. You can type your worker as `any` to turn that off:
@@ -459,6 +471,8 @@ Workflow variables and custom headers are untyped in the Zeebe broker, however t
 zbc.createWorker<any>({
     ...
 ```
+
+A more run-time safe typing is provided by the library: `JSONDoc` - this will force safe access and type validation in your code.
 
 See the section [Writing Strongly-typed Job Workers](#strongly-typed) for more details.
 
@@ -974,10 +988,10 @@ As with everything, it is a balancing act / trade-off between correctness, safet
 
 I recommend the following scale, to match the maturity of your system:
 
--   Starting with `any` typing; then
--   Developing interfaces to describe the DTOs represented in your workflow variables;
--   Using optional types on those interfaces to check your defensive programming structures;
--   Locking down the run-time behaviour with io-ts as the boundary validator.
+-   Start with `<JSONDoc>` typing for the workers - this will give you more type hinting for defensive coding than `any`; then
+-   Develop interfaces to describe the DTOs represented in your workflow variables;
+-   Use optional types on those interfaces to check your defensive programming structures;
+-   Lock down the run-time behaviour with io-ts as the boundary validator.
 
 You may choose to start with the DTOs. Anyway, there are options.
 

@@ -100,18 +100,22 @@ export type OperationOptions =
 	| OperationOptionsWithRetry
 	| OperationOptionsNoRetry
 
-type JSON = string | number | boolean | JSON[] | JSONDoc[] | JSONDoc
-interface JSONDoc {
-	[key: string]: JSON
+export type JSON =
+	| string
+	| number
+	| boolean
+	| JSON[]
+	| JSONDoc[]
+	| JSONDoc
+	| undefined
+export interface JSONDoc {
+	[key: string]: JSON | undefined
 }
 
-export type InputVariables = JSONDoc
-
-export type WorkflowVariables = JSONDoc
-
-export type OutputVariables = JSONDoc
-
-export type CustomHeaders = JSONDoc
+export type InputVariables = KeyedObject
+export type WorkflowVariables = KeyedObject
+export type OutputVariables = KeyedObject
+export type CustomHeaders = KeyedObject
 
 export type ZBWorkerTaskHandler<
 	WorkerInputVariables = InputVariables,
