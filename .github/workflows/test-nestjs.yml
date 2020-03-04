@@ -18,5 +18,5 @@ jobs:
           cd nestjs-zeebe
           npm i
           rm -rf node_modules/zeebe-node/dist
-          cp ../dist node_modules/zeebe-node/dist
+          cp -r ../dist node_modules/zeebe-node/dist
           npm run test
