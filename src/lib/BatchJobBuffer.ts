@@ -1,5 +1,5 @@
 import { ZBBatchWorker } from '../zb/ZBBatchWorker'
-import { ZBBatchWorkerTaskHandler } from './interfaces'
+import { BatchedJob, ZBBatchWorkerTaskHandler } from './interfaces'
 
 export const JobBuffer = ({
 	handler,
@@ -12,35 +12,31 @@ export const JobBuffer = ({
 	batchSize: number
 	worker: ZBBatchWorker<any, any, any>
 }) => {
-	let jobs: any[] = []
+	let jobs: BatchedJob[] = []
 	let t
-	const execute = () => {
-		clearTimeout(t)
+	const execute = (batch: BatchedJob[]) => {
 		t = undefined
-		if (jobs.length === 0) {
-			return
-		}
-		worker.log(`Executing batched handler with ${jobs.length} jobs`)
+		jobs = []
+		worker.debug(`Executing batched handler with ${batch.length} jobs`)
 		try {
-			handler([...jobs], worker)
+			handler(batch, worker)
 		} catch (e) {
 			worker.error(
 				`An unhandled exception occurred in the worker task handler!`
 			)
-			worker.log(e.message)
-			worker.log(e)
+			worker.error(e.message)
+			worker.error(e)
 		}
-		jobs = []
 	}
-	const startBatchTimer = () => setTimeout(execute, timeout * 1000)
 	return {
 		batch: batch => {
 			if (!t) {
-				t = startBatchTimer()
+				t = setTimeout(() => execute([...jobs]), timeout * 1000)
 			}
 			jobs = [...jobs, ...batch]
 			if (jobs.length >= batchSize) {
-				execute()
+				clearTimeout(t)
+				execute([...jobs])
 			}
 		},
 	}
