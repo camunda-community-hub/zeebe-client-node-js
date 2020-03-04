@@ -8,6 +8,7 @@ describe('Types API', () => {
 			complete.success()
 		}
 		zbc.createWorker('nope', handler)
+		zbc.close()
 		expect(true).toBeTruthy()
 	})
 })
