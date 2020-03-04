@@ -1,0 +1,22 @@
+name: "Test NestJS integration"
+on: # rebuild any PRs and main branch changes
+  pull_request:
+  push:
+
+jobs:
+  test: # make sure build/ci work properly
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v1
+      - run: |
+          npm install
+          npm run build
+          npm run test
+      - run: |
+          git clone https://github.com/pay-k/nestjs-zeebe.git
+          cd nestjs-zeebe
+          npm i
+          rm node_modules/zeebe-node/dist
+          cp ../dist node_modules/zeebe-node/dist
+          npm run test
