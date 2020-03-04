@@ -7,7 +7,7 @@ describe('Types API', () => {
 			worker.log(job.bpmnProcessId)
 			complete.success()
 		}
-
+		zbc.createWorker('nope', handler)
 		expect(true).toBeTruthy()
 	})
 })
