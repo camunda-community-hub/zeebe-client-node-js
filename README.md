@@ -21,7 +21,7 @@ Get a hosted instance of Zeebe on [Camunda Cloud](https://camunda.io).
 
 **Quick Start**
 
--   [ Example Use ](#example-use)
+-   [ Install ](#install)
 -   [ Get Broker Topology ](#get-topology)
 -   [ Deploy a workflow ](#deploy-workflow)
 
@@ -56,6 +56,8 @@ Get a hosted instance of Zeebe on [Camunda Cloud](https://camunda.io).
 -   [ Start a Workflow Instance of a specific version of a Workflow definition ](#start-specific-version)
 -   [ Start a workflow instance and await the workflow outcome ](#start-await)
 -   [ Publish a Message ](#publish-message)
+-   [ Publish a Start Message ](#publish-start-message)
+-   [ Activate Jobs ](#activate-jobs)
 
 **Other Concerns**
 
@@ -94,9 +96,11 @@ NPM Package version 0.21.x supports Zeebe 0.21.x
 
 Protobuf fields of type `int64` are serialised as type string in the Node library. These fields are serialised as numbers (long) in the Go and Java client. See [grpc/#7229](https://github.com/grpc/grpc/issues/7229) for why the Node library serialises them as string. The Workflow instance key, and other fields that are of type long in other client libraries, are type string in this library. Fields of type `int32` are serialised as type number in the Node library.
 
-<a name = "example-use"></a>
+## Quick Start
 
-## Example Use
+<a name = "install"></a>
+
+## Install
 
 ### Add the Library to your Project
 
@@ -141,6 +145,8 @@ const fs = require('fs')
 	await zbc.deployWorkflow({ definition: buffer, name: 'wf3.bpmn' })
 })()
 ```
+
+## Connection Behaviour
 
 <a name = "client-side-retry"></a>
 
@@ -223,6 +229,8 @@ const zbWorker = zbc.createWorker({
 zbWorker.on('ready', () => console.log(`Worker connected!`))
 zbWorker.on('connectionError', () => console.log(`Worker disconnected!`))
 ```
+
+## Connecting to a Broker
 
 <a name = "tls"></a>
 
@@ -353,6 +361,8 @@ ZEEBE_BASIC_AUTH_PASSWORD
 ZEEBE_BASIC_AUTH_USERNAME
 ```
 
+## Job Workers
+
 <a name ="job-workers"></a>
 
 ### Job Workers
@@ -438,6 +448,8 @@ const zbWorker = zbc.createWorker({
 <a name = "unhandled-exceptions"></a>
 
 #### Unhandled Exceptions in Task Handlers
+
+_Note: this behaviour is for the ZBWorker only. The ZBBatchWorker does not manage this._
 
 When a task handler throws an unhandled exception, the library will fail the job. Zeebe will then retry the job according to the retry settings of the task. Sometimes you want to halt the entire workflow so you can investigate. To have the library cancel the workflow on an unhandled exception, pass in `{failWorkflowOnException: true}` to the `createWorker` call:
 
@@ -744,6 +756,8 @@ const longPollingWorker = zbc.createWorker('task-type', handler, {
 })
 ```
 
+## Client Commands
+
 <a name = "start-workflow"></a>
 
 ### Start a Workflow Instance
@@ -882,6 +896,20 @@ zbc.publishStartMessage({
 ```
 
 Both normal messages and start messages can be published idempotently by setting both the `messageId` and the `correlationKey`. They will only ever be correlated once. See: [A message can be published idempotent](https://github.com/zeebe-io/zeebe/issues/1012).
+
+<a name="activate-jobs"></a>
+
+### Activate Jobs
+
+If you have some use case that doesn't fit the existing workers, you can write your own custom workers using the `ZBClient.activateJobs()` method. It takes an `ActivateJobsRequest` object, and returns a stream for that call.
+
+Attach a listener to the stream's 'data' event, and it will be called with an `ActivateJobsResponse` object if there are jobs to work on.
+
+To complete these jobs, use the `ZBClient` methods `completeJob()`, `failJob()`, and `throwError()`.
+
+For more details, read the source code of the library, particularly the `ZBWorkerBase` class. This is an advanced use case, and the existing code in the library is the best documentation.
+
+## Other Concerns
 
 <a name = "graceful-shutdown"></a>
 
