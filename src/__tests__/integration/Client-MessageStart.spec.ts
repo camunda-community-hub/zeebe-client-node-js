@@ -24,7 +24,7 @@ describe('ZBClient', () => {
 
 		await zbc.publishStartMessage({
 			name: 'MSG-START_JOB',
-			timeToLive: 1000,
+			timeToLive: 2000,
 			variables: {
 				testKey: randomId,
 			},
