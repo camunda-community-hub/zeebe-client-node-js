@@ -5,6 +5,7 @@ on: # rebuild any PRs and main branch changes
 
 jobs:
   test: # make sure build/ci work properly
+    if: github.repository == 'jwulf/zeebe-client-node-js'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
