@@ -13,6 +13,7 @@
 -   There is new custom logger implementation `ZBSimpleLogger` that produces flat string output. If you are not interested in structured logs for analysis, this log is easier for humans to read.
 -   `ZBClient` now contains an `activeJobs` method. This effectively exposes the entire Zeebe GRPC API, and allows you to write applications in the completely unmanaged style of the Java and Go libraries, if you have some radically different idea about application patterns.
 -   The Grpc layer has been refactored to implement the idea of "connection characteristics". When connecting to Camunda Cloud, which uses TLS and OAuth, the library would emit errors every time. The refactor allows these connection errors to be correctly interpreted as expected behaviour of the "connection characteristics". See [this article](https://www.joshwulf.com/blog/2020/03/camunda-cloud-connection-2/) and [#133](https://github.com/creditsenseau/zeebe-client-node-js/issues/133) for more details.
+-   I've started documenting the internal operation of the client in BPMN diagrams. These can be found in the `design` directory.
 -   The README now contains a section "Writing Strongly-typed Job Workers", on writing typed workers in TypeScript.
 -   The README also has a shiny TOC. It has grown in size such that one is needed.
 

@@ -720,6 +720,8 @@ const batchWorker = zbc.createBatchWorker({
 })
 ```
 
+See [this blog post](http://joshwulf.com/blog/2020/03/zb-batch-worker/) for some more details on the implementation.
+
 <a name = "long-polling"></a>
 
 ### Long polling
