@@ -1,11 +1,12 @@
 import { parse } from 'url'
 import * as ZB from './interfaces'
+import { Loglevel, ZBClientOptions } from './interfaces-published-contract'
 import { OAuthProviderConfig } from './OAuthProvider'
 
 export class ConfigurationHydrator {
 	public static configure(
 		gatewayAddress: string | undefined,
-		options: ZB.ZBClientOptions | undefined
+		options: ZBClientOptions | undefined
 	) {
 		// ConfigurationHydrator.warnOnAmbiguousConfig()
 		const configuration = {
@@ -21,7 +22,7 @@ export class ConfigurationHydrator {
 		return configuration
 	}
 	public static readonly getLogLevelFromEnv = () =>
-		process.env.ZEEBE_NODE_LOG_LEVEL as ZB.Loglevel | undefined
+		process.env.ZEEBE_NODE_LOG_LEVEL as Loglevel | undefined
 
 	private static readonly DEFAULT_GATEWAY_PORT = '26500'
 	private static readonly CAMUNDA_CLOUD_AUTH_SERVER =
@@ -161,15 +162,13 @@ export class ConfigurationHydrator {
 		}
 	}
 
-	private static getCamundaCloudConfig(
-		options: ZB.ZBClientOptions = {} as any
-	) {
+	private static getCamundaCloudConfig(options: ZBClientOptions = {} as any) {
 		if (options.camundaCloud) {
 			const { camundaCloud } = options
 			const clusterId = ConfigurationHydrator.justClusterId(
 				camundaCloud.clusterId
 			)
-			const configuration: ZB.ZBClientOptions = {
+			const configuration: ZBClientOptions = {
 				...options,
 				hostname: `${clusterId}.zeebe.camunda.io`,
 				oAuth: {

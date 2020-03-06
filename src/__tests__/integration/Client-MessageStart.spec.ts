@@ -2,13 +2,12 @@ import { v4 as uuid } from 'uuid'
 import { ZBClient } from '../..'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
-const gatewayAddress = process.env.ZEEBE_GATEWAY_ADDRESS || '0.0.0.0:26500'
 
 describe('ZBClient', () => {
 	let zbc: ZBClient
 
 	beforeEach(async () => {
-		zbc = new ZBClient(gatewayAddress)
+		zbc = new ZBClient()
 	})
 
 	afterEach(async () => {
@@ -25,7 +24,7 @@ describe('ZBClient', () => {
 
 		await zbc.publishStartMessage({
 			name: 'MSG-START_JOB',
-			timeToLive: 1000,
+			timeToLive: 2000,
 			variables: {
 				testKey: randomId,
 			},

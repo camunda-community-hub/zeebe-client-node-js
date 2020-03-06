@@ -2,9 +2,12 @@ import { Chalk } from 'chalk'
 import dayjs from 'dayjs'
 import * as stackTrace from 'stack-trace'
 import { ConfigurationHydrator } from './ConfigurationHydrator'
-import { Loglevel, ZBLoggerOptions } from './interfaces'
+import { ZBLoggerConfig } from './interfaces'
+import { Loglevel } from './interfaces-published-contract'
 
 export class ZBLogger {
+	// tslint:disable-next-line: variable-name
+	public _tag: 'ZBCLIENT' | 'ZBWORKER'
 	public loglevel: Loglevel
 	private colorFn: Chalk
 	private taskType?: string
@@ -23,10 +26,9 @@ export class ZBLogger {
 		taskType,
 		colorise,
 		pollInterval,
-	}: ZBLoggerOptions & {
-		id?: string
-		colorise?: boolean
-	}) {
+		_tag,
+	}: ZBLoggerConfig) {
+		this._tag = _tag
 		this.colorFn = color || ((m => m) as any)
 		this.taskType = taskType
 		this.id = id
@@ -136,7 +138,7 @@ export class ZBLogger {
 	}
 
 	private _colorise(message: string) {
-		if (this.stdout === console && this.colorise) {
+		if (this.colorise) {
 			// Only colorise console
 			if (this.colorFn && typeof this.colorFn === 'function') {
 				return this.colorFn(message)

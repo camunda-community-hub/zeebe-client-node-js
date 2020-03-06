@@ -1,6 +1,6 @@
 import { ZBClient } from '../..'
 
-jest.setTimeout(30000)
+jest.setTimeout(16000)
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 
 describe('onConnectionError Handler', () => {
@@ -10,7 +10,7 @@ describe('onConnectionError Handler', () => {
 			onConnectionError: () => {
 				called++
 			},
-		}) // Doesn't exist!!!
+		})
 		setTimeout(async () => {
 			expect(called).toBe(1)
 			expect(zbc2.connected).toBe(false)
@@ -47,7 +47,7 @@ describe('onConnectionError Handler', () => {
 			zbc2.close()
 			expect(called).toBe(1)
 			done()
-		}, 6000)
+		}, 10000)
 	})
 	it(`Calls ZBClient onConnectionError when there no broker, for the client and each worker with a handler`, async done => {
 		let called = 0
@@ -64,7 +64,7 @@ describe('onConnectionError Handler', () => {
 			zbc2.close()
 			expect(called).toBe(2)
 			done()
-		}, 6000)
+		}, 10000)
 	})
 	it(`Debounces onConnectionError`, async done => {
 		let called = 0
@@ -86,44 +86,16 @@ describe('onConnectionError Handler', () => {
 	it(`Trailing parameter worker onConnectionError handler API works`, async done => {
 		let called = 0
 		const zbc2 = new ZBClient('localtoast:234532534', {})
-		zbc2.createWorker(
-			null,
-			'whatever',
-			(_, complete) => complete.success,
-			{},
-			() => {
-				called++
-			}
-		)
+		zbc2.createWorker('whatever', (_, complete) => complete.success, {
+			onConnectionError: () => called++,
+		})
 
 		setTimeout(async () => {
 			expect(zbc2.connected).toBe(false)
 			await zbc2.close()
 			expect(called).toBe(1)
 			done()
-		}, 5000)
-	})
-	it(`Trailing parameter worker onConnectionError handler API works`, async done => {
-		let called = 0
-		const zbc2 = new ZBClient('localtoast:234532534', {})
-		zbc2.createWorker(
-			null,
-			'whatever',
-			(_, complete) => complete.success,
-			{
-				onConnectionError: () => called--,
-			},
-			() => {
-				called++
-			}
-		)
-
-		setTimeout(async () => {
-			expect(zbc2.connected).toBe(false)
-			await zbc2.close()
-			expect(called).toBe(1)
-			done()
-		}, 5000)
+		}, 10000)
 	})
 	it(`Does not call the onConnectionError handler if there is a business error`, async done => {
 		let called = 0
@@ -141,6 +113,6 @@ describe('onConnectionError Handler', () => {
 			expect(called).toBe(0)
 			await zbc2.close()
 			done()
-		}, 5000)
+		}, 10000)
 	})
 })

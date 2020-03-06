@@ -3,15 +3,12 @@ const clientOptions = {
 	loglevel: 'NONE' as Loglevel,
 }
 process.env.ZEEBE_NODE_LOG_LEVEL = 'NONE'
-let previousLogLevelEnv
+const previousLogLevelEnv = process.env.ZEEBE_NODE_LOG_LEVEL
 
 describe('ZBClient constructor', () => {
 	beforeEach(() => {
 		process.env.ZEEBE_NODE_LOG_LEVEL =
 			process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
-	})
-	beforeAll(() => {
-		previousLogLevelEnv = process.env.ZEEBE_NODE_LOG_LEVEL
 	})
 	afterAll(() => {
 		process.env.ZEEBE_NODE_LOG_LEVEL = previousLogLevelEnv
@@ -22,7 +19,7 @@ describe('ZBClient constructor', () => {
 		zbc.close()
 	})
 	it('appends the port number 26500 to the gatewayAddress by default', () => {
-		const zbc = new ZBClient()
+		const zbc = new ZBClient('localhost')
 		expect(zbc.gatewayAddress).toBe('localhost:26500')
 		zbc.close()
 	})

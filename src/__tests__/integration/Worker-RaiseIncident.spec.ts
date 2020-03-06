@@ -1,5 +1,4 @@
 import { ZBClient } from '../..'
-const gatewayAddress = process.env.ZEEBE_GATEWAY_ADDRESS || '0.0.0.0:26500'
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 
 /**
@@ -7,7 +6,7 @@ process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
  */
 describe('ZBWorker', () => {
 	let wfi
-	const zbc = new ZBClient(gatewayAddress)
+	const zbc = new ZBClient()
 
 	afterAll(async () => {
 		zbc.cancelWorkflowInstance(wfi)
@@ -41,7 +40,7 @@ describe('ZBWorker', () => {
 			'wait-raise-incident',
 			async (job, complete) => {
 				expect(job.workflowInstanceKey).toBe(wfi)
-				complete.success(job)
+				complete.success(job.variables)
 			},
 			{ loglevel: 'NONE' }
 		)

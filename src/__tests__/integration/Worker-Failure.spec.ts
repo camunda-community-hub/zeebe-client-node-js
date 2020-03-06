@@ -1,14 +1,13 @@
 import { ZBClient } from '../..'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
-const gatewayAddress = process.env.ZEEBE_GATEWAY_ADDRESS || '0.0.0.0:26500'
 
 describe('ZBWorker', () => {
 	let zbc: ZBClient
 	let wf
 
 	beforeEach(() => {
-		zbc = new ZBClient(gatewayAddress)
+		zbc = new ZBClient()
 	})
 
 	afterEach(async done => {
@@ -99,7 +98,7 @@ describe('ZBWorker', () => {
 	})
 
 	it('Fails a workflow when the handler throws and options.failWorkflowOnException is set', async done => {
-		jest.setTimeout(10000)
+		jest.setTimeout(20000)
 
 		const res = await zbc.deployWorkflow(
 			'./src/__tests__/testdata/Worker-Failure3.bpmn'

@@ -1,14 +1,13 @@
 import { ZBClient } from '../..'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
-const gatewayAddress = process.env.ZEEBE_GATEWAY_ADDRESS || '0.0.0.0:26500'
 jest.setTimeout(25000)
 
 describe('Await Outcome', () => {
 	let zbc: ZBClient
 
 	beforeEach(async () => {
-		zbc = new ZBClient(gatewayAddress, { loglevel: 'DEBUG' })
+		zbc = new ZBClient()
 	})
 
 	afterEach(async () => {
@@ -51,7 +50,7 @@ describe('Await Outcome', () => {
 			},
 		})
 		// @TODO - uncomment when https://github.com/zeebe-io/zeebe/pull/3253 gets merged
-		// expect(result.variables.sourceValue).toBe(undefined)
+		expect(result.variables.sourceValue).toBe(undefined)
 		expect(result.variables.otherValue).toBe('rome')
 	})
 })

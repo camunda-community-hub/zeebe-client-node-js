@@ -1,3 +1,22 @@
+# Version 0.23.0-alpha.1
+
+## Breaking Changes
+
+-   The `job.variables` and `job.customHeaders` in the worker job handler are now typed as read-only structures. This will only be a breaking change if your code relies on mutating these data structures. See the section "Working with Workflow Variables and Custom Headers" in the README for an explanation on doing deep key updates on the job variables.
+-   The library nows logs with the simplified `ZBSimpleLogger` by default, for friendly human-readable logs. This will only be a breaking change if you currently rely on the structured log output. To get the previous structured log behaviour, pass in `stdout: ZBJsonLogger` to the `ZBClient` constructor options, or set the environment variable `export ZEEBE_NODE_LOG_TYPE=JSON`. Refer to the "Logging" section in the README.
+
+## New Features
+
+-   There is a new `ZBBatchWorker`. This allows you to batch jobs that are unrelated in a BPMN model, but are related with respect to some (for example: rate-limited) external system. See the README for details. Thanks to Jimmy Beaudoin ([@jbeaudoin11](https://github.com/jbeaudoin11)) for the suggestion, and helping with the design. Ref: [#134](https://github.com/creditsenseau/zeebe-client-node-js/issues/134).
+-   `ZBClient.createWorker` has two new, additional, method signature. The first is a single object parameter signature. This is the preferred signature if you are passing in configuration options. The second signature is a version of the original that elides the `id` for the worker. With this, you can create a worker with just a task type and a job handler. A UUID is assigned as the worker id. This is the equivalent of passing in `null` as the first parameter to the original signature. The previous method signature still works, allowing you to specify an id if you want. See [this article for details](https://www.joshwulf.com/blog/2020/02/refining-method-signature/).
+-   There is now a `ZBLogMessage` interface to help you implement a custom logger [#127](https://github.com/creditsenseau/zeebe-client-node-js/issues/127). For an example of a custom logger, see the [Zeebe GitHub Action implementation](https://github.com/jwulf/zeebe-action/blob/master/src/log/logger.ts).
+-   There is new custom logger implementation `ZBSimpleLogger` that produces flat string output. If you are not interested in structured logs for analysis, this log is easier for humans to read.
+-   `ZBClient` now contains an `activateJobs` method. This effectively exposes the entire Zeebe GRPC API, and allows you to write applications in the completely unmanaged style of the Java and Go libraries, if you have some radically different idea about application patterns.
+-   The Grpc layer has been refactored to implement the idea of "connection characteristics". When connecting to Camunda Cloud, which uses TLS and OAuth, the library would emit errors every time. The refactor allows these connection errors to be correctly interpreted as expected behaviour of the "connection characteristics". See [this article](https://www.joshwulf.com/blog/2020/03/camunda-cloud-connection-2/) and [#133](https://github.com/creditsenseau/zeebe-client-node-js/issues/133) for more details.
+-   I've started documenting the internal operation of the client in BPMN diagrams. These can be found in the `design` directory.
+-   The README now contains a section "Writing Strongly-typed Job Workers", on writing typed workers in TypeScript.
+-   The README also has a shiny TOC. It has grown in size such that one is needed.
+
 # Version 0.22.1
 
 ## Breaking Changes

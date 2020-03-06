@@ -1,0 +1,28 @@
+name: "Test Workit integration"
+on: # rebuild any PRs and main branch changes
+  pull_request:
+  push:
+
+jobs:
+  test: # make sure build/ci work properly
+    if: github.repository == 'jwulf/zeebe-client-node-js'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v1
+      - run: |
+          npm install
+          npm run build
+          npm run test
+      - run: |
+          git clone https://github.com/VilledeMontreal/workit.git
+          cd workit/packages/workit-zeebe-client
+          npm i
+          rm -rf node_modules/zeebe-node/dist
+          cp -r ../../../dist node_modules/zeebe-node/dist
+          npm run test
+    env:
+      ZEEBE_ADDRESS: ${{ secrets.ZEEBE_ADDRESS }}
+      ZEEBE_CLIENT_ID: ${{ secrets.ZEEBE_CLIENT_ID }}
+      ZEEBE_AUTHORIZATION_SERVER_URL: ${{ secrets.ZEEBE_AUTHORIZATION_SERVER_URL }}
+      ZEEBE_CLIENT_SECRET: ${{ secrets.ZEEBE_CLIENT_SECRET }}

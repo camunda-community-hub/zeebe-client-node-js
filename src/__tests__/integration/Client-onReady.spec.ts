@@ -1,6 +1,6 @@
 import { ZBClient } from '../..'
 
-jest.setTimeout(10000)
+jest.setTimeout(30000)
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 
 describe('onReady Handler', () => {
@@ -32,7 +32,7 @@ describe('onReady Handler', () => {
 			expect(zbc2.connected).toBe(true)
 			await zbc2.close()
 			done()
-		}, 4000)
+		}, 6000)
 	})
 
 	it(`Does emit the ready event if there is a broker`, done => {
@@ -46,6 +46,6 @@ describe('onReady Handler', () => {
 			expect(zbc2.connected).toBe(true)
 			await zbc2.close()
 			done()
-		}, 4000)
+		}, 6000)
 	})
 })
