@@ -448,7 +448,7 @@ export class ZBWorkerBase<
 			worker: this.id,
 		}
 		this.logger.logDebug(
-			`Requesting ${amount} jobs with requestTimeout ${timeout}`
+			`Requesting ${amount} jobs with requestTimeout ${timeout}ms`
 		)
 
 		try {
