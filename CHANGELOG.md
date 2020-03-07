@@ -2,11 +2,15 @@
 
 ## Breaking Changes
 
+_Changes in APIs or behaviour that may affect existing applications that use zeebe-node._
+
 -   Zeebe Node 0.23 and above requires TypeScript 3.8. You can continue using 0.22.x if you are not able to use TypeScript 3.8.
 -   The `job.variables` and `job.customHeaders` in the worker job handler are now typed as read-only structures. This will only be a breaking change if your code relies on mutating these data structures. See the section "Working with Workflow Variables and Custom Headers" in the README for an explanation on doing deep key updates on the job variables.
 -   The library nows logs with the simplified `ZBSimpleLogger` by default, for friendly human-readable logs. This will only be a breaking change if you currently rely on the structured log output. To get the previous structured log behaviour, pass in `stdout: ZBJsonLogger` to the `ZBClient` constructor options, or set the environment variable `export ZEEBE_NODE_LOG_TYPE=JSON`. Refer to the "Logging" section in the README.
 
 ## New Features
+
+_New shiny stuff._
 
 -   Timeouts can now be expressed with units using the [typed-duration](https://www.npmjs.com/package/typed-duration) package, which is included in and re-exported by the library. See the README section "A note on representing timeout durations".
 -   There is a new `ZBBatchWorker`. This allows you to batch jobs that are unrelated in a BPMN model, but are related with respect to some (for example: rate-limited) external system. See the README for details. Thanks to Jimmy Beaudoin ([@jbeaudoin11](https://github.com/jbeaudoin11)) for the suggestion, and helping with the design. Ref: [#134](https://github.com/creditsenseau/zeebe-client-node-js/issues/134).
