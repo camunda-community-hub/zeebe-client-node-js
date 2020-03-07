@@ -203,7 +203,7 @@ export interface PublishMessageRequest<Variables = KeyedObject> {
 	/** The value to match with the field specified as "Subscription Correlation Key" in BPMN */
 	correlationKey: string
 	/** The number of seconds for the message to buffer on the broker, awaiting correlation. Omit or set to zero for no buffering. */
-	timeToLive: number
+	timeToLive: MaybeTimeDuration
 	/** Unique ID for this message */
 	messageId?: string
 	variables: Variables
@@ -213,7 +213,7 @@ export interface PublishStartMessageRequest<Variables = KeyedObject> {
 	/** Should match the "Message Name" in a BPMN Message Catch  */
 	name: string
 	/** The number of seconds for the message to buffer on the broker, awaiting correlation. Omit or set to zero for no buffering. */
-	timeToLive: number
+	timeToLive: MaybeTimeDuration
 	/** Unique ID for this message */
 	messageId?: string
 	correlationKey?: string
