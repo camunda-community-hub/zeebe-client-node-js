@@ -32,7 +32,7 @@ describe('ZBClient', () => {
 
 		zbc.createWorker(
 			'test2',
-			'console-log-msg',
+			'console-log-msg-start',
 			async (job, complete) => {
 				complete.success(job.variables)
 				expect(job.variables.testKey).toBe(randomId) // Makes sure the worker isn't responding to another message
