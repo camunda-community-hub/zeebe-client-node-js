@@ -216,6 +216,11 @@ export class ZBWorkerBase<
 
 	public work = () => {
 		this.logger.logInfo(`Ready for ${this.taskType}...`)
+		this.grpcClient.once(ConnectionStatusEvent.Ready, () => {
+			this.logger.logDebug(`Fired backup start work event.`)
+			this.stalled = false
+			this.longPollLoop()
+		})
 		this.longPollLoop()
 	}
 
@@ -359,6 +364,7 @@ export class ZBWorkerBase<
 		}
 		this.stalled = true
 		this.logger.logError(`Stalled on Grpc Error`)
+
 		this.grpcClient.once(ConnectionStatusEvent.Ready, () => {
 			this.stalled = false
 			this.longPollLoop()
@@ -366,10 +372,13 @@ export class ZBWorkerBase<
 	}
 
 	private async longPollLoop() {
+		this.logger.logDebug('Activating Jobs...')
 		const result = await this.activateJobs()
 		const start = Date.now()
 		this.logger.logDebug(
-			`Long poll loop. this.longPoll: ${this.longPoll}`,
+			`Long poll loop. this.longPoll: ${Duration.valueFrom(
+				this.longPoll
+			)}`,
 			Object.keys(result)[0],
 			start
 		)
@@ -428,15 +437,18 @@ export class ZBWorkerBase<
 
 		const requestTimeout = this.longPoll || -1
 
+		const timeout = Duration.valueFrom(
+			Duration.milliseconds.of(this.timeout)
+		)
 		const activateJobsRequest: ActivateJobsRequest = {
 			maxJobsToActivate: amount,
 			requestTimeout,
-			timeout: Duration.milliseconds.from(this.timeout),
+			timeout,
 			type: this.taskType,
 			worker: this.id,
 		}
 		this.logger.logDebug(
-			`Requesting ${amount} jobs with requestTimeout ${requestTimeout}`
+			`Requesting ${amount} jobs with requestTimeout ${timeout}`
 		)
 
 		try {

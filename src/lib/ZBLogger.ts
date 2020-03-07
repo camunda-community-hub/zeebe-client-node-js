@@ -86,9 +86,9 @@ export class ZBLogger {
 				? this.makeMessage(frame, 20, message, optionalParameters)
 				: this.makeMessage(frame, 20, message)
 		if (this.stdout === console) {
-			this.stdout.info(this._colorise(msg))
+			this.stdout.debug(this._colorise(msg))
 		} else {
-			this.stdout.info(msg)
+			this.stdout.debug(msg)
 		}
 	}
 

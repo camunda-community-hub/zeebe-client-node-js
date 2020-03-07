@@ -251,6 +251,7 @@ export class GrpcClient extends EventEmitter {
 							metadata
 						)
 					} catch (e) {
+						this.emit(MiddlewareSignals.Log.Error, e.message)
 						this.emit(MiddlewareSignals.Event.Error)
 						this.setNotReady()
 					}
@@ -347,7 +348,7 @@ export class GrpcClient extends EventEmitter {
 								.getConnectivityState(false)
 							this.emit(
 								MiddlewareSignals.Log.Info,
-								`GRPC Channel State: ${connectivityState[newState]}`
+								`Grpc Channel State: ${connectivityState[newState]}`
 							)
 						} catch (e) {
 							const msg = e.toString()
@@ -450,29 +451,57 @@ export class GrpcClient extends EventEmitter {
 		if (this.readyTimer) {
 			clearTimeout(this.readyTimer)
 		}
+		this.emit(
+			MiddlewareSignals.Log.Debug,
+			`Set Grpc channel ready timer for ${this.connectionTolerance}ms`
+		)
 
 		this.readyTimer = setTimeout(() => {
-			this.readyTimer = undefined
-			this.connected = true
-			this.emit(MiddlewareSignals.Event.Ready)
 			if (this.failTimer) {
 				clearTimeout(this.failTimer)
 				this.failTimer = undefined
 			}
+			this.readyTimer = undefined
+			this.connected = true
+			this.emit(
+				MiddlewareSignals.Log.Debug,
+				`Set Grpc channel state ready after ${this.connectionTolerance}ms`
+			)
+			this.emit(MiddlewareSignals.Event.Ready)
 		}, this.connectionTolerance)
 	}
 
 	private setNotReady() {
 		if (this.readyTimer) {
+			this.emit(
+				MiddlewareSignals.Log.Debug,
+				`Cancelled channel ready timer`
+			)
 			clearTimeout(this.readyTimer)
 			this.readyTimer = undefined
 		}
 		this.connected = false
 		if (!this.failTimer) {
-			this.failTimer = setTimeout(
-				() => this.emit(MiddlewareSignals.Event.Error),
-				this.connectionTolerance
+			this.emit(
+				MiddlewareSignals.Log.Debug,
+				`Set Grpc channel failure timer for ${this.connectionTolerance}ms`
 			)
+			this.failTimer = setTimeout(() => {
+				if (this.readyTimer) {
+					this.failTimer = undefined
+					this.emit(
+						MiddlewareSignals.Log.Debug,
+						`Grpc channel ready timer is running, not failing channel...`
+					)
+					return
+				}
+				this.emit(
+					MiddlewareSignals.Log.Debug,
+					`Set Grpc Channel state to failed after ${this.connectionTolerance}ms`
+				)
+				this.failTimer = undefined
+				this.emit(MiddlewareSignals.Event.Error)
+			}, this.connectionTolerance)
 		}
 	}
 
@@ -490,6 +519,7 @@ export class GrpcClient extends EventEmitter {
 			channelState === GrpcState.IDLE
 		) {
 			this.emit(MiddlewareSignals.Log.Info, 'Grpc channel connected')
+			this.emit(InternalSignals.Ready)
 			this.emit(MiddlewareSignals.Event.Ready)
 		}
 	}
