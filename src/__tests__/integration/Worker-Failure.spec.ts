@@ -57,7 +57,7 @@ describe('ZBWorker', () => {
 					expect(job.retries).toBe(1)
 					return w.close().then(() => done())
 				}
-				complete.failure('Triggering a retry')
+				await complete.failure('Triggering a retry')
 			},
 			{ loglevel: 'NONE' }
 		)

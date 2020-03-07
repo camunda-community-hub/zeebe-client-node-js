@@ -1,5 +1,6 @@
 import { Chalk } from 'chalk'
 import { EventEmitter } from 'events'
+import { Duration, MaybeTimeDuration } from 'typed-duration'
 import * as uuid from 'uuid'
 import { parseVariablesAndCustomHeadersToJSON } from '../lib'
 import * as ZB from '../lib/interfaces'
@@ -54,14 +55,16 @@ export class ZBWorkerBase<
 	CustomHeaderShape,
 	WorkerOutputVariables
 > extends EventEmitter {
-	private static readonly DEFAULT_JOB_ACTIVATION_TIMEOUT = 60
+	private static readonly DEFAULT_JOB_ACTIVATION_TIMEOUT = Duration.seconds.of(
+		60
+	)
 	private static readonly DEFAULT_MAX_ACTIVE_JOBS = 32
 	public activeJobs = 0
 	public grpcClient: ZB.ZBGrpc
 	public maxJobsToActivate: number
 	public jobBatchMinSize: number
 	public taskType: string
-	public timeout: number
+	public timeout: MaybeTimeDuration
 	public pollCount = 0
 	protected zbClient: ZBClient
 	protected logger: StatefulLogInterceptor
@@ -82,7 +85,7 @@ export class ZBWorkerBase<
 	private closing = false
 	private closed = false
 	private id = uuid.v4()
-	private longPoll: number
+	private longPoll: MaybeTimeDuration
 	private debugMode: boolean
 	private restartPollingAfterLongPollTimeout?: NodeJS.Timeout
 	private capacityEmitter: EventEmitter
@@ -130,6 +133,7 @@ export class ZBWorkerBase<
 		)
 		this.timeout =
 			options.timeout || ZBWorkerBase.DEFAULT_JOB_ACTIVATION_TIMEOUT
+
 		this.longPoll = options.longPoll!
 		this.id = id || uuid.v4()
 		// Set options.debug to true to count the number of poll requests for testing
@@ -201,6 +205,8 @@ export class ZBWorkerBase<
 					clearInterval(this.keepAlive)
 					await this.grpcClient.close(timeout)
 					this.grpcClient.removeAllListeners()
+					this.emit('close')
+					this.removeAllListeners()
 					resolve()
 				})
 			}
@@ -383,7 +389,7 @@ export class ZBWorkerBase<
 			if (!this.closing) {
 				this.restartPollingAfterLongPollTimeout = setTimeout(
 					() => this.longPollLoop,
-					this.longPoll! + 100
+					Duration.milliseconds.from(this.longPoll) + 100
 				)
 			}
 		}
@@ -425,7 +431,7 @@ export class ZBWorkerBase<
 		const activateJobsRequest: ActivateJobsRequest = {
 			maxJobsToActivate: amount,
 			requestTimeout,
-			timeout: this.timeout,
+			timeout: Duration.milliseconds.from(this.timeout),
 			type: this.taskType,
 			worker: this.id,
 		}

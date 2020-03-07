@@ -18,6 +18,7 @@ Get a hosted instance of Zeebe on [Camunda Cloud](https://camunda.io).
 
 -   [ Versioning ](#versioning)
 -   [ Type difference from other Zeebe clients ](#type-difference)
+-   [ A note on representing timeout durations ](#time-duration)
 
 **Quick Start**
 
@@ -96,6 +97,37 @@ NPM Package version 0.21.x supports Zeebe 0.21.x
 
 Protobuf fields of type `int64` are serialised as type string in the Node library. These fields are serialised as numbers (long) in the Go and Java client. See [grpc/#7229](https://github.com/grpc/grpc/issues/7229) for why the Node library serialises them as string. The Workflow instance key, and other fields that are of type long in other client libraries, are type string in this library. Fields of type `int32` are serialised as type number in the Node library.
 
+<a name = "time-duration"></a>
+
+## A note on representing timeout durations
+
+All timeouts are ultimately communicated in _milliseconds_. They can be specified usint the primitive type `number`, and this is always a _number of milliseconds_.
+
+All timeouts in the client library can _also_, optionally, be specified by a time value that encodes the units, using the [typed-durations](https://www.npmjs.com/package/typed-duration) package. You can specify durations for timeouts like this:
+
+```
+const { Duration } = require('zeebe-node')
+
+const timeoutS = Duration.seconds.of(30) // 30s timeout
+const timeoutMs = Duration.milliseconds.of(30000) // 30s timeout in milliseconds
+```
+
+Using the value types makes your code more semantically specific.
+
+There are four timeouts to take into account.
+
+The first is the job `timeout`. This is the amount of time that the broker allocates exclusive responsibility for a job to a worker instance. By default, this is 60 seconds. This is the default value set by this client library. See "[Job Workers](#job-workers)".
+
+The second is the `requestTimeout`. Whenever the client library sends a gRPC command to the broker, it has an explicit or implied `requestTimeout`. This is the amount of time that the gRPC gateway will wait for a response from the broker cluster before returning a `4 DEADLINE` gRPC error response.
+
+If no `requestTimeout` is specified, then the configured timeout of the broker gateway is used. Out of the box, this is 15 seconds by default.
+
+The most significant use of the `requestTimeout` is when using the `createWorkflowInstanceWithResult` command. If your workflow will take longer than 15 seconds to complete, you should specify a `requestTimeout`. See "[Start a Workflow Instance and await the Workflow Outcome](#start-await)".
+
+The third is the `longpoll` duration. This is the amount of time that the job worker holds a long poll request to activate jobs open.
+
+The final one is the maximum back-off delay in client-side gRPC command retries. See "[Client-side gRPC retry in ZBClient](#client-side-retry)".
+
 ## Quick Start
 
 <a name = "install"></a>
@@ -167,7 +199,7 @@ To mitigate against this, the Node client implements some client-side gRPC opera
 const zbc = new ZB.ZBClient(gatewayAddress, {
     retry: true,
     maxRetries: 50,
-    maxRetryTimeout: 5000
+    maxRetryTimeout: secondsOf(5)
 })
 ```
 
@@ -361,11 +393,11 @@ ZEEBE_BASIC_AUTH_PASSWORD
 ZEEBE_BASIC_AUTH_USERNAME
 ```
 
-## Job Workers
-
 <a name ="job-workers"></a>
 
-### Job Workers
+## Job Workers
+
+### Types of Job Workers
 
 There are two different types of job worker provided by the Zeebe Node client:
 
@@ -434,8 +466,8 @@ const zbWorker = zbc.createWorker({
     taskHandler: handler,
     // the number of simultaneous tasks this worker can handle
     maxJobsToActivate: 32,
-    // the number of seconds the broker should allow this worker to complete a task
-    timeout: 30,
+    // the amount of time the broker should allow this worker to complete a task
+    timeout: secondsOf(30),
     // One of 'DEBUG', 'INFO', 'NONE'
     loglevel: 'INFO',
     // Called when the connection to the broker cannot be established, or fails
@@ -589,7 +621,9 @@ The _Decoupled Job Completion_ pattern uses a Zeebe Job Worker to activate jobs 
 
 You might activate jobs and then send them to a RabbitMQ queue, or to an AWS lambda. In this case, there may be no outcome about the job that this worker can report back to the broker about success or failure. That will be the responsibility of another part of your distributed system.
 
-The first thing you should do is call `complete.forwarded()` in your job worker handler. This has no side-effect with the broker - so nothing is communicated to Zeebe. The job is still out there with your worker as far as Zeebe is concerned. What this call does is release worker capacity to request more jobs.
+The first thing you should do is ensure that you activate the job with sufficient time for the complete execution of your system. Your worker will not be completing the job, but it informs the broker how long the expected loop will take to close.
+
+Next, call `complete.forwarded()` in your job worker handler. This has no side-effect with the broker - so nothing is communicated to Zeebe. The job is still out there with your worker as far as Zeebe is concerned. What this call does is release worker capacity to request more jobs.
 
 If you are using the Zeebe Node library in the remote system, or if the remote system eventually reports back to you (perhaps over a different RabbitMQ queue), you can use the ZBClient methods `completeJob()`, `failJob()`, and `throwError()` to report the outcome back to the broker.
 
@@ -601,6 +635,7 @@ Here is an example:
 -   Somebody wrote an adapter for this COBOL database. In executes commands over SSH.
 -   The adapter is accessible via a RabbitMQ "request" queue, which takes a command and a correlation id, so that its response can be correlated to this request.
 -   The adapter sends back the COBOL database system response on a RabbitMQ "response" queue, with the correlation id.
+-   It typically takes 15 seconds for the round-trip through RabbitMQ to the COBOL database and back.
 
 You want to put this system into a Zeebe-orchestrated BPMN model as a task.
 
@@ -616,11 +651,14 @@ Here is what that looks like in code:
 
 ```TypeScript
 import { RabbitMQSender } from './lib/my-awesome-rabbitmq-api'
-import { ZBClient } from 'zeebe-node'
+import { ZBClient, secondsOf } from 'zeebe-node'
 
 const zbc = new ZBClient()
 
-const cobolWorker = zbc.createWorker('cobol-insert', (job, complete) => {
+const cobolWorker = zbc.createWorker({
+    taskType: 'cobol-insert',
+    timeout: secondsOf(20), // allow 5s over the expected 15s
+    taskHandler: (job, complete) => {
     const { jobKey, variables } = job
     const request = {
         correlationId: jobKey,
@@ -728,7 +766,7 @@ const batchWorker = zbc.createBatchWorker({
     taskHandler: handler,
     jobBatchMinSize: 10, // at least 10 at a time
     jobBatchMaxTime: 60, // or every 60 seconds, whichever comes first
-    timeout: 80 // 80 second timeout means we have 20 seconds to process at least
+    timeout: secondsOf(80) // 80 second timeout means we have 20 seconds to process at least
 })
 ```
 
@@ -740,7 +778,7 @@ See [this blog post](http://joshwulf.com/blog/2020/03/zb-batch-worker/) for some
 
 With Zeebe 0.21 onward, long polling is supported for clients, and is used by default. Rather than polling continuously for work and getting nothing back, a client can poll once and leave the request open until work appears. This reduces network traffic and CPU utilization in the server. Every JobActivation Request is appended to the event log, so continuous polling can significantly impact broker performance, especially when an exporter is loaded (see [here](https://github.com/creditsenseau/zeebe-client-node-js/issues/64#issuecomment-520233275)).
 
-The default long polling period is 60000ms (60s).
+The default long polling period is 30s.
 
 To use a different long polling period, pass in a long poll timeout in milliseconds to the client. All workers created with that client will use it. Alternatively, set a period per-worker.
 
@@ -748,11 +786,13 @@ Long polling for workers is configured in the ZBClient like this:
 
 ```typescript
 const zbc = new ZBClient('serverAddress', {
-	longPoll: 6000, // Ten minutes in seconds - inherited by workers
+	longPoll: secondsOf(6000), // Ten minutes in seconds - inherited by workers
 })
 
-const longPollingWorker = zbc.createWorker('task-type', handler, {
-	longPoll: 120, // override client, poll 2m
+const longPollingWorker = zbc.createWorker({
+	taskType: 'task-type',
+	taskHandler: handler,
+	longPoll: secondsOf(120), // override client, poll 2m
 })
 ```
 
@@ -833,7 +873,7 @@ const result = await zbc.createWorkflowInstanceWithResult({
 		sourceValue: 5,
 		otherValue: 'rome',
 	},
-	requestTimeout: 25,
+	requestTimeout: secondsOf(25),
 })
 ```
 

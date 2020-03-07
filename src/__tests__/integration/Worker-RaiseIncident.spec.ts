@@ -36,22 +36,20 @@ describe('ZBWorker', () => {
 		})
 
 		await zbc.createWorker(
-			'test2',
 			'wait-raise-incident',
 			async (job, complete) => {
 				expect(job.workflowInstanceKey).toBe(wfi)
-				complete.success(job.variables)
+				await complete.success(job.variables)
 			},
 			{ loglevel: 'NONE' }
 		)
 
 		await zbc.createWorker(
-			'test2',
 			'pathB-raise-incident',
 			async (job, complete) => {
 				expect(job.workflowInstanceKey).toBe(wfi)
 				expect(job.variables.conditionVariable).toBe(false)
-				complete.failure('Raise an incident in Operate', 0)
+				await complete.failure('Raise an incident in Operate', 0)
 				// Manually verify that an incident has been raised
 				done()
 			},

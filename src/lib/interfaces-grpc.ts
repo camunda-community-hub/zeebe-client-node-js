@@ -1,3 +1,4 @@
+import { MaybeTimeDuration } from 'typed-duration'
 import { KeyedObject } from './interfaces'
 
 /**
@@ -33,7 +34,7 @@ export interface ActivateJobsRequest {
 	 * To immediately complete the request when no job is activated set the requestTimeout to a negative value
 	 *
 	 */
-	requestTimeout: number
+	requestTimeout: MaybeTimeDuration
 }
 
 export interface ActivatedJob {

@@ -30,7 +30,7 @@ describe('ZBWorker', () => {
 			'console-log',
 			async (job, complete) => {
 				expect(job.workflowInstanceKey).toBe(wf.workflowInstanceKey)
-				complete.success(job.variables)
+				await complete.success(job.variables)
 				done()
 			},
 			{ loglevel: 'NONE' }
@@ -44,11 +44,10 @@ describe('ZBWorker', () => {
 		expect(res.workflows.length).toBe(1)
 		wf = await zbc.createWorkflowInstance('hello-world', {})
 		zbc.createWorker(
-			'test',
 			'console-log',
 			async (job, complete) => {
 				expect(job.workflowInstanceKey).toBe(wf.workflowInstanceKey)
-				complete.success(job.variables)
+				await complete.success(job.variables)
 				done()
 			},
 			{ loglevel: 'NONE' }
@@ -77,22 +76,20 @@ describe('ZBWorker', () => {
 		})
 
 		zbc.createWorker(
-			'test2',
 			'wait',
 			async (job, complete) => {
 				expect(job.workflowInstanceKey).toBe(wfi)
-				complete.success(job)
+				await complete.success(job)
 			},
 			{ loglevel: 'NONE' }
 		)
 
 		zbc.createWorker(
-			'test2',
 			'pathB',
 			async (job, complete) => {
 				expect(job.workflowInstanceKey).toBe(wfi)
 				expect(job.variables.conditionVariable).toBe(false)
-				complete.success(job.variables)
+				await complete.success(job.variables)
 				done()
 			},
 			{ loglevel: 'NONE' }

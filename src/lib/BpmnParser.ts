@@ -64,8 +64,6 @@ export class BpmnParser {
 
 		const taskTypes = await BpmnParser.getTaskTypes(bpmnObject)
 		const taskEnumDict = buildEnumDictionaryFromArray(taskTypes)
-		// tslint:disable-next-line: no-console
-		console.log(taskEnumDict) // @DEBUG
 
 		const interfaces = await BpmnParser.generateConstantsForBpmnFiles(
 			filename

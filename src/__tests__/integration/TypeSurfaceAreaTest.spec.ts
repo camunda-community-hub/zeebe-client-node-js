@@ -1,5 +1,7 @@
 import { ZBClient, ZBWorkerTaskHandler } from '../../index'
 
+process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
+
 describe('Types API', () => {
 	it("Hasn't broken any public type contracts", async done => {
 		const zbc = new ZBClient()

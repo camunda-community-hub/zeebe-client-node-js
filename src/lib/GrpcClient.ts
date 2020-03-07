@@ -9,14 +9,30 @@ import {
 	Metadata,
 	status,
 } from 'grpc'
+import { Duration, MaybeTimeDuration } from 'typed-duration'
 import { BasicAuthConfig } from './interfaces'
 import { Loglevel } from './interfaces-published-contract'
 import { OAuthProvider } from './OAuthProvider'
 
 export interface GrpcClientExtendedOptions {
-	longPoll?: number
+	longPoll?: MaybeTimeDuration
 }
 // tslint:disable: object-literal-sort-keys
+
+function replaceTimeValuesWithMillisecondNumber(data: any) {
+	if (typeof data !== 'object') {
+		return data
+	}
+	return Object.entries(data).reduce(
+		(acc, [key, value]) => ({
+			...acc,
+			[key]: Duration.isTypedDuration(value)
+				? Duration.milliseconds.from(value)
+				: value,
+		}),
+		{}
+	)
+}
 
 export const MiddlewareSignals = {
 	Log: {
@@ -90,7 +106,7 @@ const connectivityState = [
 
 export interface GrpcClientCtor {
 	basicAuth?: BasicAuthConfig
-	connectionTolerance: number
+	connectionTolerance: MaybeTimeDuration
 	host: string
 	loglevel: Loglevel
 	oAuth?: OAuthProvider
@@ -106,7 +122,7 @@ export interface GrpcClientCtor {
 
 export class GrpcClient extends EventEmitter {
 	public channelClosed = false
-	public longPoll?: number
+	public longPoll?: MaybeTimeDuration
 	public connected: boolean = false
 	public client: Client
 	private packageDefinition: PackageDefinition
@@ -133,7 +149,9 @@ export class GrpcClient extends EventEmitter {
 		this.oAuth = oAuth
 		this.basicAuth = basicAuth
 		this.longPoll = options.longPoll
-		this.connectionTolerance = connectionTolerance
+		this.connectionTolerance = Duration.milliseconds.from(
+			connectionTolerance
+		)
 
 		this.on(InternalSignals.Ready, () => this.setReady())
 		this.on(InternalSignals.Error, () => this.setNotReady())
@@ -223,9 +241,15 @@ export class GrpcClient extends EventEmitter {
 
 				this[`${methodName}Stream`] = async data => {
 					let stream
+					const timeNormalisedRequest = replaceTimeValuesWithMillisecondNumber(
+						data
+					)
 					try {
 						const metadata = await this.getAuthToken()
-						stream = this.client[methodName](data, metadata)
+						stream = this.client[methodName](
+							timeNormalisedRequest,
+							metadata
+						)
 					} catch (e) {
 						this.emit(MiddlewareSignals.Event.Error)
 						this.setNotReady()
@@ -245,29 +269,33 @@ export class GrpcClient extends EventEmitter {
 				}
 
 				this[`${methodName}Sync`] = data => {
+					const timeNormalisedRequest = replaceTimeValuesWithMillisecondNumber(
+						data
+					)
 					const client = this.client
 					return new Promise(async (resolve, reject) => {
 						try {
 							const metadata = await this.getAuthToken()
-							client[methodName](data, metadata, (err, dat) => {
-								// This will error on network or business errors
-								if (err) {
-									const isNetworkError =
-										err.code === GrpcError.UNAVAILABLE
-									if (isNetworkError) {
-										// this.emit(
-										// 	MiddlewareSignals.Event.Error
-										// ) // @DEBUG
-										this.setNotReady()
-									} else {
-										this.setReady()
+							client[methodName](
+								timeNormalisedRequest,
+								metadata,
+								(err, dat) => {
+									// This will error on network or business errors
+									if (err) {
+										const isNetworkError =
+											err.code === GrpcError.UNAVAILABLE
+										if (isNetworkError) {
+											this.setNotReady()
+										} else {
+											this.setReady()
+										}
+										return reject(err)
 									}
-									return reject(err)
+									this.emit(MiddlewareSignals.Event.Ready)
+									this.setReady()
+									resolve(dat)
 								}
-								this.emit(MiddlewareSignals.Event.Ready)
-								this.setReady()
-								resolve(dat)
-							})
+							)
 						} catch (e) {
 							reject(e)
 						}

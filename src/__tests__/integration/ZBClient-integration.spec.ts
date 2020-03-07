@@ -91,22 +91,20 @@ describe('ZBClient', () => {
 		expect(wfi).toBeTruthy()
 
 		zbc.createWorker(
-			'test2',
 			'wait',
 			async (job, complete) => {
 				expect(job?.workflowInstanceKey).toBe(wfi)
-				complete.success(job)
+				await complete.success(job)
 			},
 			{ loglevel: 'NONE' }
 		)
 
 		zbc.createWorker(
-			'test2',
 			'pathA',
 			async (job, complete) => {
 				expect(job.workflowInstanceKey).toBe(wfi)
 				expect(job.variables.conditionVariable).toBe(true)
-				complete.success(job)
+				await complete.success(job)
 				done()
 			},
 			{ loglevel: 'NONE' }
