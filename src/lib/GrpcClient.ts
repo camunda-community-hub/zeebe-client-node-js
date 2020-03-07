@@ -478,11 +478,11 @@ export class GrpcClient extends EventEmitter {
 
 	private handleGrpcError = (stream: any) => async (err: any) => {
 		this.emit(MiddlewareSignals.Event.Error)
-		this.emit(MiddlewareSignals.Log.Error, `GRPC ERROR: ${err.message}`)
+		this.emit(MiddlewareSignals.Log.Error, `Grpc Error: ${err.message}`)
 		const channelState = await this.watchGrpcChannel()
 		this.emit(
 			MiddlewareSignals.Log.Debug,
-			`gRPC Channel state: ${connectivityState[channelState]}`
+			`Grpc Channel state: ${connectivityState[channelState]}`
 		)
 		stream.removeAllListeners()
 		if (
