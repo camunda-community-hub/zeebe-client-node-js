@@ -120,8 +120,9 @@ export class ZBClient extends EventEmitter {
 				SIMPLE: ZBSimpleLogger,
 			}[process.env.ZEEBE_NODE_LOG_TYPE || 'NONE'])
 
-		this.options.stdout = this.options.stdout || logTypeFromEnvironment()
-		this.stdout = this.options.stdout || ZBSimpleLogger
+		this.options.stdout =
+			this.options.stdout || logTypeFromEnvironment() || ZBSimpleLogger
+		this.stdout = this.options.stdout!
 
 		this.options = ConfigurationHydrator.configure(
 			gatewayAddress,
