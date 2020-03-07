@@ -70,7 +70,7 @@
 		"grpc": "^1.23.4",
 		"promise-retry": "^1.1.1",
 		"stack-trace": "0.0.10",
-		"typed-duration": "^1.0.4",
+		"typed-duration": "^1.0.7",
 		"uuid": "^3.3.2"
 	},
 	"devDependencies": {

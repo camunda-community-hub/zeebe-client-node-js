@@ -376,7 +376,7 @@ export class ZBWorkerBase<
 		const result = await this.activateJobs()
 		const start = Date.now()
 		this.logger.logDebug(
-			`Long poll loop. this.longPoll: ${Duration.valueFrom(
+			`Long poll loop. this.longPoll: ${Duration.value.of(
 				this.longPoll
 			)}`,
 			Object.keys(result)[0],
@@ -437,18 +437,17 @@ export class ZBWorkerBase<
 
 		const requestTimeout = this.longPoll || -1
 
-		const timeout = Duration.valueFrom(
-			Duration.milliseconds.of(this.timeout)
-		)
 		const activateJobsRequest: ActivateJobsRequest = {
 			maxJobsToActivate: amount,
 			requestTimeout,
-			timeout,
+			timeout: this.timeout,
 			type: this.taskType,
 			worker: this.id,
 		}
 		this.logger.logDebug(
-			`Requesting ${amount} jobs with requestTimeout ${timeout}ms`
+			`Requesting ${amount} jobs with requestTimeout ${Duration.value.of(
+				requestTimeout
+			)}, job timeout: ${Duration.value.of(this.timeout)}`
 		)
 
 		try {

@@ -18,7 +18,7 @@ export interface ActivateJobsRequest {
 	 * The broker checks time outs every 30 seconds, so the broker timeout is guaranteed in at-most timeout + 29s
 	 * be guaranteed.
 	 */
-	timeout: number
+	timeout: MaybeTimeDuration
 	/**
 	 * The maximum jobs to activate by this request
 	 */

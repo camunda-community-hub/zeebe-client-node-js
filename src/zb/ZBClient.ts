@@ -57,9 +57,7 @@ export class ZBClient extends EventEmitter {
 	)
 	private static readonly DEFAULT_MAX_RETRIES = 50
 	private static readonly DEFAULT_MAX_RETRY_TIMEOUT = Duration.seconds.of(5)
-	private static readonly DEFAULT_LONGPOLL_PERIOD = Duration.milliseconds.of(
-		30000
-	)
+	private static readonly DEFAULT_LONGPOLL_PERIOD = Duration.seconds.of(30)
 	public connectionTolerance: MaybeTimeDuration =
 		ZBClient.DEFAULT_CONNECTION_TOLERANCE
 	public connected = true
