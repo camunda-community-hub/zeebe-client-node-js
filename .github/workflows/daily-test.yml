@@ -1,8 +1,8 @@
-name: "Canary Test on Camunda Cloud (Hourly)"
+name: "Canary Test on Camunda Cloud (Daily)"
 on:
   schedule:
     # * is a special character in YAML so you have to quote this string
-    - cron: "*/15 * * * *"
+    - cron: "0 8 * * *"
 
 jobs:
   test: # make sure build/ci work properly
