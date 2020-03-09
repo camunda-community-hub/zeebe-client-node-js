@@ -1,6 +1,7 @@
 import { ZBClient } from '../..'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
+jest.setTimeout(40000)
 
 describe('ZBWorker', () => {
 	let zbc: ZBClient
@@ -12,7 +13,7 @@ describe('ZBWorker', () => {
 
 	afterEach(async done => {
 		try {
-			if (wf) {
+			if (wf?.workflowInstanceKey) {
 				await zbc.cancelWorkflowInstance(wf.workflowInstanceKey)
 			}
 		} catch (e) {
@@ -24,7 +25,6 @@ describe('ZBWorker', () => {
 	})
 
 	it('Causes a retry with complete.failure()', async done => {
-		jest.setTimeout(30000)
 		const res = await zbc.deployWorkflow(
 			'./src/__tests__/testdata/Worker-Failure1.bpmn'
 		)
@@ -47,7 +47,6 @@ describe('ZBWorker', () => {
 		})
 
 		const w = zbc.createWorker(
-			'test2',
 			'wait-worker-failure',
 			async (job, complete) => {
 				expect(job.workflowInstanceKey).toBe(wfi)
@@ -64,8 +63,6 @@ describe('ZBWorker', () => {
 	})
 
 	it('Does not fail a workflow when the handler throws, by default', async done => {
-		jest.setTimeout(17000)
-
 		const res = await zbc.deployWorkflow(
 			'./src/__tests__/testdata/Worker-Failure2.bpmn'
 		)
@@ -77,7 +74,6 @@ describe('ZBWorker', () => {
 
 		// Faulty worker - throws an unhandled exception in task handler
 		const w = zbc.createWorker(
-			'test',
 			'console-log-worker-failure-2',
 			async (_, complete) => {
 				if (alreadyFailed) {
@@ -98,8 +94,6 @@ describe('ZBWorker', () => {
 	})
 
 	it('Fails a workflow when the handler throws and options.failWorkflowOnException is set', async done => {
-		jest.setTimeout(20000)
-
 		const res = await zbc.deployWorkflow(
 			'./src/__tests__/testdata/Worker-Failure3.bpmn'
 		)

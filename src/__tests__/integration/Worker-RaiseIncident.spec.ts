@@ -51,6 +51,8 @@ describe('ZBWorker', () => {
 				expect(job.variables.conditionVariable).toBe(false)
 				await complete.failure('Raise an incident in Operate', 0)
 				// Manually verify that an incident has been raised
+				await zbc.cancelWorkflowInstance(job.workflowInstanceKey)
+				// remove the preceding line for the verification test
 				done()
 			},
 			{ longPoll: 10000, maxJobsToActivate: 1, loglevel: 'NONE' }

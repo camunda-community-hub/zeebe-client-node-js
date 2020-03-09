@@ -42,6 +42,7 @@ describe('ZBClient', () => {
 			async (job, complete) => {
 				await complete.success()
 				expect(job.variables.testKey).toBe(randomId) // Makes sure the worker isn't responding to another message
+				await zbc.cancelWorkflowInstance(job.workflowInstanceKey)
 				done()
 			},
 			{ loglevel: 'NONE' }
