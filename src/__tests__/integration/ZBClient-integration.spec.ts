@@ -1,7 +1,15 @@
 import { ZBClient } from '../..'
+import { createUniqueTaskType } from '../../lib/createUniqueTaskType'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 jest.setTimeout(30000)
+
+const trace = async result => {
+	// tslint:disable-next-line: no-console
+	console.log(result)
+	return result
+}
+
 describe('ZBClient', () => {
 	let zbc: ZBClient
 	let wf
@@ -75,87 +83,6 @@ describe('ZBClient', () => {
 		} catch (e) {
 			done()
 		}
-	})
-
-	it('Correctly branches on variables', async done => {
-		const res = await zbc.deployWorkflow(
-			'./src/__tests__/testdata/conditional-pathway.bpmn'
-		)
-		expect(res?.workflows?.length).toBe(1)
-		expect(res?.workflows?.[0]?.bpmnProcessId).toBe('condition-test')
-
-		wf = await zbc.createWorkflowInstance('condition-test', {
-			conditionVariable: true,
-		})
-		const wfi = wf?.workflowInstanceKey
-		expect(wfi).toBeTruthy()
-
-		zbc.createWorker(
-			'wait',
-			async (job, complete) => {
-				expect(job?.workflowInstanceKey).toBe(wfi)
-				await complete.success(job)
-			},
-			{ loglevel: 'NONE' }
-		)
-
-		zbc.createWorker(
-			'pathA',
-			async (job, complete) => {
-				expect(job.workflowInstanceKey).toBe(wfi)
-				expect(job.variables.conditionVariable).toBe(true)
-				await complete.success(job)
-				done()
-			},
-			{ loglevel: 'NONE' }
-		)
-	})
-
-	it('Can update workflow variables', async done => {
-		jest.setTimeout(30000)
-
-		const res = await zbc.deployWorkflow(
-			'./src/__tests__/testdata/conditional-pathway.bpmn'
-		)
-
-		expect(res?.workflows?.length).toBe(1)
-		expect(res?.workflows?.[0]?.bpmnProcessId).toBe('condition-test')
-
-		wf = await zbc.createWorkflowInstance('condition-test', {
-			conditionVariable: true,
-		})
-
-		const wfi = wf?.workflowInstanceKey
-		expect(wfi).toBeTruthy()
-
-		await zbc.setVariables({
-			elementInstanceKey: wfi,
-			local: false,
-			variables: {
-				conditionVariable: false,
-			},
-		})
-
-		zbc.createWorker(
-			'wait',
-			async (job, complete) => {
-				expect(job?.workflowInstanceKey).toBe(wfi)
-				complete.success(job)
-			},
-			{ loglevel: 'INFO' }
-		)
-
-		zbc.createWorker(
-			'test2',
-			'pathB',
-			async (job, complete) => {
-				expect(job?.workflowInstanceKey).toBe(wfi)
-				expect(job?.variables?.conditionVariable).toBe(false)
-				complete.success(job.variables)
-				done()
-			},
-			{ loglevel: 'NONE' }
-		)
 	})
 
 	it("does not retry to cancel a workflow instance that doesn't exist", async () => {

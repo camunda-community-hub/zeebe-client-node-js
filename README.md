@@ -147,7 +147,7 @@ npm i zeebe-node
 ```javascript
 const ZB = require('zeebe-node')
 
-;(async () => {
+void (async () => {
 	const zbc = new ZB.ZBClient('localhost:26500')
 	const topology = await zbc.topology()
 	console.log(JSON.stringify(topology, null, 2))
@@ -162,7 +162,7 @@ const ZB = require('zeebe-node')
 const ZB = require('zeebe-node')
 const fs = require('fs')
 
-;(async () => {
+void (async () => {
 	const zbc = new ZB.ZBClient() // localhost:26500 || ZEEBE_GATEWAY_ADDRESS
 
 	const res = await zbc.deployWorkflow('./domain-mutation.bpmn')
