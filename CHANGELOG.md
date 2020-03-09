@@ -5,7 +5,7 @@
 _Changes in APIs or behaviour that may affect existing applications that use zeebe-node._
 
 -   The `job.variables` and `job.customHeaders` in the worker job handler are now typed as read-only structures. This will only be a breaking change if your code relies on mutating these data structures. See the section "Working with Workflow Variables and Custom Headers" in the README for an explanation on doing deep key updates on the job variables.
--   The library nows logs with the simplified `ZBSimpleLogger` by default, for friendly human-readable logs. This will only be a breaking change if you currently rely on the structured log output. To get the previous structured log behaviour, pass in `stdout: ZBJsonLogger` to the `ZBClient` constructor options, or set the environment variable `export ZEEBE_NODE_LOG_TYPE=JSON`. Refer to the "Logging" section in the README.
+-   The library nows logs with the simplified `ZBSimpleLogger` by default, for friendly human-readable logs. This will only be a breaking change if you currently rely on the structured log output. To get the previous structured log behaviour, pass in `stdout: ZBJsonLogger` to the `ZBClient` constructor options, or set the environment variable `ZEEBE_NODE_LOG_TYPE` to `JSON`. Refer to the "Logging" section in the README.
 
 ## New Features
 
