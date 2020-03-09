@@ -1,7 +1,9 @@
 import { Duration } from 'typed-duration'
 import { ZBClient } from '../..'
+import { createUniqueTaskType } from '../../lib/createUniqueTaskType'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
+jest.setTimeout(25000)
 
 describe('ZBClient.throwError', () => {
 	let zbc: ZBClient
@@ -15,22 +17,31 @@ describe('ZBClient.throwError', () => {
 	})
 
 	it('Throws a business error that is caught in the process', async () => {
-		await zbc.deployWorkflow(
-			'./src/__tests__/testdata/Client-ThrowError.bpmn'
-		)
-		const processId = 'throw-bpmn-error'
+		const { bpmn, taskTypes } = createUniqueTaskType({
+			bpmnFilePath: './src/__tests__/testdata/Client-ThrowError.bpmn',
+			processIdPrefix: 'error-',
+			taskTypes: ['throw-bpmn-error-task', 'sad-flow'],
+		})
+
+		await zbc.deployWorkflow({
+			definition: bpmn,
+			name: 'error-throw-bpmn-error.bpmn',
+		})
+		const processId = 'error-throw-bpmn-error'
 		zbc.createWorker({
 			taskHandler: (_, complete) =>
 				complete.error('BUSINESS_ERROR', "Well, that didn't work"),
-			taskType: 'throw-bpmn-error',
+			taskType: taskTypes['throw-bpmn-error-task'],
 			timeout: Duration.seconds.of(30),
 		})
-		zbc.createWorker('sad-flow', (_, complete) =>
+		zbc.createWorker(taskTypes['sad-flow'], (_, complete) =>
 			complete.success({
 				bpmnErrorCaught: true,
 			})
 		)
-		const result = await zbc.createWorkflowInstanceWithResult(processId, {})
+		const result = await zbc.createWorkflowInstanceWithResult(processId, {
+			timeout: 20000,
+		})
 		expect(result.variables.bpmnErrorCaught).toBe(true)
 	})
 })

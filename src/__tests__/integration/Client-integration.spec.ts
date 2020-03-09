@@ -1,4 +1,5 @@
 import { ZBClient } from '../..'
+import { createUniqueTaskType } from '../../lib/createUniqueTaskType'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 jest.setTimeout(30000)
@@ -13,8 +14,10 @@ describe('ZBClient', () => {
 
 	afterEach(async () => {
 		try {
-			if (wf) {
-				zbc.cancelWorkflowInstance(wf.workflowInstanceKey) // Cleanup any active workflows
+			if (wf && wf.workflowInstanceKey) {
+				await zbc
+					.cancelWorkflowInstance(wf.workflowInstanceKey)
+					.catch(e => e) // Cleanup any active workflows
 			}
 		} finally {
 			await zbc.close() // Makes sure we don't forget to close connection
@@ -27,11 +30,17 @@ describe('ZBClient', () => {
 	})
 
 	it('Deploys a single workflow', async () => {
-		const res = await zbc.deployWorkflow(
-			'./src/__tests__/testdata/hello-world.bpmn'
-		)
+		const { bpmn } = createUniqueTaskType({
+			bpmnFilePath: './src/__tests__/testdata/hello-world.bpmn',
+			processIdPrefix: 'single-',
+			taskTypes: ['console-log-complete'],
+		})
+		const res = await zbc.deployWorkflow({
+			definition: bpmn,
+			name: 'single-hello-world.bpmn',
+		})
 		expect(res?.workflows?.length).toBe(1)
-		expect(res?.workflows?.[0]?.bpmnProcessId).toBe('hello-world')
+		expect(res?.workflows?.[0]?.bpmnProcessId).toBe('single-hello-world')
 	})
 
 	it('Can create a worker', () => {
@@ -46,27 +55,21 @@ describe('ZBClient', () => {
 		expect(worker).toBeTruthy()
 	})
 
-	it('Can start a workflow', async () => {
-		const res = await zbc.deployWorkflow(
-			'./src/__tests__/testdata/hello-world.bpmn'
-		)
-		expect(res?.workflows?.length).toBe(1)
-
-		wf = await zbc.createWorkflowInstance('hello-world', {})
-		await zbc.cancelWorkflowInstance(wf?.workflowInstanceKey)
-		expect(wf?.bpmnProcessId).toBe('hello-world')
-		expect(wf?.workflowInstanceKey).toBeTruthy()
-	})
-
 	it('Can cancel a workflow', async done => {
-		const res = await zbc.deployWorkflow(
-			'./src/__tests__/testdata/hello-world.bpmn'
-		)
-		expect(res?.workflows?.length).toBe(1)
-		expect(res?.workflows?.[0]?.bpmnProcessId).toBe('hello-world')
+		const { bpmn } = createUniqueTaskType({
+			bpmnFilePath: './src/__tests__/testdata/hello-world.bpmn',
+			processIdPrefix: 'cancel-wf-',
+			taskTypes: ['console-log'],
+		})
+		const res = await zbc.deployWorkflow({
+			definition: bpmn,
+			name: 'cancel-hello-world.bpmn',
+		})
+		expect(res.workflows.length).toBe(1)
+		expect(res.workflows[0].bpmnProcessId).toBe('cancel-wf-hello-world')
 
-		wf = await zbc.createWorkflowInstance('hello-world', {})
-		const wfi = wf?.workflowInstanceKey
+		wf = await zbc.createWorkflowInstance('cancel-wf-hello-world', {})
+		const wfi = wf.workflowInstanceKey
 		expect(wfi).toBeTruthy()
 
 		await zbc.cancelWorkflowInstance(wfi)

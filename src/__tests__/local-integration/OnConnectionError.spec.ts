@@ -3,7 +3,7 @@ import { ZBClient } from '../..'
 jest.setTimeout(16000)
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 
-describe('onConnectionError Handler', () => {
+describe('ZBClient', () => {
 	it(`Calls the onConnectionError handler if there is no broker`, async done => {
 		let called = 0
 		const zbc2 = new ZBClient('localtoast: 267890', {

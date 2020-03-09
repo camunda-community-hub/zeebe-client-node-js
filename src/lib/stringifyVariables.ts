@@ -26,6 +26,6 @@ export function parseVariables<T extends { variables: string }>(
 	response: T
 ): T & { variables: JSONDoc } {
 	return (Object as any).assign({}, response, {
-		variables: JSON.parse(response.variables),
+		variables: JSON.parse(response.variables || '{}'),
 	})
 }

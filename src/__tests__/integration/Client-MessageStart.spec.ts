@@ -16,9 +16,10 @@ describe('ZBClient', () => {
 	})
 
 	it('Can start a workflow with a message', async done => {
-		const { bpmn, taskType } = createUniqueTaskType({
+		const { bpmn, taskTypes } = createUniqueTaskType({
 			bpmnFilePath: './src/__tests__/testdata/Client-MessageStart.bpmn',
-			taskType: 'console-log-msg-start',
+			processIdPrefix: 'start-',
+			taskTypes: ['console-log-msg-start'],
 		})
 		const deploy = await zbc.deployWorkflow({
 			definition: bpmn,
@@ -37,7 +38,7 @@ describe('ZBClient', () => {
 		})
 
 		zbc.createWorker(
-			taskType,
+			taskTypes['console-log-msg-start'],
 			async (job, complete) => {
 				await complete.success()
 				expect(job.variables.testKey).toBe(randomId) // Makes sure the worker isn't responding to another message

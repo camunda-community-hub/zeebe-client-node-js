@@ -4,17 +4,34 @@ import { v4 as uuid } from 'uuid'
 // This deals with stateful tests
 export function createUniqueTaskType({
 	bpmnFilePath,
-	taskType,
+	taskTypes,
+	processIdPrefix,
 }: {
 	bpmnFilePath: string
-	taskType: string
-}) {
+	taskTypes: string[]
+	processIdPrefix: string
+}): {
+	bpmn: Buffer
+	taskTypes: { [key: string]: string }
+} {
 	const bpmn = readFileSync(bpmnFilePath, 'utf-8')
-	const newTaskType = uuid()
-	const modifiedBpmn = bpmn.split(taskType).join(newTaskType)
+	const newTaskTypes = taskTypes.map(t => ({ [t]: uuid() }))
 
+	const modifiedBpmn = newTaskTypes.reduce(
+		(p, c) =>
+			p
+				.split(`<zeebe:taskDefinition type="${Object.keys(c)[0]}`)
+				.join(`<zeebe:taskDefinition type="${c[Object.keys(c)[0]]}`),
+		bpmn
+	)
+
+	const renamedProcess = modifiedBpmn
+		.split('<bpmn:process id="')
+		.join(`<bpmn:process id="${processIdPrefix}`)
+
+	const taskTypesMap = newTaskTypes.reduce((p, c) => ({ ...p, ...c }), {})
 	return {
-		bpmn: Buffer.from(modifiedBpmn),
-		taskType: newTaskType,
+		bpmn: Buffer.from(renamedProcess),
+		taskTypes: taskTypesMap,
 	}
 }
