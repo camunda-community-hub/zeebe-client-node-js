@@ -24,19 +24,19 @@ describe('ZBWorker', () => {
 	})
 
 	it('Can service a task', async done => {
-		const { bpmn, taskTypes } = createUniqueTaskType({
+		const { bpmn, taskTypes, processId } = createUniqueTaskType({
 			bpmnFilePath: './src/__tests__/testdata/hello-world.bpmn',
-			processIdPrefix: 'service-',
+			messages: [],
 			taskTypes: ['console-log'],
 		})
 		const res = await zbc.deployWorkflow({
 			definition: bpmn,
-			name: 'service-hello-world.bpmn',
+			name: `service-hello-world-${processId}.bpmn`,
 		})
 
 		expect(res.workflows.length).toBe(1)
 
-		wf = await zbc.createWorkflowInstance('service-hello-world', {})
+		wf = await zbc.createWorkflowInstance(processId, {})
 		zbc.createWorker(
 			taskTypes['console-log'],
 			async (job, complete) => {
@@ -49,21 +49,18 @@ describe('ZBWorker', () => {
 	})
 
 	it('Can service a task with complete.success', async done => {
-		const { bpmn, taskTypes } = createUniqueTaskType({
+		const { bpmn, processId, taskTypes } = createUniqueTaskType({
 			bpmnFilePath: './src/__tests__/testdata/hello-world-complete.bpmn',
-			processIdPrefix: 'success-',
+			messages: [],
 			taskTypes: ['console-log-complete'],
 		})
 		const res = await zbc.deployWorkflow({
 			definition: bpmn,
-			name: 'hello-world-complete.bpmn',
+			name: `hello-world-complete-${processId}.bpmn`,
 		})
 
 		expect(res.workflows.length).toBe(1)
-		wf = await zbc.createWorkflowInstance(
-			'success-hello-world-complete',
-			{}
-		)
+		wf = await zbc.createWorkflowInstance(processId, {})
 
 		zbc.createWorker(
 			taskTypes['console-log-complete'],
@@ -77,20 +74,20 @@ describe('ZBWorker', () => {
 	})
 
 	it('Can update workflow variables with complete.success()', async done => {
-		const { bpmn, taskTypes } = createUniqueTaskType({
+		const { bpmn, taskTypes, processId } = createUniqueTaskType({
 			bpmnFilePath: './src/__tests__/testdata/conditional-pathway.bpmn',
-			processIdPrefix: 'update-',
+			messages: [],
 			taskTypes: ['wait', 'pathB'],
 		})
 		const res = await zbc.deployWorkflow({
 			definition: bpmn,
-			name: 'conditional-pathway.bpmn',
+			name: `conditional-pathway-${processId}.bpmn`,
 		})
 
 		expect(res.workflows.length).toBe(1)
-		expect(res.workflows[0].bpmnProcessId).toBe('update-condition-test')
+		expect(res.workflows[0].bpmnProcessId).toBe(processId)
 
-		wf = await zbc.createWorkflowInstance('update-condition-test', {
+		wf = await zbc.createWorkflowInstance(processId, {
 			conditionVariable: true,
 		})
 		const wfi = wf.workflowInstanceKey

@@ -1,5 +1,6 @@
 import * as uuid from 'uuid'
 import { ZBClient } from '../..'
+import { createUniqueTaskType } from '../../lib/createUniqueTaskType'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 
@@ -13,18 +14,26 @@ describe('ZBWorker', () => {
 		await zbc.close()
 	})
 
+	/**
+	 * This test is currently disabled
+	 */
 	it('Does long poll by default', async done => {
 		jest.setTimeout(40000)
 		zbcLongPoll = new ZBClient({
 			longPoll: 60000,
 		})
-		const res = await zbcLongPoll.deployWorkflow(
-			'./src/__tests__/testdata/Worker-LongPoll.bpmn'
-		)
+		const { processId, bpmn } = createUniqueTaskType({
+			bpmnFilePath: './src/__tests__/testdata/Worker-LongPoll.bpmn',
+			messages: [],
+			taskTypes: [],
+		})
+		const res = await zbcLongPoll.deployWorkflow({
+			definition: bpmn,
+			name: `worker-longPoll-${processId}.bpmn`,
+		})
 		expect(res.workflows.length).toBe(1)
 
 		const worker = zbcLongPoll.createWorker(
-			'test',
 			uuid.v4(),
 			async (job, complete) => {
 				// expect(job.workflowInstanceKey).toBe(wf2.workflowInstanceKey)

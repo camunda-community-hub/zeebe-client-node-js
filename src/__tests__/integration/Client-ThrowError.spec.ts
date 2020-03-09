@@ -17,17 +17,16 @@ describe('ZBClient.throwError', () => {
 	})
 
 	it('Throws a business error that is caught in the process', async () => {
-		const { bpmn, taskTypes } = createUniqueTaskType({
+		const { bpmn, taskTypes, processId } = createUniqueTaskType({
 			bpmnFilePath: './src/__tests__/testdata/Client-ThrowError.bpmn',
-			processIdPrefix: 'error-',
+			messages: [],
 			taskTypes: ['throw-bpmn-error-task', 'sad-flow'],
 		})
 
 		await zbc.deployWorkflow({
 			definition: bpmn,
-			name: 'error-throw-bpmn-error.bpmn',
+			name: `error-throw-bpmn-error-${processId}.bpmn`,
 		})
-		const processId = 'error-throw-bpmn-error'
 		zbc.createWorker({
 			taskHandler: (_, complete) =>
 				complete.error('BUSINESS_ERROR', "Well, that didn't work"),

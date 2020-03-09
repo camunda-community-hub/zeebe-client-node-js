@@ -18,20 +18,20 @@ describe('ZBClient', () => {
 	})
 
 	it('Can start a workflow', async () => {
-		const { bpmn } = createUniqueTaskType({
+		const { bpmn, processId } = createUniqueTaskType({
 			bpmnFilePath: './src/__tests__/testdata/hello-world.bpmn',
-			processIdPrefix: 'start-wf-',
+			messages: [],
 			taskTypes: ['console-log'],
 		})
 		const res = await zbc.deployWorkflow({
 			definition: bpmn,
-			name: 'start-hello-world.bpmn',
+			name: `start-hello-world-${processId}.bpmn`,
 		})
-		expect(res?.workflows?.length).toBe(1)
+		expect(res.workflows.length).toBe(1)
 
-		wf = await zbc.createWorkflowInstance('start-wf-hello-world', {})
-		await zbc.cancelWorkflowInstance(wf?.workflowInstanceKey)
-		expect(wf?.bpmnProcessId).toBe('start-wf-hello-world')
-		expect(wf?.workflowInstanceKey).toBeTruthy()
+		wf = await zbc.createWorkflowInstance(processId, {})
+		await zbc.cancelWorkflowInstance(wf.workflowInstanceKey)
+		expect(wf.bpmnProcessId).toBe(processId)
+		expect(wf.workflowInstanceKey).toBeTruthy()
 	})
 })

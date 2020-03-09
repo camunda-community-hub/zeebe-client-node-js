@@ -1,7 +1,8 @@
 import { ZBClient } from '../..'
+import { createUniqueTaskType } from '../../lib/createUniqueTaskType'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
-jest.setTimeout(40000)
+jest.setTimeout(60000)
 
 describe('ZBWorker', () => {
 	let zbc: ZBClient
@@ -25,14 +26,21 @@ describe('ZBWorker', () => {
 	})
 
 	it('Causes a retry with complete.failure()', async done => {
-		const res = await zbc.deployWorkflow(
-			'./src/__tests__/testdata/Worker-Failure1.bpmn'
-		)
+		const { bpmn, processId, taskTypes } = createUniqueTaskType({
+			bpmnFilePath: './src/__tests__/testdata/Worker-Failure1.bpmn',
+			messages: [],
+			taskTypes: ['wait-worker-failure'],
+		})
+
+		const res = await zbc.deployWorkflow({
+			definition: bpmn,
+			name: `worker-failure-${processId}.bpmn`,
+		})
 
 		expect(res.workflows.length).toBe(1)
-		expect(res.workflows[0].bpmnProcessId).toBe('worker-failure')
+		expect(res.workflows[0].bpmnProcessId).toBe(processId)
 
-		wf = await zbc.createWorkflowInstance('worker-failure', {
+		wf = await zbc.createWorkflowInstance(processId, {
 			conditionVariable: true,
 		})
 		const wfi = wf.workflowInstanceKey
@@ -46,15 +54,16 @@ describe('ZBWorker', () => {
 			},
 		})
 
-		const w = zbc.createWorker(
-			'wait-worker-failure',
+		zbc.createWorker(
+			taskTypes['wait-worker-failure'],
 			async (job, complete) => {
-				expect(job.workflowInstanceKey).toBe(wfi)
 				// Succeed on the third attempt
 				if (job.retries === 1) {
 					complete.success()
+					expect(job.workflowInstanceKey).toBe(wfi)
 					expect(job.retries).toBe(1)
-					return w.close().then(() => done())
+					wf = undefined
+					return done()
 				}
 				await complete.failure('Triggering a retry')
 			},
@@ -63,18 +72,24 @@ describe('ZBWorker', () => {
 	})
 
 	it('Does not fail a workflow when the handler throws, by default', async done => {
-		const res = await zbc.deployWorkflow(
-			'./src/__tests__/testdata/Worker-Failure2.bpmn'
-		)
+		const { bpmn, processId, taskTypes } = createUniqueTaskType({
+			bpmnFilePath: './src/__tests__/testdata/Worker-Failure2.bpmn',
+			messages: [],
+			taskTypes: ['console-log-worker-failure-2'],
+		})
+		const res = await zbc.deployWorkflow({
+			definition: bpmn,
+			name: `worker-failure-2-${processId}.bpmn`,
+		})
 		expect(res.workflows.length).toBe(1)
-		expect(res.workflows[0].bpmnProcessId).toBe('worker-failure2')
-		wf = await zbc.createWorkflowInstance('worker-failure2', {})
+		expect(res.workflows[0].bpmnProcessId).toBe(processId)
+		wf = await zbc.createWorkflowInstance(processId, {})
 
 		let alreadyFailed = false
 
 		// Faulty worker - throws an unhandled exception in task handler
 		const w = zbc.createWorker(
-			'console-log-worker-failure-2',
+			taskTypes['console-log-worker-failure-2'],
 			async (_, complete) => {
 				if (alreadyFailed) {
 					await zbc.cancelWorkflowInstance(wf.workflowInstanceKey) // throws if not found. Should NOT throw in this test
@@ -94,18 +109,23 @@ describe('ZBWorker', () => {
 	})
 
 	it('Fails a workflow when the handler throws and options.failWorkflowOnException is set', async done => {
-		const res = await zbc.deployWorkflow(
-			'./src/__tests__/testdata/Worker-Failure3.bpmn'
-		)
+		const { bpmn, taskTypes, processId } = createUniqueTaskType({
+			bpmnFilePath: './src/__tests__/testdata/Worker-Failure3.bpmn',
+			messages: [],
+			taskTypes: ['console-log-worker-failure-3'],
+		})
+		const res = await zbc.deployWorkflow({
+			definition: bpmn,
+			name: `worker-failure-3-${processId}.bpmn`,
+		})
 		expect(res.workflows.length).toBe(1)
-		expect(res.workflows[0].bpmnProcessId).toBe('worker-failure3')
-		wf = await zbc.createWorkflowInstance('worker-failure3', {})
+		expect(res.workflows[0].bpmnProcessId).toBe(processId)
+		wf = await zbc.createWorkflowInstance(processId, {})
 
 		let alreadyFailed = false
 		// Faulty worker
 		const w = zbc.createWorker(
-			'test',
-			'console-log-worker-failure-3',
+			taskTypes['console-log-worker-failure-3'],
 			() => {
 				if (alreadyFailed) {
 					// It polls multiple times a second, and we need it to only throw once

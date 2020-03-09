@@ -32,26 +32,24 @@ describe('ZBClient', () => {
 	it('Can update workflow variables with setVariables', async done => {
 		jest.setTimeout(30000)
 
-		const { bpmn, taskTypes } = createUniqueTaskType({
+		const { bpmn, taskTypes, processId } = createUniqueTaskType({
 			bpmnFilePath: './src/__tests__/testdata/conditional-pathway.bpmn',
-			processIdPrefix: 'updatevars-',
+			messages: [],
 			taskTypes: ['pathB', 'wait'],
 		})
 
 		const res = await zbc
 			.deployWorkflow({
 				definition: bpmn,
-				name: 'updatevars-conditional-pathway.bpmn',
+				name: `conditional-pathway-${processId}.bpmn`,
 			})
 			.then(trace)
 
 		expect(res?.workflows?.length).toBe(1)
-		expect(res?.workflows?.[0]?.bpmnProcessId).toBe(
-			'updatevars-condition-test'
-		)
+		expect(res?.workflows?.[0]?.bpmnProcessId).toBe(processId)
 
 		wf = await zbc
-			.createWorkflowInstance('updatevars-condition-test', {
+			.createWorkflowInstance(processId, {
 				conditionVariable: true,
 			})
 			.then(trace)
@@ -78,7 +76,6 @@ describe('ZBClient', () => {
 		)
 
 		zbc.createWorker(
-			'test2',
 			taskTypes.pathB,
 			async (job, complete) => {
 				expect(job?.workflowInstanceKey).toBe(wfi)
@@ -86,7 +83,7 @@ describe('ZBClient', () => {
 				complete.success(job.variables)
 				done()
 			},
-			{ loglevel: 'DEBUG' }
+			{ loglevel: 'INFO' }
 		)
 	})
 })
