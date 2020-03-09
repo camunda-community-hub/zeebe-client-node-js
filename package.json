@@ -68,6 +68,7 @@
 		"fp-ts": "^2.5.1",
 		"got": "^9.6.0",
 		"grpc": "^1.24.2",
+		"long": "^4.0.0",
 		"promise-retry": "^1.1.1",
 		"stack-trace": "0.0.10",
 		"typed-duration": "^1.0.7",
