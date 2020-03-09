@@ -1,14 +1,7 @@
 import { ZBClient } from '../..'
-import { createUniqueTaskType } from '../../lib/createUniqueTaskType'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 jest.setTimeout(30000)
-
-const trace = async result => {
-	// tslint:disable-next-line: no-console
-	console.log(result)
-	return result
-}
 
 describe('ZBClient', () => {
 	let zbc: ZBClient
