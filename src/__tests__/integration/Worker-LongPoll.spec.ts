@@ -36,7 +36,7 @@ describe('ZBWorker', () => {
 		)
 		// Wait to outside 10s - it should have polled once when it gets the job
 		setTimeout(async () => {
-			expect(worker.pollCount).toBe(1)
+			expect(worker.pollCount).toBe(2)
 			done()
 			// wf2 = await zbcLongPoll.createWorkflowInstance('long-poll', {})
 		}, 35000)
