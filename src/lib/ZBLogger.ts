@@ -1,6 +1,7 @@
 import { Chalk } from 'chalk'
 import dayjs from 'dayjs'
 import * as stackTrace from 'stack-trace'
+import { Duration, MaybeTimeDuration } from 'typed-duration'
 import { ConfigurationHydrator } from './ConfigurationHydrator'
 import { ZBLoggerConfig } from './interfaces'
 import { Loglevel } from './interfaces-published-contract'
@@ -14,7 +15,7 @@ export class ZBLogger {
 	private id?: string
 	private stdout: any
 	private colorise: boolean
-	private pollInterval?: number
+	private pollInterval?: MaybeTimeDuration
 	private namespace: string | undefined
 
 	constructor({
@@ -41,6 +42,8 @@ export class ZBLogger {
 		this.stdout = stdout || console
 		this.colorise = colorise !== false
 		this.pollInterval = pollInterval
+			? Duration.milliseconds.from(pollInterval)
+			: pollInterval
 	}
 
 	public info(message: any, ...optionalParameters) {
@@ -83,9 +86,9 @@ export class ZBLogger {
 				? this.makeMessage(frame, 20, message, optionalParameters)
 				: this.makeMessage(frame, 20, message)
 		if (this.stdout === console) {
-			this.stdout.info(this._colorise(msg))
+			this.stdout.debug(this._colorise(msg))
 		} else {
-			this.stdout.info(msg)
+			this.stdout.debug(msg)
 		}
 	}
 

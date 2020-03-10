@@ -1,3 +1,4 @@
+import { MaybeTimeDuration } from 'typed-duration'
 import { KeyedObject } from './interfaces'
 
 /**
@@ -17,7 +18,7 @@ export interface ActivateJobsRequest {
 	 * The broker checks time outs every 30 seconds, so the broker timeout is guaranteed in at-most timeout + 29s
 	 * be guaranteed.
 	 */
-	timeout: number
+	timeout: MaybeTimeDuration
 	/**
 	 * The maximum jobs to activate by this request
 	 */
@@ -33,7 +34,7 @@ export interface ActivateJobsRequest {
 	 * To immediately complete the request when no job is activated set the requestTimeout to a negative value
 	 *
 	 */
-	requestTimeout: number
+	requestTimeout: MaybeTimeDuration
 }
 
 export interface ActivatedJob {
@@ -202,7 +203,7 @@ export interface PublishMessageRequest<Variables = KeyedObject> {
 	/** The value to match with the field specified as "Subscription Correlation Key" in BPMN */
 	correlationKey: string
 	/** The number of seconds for the message to buffer on the broker, awaiting correlation. Omit or set to zero for no buffering. */
-	timeToLive: number
+	timeToLive: MaybeTimeDuration
 	/** Unique ID for this message */
 	messageId?: string
 	variables: Variables
@@ -212,7 +213,7 @@ export interface PublishStartMessageRequest<Variables = KeyedObject> {
 	/** Should match the "Message Name" in a BPMN Message Catch  */
 	name: string
 	/** The number of seconds for the message to buffer on the broker, awaiting correlation. Omit or set to zero for no buffering. */
-	timeToLive: number
+	timeToLive: MaybeTimeDuration
 	/** Unique ID for this message */
 	messageId?: string
 	correlationKey?: string

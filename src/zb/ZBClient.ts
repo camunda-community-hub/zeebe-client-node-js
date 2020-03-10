@@ -5,6 +5,7 @@ import * as NEA from 'fp-ts/lib/NonEmptyArray'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as path from 'path'
 import promiseRetry from 'promise-retry'
+import { Duration, MaybeTimeDuration } from 'typed-duration'
 import { v4 as uuid } from 'uuid'
 import {
 	BpmnParser,
@@ -51,11 +52,14 @@ export const ConnectionStatusEvent = {
 }
 
 export class ZBClient extends EventEmitter {
-	public static readonly DEFAULT_CONNECTION_TOLERANCE = 3000
+	public static readonly DEFAULT_CONNECTION_TOLERANCE = Duration.milliseconds.of(
+		3000
+	)
 	private static readonly DEFAULT_MAX_RETRIES = 50
-	private static readonly DEFAULT_MAX_RETRY_TIMEOUT = 5000
-	private static readonly DEFAULT_LONGPOLL_PERIOD = 30000
-	public connectionTolerance: number = ZBClient.DEFAULT_CONNECTION_TOLERANCE
+	private static readonly DEFAULT_MAX_RETRY_TIMEOUT = Duration.seconds.of(5)
+	private static readonly DEFAULT_LONGPOLL_PERIOD = Duration.seconds.of(30)
+	public connectionTolerance: MaybeTimeDuration =
+		ZBClient.DEFAULT_CONNECTION_TOLERANCE
 	public connected = true
 	public readied = false
 	public gatewayAddress: string
@@ -74,7 +78,7 @@ export class ZBClient extends EventEmitter {
 	> = []
 	private retry: boolean
 	private maxRetries: number
-	private maxRetryTimeout: number
+	private maxRetryTimeout: MaybeTimeDuration
 	private oAuth?: OAuthProvider
 	private basicAuth?: ZB.BasicAuthConfig
 	private useTLS: boolean
@@ -114,8 +118,9 @@ export class ZBClient extends EventEmitter {
 				SIMPLE: ZBSimpleLogger,
 			}[process.env.ZEEBE_NODE_LOG_TYPE || 'NONE'])
 
-		this.options.stdout = this.options.stdout || logTypeFromEnvironment()
-		this.stdout = this.options.stdout || ZBSimpleLogger
+		this.options.stdout =
+			this.options.stdout || logTypeFromEnvironment() || ZBSimpleLogger
+		this.stdout = this.options.stdout!
 
 		this.options = ConfigurationHydrator.configure(
 			gatewayAddress,
@@ -136,8 +141,9 @@ export class ZBClient extends EventEmitter {
 			this.options.useTLS === true ||
 			(!!this.options.oAuth && this.options.useTLS !== false)
 		this.basicAuth = this.options.basicAuth
-		this.connectionTolerance =
+		this.connectionTolerance = Duration.milliseconds.from(
 			this.options.connectionTolerance || this.connectionTolerance
+		)
 		this.onConnectionError = this.options.onConnectionError
 		this.onReady = this.options.onReady
 		const { grpcClient, log } = this.constructGrpcClient({
@@ -148,7 +154,9 @@ export class ZBClient extends EventEmitter {
 				_tag: 'ZBCLIENT',
 				loglevel: this.loglevel,
 				namespace: this.options.logNamespace || 'ZBClient',
-				pollInterval: this.options.longPoll!,
+				pollInterval: this.options.longPoll
+					? Duration.milliseconds.from(this.options.longPoll)
+					: undefined,
 				stdout: this.stdout,
 			},
 		})
@@ -451,7 +459,9 @@ export class ZBClient extends EventEmitter {
 				this.closing = true
 				await Promise.all(this.workers.map(w => w.close(timeout)))
 				await this.grpc.close(timeout) // close the client GRPC channel
+				this.emit('close')
 				this.grpc.removeAllListeners()
+				this.removeAllListeners()
 				resolve()
 			})
 		return this.closePromise
@@ -722,12 +732,18 @@ export class ZBClient extends EventEmitter {
 		const { grpcClient, log } = ConnectionFactory.getGrpcClient({
 			grpcConfig: {
 				basicAuth: this.basicAuth,
-				connectionTolerance: this.connectionTolerance,
+				connectionTolerance: Duration.milliseconds.from(
+					this.connectionTolerance
+				),
 				host: this.gatewayAddress,
 				loglevel: this.loglevel,
 				namespace: grpcConfig.namespace,
 				oAuth: this.oAuth,
-				options: { longPoll: this.options.longPoll },
+				options: {
+					longPoll: this.options.longPoll
+						? Duration.milliseconds.from(this.options.longPoll)
+						: undefined,
+				},
 				packageName: 'gateway_protocol',
 				protoPath: path.join(__dirname, '../../proto/zeebe.proto'),
 				service: 'Gateway',
@@ -831,7 +847,7 @@ export class ZBClient extends EventEmitter {
 				})
 			},
 			{
-				maxTimeout: this.maxRetryTimeout,
+				maxTimeout: Duration.milliseconds.from(this.maxRetryTimeout),
 				retries,
 			}
 		)

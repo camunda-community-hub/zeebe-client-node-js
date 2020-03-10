@@ -1,3 +1,4 @@
+import { MaybeTimeDuration } from 'typed-duration'
 import { OAuthProviderConfig } from './OAuthProvider'
 
 export interface CamundaCloudConfig {
@@ -22,7 +23,7 @@ export interface ZBCustomLogger {
 }
 
 export interface ZBClientOptions {
-	connectionTolerance?: number
+	connectionTolerance?: MaybeTimeDuration
 	loglevel?: Loglevel
 	stdout?: ZBCustomLogger
 	retry?: boolean
@@ -35,7 +36,7 @@ export interface ZBClientOptions {
 	}
 	useTLS?: boolean
 	logNamespace?: string
-	longPoll?: number
+	longPoll?: MaybeTimeDuration
 	camundaCloud?: CamundaCloudConfig
 	hostname?: string
 	port?: string

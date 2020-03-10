@@ -29,7 +29,6 @@ describe('Worker onReady Handler', () => {
 		let called = 0
 		const zbc2 = new ZBClient()
 		zbc2.createWorker(
-			null,
 			'nonsense-task',
 			(_, complete) => complete.success
 		).on('ready', () => {
@@ -46,16 +45,11 @@ describe('Worker onReady Handler', () => {
 	it(`Does not call the onReady handler if there is no broker`, done => {
 		let called = 0
 		const zbc2 = new ZBClient('nobroker')
-		zbc2.createWorker(
-			null,
-			'nonsense-task',
-			(_, complete) => complete.success,
-			{
-				onReady: () => {
-					called++
-				},
-			}
-		)
+		zbc2.createWorker('nonsense-task', (_, complete) => complete.success, {
+			onReady: () => {
+				called++
+			},
+		})
 		setTimeout(async () => {
 			expect(called).toBe(0)
 			expect(zbc2.connected).toBe(false)

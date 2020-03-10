@@ -1,12 +1,17 @@
-# Version 0.23.0-alpha.1
+# Version 0.23.0-alpha.2
 
 ## Breaking Changes
 
+_Changes in APIs or behaviour that may affect existing applications that use zeebe-node._
+
 -   The `job.variables` and `job.customHeaders` in the worker job handler are now typed as read-only structures. This will only be a breaking change if your code relies on mutating these data structures. See the section "Working with Workflow Variables and Custom Headers" in the README for an explanation on doing deep key updates on the job variables.
--   The library nows logs with the simplified `ZBSimpleLogger` by default, for friendly human-readable logs. This will only be a breaking change if you currently rely on the structured log output. To get the previous structured log behaviour, pass in `stdout: ZBJsonLogger` to the `ZBClient` constructor options, or set the environment variable `export ZEEBE_NODE_LOG_TYPE=JSON`. Refer to the "Logging" section in the README.
+-   The library nows logs with the simplified `ZBSimpleLogger` by default, for friendly human-readable logs. This will only be a breaking change if you currently rely on the structured log output. To get the previous structured log behaviour, pass in `stdout: ZBJsonLogger` to the `ZBClient` constructor options, or set the environment variable `ZEEBE_NODE_LOG_TYPE` to `JSON`. Refer to the "Logging" section in the README.
 
 ## New Features
 
+_New shiny stuff._
+
+-   Timeouts can now be expressed with units using the [typed-duration](https://www.npmjs.com/package/typed-duration) package, which is included in and re-exported by the library. See the README section "A note on representing timeout durations".
 -   There is a new `ZBBatchWorker`. This allows you to batch jobs that are unrelated in a BPMN model, but are related with respect to some (for example: rate-limited) external system. See the README for details. Thanks to Jimmy Beaudoin ([@jbeaudoin11](https://github.com/jbeaudoin11)) for the suggestion, and helping with the design. Ref: [#134](https://github.com/creditsenseau/zeebe-client-node-js/issues/134).
 -   `ZBClient.createWorker` has two new, additional, method signature. The first is a single object parameter signature. This is the preferred signature if you are passing in configuration options. The second signature is a version of the original that elides the `id` for the worker. With this, you can create a worker with just a task type and a job handler. A UUID is assigned as the worker id. This is the equivalent of passing in `null` as the first parameter to the original signature. The previous method signature still works, allowing you to specify an id if you want. See [this article for details](https://www.joshwulf.com/blog/2020/02/refining-method-signature/).
 -   There is now a `ZBLogMessage` interface to help you implement a custom logger [#127](https://github.com/creditsenseau/zeebe-client-node-js/issues/127). For an example of a custom logger, see the [Zeebe GitHub Action implementation](https://github.com/jwulf/zeebe-action/blob/master/src/log/logger.ts).
@@ -16,6 +21,10 @@
 -   I've started documenting the internal operation of the client in BPMN diagrams. These can be found in the `design` directory.
 -   The README now contains a section "Writing Strongly-typed Job Workers", on writing typed workers in TypeScript.
 -   The README also has a shiny TOC. It has grown in size such that one is needed.
+
+## Fixes
+
+-   An unmaintained package in the dependency tree of kafka-node (and probably a bug in NPM's de-duping algorithm) caused zeebe-node to break by installing the wrong version of the `long` dependency, unless the two packages were installed in a specific order. We've explicitly added `long` to the dependencies of zeebe-node to address this, and [reported it to kafka-node](https://github.com/SOHU-Co/kafka-node/issues/1332). Thanks to [@need4eat](https://github.com/need4eat) for discovering this and helping to track down the cause. See [#124](https://github.com/creditsenseau/zeebe-client-node-js/issues/124).
 
 # Version 0.22.1
 

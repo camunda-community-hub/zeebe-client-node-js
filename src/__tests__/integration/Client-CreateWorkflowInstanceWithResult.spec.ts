@@ -1,4 +1,5 @@
 import { ZBClient } from '../..'
+import { createUniqueTaskType } from '../../lib/createUniqueTaskType'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 jest.setTimeout(25000)
@@ -15,18 +16,30 @@ describe('Await Outcome', () => {
 	})
 
 	it('Awaits a workflow outcome', async () => {
-		await zbc.deployWorkflow('./src/__tests__/testdata/await-outcome.bpmn')
-		const processId = 'await-outcome'
+		const { processId, bpmn } = createUniqueTaskType({
+			bpmnFilePath: './src/__tests__/testdata/await-outcome.bpmn',
+			messages: [],
+			taskTypes: [],
+		})
+		await zbc.deployWorkflow({
+			definition: bpmn,
+			name: `Await-outcome-${processId}.bpmn`,
+		})
 		const result = await zbc.createWorkflowInstanceWithResult(processId, {
 			sourceValue: 5,
 		})
 		expect(result.variables.sourceValue).toBe(5)
 	})
 	it('can override the gateway timeout', async () => {
-		await zbc.deployWorkflow(
-			'./src/__tests__/testdata/await-outcome-long.bpmn'
-		)
-		const processId = 'await-outcome-long'
+		const { bpmn, processId } = createUniqueTaskType({
+			bpmnFilePath: './src/__tests__/testdata/await-outcome-long.bpmn',
+			messages: [],
+			taskTypes: [],
+		})
+		await zbc.deployWorkflow({
+			definition: bpmn,
+			name: `Await-outcome-long-${processId}.bpmn`,
+		})
 		const result = await zbc.createWorkflowInstanceWithResult({
 			bpmnProcessId: processId,
 			requestTimeout: 25000,
@@ -39,8 +52,15 @@ describe('Await Outcome', () => {
 	})
 	it('fetches a subset of variables', async () => {
 		zbc = new ZBClient()
-		await zbc.deployWorkflow('./src/__tests__/testdata/await-outcome.bpmn')
-		const processId = 'await-outcome'
+		const { bpmn, processId } = createUniqueTaskType({
+			bpmnFilePath: './src/__tests__/testdata/await-outcome.bpmn',
+			messages: [],
+			taskTypes: [],
+		})
+		await zbc.deployWorkflow({
+			definition: bpmn,
+			name: `Await-outcome-${processId}.bpmn`,
+		})
 		const result = await zbc.createWorkflowInstanceWithResult({
 			bpmnProcessId: processId,
 			fetchVariables: ['otherValue'],
