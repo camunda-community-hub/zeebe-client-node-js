@@ -71,7 +71,7 @@
 		"long": "^4.0.0",
 		"promise-retry": "^1.1.1",
 		"stack-trace": "0.0.10",
-		"typed-duration": "^1.0.7",
+		"typed-duration": "^1.0.12",
 		"uuid": "^3.3.2"
 	},
 	"devDependencies": {
@@ -93,8 +93,8 @@
 		"tsc-watch": "^1.0.31",
 		"tslint": "^5.16.0",
 		"tslint-config-prettier": "^1.18.0",
-		"typedoc": "^0.15.4",
-		"typedoc-plugin-sourcefile-url": "^1.0.4",
+		"typedoc": "^0.15.8",
+		"typedoc-plugin-sourcefile-url": "^1.0.6",
 		"typescript": "^3.8.3"
 	},
 	"author": {
