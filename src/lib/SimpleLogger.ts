@@ -4,6 +4,7 @@ import { Loglevel } from './interfaces-published-contract'
 export interface Logger {
 	error: LogFn
 	info: LogFn
+	debug: LogFn
 }
 type LogFn = (logMessage: string) => void
 
@@ -23,7 +24,7 @@ const logger = (loglevel: Loglevel): LogFn => (logMessage: string): void => {
 			typeof parsedMessage.message === 'object'
 				? JSON.stringify(parsedMessage.message)
 				: parsedMessage.message
-		message = `| zeebe | ${gRPC}${taskType} ${msg}`
+		message = `| zeebe | ${gRPC}${taskType} ${loglevel}: ${msg}`
 	} catch (e) {
 		message = logMessage
 	}
@@ -34,6 +35,7 @@ const logger = (loglevel: Loglevel): LogFn => (logMessage: string): void => {
 }
 
 export const ZBSimpleLogger: Logger = {
+	debug: logger('DEBUG'),
 	error: logger('ERROR'),
 	info: logger('INFO'),
 }

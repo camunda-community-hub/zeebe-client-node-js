@@ -18,6 +18,7 @@ Get a hosted instance of Zeebe on [Camunda Cloud](https://camunda.io).
 
 -   [ Versioning ](#versioning)
 -   [ Type difference from other Zeebe clients ](#type-difference)
+-   [ A note on representing timeout durations ](#time-duration)
 
 **Quick Start**
 
@@ -96,6 +97,37 @@ NPM Package version 0.21.x supports Zeebe 0.21.x
 
 Protobuf fields of type `int64` are serialised as type string in the Node library. These fields are serialised as numbers (long) in the Go and Java client. See [grpc/#7229](https://github.com/grpc/grpc/issues/7229) for why the Node library serialises them as string. The Workflow instance key, and other fields that are of type long in other client libraries, are type string in this library. Fields of type `int32` are serialised as type number in the Node library.
 
+<a name = "time-duration"></a>
+
+## A note on representing timeout durations
+
+All timeouts are ultimately communicated in _milliseconds_. They can be specified using the primitive type `number`, and this is always a _number of milliseconds_.
+
+All timeouts in the client library can _also_, optionally, be specified by a time value that encodes the units, using the [typed-durations](https://www.npmjs.com/package/typed-duration) package. You can specify durations for timeouts like this:
+
+```
+const { Duration } = require('zeebe-node')
+
+const timeoutS = Duration.seconds.of(30) // 30s timeout
+const timeoutMs = Duration.milliseconds.of(30000) // 30s timeout in milliseconds
+```
+
+Using the value types makes your code more semantically specific.
+
+There are four timeouts to take into account.
+
+The first is the job `timeout`. This is the amount of time that the broker allocates exclusive responsibility for a job to a worker instance. By default, this is 60 seconds. This is the default value set by this client library. See "[Job Workers](#job-workers)".
+
+The second is the `requestTimeout`. Whenever the client library sends a gRPC command to the broker, it has an explicit or implied `requestTimeout`. This is the amount of time that the gRPC gateway will wait for a response from the broker cluster before returning a `4 DEADLINE` gRPC error response.
+
+If no `requestTimeout` is specified, then the configured timeout of the broker gateway is used. Out of the box, this is 15 seconds by default.
+
+The most significant use of the `requestTimeout` is when using the `createWorkflowInstanceWithResult` command. If your workflow will take longer than 15 seconds to complete, you should specify a `requestTimeout`. See "[Start a Workflow Instance and await the Workflow Outcome](#start-await)".
+
+The third is the `longpoll` duration. This is the amount of time that the job worker holds a long poll request to activate jobs open.
+
+The final one is the maximum back-off delay in client-side gRPC command retries. See "[Client-side gRPC retry in ZBClient](#client-side-retry)".
+
 ## Quick Start
 
 <a name = "install"></a>
@@ -115,7 +147,7 @@ npm i zeebe-node
 ```javascript
 const ZB = require('zeebe-node')
 
-;(async () => {
+void (async () => {
 	const zbc = new ZB.ZBClient('localhost:26500')
 	const topology = await zbc.topology()
 	console.log(JSON.stringify(topology, null, 2))
@@ -130,7 +162,7 @@ const ZB = require('zeebe-node')
 const ZB = require('zeebe-node')
 const fs = require('fs')
 
-;(async () => {
+void (async () => {
 	const zbc = new ZB.ZBClient() // localhost:26500 || ZEEBE_GATEWAY_ADDRESS
 
 	const res = await zbc.deployWorkflow('./domain-mutation.bpmn')
@@ -164,10 +196,12 @@ To mitigate against this, the Node client implements some client-side gRPC opera
 -   `maxRetries` and `maxRetryTimeout` are also configurable through the constructor options. By default, if not supplied, the values are:
 
 ```TypeScript
-const zbc = new ZB.ZBClient(gatewayAddress, {
+const { ZBClient, Duration } = require('zeebe-node')
+
+const zbc = new ZBClient(gatewayAddress, {
     retry: true,
     maxRetries: 50,
-    maxRetryTimeout: 5000
+    maxRetryTimeout: Duration.seconds.of(5)
 })
 ```
 
@@ -184,7 +218,9 @@ The client has a `connected` property that can be examined to determine if it ha
 The client and the worker can take an optional `onReady()` and `onConnectionError()` handler in their constructors, like this:
 
 ```TypeScript
-const zbc = new ZB.ZBClient({
+const { ZBClient, Duration } = require('zeebe-node')
+
+const zbc = new ZBClient({
 	onReady: () => console.log(`Connected!`),
 	onConnectionError: () => console.log(`Disconnected!`)
 })
@@ -202,7 +238,9 @@ These handlers are called whenever the gRPC channel is established or lost. As t
 You can specify another value like this:
 
 ```TypeScript
-const zbc = new ZB.ZBClient({
+const { ZBClient, Duration } = require('zeebe-node')
+
+const zbc = new ZBClient({
 	onReady: () => console.log(`Connected!`),
 	onConnectionError: () => console.log(`Disconnected!`),
 	connectionTolerance: 5000
@@ -213,17 +251,21 @@ const zbWorker = zbc.createWorker({
 	taskHandler: handler,
     onReady: () => console.log(`Worker connected!`),
     onConnectionError: () => console.log(`Worker disconnected!`),
-    connectionTolerance: 35000
+    connectionTolerance: Duration.seconds.of(3.5)
 })
 ```
 
 As well as the callback handlers, the client and workers extend the [`EventEmitter`](https://nodejs.org/api/events.html#events_class_eventemitter) class, and you can attach listeners to them for the 'ready' and 'connectionError' events:
 
 ```TypeScript
+const { ZBClient, Duration } = require('zeebe-node')
+
+const zbc = new ZBClient()
+
 const zbWorker = zbc.createWorker({
 	taskType: 'demo-service',
 	taskHandler: handler,
-    connectionTolerance: 35000
+    connectionTolerance: Duration.seconds.of(3.5)
 })
 
 zbWorker.on('ready', () => console.log(`Worker connected!`))
@@ -241,7 +283,9 @@ The Node client does not use TLS by default.
 Enable a secure connection by setting `useTLS: true`:
 
 ```typescript
-const zbc = new ZB.ZBClient(tlsProxiedGatewayAddress, {
+const { ZBClient } = require('zeebe-node')
+
+const zbc = new ZBClient(tlsProxiedGatewayAddress, {
 	useTLS: true,
 })
 ```
@@ -259,7 +303,9 @@ ZEEBE_SECURE_CONNECTION=true
 In case you need to connect to a secured endpoint with OAuth, you can pass in OAuth credentials. This will enable TLS (unless you explicitly disable it with `useTLS: false`), and handle the OAuth flow to get / renew a JWT:
 
 ```typescript
-const zbc = new ZB.ZBClient("my-secure-broker.io:443", {
+const { ZBClient } = require('zeebe-node')
+
+const zbc = new ZBClient("my-secure-broker.io:443", {
 	oAuth: {
 		url: "https://your-auth-endpoint/oauth/token",
 		audience: "my-secure-broker.io",
@@ -282,7 +328,9 @@ If the cache directory is not writable, the ZBClient constructor will throw an e
 If you put a proxy in front of the broker with basic auth, you can pass in a username and password:
 
 ```typescript
-const zbc = new ZB.ZBClient("my-broker-with-basic-auth.io:443", {
+const { ZBClient } = require('zeebe-node')
+
+const zbc = new ZBClient("my-broker-with-basic-auth.io:443", {
 	basicAuth: {
 		username: "user1",
 		password: "secret",
@@ -302,7 +350,9 @@ Basic Auth will also work without TLS.
 You can also connect to Camunda Cloud by using the `camundaCloud` configuration option, using the `clusterId`, `clientSecret`, and `clientId` from the Camunda Cloud Console, like this:
 
 ```typescript
-const zbc = new ZB.ZBClient({
+const { ZBClient } = require('zeebe-node')
+
+const zbc = new ZBClient({
 	camundaCloud: {
 		clientId,
 		clientSecret,
@@ -322,6 +372,8 @@ The ZBClient has a 0-parameter constructor that takes the config from the enviro
 To use the zero-conf constructor, you create the client like this:
 
 ```typescript
+const { ZBClient } = require('zeebe-node')
+
 const zbc = new ZBClient()
 ```
 
@@ -361,11 +413,11 @@ ZEEBE_BASIC_AUTH_PASSWORD
 ZEEBE_BASIC_AUTH_USERNAME
 ```
 
-## Job Workers
-
 <a name ="job-workers"></a>
 
-### Job Workers
+## Job Workers
+
+### Types of Job Workers
 
 There are two different types of job worker provided by the Zeebe Node client:
 
@@ -429,13 +481,17 @@ The worker can be configured with options. To do this, you should use the object
 Shown below are the defaults that apply if you don't supply them:
 
 ```javascript
+const { ZBClient, Duration } = require('zeebe-node')
+
+const zbc = new ZBClient()
+
 const zbWorker = zbc.createWorker({
 	taskType: 'demo-service',
     taskHandler: handler,
     // the number of simultaneous tasks this worker can handle
     maxJobsToActivate: 32,
-    // the number of seconds the broker should allow this worker to complete a task
-    timeout: 30,
+    // the amount of time the broker should allow this worker to complete a task
+    timeout: Duration.seconds.of(30),
     // One of 'DEBUG', 'INFO', 'NONE'
     loglevel: 'INFO',
     // Called when the connection to the broker cannot be established, or fails
@@ -454,6 +510,10 @@ _Note: this behaviour is for the ZBWorker only. The ZBBatchWorker does not manag
 When a task handler throws an unhandled exception, the library will fail the job. Zeebe will then retry the job according to the retry settings of the task. Sometimes you want to halt the entire workflow so you can investigate. To have the library cancel the workflow on an unhandled exception, pass in `{failWorkflowOnException: true}` to the `createWorker` call:
 
 ```typescript
+const { ZBClient } = require('zeebe-node')
+
+const zbc = new ZBClient()
+
 zbc.createWorker('console-log', maybeFaultyHandler, {
 	failWorkflowOnException: true,
 })
@@ -493,6 +553,9 @@ To update a key deep in the object structure of a workflow variable, you can use
 
 ```TypeScript
 const merge = require('deepmerge')
+const { ZBClient } = require('zeebe-node')
+
+const zbc = new ZBClient()
 
 zbc.createWorker('some-task', (job, complete) => {
     const { people } = job.variables
@@ -589,7 +652,9 @@ The _Decoupled Job Completion_ pattern uses a Zeebe Job Worker to activate jobs 
 
 You might activate jobs and then send them to a RabbitMQ queue, or to an AWS lambda. In this case, there may be no outcome about the job that this worker can report back to the broker about success or failure. That will be the responsibility of another part of your distributed system.
 
-The first thing you should do is call `complete.forwarded()` in your job worker handler. This has no side-effect with the broker - so nothing is communicated to Zeebe. The job is still out there with your worker as far as Zeebe is concerned. What this call does is release worker capacity to request more jobs.
+The first thing you should do is ensure that you activate the job with sufficient time for the complete execution of your system. Your worker will not be completing the job, but it informs the broker how long the expected loop will take to close.
+
+Next, call `complete.forwarded()` in your job worker handler. This has no side-effect with the broker - so nothing is communicated to Zeebe. The job is still out there with your worker as far as Zeebe is concerned. What this call does is release worker capacity to request more jobs.
 
 If you are using the Zeebe Node library in the remote system, or if the remote system eventually reports back to you (perhaps over a different RabbitMQ queue), you can use the ZBClient methods `completeJob()`, `failJob()`, and `throwError()` to report the outcome back to the broker.
 
@@ -601,6 +666,7 @@ Here is an example:
 -   Somebody wrote an adapter for this COBOL database. In executes commands over SSH.
 -   The adapter is accessible via a RabbitMQ "request" queue, which takes a command and a correlation id, so that its response can be correlated to this request.
 -   The adapter sends back the COBOL database system response on a RabbitMQ "response" queue, with the correlation id.
+-   It typically takes 15 seconds for the round-trip through RabbitMQ to the COBOL database and back.
 
 You want to put this system into a Zeebe-orchestrated BPMN model as a task.
 
@@ -616,11 +682,14 @@ Here is what that looks like in code:
 
 ```TypeScript
 import { RabbitMQSender } from './lib/my-awesome-rabbitmq-api'
-import { ZBClient } from 'zeebe-node'
+import { ZBClient, Duration } from 'zeebe-node'
 
 const zbc = new ZBClient()
 
-const cobolWorker = zbc.createWorker('cobol-insert', (job, complete) => {
+const cobolWorker = zbc.createWorker({
+    taskType: 'cobol-insert',
+    timeout: Duration.seconds.of(20), // allow 5s over the expected 15s
+    taskHandler: (job, complete) => {
     const { jobKey, variables } = job
     const request = {
         correlationId: jobKey,
@@ -696,7 +765,7 @@ Here is an example of using the `ZBBatchWorker`:
 
 ```TypeScript
 import { API } from './lib/my-awesome-external-api'
-import { ZBClient, BatchedJob } from 'zeebe-node'
+import { ZBClient, BatchedJob, Duration } from 'zeebe-node'
 
 const zbc = new ZBClient()
 
@@ -728,7 +797,7 @@ const batchWorker = zbc.createBatchWorker({
     taskHandler: handler,
     jobBatchMinSize: 10, // at least 10 at a time
     jobBatchMaxTime: 60, // or every 60 seconds, whichever comes first
-    timeout: 80 // 80 second timeout means we have 20 seconds to process at least
+    timeout: Duration.seconds.of(80) // 80 second timeout means we have 20 seconds to process at least
 })
 ```
 
@@ -740,19 +809,23 @@ See [this blog post](http://joshwulf.com/blog/2020/03/zb-batch-worker/) for some
 
 With Zeebe 0.21 onward, long polling is supported for clients, and is used by default. Rather than polling continuously for work and getting nothing back, a client can poll once and leave the request open until work appears. This reduces network traffic and CPU utilization in the server. Every JobActivation Request is appended to the event log, so continuous polling can significantly impact broker performance, especially when an exporter is loaded (see [here](https://github.com/creditsenseau/zeebe-client-node-js/issues/64#issuecomment-520233275)).
 
-The default long polling period is 60000ms (60s).
+The default long polling period is 30s.
 
 To use a different long polling period, pass in a long poll timeout in milliseconds to the client. All workers created with that client will use it. Alternatively, set a period per-worker.
 
 Long polling for workers is configured in the ZBClient like this:
 
 ```typescript
+const { ZBClient, Duration } = require('zeebe-node')
+
 const zbc = new ZBClient('serverAddress', {
-	longPoll: 6000, // Ten minutes in seconds - inherited by workers
+	longPoll: Duration.minutes.of(10), // Ten minutes - inherited by workers
 })
 
-const longPollingWorker = zbc.createWorker('task-type', handler, {
-	longPoll: 120, // override client, poll 2m
+const longPollingWorker = zbc.createWorker({
+	taskType: 'task-type',
+	taskHandler: handler,
+	longPoll: Duration.minutes.of(2), // override client, poll 2m
 })
 ```
 
@@ -827,13 +900,19 @@ Be aware that by default, **this will throw an exception if the workflow takes l
 To override the gateway's default timeout for a workflow that needs more time to complete:
 
 ```typescript
+const { ZBClient, Duration } = require('zeebe-node')
+
+const zbc = new ZBClient()
+
 const result = await zbc.createWorkflowInstanceWithResult({
 	bpmnProcessId: processId,
 	variables: {
 		sourceValue: 5,
 		otherValue: 'rome',
 	},
-	requestTimeout: 25,
+	requestTimeout: Duration.seconds.of(25),
+	// also works supplying a number of milliseconds
+	// requestTimeout: 25000
 })
 ```
 
@@ -844,13 +923,16 @@ const result = await zbc.createWorkflowInstanceWithResult({
 You can publish a message to the Zeebe broker that will be correlated with a running workflow instance:
 
 ```javascript
-const zbc = new ZB.ZBClient()
+const { ZBClient, Duration } = require('zeebe-node')
+
+const zbc = new ZBClient()
+
 zbc.publishMessage({
 	correlationKey: 'value-to-correlate-with-workflow-variable',
 	messageId: uuid.v4(),
 	name: 'message-name',
 	variables: { valueToAddToWorkflowVariables: 'here', status: 'PROCESSED' },
-	timeToLive: 10, // seconds
+	timeToLive: Duration.seconds.of(10), // seconds
 })
 ```
 
@@ -886,12 +968,14 @@ In this case, the correlation key is optional, and all Message Start events that
 You can use the `publishStartMessage()` method to publish a message with no correlation key (it will be set to a random uuid in the background):
 
 ```javascript
+const { ZBClient, Duration } = require('zeebe-node')
+
 const zbc = new ZB.ZBClient('localhost:26500')
 zbc.publishStartMessage({
 	messageId: uuid.v4(),
 	name: 'message-name',
 	variables: { initialWorkflowVariable: 'here' },
-	timeToLive: 10, // seconds
+	timeToLive: Duration.seconds.of(10), // seconds
 })
 ```
 
@@ -1149,12 +1233,7 @@ For the failure test, you need to run Operate ([docker-compose config](https://g
 
 Zeebe is inherently stateful, so integration tests need to be carefully isolated so that workers from one test do not service tasks in another test. Jest runs tests in a random order, so intermittent failures are the outcome of tests that mutate shared state.
 
-For each feature:
-
--   Use a unique bpmn process, named the same as the test file. Don't reuse processes between tests, because they are tightly coupled.
--   Name the task types with a namespace that matches the test name. This avoids workers from one test servicing tasks from another test, which causes unpredictable behaviour.
--   Cancel any workflows that do not run to completion in an `AfterAll` or `AfterEach` block. This avoids subsequent test runs interacting with workflows from a previous test run.
--   Ensure that there no Active workflows in the engine after running the integration tests have run. This manual check is to verify that there is no left-over state. (Note one exception: the Raise Incident test leaves the workflow open for manual verification in Operate).
+The tests use a templating function to replace the process id, task types and message names in the bpmn model to produce distinct, isolated namespaces for each test and each test run.
 
 <a name = "contributors"></a>
 

@@ -1,4 +1,5 @@
 import { Chalk } from 'chalk'
+import { MaybeTimeDuration } from 'typed-duration'
 import { ZBBatchWorker } from '../zb/ZBBatchWorker'
 import { ZBWorker } from '../zb/ZBWorker'
 import { GrpcClient } from './GrpcClient'
@@ -130,7 +131,7 @@ export interface ZBLoggerOptions {
 	stdout?: any
 	color?: Chalk
 	namespace: string | string[]
-	pollInterval?: number
+	pollInterval?: MaybeTimeDuration
 	taskType?: string
 }
 
@@ -193,10 +194,10 @@ export interface ZBWorkerOptions<InputVars> {
 	 */
 	jobBatchMinSize?: number
 	/**
-	 * Max seconds to allow before time out of a task given to this worker. Default: 30000ms.
+	 * Max seconds to allow before time out of a job given to this worker. Default: 30s.
 	 * The broker checks deadline timeouts every 30 seconds, so an
 	 */
-	timeout?: number
+	timeout?: MaybeTimeDuration
 	/**
 	 * Poll Interval in ms. Default 100.
 	 */
@@ -262,9 +263,9 @@ export interface ZBWorkerBaseConfig<T> extends ZBWorkerOptions<T> {
 
 	logNamespace?: string
 	/**
-	 * A custom longpoll timeout. By default long polling is every 59 seconds.
+	 * A custom longpoll timeout. By default long polling is every 30 seconds.
 	 */
-	longPoll?: number
+	longPoll?: MaybeTimeDuration
 	/**
 	 * If your Grpc connection jitters, this is the window before the connectionError
 	 */

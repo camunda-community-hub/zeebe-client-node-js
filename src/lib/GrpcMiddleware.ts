@@ -55,6 +55,9 @@ export class GrpcMiddleware {
 			logInterceptor.ready()
 			if (!this.blocking) {
 				this.emitReady()
+				logInterceptor.logDebug(`Middleware emits ready`)
+			} else {
+				logInterceptor.logDebug(`Blocked ready emit`)
 			}
 		})
 		grpcClient.on(

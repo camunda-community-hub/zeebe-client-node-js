@@ -50,8 +50,10 @@ export class StatefulLogInterceptor {
 	}
 	public ready = () => {
 		this.state = 'CONNECTED'
-		this.blocking = false
-		this.emptyLogs()
+		if (this.blocking) {
+			this.blocking = false
+			this.emptyLogs()
+		}
 	}
 	private emptyErrors() {
 		if (this.errors.length === 0) {
