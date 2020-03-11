@@ -30,6 +30,7 @@ Get a hosted instance of Zeebe on [Camunda Cloud](https://camunda.io).
 
 -   [ Client-side gRPC retry in ZBClient ](#client-side-retry)
 -   [ onReady(), onConnectionError(), and connected ](#on-ready)
+-   [ Initial Connection Tolerance ](#initial-connection-tolerance)
 
 **Connecting to a Broker**
 
@@ -235,7 +236,11 @@ const zbWorker = zbc.createWorker({
 
 These handlers are called whenever the gRPC channel is established or lost. As the grpc channel will often "jitter" when it is lost (rapidly emitting READY and ERROR events at the transport layer), there is a `connectionTolerance` property that determines how long the connection must be in a connected or failed state before the handler is called. By default this is 3000ms.
 
-You can specify another value like this:
+You can specify another value either in the constructor or via an environment variable.
+
+To specify it via an environment variable, set `ZEEBE_CONNECTION_TOLERANCE` to a number of milliseconds.
+
+To set it via the constructor, specify a value for `connectionTolerance` like this:
 
 ```TypeScript
 const { ZBClient, Duration } = require('zeebe-node')
@@ -243,7 +248,7 @@ const { ZBClient, Duration } = require('zeebe-node')
 const zbc = new ZBClient({
 	onReady: () => console.log(`Connected!`),
 	onConnectionError: () => console.log(`Disconnected!`),
-	connectionTolerance: 5000
+	connectionTolerance: 5000 // milliseconds
 })
 
 const zbWorker = zbc.createWorker({
@@ -271,6 +276,20 @@ const zbWorker = zbc.createWorker({
 zbWorker.on('ready', () => console.log(`Worker connected!`))
 zbWorker.on('connectionError', () => console.log(`Worker disconnected!`))
 ```
+
+<a href = "initial-connection-tolerance" >
+
+### Initial Connection Tolerance
+
+Some broker connections can initially emit error messages - for example: when connecting to Camunda Cloud, during TLS negotiation and OAuth authentication, the eager commands used to detect connection status will fail, and the library will report connection errors.
+
+Since this is expected behaviour - a _characteristic of that particular connection_ - the library has a configurable "_initial connection tolerance_". This is a number of milliseconds representing the expected window in which these errors will occur on initial connection.
+
+If the library detects that you are connecting to Camunda Cloud, it sets this window to five seconds (5000 milliseconds). In some environments and under some conditions this may not be sufficient (like connecting to Camunda Cloud from your apartment Wi-fi in South Brisbane, Australia on a rainy day while the microwave link to the next suburb's ADSL exchange is degraded).
+
+You can set an explicit value for this using the environment variable `ZEEBE_INITIAL_CONNECTION_TOLERANCE`, set to a number of milliseconds.
+
+The effect of this setting is to suppress connection errors during this window, and only report them if the connection did not succeed by the end of the window.
 
 ## Connecting to a Broker
 

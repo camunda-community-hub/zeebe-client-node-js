@@ -58,8 +58,10 @@ export class ZBClient extends EventEmitter {
 	private static readonly DEFAULT_MAX_RETRIES = 50
 	private static readonly DEFAULT_MAX_RETRY_TIMEOUT = Duration.seconds.of(5)
 	private static readonly DEFAULT_LONGPOLL_PERIOD = Duration.seconds.of(30)
-	public connectionTolerance: MaybeTimeDuration =
-		ZBClient.DEFAULT_CONNECTION_TOLERANCE
+	public connectionTolerance: MaybeTimeDuration = process.env
+		.ZEEBE_CONNECTION_TOLERANCE
+		? parseInt(process.env.ZEEBE_CONNECTION_TOLERANCE, 10)
+		: ZBClient.DEFAULT_CONNECTION_TOLERANCE
 	public connected = true
 	public readied = false
 	public gatewayAddress: string
