@@ -1,0 +1,1484 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>zeebe-node</title>
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="assets/js/search.js" data-base=".">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="index.html" class="title">zeebe-node</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+							<input type="checkbox" id="tsd-filter-externals" checked />
+							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
+							<input type="checkbox" id="tsd-filter-only-exported" />
+							<label class="tsd-widget" for="tsd-filter-only-exported">Only exported</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="globals.html">Globals</a>
+				</li>
+			</ul>
+			<h1>zeebe-node</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<div class="tsd-panel tsd-typography">
+				<a href="#zeebe-nodejs-client" id="zeebe-nodejs-client" style="color: inherit; text-decoration: none;">
+					<h1>Zeebe Node.js Client</h1>
+				</a>
+				<p><a href="https://opensource.org/licenses/Apache-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License"></a>
+					<a href="https://circleci.com/gh/creditsenseau/zeebe-client-node-js/tree/master"><img src="https://circleci.com/gh/creditsenseau/zeebe-client-node-js/tree/master.svg?style=svg" alt="CircleCI"></a>
+				<img src="https://github.com/jwulf/zeebe-client-node-js/workflows/Test%20on%20Camunda%20Cloud/badge.svg" alt="Test on Camunda Cloud"></p>
+				<p>This is a Node.js gRPC client for <a href="https://zeebe.io">Zeebe</a>. It is written in TypeScript and transpiled to JavaScript in the <code>dist</code> directory.</p>
+				<p>Comprehensive API documentation is available <a href="https://creditsenseau.github.io/zeebe-client-node-js/">online</a>.</p>
+				<p>See <a href="./CHANGELOG.md">CHANGELOG.md</a> to see what has changed with each release.</p>
+				<p>Docker-compose configurations for Zeebe are available at <a href="https://github.com/zeebe-io/zeebe-docker-compose">zeebe-docker-compose</a>.</p>
+				<p>Get a hosted instance of Zeebe on <a href="https://camunda.io">Camunda Cloud</a>.</p>
+				<a href="#table-of-contents" id="table-of-contents" style="color: inherit; text-decoration: none;">
+					<h2>Table of Contents</h2>
+				</a>
+				<ul>
+					<li><a href="#versioning"> Versioning </a></li>
+					<li><a href="#type-difference"> Type difference from other Zeebe clients </a></li>
+					<li><a href="#time-duration"> A note on representing timeout durations </a></li>
+				</ul>
+				<p><strong>Quick Start</strong></p>
+				<ul>
+					<li><a href="#install"> Install </a></li>
+					<li><a href="#get-topology"> Get Broker Topology </a></li>
+					<li><a href="#deploy-workflow"> Deploy a workflow </a></li>
+				</ul>
+				<p><strong>Connection Behaviour</strong></p>
+				<ul>
+					<li><a href="#client-side-retry"> Client-side gRPC retry in ZBClient </a></li>
+					<li><a href="#on-ready"> onReady(), onConnectionError(), and connected </a></li>
+					<li><a href="#initial-connection-tolerance"> Initial Connection Tolerance </a></li>
+				</ul>
+				<p><strong>Connecting to a Broker</strong></p>
+				<ul>
+					<li><a href="#tls"> TLS </a></li>
+					<li><a href="#oauth"> OAuth </a></li>
+					<li><a href="#basic-auth"> Basic Auth </a></li>
+					<li><a href="#camunda-cloud"> Camunda Cloud </a></li>
+					<li><a href="#zero-conf"> Zero-conf constructor </a></li>
+				</ul>
+				<p><strong>Job Workers</strong></p>
+				<ul>
+					<li><a href="#job-workers"> Job Workers</a></li>
+					<li><a href="#create-zbworker"> The <code>ZBWorker</code> Job Worker </a></li>
+					<li><a href="#unhandled-exceptions"> Unhandled Exceptions in Task Handlers </a></li>
+					<li><a href="#complete-tasks"> Completing tasks with success, failure, error, or forwarded </a></li>
+					<li><a href="#working-with-variables"> Working with Workflow Variables and Custom Headers </a></li>
+					<li><a href="#fetch-variable"> Constraining the Variables Fetched by the Worker </a></li>
+					<li><a href="#decoupled-complete"> The &quot;Decoupled Job Completion&quot; pattern </a></li>
+					<li><a href="#zbbatchworker"> The <code>ZBBatchWorker</code> Job Worker </a></li>
+					<li><a href="#long-polling"> Long polling </a></li>
+				</ul>
+				<p><strong>Client Commands</strong></p>
+				<ul>
+					<li><a href="#start-workflow"> Start a Workflow Instance </a></li>
+					<li><a href="#start-specific-version"> Start a Workflow Instance of a specific version of a Workflow definition </a></li>
+					<li><a href="#start-await"> Start a workflow instance and await the workflow outcome </a></li>
+					<li><a href="#publish-message"> Publish a Message </a></li>
+					<li><a href="#publish-start-message"> Publish a Start Message </a></li>
+					<li><a href="#activate-jobs"> Activate Jobs </a></li>
+				</ul>
+				<p><strong>Other Concerns</strong></p>
+				<ul>
+					<li><a href="#graceful-shutdown"> Graceful Shutdown </a></li>
+					<li><a href="#logging"> Logging </a></li>
+				</ul>
+				<p><strong>Programming with Safety</strong></p>
+				<ul>
+					<li><a href="#generate-constants"> Generating TypeScript constants for BPMN Models </a></li>
+					<li><a href="#generate-code"> Generating code from a BPM Model file </a></li>
+					<li><a href="#strongly-typed"> Writing Strongly-typed Job Workers </a></li>
+					<li><a href="#run-time-safety"> Run-time Type Safety </a></li>
+				</ul>
+				<p><strong>Development of the Library itself</strong></p>
+				<ul>
+					<li><a href="#developing"> Developing Zeebe Node </a><ul>
+							<li><a href="#tests"> Tests </a></li>
+							<li><a href="#writing-tests"> Writing Tests </a></li>
+						</ul>
+					</li>
+					<li><a href="#contributors"> Contributors </a></li>
+				</ul>
+				<p><a name = "versioning"></a></p>
+				<a href="#versioning" id="versioning" style="color: inherit; text-decoration: none;">
+					<h2>Versioning</h2>
+				</a>
+				<p>To enable that the client libraries can be easily supported to the Zeebe server we map the version numbers, so that Major, Minor match the server application. Patches are independent and indicate client updates.</p>
+				<p>NPM Package version 0.23.x supports Zeebe 0.22.x and above</p>
+				<p>NPM Package version 0.22.x supports Zeebe 0.22.x</p>
+				<p>NPM Package version 0.21.x supports Zeebe 0.21.x</p>
+				<p><a name = "type-difference"></a></p>
+				<a href="#type-difference-from-other-zeebe-clients" id="type-difference-from-other-zeebe-clients" style="color: inherit; text-decoration: none;">
+					<h2>Type difference from other Zeebe clients</h2>
+				</a>
+				<p>Protobuf fields of type <code>int64</code> are serialised as type string in the Node library. These fields are serialised as numbers (long) in the Go and Java client. See <a href="https://github.com/grpc/grpc/issues/7229">grpc/#7229</a> for why the Node library serialises them as string. The Workflow instance key, and other fields that are of type long in other client libraries, are type string in this library. Fields of type <code>int32</code> are serialised as type number in the Node library.</p>
+				<p><a name = "time-duration"></a></p>
+				<a href="#a-note-on-representing-timeout-durations" id="a-note-on-representing-timeout-durations" style="color: inherit; text-decoration: none;">
+					<h2>A note on representing timeout durations</h2>
+				</a>
+				<p>All timeouts are ultimately communicated in <em>milliseconds</em>. They can be specified using the primitive type <code>number</code>, and this is always a <em>number of milliseconds</em>.</p>
+				<p>All timeouts in the client library can <em>also</em>, optionally, be specified by a time value that encodes the units, using the <a href="https://www.npmjs.com/package/typed-duration">typed-durations</a> package. You can specify durations for timeouts like this:</p>
+				<pre><code><span class="hljs-keyword">const</span> { <span class="hljs-built_in">Duration</span> } = require(<span class="hljs-string">'zeebe-node'</span>)
+
+<span class="hljs-keyword">const</span> timeoutS = <span class="hljs-built_in">Duration</span>.seconds.of(<span class="hljs-number">30</span>) <span class="hljs-comment">// 30s timeout</span>
+<span class="hljs-keyword">const</span> timeoutMs = <span class="hljs-built_in">Duration</span>.milliseconds.of(<span class="hljs-number">30000</span>) <span class="hljs-comment">// 30s timeout in milliseconds</span></code></pre><p>Using the value types makes your code more semantically specific.</p>
+				<p>There are four timeouts to take into account.</p>
+				<p>The first is the job <code>timeout</code>. This is the amount of time that the broker allocates exclusive responsibility for a job to a worker instance. By default, this is 60 seconds. This is the default value set by this client library. See &quot;<a href="#job-workers">Job Workers</a>&quot;.</p>
+				<p>The second is the <code>requestTimeout</code>. Whenever the client library sends a gRPC command to the broker, it has an explicit or implied <code>requestTimeout</code>. This is the amount of time that the gRPC gateway will wait for a response from the broker cluster before returning a <code>4 DEADLINE</code> gRPC error response.</p>
+				<p>If no <code>requestTimeout</code> is specified, then the configured timeout of the broker gateway is used. Out of the box, this is 15 seconds by default.</p>
+				<p>The most significant use of the <code>requestTimeout</code> is when using the <code>createWorkflowInstanceWithResult</code> command. If your workflow will take longer than 15 seconds to complete, you should specify a <code>requestTimeout</code>. See &quot;<a href="#start-await">Start a Workflow Instance and await the Workflow Outcome</a>&quot;.</p>
+				<p>The third is the <code>longpoll</code> duration. This is the amount of time that the job worker holds a long poll request to activate jobs open.</p>
+				<p>The final one is the maximum back-off delay in client-side gRPC command retries. See &quot;<a href="#client-side-retry">Client-side gRPC retry in ZBClient</a>&quot;.</p>
+				<a href="#quick-start" id="quick-start" style="color: inherit; text-decoration: none;">
+					<h2>Quick Start</h2>
+				</a>
+				<p><a name = "install"></a></p>
+				<a href="#install" id="install" style="color: inherit; text-decoration: none;">
+					<h2>Install</h2>
+				</a>
+				<a href="#add-the-library-to-your-project" id="add-the-library-to-your-project" style="color: inherit; text-decoration: none;">
+					<h3>Add the Library to your Project</h3>
+				</a>
+				<pre><code class="language-bash">npm i zeebe-node</code></pre>
+				<p><a name = "get-topology"></a></p>
+				<a href="#get-broker-topology" id="get-broker-topology" style="color: inherit; text-decoration: none;">
+					<h3>Get Broker Topology</h3>
+				</a>
+				<pre><code class="language-javascript"><span class="hljs-keyword">const</span> ZB = <span class="hljs-built_in">require</span>(<span class="hljs-string">'zeebe-node'</span>)
+
+<span class="hljs-keyword">void</span> (<span class="hljs-keyword">async</span> () =&gt; {
+    <span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZB.ZBClient(<span class="hljs-string">'localhost:26500'</span>)
+    <span class="hljs-keyword">const</span> topology = <span class="hljs-keyword">await</span> zbc.topology()
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-built_in">JSON</span>.stringify(topology, <span class="hljs-literal">null</span>, <span class="hljs-number">2</span>))
+})()</code></pre>
+				<p><a name = "deploy-workflow"></a></p>
+				<a href="#deploy-a-workflow" id="deploy-a-workflow" style="color: inherit; text-decoration: none;">
+					<h3>Deploy a workflow</h3>
+				</a>
+				<pre><code class="language-javascript"><span class="hljs-keyword">const</span> ZB = <span class="hljs-built_in">require</span>(<span class="hljs-string">'zeebe-node'</span>)
+<span class="hljs-keyword">const</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>)
+
+<span class="hljs-keyword">void</span> (<span class="hljs-keyword">async</span> () =&gt; {
+    <span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZB.ZBClient() <span class="hljs-comment">// localhost:26500 || ZEEBE_GATEWAY_ADDRESS</span>
+
+    <span class="hljs-keyword">const</span> res = <span class="hljs-keyword">await</span> zbc.deployWorkflow(<span class="hljs-string">'./domain-mutation.bpmn'</span>)
+    <span class="hljs-built_in">console</span>.log(res)
+
+    <span class="hljs-comment">// Deploy multiple with an array of filepaths</span>
+    <span class="hljs-keyword">await</span> zbc.deployWorkflow([<span class="hljs-string">'./wf1.bpmn'</span>, <span class="hljs-string">'./wf2.bpmn'</span>])
+
+    <span class="hljs-keyword">const</span> buffer = fs.readFileSync(<span class="hljs-string">'./wf3.bpmn'</span>)
+
+    <span class="hljs-comment">// Deploy from an in-memory buffer</span>
+    <span class="hljs-keyword">await</span> zbc.deployWorkflow({ <span class="hljs-attr">definition</span>: buffer, <span class="hljs-attr">name</span>: <span class="hljs-string">'wf3.bpmn'</span> })
+})()</code></pre>
+				<a href="#connection-behaviour" id="connection-behaviour" style="color: inherit; text-decoration: none;">
+					<h2>Connection Behaviour</h2>
+				</a>
+				<p><a name = "client-side-retry"></a></p>
+				<a href="#client-side-grpc-retry-in-zbclient" id="client-side-grpc-retry-in-zbclient" style="color: inherit; text-decoration: none;">
+					<h3>Client-side gRPC retry in ZBClient</h3>
+				</a>
+				<p>If a gRPC command method fails in the ZBClient - such as <code>ZBClient.deployWorkflow</code> or <code>ZBClient.topology()</code>, the underlying gRPC library will throw an exception.</p>
+				<p>If no workers have been started, this can be fatal to the process if it is not handled by the application logic. This is especially an issue when a worker container starts before the Zeebe gRPC gateway is available to service requests, and can be inconsistent as this is a race condition.</p>
+				<p>To mitigate against this, the Node client implements some client-side gRPC operation retry logic by default. This can be configured, including disabled, via configuration in the client constructor.</p>
+				<ul>
+					<li>Operations retry, but only for <a href="https://github.com/grpc/grpc/blob/master/doc/statuscodes.md">gRPC error codes 8 and 14</a> - indicating resource exhaustion (8) or transient network failure (14). Resource exhaustion occurs when the broker starts backpressure due to latency because of load. Network failure can be caused by passing in an unresolvable gateway address (<code>14: DNS Resolution failed</code>), or by the gateway not being ready yet (<code>14: UNAVAILABLE: failed to connect to all addresses</code>).</li>
+					<li>Operations that fail for other reasons, such as deploying an invalid bpmn file or cancelling a workflow that does not exist, do not retry.</li>
+					<li>Retry is enabled by default, and can be disabled by passing { retry: false } to the client constructor.</li>
+					<li><code>maxRetries</code> and <code>maxRetryTimeout</code> are also configurable through the constructor options. By default, if not supplied, the values are:</li>
+				</ul>
+				<pre><code class="language-TypeScript"><span class="hljs-keyword">const</span> { ZBClient, Duration } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'zeebe-node'</span>)
+
+<span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZBClient(gatewayAddress, {
+    retry: <span class="hljs-literal">true</span>,
+    maxRetries: <span class="hljs-number">50</span>,
+    maxRetryTimeout: Duration.seconds.of(<span class="hljs-number">5</span>)
+})</code></pre>
+				<p>Retry is provided by <a href="https://www.npmjs.com/package/promise-retry">promise-retry</a>, and the back-off strategy is simple ^2.</p>
+				<p>Additionally, the gRPC Client will continually reconnect when in a failed state, such as when the gateway goes away due to pod rescheduling on Kubernetes.</p>
+				<p><a name = "on-ready"></a></p>
+				<a href="#onready-onconnectionerror-and-connected" id="onready-onconnectionerror-and-connected" style="color: inherit; text-decoration: none;">
+					<h3>onReady(), onConnectionError(), and connected</h3>
+				</a>
+				<p>The client has a <code>connected</code> property that can be examined to determine if it has a gRPC connection to the gateway.</p>
+				<p>The client and the worker can take an optional <code>onReady()</code> and <code>onConnectionError()</code> handler in their constructors, like this:</p>
+				<pre><code class="language-TypeScript"><span class="hljs-keyword">const</span> { ZBClient, Duration } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'zeebe-node'</span>)
+
+<span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZBClient({
+    onReady: <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Connected!`</span>),
+    onConnectionError: <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Disconnected!`</span>)
+})
+
+<span class="hljs-keyword">const</span> zbWorker = zbc.createWorker({
+    taskType: <span class="hljs-string">'demo-service'</span>,
+    taskHandler: handler,
+    onReady: <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Worker connected!`</span>),
+    onConnectionError: <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Worker disconnected!`</span>)
+})</code></pre>
+				<p>These handlers are called whenever the gRPC channel is established or lost. As the grpc channel will often &quot;jitter&quot; when it is lost (rapidly emitting READY and ERROR events at the transport layer), there is a <code>connectionTolerance</code> property that determines how long the connection must be in a connected or failed state before the handler is called. By default this is 3000ms.</p>
+				<p>You can specify another value either in the constructor or via an environment variable.</p>
+				<p>To specify it via an environment variable, set <code>ZEEBE_CONNECTION_TOLERANCE</code> to a number of milliseconds.</p>
+				<p>To set it via the constructor, specify a value for <code>connectionTolerance</code> like this:</p>
+				<pre><code class="language-TypeScript"><span class="hljs-keyword">const</span> { ZBClient, Duration } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'zeebe-node'</span>)
+
+<span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZBClient({
+    onReady: <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Connected!`</span>),
+    onConnectionError: <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Disconnected!`</span>),
+    connectionTolerance: <span class="hljs-number">5000</span> <span class="hljs-comment">// milliseconds</span>
+})
+
+<span class="hljs-keyword">const</span> zbWorker = zbc.createWorker({
+    taskType: <span class="hljs-string">'demo-service'</span>,
+    taskHandler: handler,
+    onReady: <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Worker connected!`</span>),
+    onConnectionError: <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Worker disconnected!`</span>),
+    connectionTolerance: Duration.seconds.of(<span class="hljs-number">3.5</span>)
+})</code></pre>
+				<p>As well as the callback handlers, the client and workers extend the <a href="https://nodejs.org/api/events.html#events_class_eventemitter"><code>EventEmitter</code></a> class, and you can attach listeners to them for the &#39;ready&#39; and &#39;connectionError&#39; events:</p>
+				<pre><code class="language-TypeScript"><span class="hljs-keyword">const</span> { ZBClient, Duration } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'zeebe-node'</span>)
+
+<span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZBClient()
+
+<span class="hljs-keyword">const</span> zbWorker = zbc.createWorker({
+    taskType: <span class="hljs-string">'demo-service'</span>,
+    taskHandler: handler,
+    connectionTolerance: Duration.seconds.of(<span class="hljs-number">3.5</span>)
+})
+
+zbWorker.on(<span class="hljs-string">'ready'</span>, <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Worker connected!`</span>))
+zbWorker.on(<span class="hljs-string">'connectionError'</span>, <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Worker disconnected!`</span>))</code></pre>
+				<a href = "initial-connection-tolerance" >
+					<a href="#initial-connection-tolerance" id="initial-connection-tolerance" style="color: inherit; text-decoration: none;">
+						<h3>Initial Connection Tolerance</h3>
+					</a>
+					<p>Some broker connections can initially emit error messages - for example: when connecting to Camunda Cloud, during TLS negotiation and OAuth authentication, the eager commands used to detect connection status will fail, and the library will report connection errors.</p>
+					<p>Since this is expected behaviour - a <em>characteristic of that particular connection</em> - the library has a configurable &quot;<em>initial connection tolerance</em>&quot;. This is a number of milliseconds representing the expected window in which these errors will occur on initial connection.</p>
+					<p>If the library detects that you are connecting to Camunda Cloud, it sets this window to five seconds (5000 milliseconds). In some environments and under some conditions this may not be sufficient (like connecting to Camunda Cloud from your apartment Wi-fi in South Brisbane, Australia on a rainy day while the microwave link to the next suburb&#39;s ADSL exchange is degraded).</p>
+					<p>You can set an explicit value for this using the environment variable <code>ZEEBE_INITIAL_CONNECTION_TOLERANCE</code>, set to a number of milliseconds.</p>
+					<p>The effect of this setting is to suppress connection errors during this window, and only report them if the connection did not succeed by the end of the window.</p>
+					<a href="#connecting-to-a-broker" id="connecting-to-a-broker" style="color: inherit; text-decoration: none;">
+						<h2>Connecting to a Broker</h2>
+					</a>
+					<p><a name = "tls"></a></p>
+					<a href="#tls" id="tls" style="color: inherit; text-decoration: none;">
+						<h3>TLS</h3>
+					</a>
+					<p>The Node client does not use TLS by default.</p>
+					<p>Enable a secure connection by setting <code>useTLS: true</code>:</p>
+					<pre><code class="language-typescript"><span class="hljs-keyword">const</span> { ZBClient } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'zeebe-node'</span>)
+
+<span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZBClient(tlsProxiedGatewayAddress, {
+    useTLS: <span class="hljs-literal">true</span>,
+})</code></pre>
+					<p>Via environment variable:</p>
+					<pre><code class="language-bash">ZEEBE_SECURE_CONNECTION=<span class="hljs-literal">true</span></code></pre>
+					<p><a name = "oauth"></a></p>
+					<a href="#oauth" id="oauth" style="color: inherit; text-decoration: none;">
+						<h3>OAuth</h3>
+					</a>
+					<p>In case you need to connect to a secured endpoint with OAuth, you can pass in OAuth credentials. This will enable TLS (unless you explicitly disable it with <code>useTLS: false</code>), and handle the OAuth flow to get / renew a JWT:</p>
+					<pre><code class="language-typescript"><span class="hljs-keyword">const</span> { ZBClient } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'zeebe-node'</span>)
+
+<span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZBClient(<span class="hljs-string">"my-secure-broker.io:443"</span>, {
+    oAuth: {
+        url: <span class="hljs-string">"https://your-auth-endpoint/oauth/token"</span>,
+        audience: <span class="hljs-string">"my-secure-broker.io"</span>,
+        clientId: <span class="hljs-string">"myClientId"</span>,
+        clientSecret:
+        <span class="hljs-string">"randomClientSecret"</span>,
+        cacheOnDisk: <span class="hljs-literal">true</span>
+    }
+}</code></pre>
+					<p>The <code>cacheOnDisk</code> option will cache the token on disk in <code>$HOME/.camunda</code>, which can be useful in development if you are restarting the service frequently, or are running in a serverless environment, like AWS Lambda.</p>
+					<p>If the cache directory is not writable, the ZBClient constructor will throw an exception. This is considered fatal, as it can lead to denial of service or hefty bills if you think caching is on when it is not.</p>
+					<p><a name = "basic-auth"></a></p>
+					<a href="#basic-auth" id="basic-auth" style="color: inherit; text-decoration: none;">
+						<h2>Basic Auth</h2>
+					</a>
+					<p>If you put a proxy in front of the broker with basic auth, you can pass in a username and password:</p>
+					<pre><code class="language-typescript"><span class="hljs-keyword">const</span> { ZBClient } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'zeebe-node'</span>)
+
+<span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZBClient(<span class="hljs-string">"my-broker-with-basic-auth.io:443"</span>, {
+    basicAuth: {
+        username: <span class="hljs-string">"user1"</span>,
+        password: <span class="hljs-string">"secret"</span>,
+    },
+    useTLS: <span class="hljs-literal">true</span>
+}</code></pre>
+					<p>Basic Auth will also work without TLS.</p>
+					<p><a name = "camunda-cloud"></a></p>
+					<a href="#camunda-cloud" id="camunda-cloud" style="color: inherit; text-decoration: none;">
+						<h3>Camunda Cloud</h3>
+					</a>
+					<p><a href="https://camunda.io">Camunda Cloud</a> is a hosted SaaS instance of Zeebe. The easiest way to connect is to use the <a href="#zero-conf">Zero-conf constructor</a> with the Client Credentials from the Camunda Cloud console as environment variables.</p>
+					<p>You can also connect to Camunda Cloud by using the <code>camundaCloud</code> configuration option, using the <code>clusterId</code>, <code>clientSecret</code>, and <code>clientId</code> from the Camunda Cloud Console, like this:</p>
+					<pre><code class="language-typescript"><span class="hljs-keyword">const</span> { ZBClient } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'zeebe-node'</span>)
+
+<span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZBClient({
+    camundaCloud: {
+        clientId,
+        clientSecret,
+        clusterId,
+    },
+})</code></pre>
+					<p>That&#39;s it! Under the hood, the client lib will construct the OAuth configuration for Camunda Cloud and set the gateway address and port for you.</p>
+					<p><a name = "zero-conf"></a></p>
+					<a href="#zero-conf-constructor" id="zero-conf-constructor" style="color: inherit; text-decoration: none;">
+						<h2>Zero-Conf constructor</h2>
+					</a>
+					<p>The ZBClient has a 0-parameter constructor that takes the config from the environment. This is useful for injecting secrets into your app via the environment, and switching between development and production environments with no change to code.</p>
+					<p>To use the zero-conf constructor, you create the client like this:</p>
+					<pre><code class="language-typescript"><span class="hljs-keyword">const</span> { ZBClient } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'zeebe-node'</span>)
+
+<span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZBClient()</code></pre>
+					<p>With no relevant environment variables set, it will default to localhost on the default port with no TLS.</p>
+					<p>The following environment variable configurations are possible with the Zero-conf constructor:</p>
+					<p>Camunda Cloud:</p>
+					<pre><code><span class="hljs-attribute">ZEEBE_ADDRESS
+ZEEBE_AUTHORIZATION_SERVER_URL
+ZEEBE_CLIENT_SECRET
+ZEEBE_CLIENT_ID</span></code></pre><p>Self-hosted or local broker (no TLS or OAuth):</p>
+					<pre><code><span class="hljs-attribute">ZEEBE_ADDRESS</span></code></pre><p>Self-hosted or local broker with OAuth + TLS:</p>
+					<pre><code><span class="hljs-attribute">ZEEBE_CLIENT_ID
+ZEEBE_CLIENT_SECRET
+ZEEBE_TOKEN_AUDIENCE
+ZEEBE_AUTHORIZATION_SERVER_URL
+ZEEBE_ADDRESS</span></code></pre><p>Basic Auth:</p>
+					<pre><code><span class="hljs-attribute">ZEEBE_BASIC_AUTH_PASSWORD
+ZEEBE_BASIC_AUTH_USERNAME</span></code></pre><p><a name ="job-workers"></a></p>
+					<a href="#job-workers" id="job-workers" style="color: inherit; text-decoration: none;">
+						<h2>Job Workers</h2>
+					</a>
+					<a href="#types-of-job-workers" id="types-of-job-workers" style="color: inherit; text-decoration: none;">
+						<h3>Types of Job Workers</h3>
+					</a>
+					<p>There are two different types of job worker provided by the Zeebe Node client:</p>
+					<ul>
+						<li>The <code>ZBWorker</code> - this worker operates on individual jobs.</li>
+						<li>The <code>ZBBatchWorker</code> - this worker batches jobs on the client, to allow you to batch operations that pool resources. (<em>This worker was introduced in 0.23.0 of the client</em>).</li>
+					</ul>
+					<p>Much of the information in the following <a href="#create-zbworker"><code>ZBWorker</code> section</a> applies also to the <code>ZBBatchWorker</code>. The <code>ZBBatchWorker</code> section covers the features that differ from the <code>ZBWorker</code>.</p>
+					<p><a name = "create-zbworker"></a></p>
+					<a href="#the-codezbworkercode-job-worker" id="the-codezbworkercode-job-worker" style="color: inherit; text-decoration: none;">
+						<h3>The <code>ZBWorker</code> Job Worker</h3>
+					</a>
+					<p>The <code>ZBWorker</code> takes a <em>job handler function</em> that is invoked for each job. It is invoked as soon as the worker retrieves a job from the broker. The worker can retrieve any number of jobs in a response from the broker, and the handler is invoked for each one, independently.</p>
+					<p>The simplest signature for a worker takes a string task type, and a job handler function.</p>
+					<p>The job handler receives the job object, a callback that it can use to complete or fail the job, and a reference to the worker itself, which you can use to log using the worker&#39;s configured logger (See <a href="#logging">Logging</a>).</p>
+					<pre><code class="language-javascript"><span class="hljs-keyword">const</span> ZB = <span class="hljs-built_in">require</span>(<span class="hljs-string">'zeebe-node'</span>)
+
+<span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZB.ZBClient()
+
+<span class="hljs-keyword">const</span> zbWorker = zbc.createWorker(<span class="hljs-string">'demo-service'</span>, handler)
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">handler</span>(<span class="hljs-params">job, complete, worker</span>) </span>{
+    worker.log(<span class="hljs-string">'Task variables'</span>, job.variables)
+
+    <span class="hljs-comment">// Task worker business logic goes here</span>
+    <span class="hljs-keyword">const</span> updateToBrokerVariables = {
+        <span class="hljs-attr">updatedProperty</span>: <span class="hljs-string">'newValue'</span>,
+    }
+
+    complete.success(updateToBrokerVariables)
+}</code></pre>
+					<p>Here is an example job:</p>
+					<pre><code class="language-javascript">
+{ <span class="hljs-attr">key</span>: <span class="hljs-string">'578'</span>,
+  <span class="hljs-attr">type</span>: <span class="hljs-string">'demo-service'</span>,
+  <span class="hljs-attr">jobHeaders</span>:
+   { <span class="hljs-attr">workflowInstanceKey</span>: <span class="hljs-string">'574'</span>,
+     <span class="hljs-attr">bpmnProcessId</span>: <span class="hljs-string">'test-process'</span>,
+     <span class="hljs-attr">workflowDefinitionVersion</span>: <span class="hljs-number">1</span>,
+     <span class="hljs-attr">workflowKey</span>: <span class="hljs-string">'3'</span>,
+     <span class="hljs-attr">elementId</span>: <span class="hljs-string">'ServiceTask_0xdwuw7'</span>,
+     <span class="hljs-attr">elementInstanceKey</span>: <span class="hljs-string">'577'</span> },
+  <span class="hljs-attr">customHeaders</span>: <span class="hljs-string">'{}'</span>,
+  <span class="hljs-attr">worker</span>: <span class="hljs-string">'test-worker'</span>,
+  <span class="hljs-attr">retries</span>: <span class="hljs-number">3</span>,
+  <span class="hljs-attr">deadline</span>: <span class="hljs-string">'1546915422636'</span>,
+  <span class="hljs-attr">variables</span>: { <span class="hljs-attr">testData</span>: <span class="hljs-string">'something'</span> } }
+</code></pre>
+					<p>The worker can be configured with options. To do this, you should use the object parameter constructor.</p>
+					<p>Shown below are the defaults that apply if you don&#39;t supply them:</p>
+					<pre><code class="language-javascript"><span class="hljs-keyword">const</span> { ZBClient, Duration } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'zeebe-node'</span>)
+
+<span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZBClient()
+
+<span class="hljs-keyword">const</span> zbWorker = zbc.createWorker({
+    <span class="hljs-attr">taskType</span>: <span class="hljs-string">'demo-service'</span>,
+    <span class="hljs-attr">taskHandler</span>: handler,
+    <span class="hljs-comment">// the number of simultaneous tasks this worker can handle</span>
+    <span class="hljs-attr">maxJobsToActivate</span>: <span class="hljs-number">32</span>,
+    <span class="hljs-comment">// the amount of time the broker should allow this worker to complete a task</span>
+    <span class="hljs-attr">timeout</span>: Duration.seconds.of(<span class="hljs-number">30</span>),
+    <span class="hljs-comment">// One of 'DEBUG', 'INFO', 'NONE'</span>
+    <span class="hljs-attr">loglevel</span>: <span class="hljs-string">'INFO'</span>,
+    <span class="hljs-comment">// Called when the connection to the broker cannot be established, or fails</span>
+    <span class="hljs-attr">onConnectionError</span>: <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> zbWorker.log(<span class="hljs-string">'Disconnected'</span>)
+    <span class="hljs-comment">// Called when the connection to the broker is (re-)established</span>
+    <span class="hljs-attr">onReady</span>: <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> zbWorker.log(<span class="hljs-string">'Connected.'</span>)
+})</code></pre>
+					<p><a name = "unhandled-exceptions"></a></p>
+					<a href="#unhandled-exceptions-in-task-handlers" id="unhandled-exceptions-in-task-handlers" style="color: inherit; text-decoration: none;">
+						<h4>Unhandled Exceptions in Task Handlers</h4>
+					</a>
+					<p><em>Note: this behaviour is for the ZBWorker only. The ZBBatchWorker does not manage this.</em></p>
+					<p>When a task handler throws an unhandled exception, the library will fail the job. Zeebe will then retry the job according to the retry settings of the task. Sometimes you want to halt the entire workflow so you can investigate. To have the library cancel the workflow on an unhandled exception, pass in <code>{failWorkflowOnException: true}</code> to the <code>createWorker</code> call:</p>
+					<pre><code class="language-typescript"><span class="hljs-keyword">const</span> { ZBClient } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'zeebe-node'</span>)
+
+<span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZBClient()
+
+zbc.createWorker(<span class="hljs-string">'console-log'</span>, maybeFaultyHandler, {
+    failWorkflowOnException: <span class="hljs-literal">true</span>,
+})</code></pre>
+					<p><a name = "complete-tasks"></a></p>
+					<a href="#completing-tasks-with-success-failure-error-or-forwarded" id="completing-tasks-with-success-failure-error-or-forwarded" style="color: inherit; text-decoration: none;">
+						<h3>Completing tasks with success, failure, error, or forwarded</h3>
+					</a>
+					<p>To complete a task, the task worker handler function receives a <code>complete</code> parameter. The complete object has <code>success</code>, <code>failure</code>, and <code>error</code> methods.</p>
+					<p>Call <code>complete.success()</code> passing in a optional plain old JavaScript object (POJO) - a key:value map. These are variable:value pairs that will be used to update the workflow state in the broker. They will be merged with existing values. You can set an existing key to <code>null</code> or <code>undefined</code>, but there is no way to delete a key.</p>
+					<p>Call <code>complete.failure()</code> to fail the task. You must pass in a string message describing the failure. The client library decrements the retry count, and the broker handles the retry logic. If the failure is a hard failure and should cause an incident to be raised in Operate, then pass in <code>0</code> for the optional second parameter, <code>retries</code>:</p>
+					<pre><code class="language-javascript">complete.failure(<span class="hljs-string">'This is a critical failure and will raise an incident'</span>, <span class="hljs-number">0</span>)</code></pre>
+					<p>Call <code>complete.error()</code> to trigger a BPMN error throw event. You must pass in a string error code for the error code, and you can pass an optional error message as the second parameter. If no BPMN error catch event exists for the error code, an incident will be raised.</p>
+					<p>Call <code>complete.forwarded()</code> to release worker capacity to handle another job, without completing the job in any way with the Zeebe broker. This method supports the <em>decoupled job completion</em> pattern. In this pattern, the worker forwards the job to another system - a lambda or a RabbitMQ queue. Some other process is ultimately responsible for completing the job.</p>
+					<p><a name = "working-with-variables"></a></p>
+					<a href="#working-with-workflow-variables-and-custom-headers" id="working-with-workflow-variables-and-custom-headers" style="color: inherit; text-decoration: none;">
+						<h2>Working with Workflow Variables and Custom Headers</h2>
+					</a>
+					<p>Workflow variables are available in your worker job handler callback as <code>job.variables</code>, and any custom headers are available as <code>job.customHeaders</code>.</p>
+					<p>These are read-only JavaScript objects in the Zeebe Node client. However, they are not stored that way in the broker.</p>
+					<p>Both workflow variables and custom headers are stored in the broker as a dictionary of named strings. That means that the variables and custom headers are JSON.parsed in the Node client when it fetches the job, and any update passed to the <code>success()</code> function is JSON.stringified.</p>
+					<p>If you accidentally pass in a circular JSON structure to <code>complete()</code> - like, for example the response object from an HTTP call - it will throw, as this cannot be serialised to a string.</p>
+					<p>To update a key deep in the object structure of a workflow variable, you can use the <a href="https://www.npmjs.com/package/deepmerge">deepmerge utility</a>:</p>
+					<pre><code class="language-TypeScript"><span class="hljs-keyword">const</span> merge = <span class="hljs-built_in">require</span>(<span class="hljs-string">'deepmerge'</span>)
+<span class="hljs-keyword">const</span> { ZBClient } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'zeebe-node'</span>)
+
+<span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZBClient()
+
+zbc.createWorker(<span class="hljs-string">'some-task'</span>, <span class="hljs-function">(<span class="hljs-params">job, complete</span>) =&gt;</span> {
+    <span class="hljs-keyword">const</span> { people } = job.variables
+    <span class="hljs-comment">// update bob's age, keeping all his other properties the same</span>
+    complete.success(merge(people, { bob: { age: <span class="hljs-number">23</span> } }))
+})</code></pre>
+					<p>When setting custom headers in BPMN tasks, while designing your model, you can put stringified JSON as the value for a custom header, and it will show up in the client as a JavaScript object.</p>
+					<p>Workflow variables and custom headers are untyped in the Zeebe broker, however the Node client in TypeScript mode provides the option to type them to provide safety. You can type your worker as <code>any</code> to turn that off:</p>
+					<pre><code class="language-TypeScript"><span class="hljs-comment">// No type checking - totally dynamic and unchecked</span>
+zbc.createWorker&lt;<span class="hljs-built_in">any</span>&gt;({
+    taskType: <span class="hljs-string">'yolo-jobs'</span>,
+    taskHandler: <span class="hljs-function">(<span class="hljs-params">job, complete, worker</span>) =&gt;</span> {
+        worker.log(<span class="hljs-string">`Look ma - <span class="hljs-subst">${job.variables.anything.goes.toUpperCase()}</span>`</span>)
+        complete.success({what: job.variables.could.possibly.go.wrong})
+    }
+})</code></pre>
+					<p>See the section <a href="#strongly-typed">Writing Strongly-typed Job Workers</a> for more details.</p>
+					<p><a name = "fetch-variables"></a></p>
+					<a href="#constraining-the-variables-fetched-by-the-worker" id="constraining-the-variables-fetched-by-the-worker" style="color: inherit; text-decoration: none;">
+						<h2>Constraining the Variables Fetched by the Worker</h2>
+					</a>
+					<p>Sometimes you only need a few specific workflow variables to service a job. One way you can achieve constraint on the workflow variables received by a worker is by using <a href="https://docs.zeebe.io/reference/variables.html#inputoutput-variable-mappings">input variable mappings</a> on the task in the model.</p>
+					<p>You can also use the <code>fetchVariable</code> parameter when creating a worker. Pass an array of strings, containing the names of the variables to fetch, to the <code>fetchVariable</code> parameter when creating a worker. Here is an example, in JavaScript:</p>
+					<pre><code class="language-javascript">zbc.createWorker({
+    <span class="hljs-attr">taskType</span>: <span class="hljs-string">'process-favorite-albums'</span>,
+    <span class="hljs-attr">taskHandler</span>: <span class="hljs-function">(<span class="hljs-params">job, complete, worker</span>) =&gt;</span> {
+        <span class="hljs-keyword">const</span> { name, albums } = job.variables
+        worker.log(<span class="hljs-string">`<span class="hljs-subst">${name}</span> has the following albums: <span class="hljs-subst">${albums.join(<span class="hljs-string">', '</span>)}</span>`</span>)
+        complete.success()
+    },
+    <span class="hljs-attr">fetchVariable</span>: [<span class="hljs-string">'name'</span>, <span class="hljs-string">'albums'</span>],
+})</code></pre>
+					<p>If you are using TypeScript, you can supply an interface describing the workflow variables, and parameterize the worker:</p>
+					<pre><code class="language-TypeScript"><span class="hljs-keyword">interface</span> Variables {
+    name: <span class="hljs-built_in">string</span>
+    albums: <span class="hljs-built_in">string</span>[]
+}
+
+zbc.createWorker&lt;Variables&gt;({
+    taskType: <span class="hljs-string">'process-favorite-albums'</span>,
+    taskHandler: <span class="hljs-function">(<span class="hljs-params">job, complete, worker</span>) =&gt;</span> {
+        <span class="hljs-keyword">const</span> { name, albums = [] } = job.variables
+        worker.log(<span class="hljs-string">`<span class="hljs-subst">${name}</span> has the following albums: <span class="hljs-subst">${albums?.join?.(<span class="hljs-string">', '</span>)}</span>`</span>)
+        complete.success()
+    },
+    fetchVariable: [<span class="hljs-string">'name'</span>, <span class="hljs-string">'albums'</span>],
+})</code></pre>
+					<p>This parameterization does two things:</p>
+					<ul>
+						<li>It informs the worker about the expected types of the variables. For example, if <code>albums</code> is a string, calling <code>join</code> on it will fail at runtime. Providing the type allows the compiler to reason about the valid methods that can be applied to the variables.</li>
+						<li>It allows the type-checker to pick up spelling errors in the strings in <code>fetchVariable</code>, by comparing them with the Variables typing.</li>
+					</ul>
+					<p>Note, that this does not protect you against run-time exceptions where your typings are incorrect, or the payload simply does not match the definition that you provided.</p>
+					<p>See the section <a href="#strongly-typed"> Writing Strongly-typed Job Workers </a> for more details on run-time safety.</p>
+					<p>You can turn off the type-safety by typing the worker as <code>any</code>:</p>
+					<pre><code class="language-TypeScript">zbc.createWorker&lt;<span class="hljs-built_in">any</span>&gt;({
+    taskType: <span class="hljs-string">'process-favorite-albums'</span>,
+    taskHandler: <span class="hljs-function">(<span class="hljs-params">job, complete, worker</span>) =&gt;</span> {
+        <span class="hljs-keyword">const</span> { name, albums = [] } = job.variables
+        <span class="hljs-comment">// TS 3.7 safe access to .join _and_ safe call, to prevent run-time exceptions</span>
+        worker.log(<span class="hljs-string">`<span class="hljs-subst">${name}</span> has the following albums: <span class="hljs-subst">${albums?.join?.(<span class="hljs-string">', '</span>)}</span>`</span>)
+        complete.success()
+    },
+    fetchVariable: [<span class="hljs-string">'name'</span>, <span class="hljs-string">'albums'</span>],
+})</code></pre>
+					<p><a name = "decoupled-complete"></a></p>
+					<a href="#the-quotdecoupled-job-completionquot-pattern" id="the-quotdecoupled-job-completionquot-pattern" style="color: inherit; text-decoration: none;">
+						<h2>The &quot;Decoupled Job Completion&quot; pattern</h2>
+					</a>
+					<p>The <em>Decoupled Job Completion</em> pattern uses a Zeebe Job Worker to activate jobs from the broker, and some other asynchronous (remote) system to do the work.</p>
+					<p>You might activate jobs and then send them to a RabbitMQ queue, or to an AWS lambda. In this case, there may be no outcome about the job that this worker can report back to the broker about success or failure. That will be the responsibility of another part of your distributed system.</p>
+					<p>The first thing you should do is ensure that you activate the job with sufficient time for the complete execution of your system. Your worker will not be completing the job, but it informs the broker how long the expected loop will take to close.</p>
+					<p>Next, call <code>complete.forwarded()</code> in your job worker handler. This has no side-effect with the broker - so nothing is communicated to Zeebe. The job is still out there with your worker as far as Zeebe is concerned. What this call does is release worker capacity to request more jobs.</p>
+					<p>If you are using the Zeebe Node library in the remote system, or if the remote system eventually reports back to you (perhaps over a different RabbitMQ queue), you can use the ZBClient methods <code>completeJob()</code>, <code>failJob()</code>, and <code>throwError()</code> to report the outcome back to the broker.</p>
+					<p>You need at least the <code>job.key</code>, to be able to correlate the result back to Zeebe. Presumably you also want the information from the remote system about the outcome, and any updated variables.</p>
+					<p>Here is an example:</p>
+					<ul>
+						<li>You have a COBOL system that runs a database.</li>
+						<li>Somebody wrote an adapter for this COBOL database. In executes commands over SSH.</li>
+						<li>The adapter is accessible via a RabbitMQ &quot;request&quot; queue, which takes a command and a correlation id, so that its response can be correlated to this request.</li>
+						<li>The adapter sends back the COBOL database system response on a RabbitMQ &quot;response&quot; queue, with the correlation id.</li>
+						<li>It typically takes 15 seconds for the round-trip through RabbitMQ to the COBOL database and back.</li>
+					</ul>
+					<p>You want to put this system into a Zeebe-orchestrated BPMN model as a task.</p>
+					<p>Rather than injecting a RabbitMQ listener into the job handler, you can &quot;<em>fire and forget</em>&quot; the request using the decoupled job completion pattern.</p>
+					<p>Here is how you do it:</p>
+					<ul>
+						<li>Your worker gets the job from Zeebe.</li>
+						<li>Your worker makes the command and sends it down the RabbitMQ &quot;request&quot; queue, with the <code>job.jobKey</code> as the correlation id.</li>
+						<li>Your worker calls <code>complete.forwarded()</code></li>
+					</ul>
+					<p>Here is what that looks like in code:</p>
+					<pre><code class="language-TypeScript"><span class="hljs-keyword">import</span> { RabbitMQSender } <span class="hljs-keyword">from</span> <span class="hljs-string">'./lib/my-awesome-rabbitmq-api'</span>
+<span class="hljs-keyword">import</span> { ZBClient, Duration } <span class="hljs-keyword">from</span> <span class="hljs-string">'zeebe-node'</span>
+
+<span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZBClient()
+
+<span class="hljs-keyword">const</span> cobolWorker = zbc.createWorker({
+    taskType: <span class="hljs-string">'cobol-insert'</span>,
+    timeout: Duration.seconds.of(<span class="hljs-number">20</span>), <span class="hljs-comment">// allow 5s over the expected 15s</span>
+    taskHandler: <span class="hljs-function">(<span class="hljs-params">job, complete</span>) =&gt;</span> {
+    <span class="hljs-keyword">const</span> { jobKey, variables } = job
+    <span class="hljs-keyword">const</span> request = {
+        correlationId: jobKey,
+        command: <span class="hljs-string">`INSERT <span class="hljs-subst">${variables.customer}</span> INTO CUSTOMERS`</span>
+    }
+    RabbitMQSender.send({
+        channel: <span class="hljs-string">'COBOL_REQ'</span>,
+        request
+    })
+    <span class="hljs-comment">// Call forwarded() to release worker capacity</span>
+    complete.forwarded()
+})</code></pre>
+					<p>Now for the response part:</p>
+					<ul>
+						<li>Another part of your system listens to the RabbitMQ response queue.</li>
+						<li>It gets a response back from the COBOL adapter.</li>
+						<li>It examines the response, then sends the appropriate outcome to Zeebe, using the jobKey that has been attached as the correlationId</li>
+					</ul>
+					<pre><code class="language-TypeScript"><span class="hljs-keyword">import</span> { RabbitMQListener } <span class="hljs-keyword">from</span> <span class="hljs-string">'./lib/my-awesome-rabbitmq-api'</span>
+<span class="hljs-keyword">import</span> { ZBClient } <span class="hljs-keyword">from</span> <span class="hljs-string">'zeebe-node'</span>
+
+<span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZBClient()
+
+<span class="hljs-keyword">const</span> RabbitMQListener.listen({
+    channel: <span class="hljs-string">'COBOL_RES'</span>,
+    handler: <span class="hljs-function"><span class="hljs-params">message</span> =&gt;</span> {
+        <span class="hljs-keyword">const</span> { outcome, correlationId } = message
+        <span class="hljs-keyword">if</span> (outcome.SUCCESS) {
+            zbc.completeJob({
+                jobKey: correlationId,
+            })
+        }
+        <span class="hljs-keyword">if</span> (outcome.ERROR) {
+            zbc.throwError({
+                jobKey: correlationId,
+                errorCode: <span class="hljs-string">"5"</span>,
+                errorMessage: <span class="hljs-string">"The COBOL Database reported an error. Boo!"</span>
+            })
+        }
+    })
+}</code></pre>
+					<p>See also the section &quot;<a href="#publish-message">Publish a Message</a>&quot;, for a pattern that you can use when it is not possible to attach the job key to the round trip data response.</p>
+					<p><a name = "zbbatchworker"></a></p>
+					<a href="#the-codezbbatchworkercode-job-worker" id="the-codezbbatchworkercode-job-worker" style="color: inherit; text-decoration: none;">
+						<h2>The <code>ZBBatchWorker</code> Job Worker</h2>
+					</a>
+					<p>The <code>ZBBatchWorker</code> Job Worker batches jobs before calling the job handler. Its fundamental differences from the ZBWorker are:</p>
+					<ul>
+						<li>Its job handler receives an <em>array</em> of one or more jobs.</li>
+						<li>The jobs have <code>success</code>, <code>failure</code>, <code>error</code>, and <code>forwarded</code> methods <em>attached</em> to them.</li>
+						<li>The handler is not invoked immediately, but rather when enough jobs are batched, or a job in the batch is at risk of being timed out by the Zeebe broker.</li>
+					</ul>
+					<p>You can use the batch worker if you have tasks that <em>benefit from processing together</em>, but are <em>not related in the BPMN model</em>.</p>
+					<p>An example would be a high volume of jobs that require calls to an external system, where you have to pay per call to that system. In that case, you may want to batch up jobs, make one call to the external system, then update all the jobs and send them on their way.</p>
+					<p>The batch worker works on a <em>first-of</em> batch size <em>or</em> batch timeout basis.</p>
+					<p>You must configure both <code>jobBatchMinSize</code> and <code>jobBatchMaxTime</code>. Whichever condition is met first will trigger the processing of the jobs:</p>
+					<ul>
+						<li>Enough jobs are available to the worker to satisfy the minimum job batch size;</li>
+						<li>The batch has been building for the maximum amount of time - &quot;<em>we&#39;re doing this now, before the earliest jobs in the batch time out on the broker</em>&quot;.</li>
+					</ul>
+					<p>You should be sure to specify a <code>timeout</code> for your worker that is <code>jobBatchMaxTime</code> <em>plus</em> the expected latency of the external call <em>plus</em> your processing time and network latency, to avoid the broker timing your batch worker&#39;s lock and making the jobs available to another worker. That would defeat the whole purpose.</p>
+					<p>Here is an example of using the <code>ZBBatchWorker</code>:</p>
+					<pre><code class="language-TypeScript"><span class="hljs-keyword">import</span> { API } <span class="hljs-keyword">from</span> <span class="hljs-string">'./lib/my-awesome-external-api'</span>
+<span class="hljs-keyword">import</span> { ZBClient, BatchedJob, Duration } <span class="hljs-keyword">from</span> <span class="hljs-string">'zeebe-node'</span>
+
+<span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZBClient()
+
+<span class="hljs-comment">// Helper function to find a job by its key</span>
+<span class="hljs-keyword">const</span> findJobByKey = <span class="hljs-function"><span class="hljs-params">jobs</span> =&gt;</span> key =&gt; jobs.filter(<span class="hljs-function"><span class="hljs-params">job</span> =&gt;</span> job.jobKey === id)?.[<span class="hljs-number">0</span>] ?? []
+
+<span class="hljs-keyword">const</span> handler = <span class="hljs-keyword">async</span> (jobs: BatchedJob[], worker: ZBBatchWorker) =&gt; {
+    worker.log(<span class="hljs-string">"Let's do this!"</span>)
+    <span class="hljs-keyword">const</span> {jobKey, variables} = job
+    <span class="hljs-comment">// Construct some hypothetical payload with correlation ids and requests</span>
+    <span class="hljs-keyword">const</span> req = jobs.map(<span class="hljs-function"><span class="hljs-params">job</span> =&gt;</span> ({id: jobKey, data: variables.request}))
+    <span class="hljs-comment">// An uncaught exception will not be managed by the library</span>
+    <span class="hljs-keyword">try</span> {
+        <span class="hljs-comment">// Our API wrapper turns that into a request, and returns</span>
+        <span class="hljs-comment">// an array of results with ids</span>
+        <span class="hljs-keyword">const</span> outcomes = <span class="hljs-keyword">await</span> API.post(req)
+        <span class="hljs-comment">// Construct a find function for these jobs</span>
+        <span class="hljs-keyword">const</span> getJob = findJobByKey(jobs)
+        <span class="hljs-comment">// Iterate over the results and call the succeed method on the corresponding job,</span>
+        <span class="hljs-comment">// passing in the correlated outcome of the API call</span>
+        outcomes.forEach(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> getJob(res.id)?.success(res.data))
+    } <span class="hljs-keyword">catch</span> (e) {
+        jobs.forEach(<span class="hljs-function"><span class="hljs-params">job</span> =&gt;</span> job.failure(e.message))
+    }
+}
+
+<span class="hljs-keyword">const</span> batchWorker = zbc.createBatchWorker({
+    taskType: <span class="hljs-string">'get-data-from-external-api'</span>,
+    taskHandler: handler,
+    jobBatchMinSize: <span class="hljs-number">10</span>, <span class="hljs-comment">// at least 10 at a time</span>
+    jobBatchMaxTime: <span class="hljs-number">60</span>, <span class="hljs-comment">// or every 60 seconds, whichever comes first</span>
+    timeout: Duration.seconds.of(<span class="hljs-number">80</span>) <span class="hljs-comment">// 80 second timeout means we have 20 seconds to process at least</span>
+})</code></pre>
+					<p>See <a href="http://joshwulf.com/blog/2020/03/zb-batch-worker/">this blog post</a> for some more details on the implementation.</p>
+					<p><a name = "long-polling"></a></p>
+					<a href="#long-polling" id="long-polling" style="color: inherit; text-decoration: none;">
+						<h3>Long polling</h3>
+					</a>
+					<p>With Zeebe 0.21 onward, long polling is supported for clients, and is used by default. Rather than polling continuously for work and getting nothing back, a client can poll once and leave the request open until work appears. This reduces network traffic and CPU utilization in the server. Every JobActivation Request is appended to the event log, so continuous polling can significantly impact broker performance, especially when an exporter is loaded (see <a href="https://github.com/creditsenseau/zeebe-client-node-js/issues/64#issuecomment-520233275">here</a>).</p>
+					<p>The default long polling period is 30s.</p>
+					<p>To use a different long polling period, pass in a long poll timeout in milliseconds to the client. All workers created with that client will use it. Alternatively, set a period per-worker.</p>
+					<p>Long polling for workers is configured in the ZBClient like this:</p>
+					<pre><code class="language-typescript"><span class="hljs-keyword">const</span> { ZBClient, Duration } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'zeebe-node'</span>)
+
+<span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZBClient(<span class="hljs-string">'serverAddress'</span>, {
+    longPoll: Duration.minutes.of(<span class="hljs-number">10</span>), <span class="hljs-comment">// Ten minutes - inherited by workers</span>
+})
+
+<span class="hljs-keyword">const</span> longPollingWorker = zbc.createWorker({
+    taskType: <span class="hljs-string">'task-type'</span>,
+    taskHandler: handler,
+    longPoll: Duration.minutes.of(<span class="hljs-number">2</span>), <span class="hljs-comment">// override client, poll 2m</span>
+})</code></pre>
+					<a href="#client-commands" id="client-commands" style="color: inherit; text-decoration: none;">
+						<h2>Client Commands</h2>
+					</a>
+					<p><a name = "start-workflow"></a></p>
+					<a href="#start-a-workflow-instance" id="start-a-workflow-instance" style="color: inherit; text-decoration: none;">
+						<h3>Start a Workflow Instance</h3>
+					</a>
+					<pre><code class="language-javascript"><span class="hljs-keyword">const</span> ZB = <span class="hljs-built_in">require</span>(<span class="hljs-string">'zeebe-node'</span>)
+
+;<span class="hljs-function">(<span class="hljs-params"><span class="hljs-keyword">async</span> (</span>) =&gt;</span> {
+    <span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZB.ZBClient(<span class="hljs-string">'localhost:26500'</span>)
+    <span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> zbc.createWorkflowInstance(<span class="hljs-string">'test-process'</span>, {
+        <span class="hljs-attr">testData</span>: <span class="hljs-string">'something'</span>,
+    })
+    <span class="hljs-built_in">console</span>.log(result)
+})()</code></pre>
+					<p>Example output:</p>
+					<pre><code class="language-javascript">
+{ <span class="hljs-attr">workflowKey</span>: <span class="hljs-string">'3'</span>,
+  <span class="hljs-attr">bpmnProcessId</span>: <span class="hljs-string">'test-process'</span>,
+  <span class="hljs-attr">version</span>: <span class="hljs-number">1</span>,
+  <span class="hljs-attr">workflowInstanceKey</span>: <span class="hljs-string">'569'</span> }
+</code></pre>
+					<p><a name = "start-specific-version"></a></p>
+					<a href="#start-a-workflow-instance-of-a-specific-version-of-a-workflow-definition" id="start-a-workflow-instance-of-a-specific-version-of-a-workflow-definition" style="color: inherit; text-decoration: none;">
+						<h3>Start a Workflow Instance of a specific version of a Workflow definition</h3>
+					</a>
+					<p>From version 0.22 of the client onward:</p>
+					<pre><code class="language-javascript"><span class="hljs-keyword">const</span> ZB = <span class="hljs-built_in">require</span>(<span class="hljs-string">'zeebe-node'</span>)
+
+;<span class="hljs-function">(<span class="hljs-params"><span class="hljs-keyword">async</span> (</span>) =&gt;</span> {
+    <span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZB.ZBClient(<span class="hljs-string">'localhost:26500'</span>)
+    <span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> zbc.createWorkflowInstance({
+        <span class="hljs-attr">bpmnProcessId</span>: <span class="hljs-string">'test-process'</span>,
+        <span class="hljs-attr">variables</span>: {
+            <span class="hljs-attr">testData</span>: <span class="hljs-string">'something'</span>,
+        },
+        <span class="hljs-attr">version</span>: <span class="hljs-number">5</span>,
+    })
+    <span class="hljs-built_in">console</span>.log(result)
+})()</code></pre>
+					<p><a name = "start-await"></a></p>
+					<a href="#start-a-workflow-instance-and-await-the-workflow-outcome" id="start-a-workflow-instance-and-await-the-workflow-outcome" style="color: inherit; text-decoration: none;">
+						<h3>Start a Workflow Instance and await the Workflow Outcome</h3>
+					</a>
+					<p>From version 0.22 of the broker and client, you can await the outcome of a workflow end-to-end execution:</p>
+					<pre><code class="language-typescript"><span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getOutcome</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> zbc.createWorkflowInstanceWithResult(processId, {
+        sourceValue: <span class="hljs-number">5</span>,
+    })
+    <span class="hljs-keyword">return</span> result
+}</code></pre>
+					<p>Be aware that by default, <strong>this will throw an exception if the workflow takes longer than 15 seconds to complete</strong>.</p>
+					<p>To override the gateway&#39;s default timeout for a workflow that needs more time to complete:</p>
+					<pre><code class="language-typescript"><span class="hljs-keyword">const</span> { ZBClient, Duration } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'zeebe-node'</span>)
+
+<span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZBClient()
+
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> zbc.createWorkflowInstanceWithResult({
+    bpmnProcessId: processId,
+    variables: {
+        sourceValue: <span class="hljs-number">5</span>,
+        otherValue: <span class="hljs-string">'rome'</span>,
+    },
+    requestTimeout: Duration.seconds.of(<span class="hljs-number">25</span>),
+    <span class="hljs-comment">// also works supplying a number of milliseconds</span>
+    <span class="hljs-comment">// requestTimeout: 25000</span>
+})</code></pre>
+					<p><a name = "publish-message"></a></p>
+					<a href="#publish-a-message" id="publish-a-message" style="color: inherit; text-decoration: none;">
+						<h3>Publish a Message</h3>
+					</a>
+					<p>You can publish a message to the Zeebe broker that will be correlated with a running workflow instance:</p>
+					<pre><code class="language-javascript"><span class="hljs-keyword">const</span> { ZBClient, Duration } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'zeebe-node'</span>)
+
+<span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZBClient()
+
+zbc.publishMessage({
+    <span class="hljs-attr">correlationKey</span>: <span class="hljs-string">'value-to-correlate-with-workflow-variable'</span>,
+    <span class="hljs-attr">messageId</span>: uuid.v4(),
+    <span class="hljs-attr">name</span>: <span class="hljs-string">'message-name'</span>,
+    <span class="hljs-attr">variables</span>: { <span class="hljs-attr">valueToAddToWorkflowVariables</span>: <span class="hljs-string">'here'</span>, <span class="hljs-attr">status</span>: <span class="hljs-string">'PROCESSED'</span> },
+    <span class="hljs-attr">timeToLive</span>: Duration.seconds.of(<span class="hljs-number">10</span>), <span class="hljs-comment">// seconds</span>
+})</code></pre>
+					<p>When would you do this? Well, the sky is not even the limit when it comes to thinking creatively about building a system with Zeebe - <em>and</em> here&#39;s one concrete example to get you thinking:</p>
+					<p>Recall the example of the <em>remote COBOL database</em> in the section &quot;<a href="#decoupled-complete">The &quot;Decoupled Job Completion&quot; pattern</a>&quot;. We&#39;re writing code to allow that system to be participate in a BPMN-modelling workflow orchestrated by Zeebe.</p>
+					<p>But what happens if the adapter for that system has been written in such a way that there is no opportunity to attach metadata to it? In that case we have no opportunity to attach a job key. Maybe you send the fixed data for the command, and you have to correlate the response based on those fields.</p>
+					<p>Another example: think of a system that emits events, and has no knowledge of a running workflow. An example from one system that I orchestrate with Zeebe is Minecraft. A logged-in user in the game performs some action, and code in the game emits an event. I can catch that event in my Node-based application, but I have no knowledge of which running workflow to target - <em>and</em> the event was not generated from a BPMN task providing a worker with the complete context of a workflow.</p>
+					<p>In these two cases, I can publish a message to Zeebe, and let the broker figure out which workflows are:</p>
+					<ul>
+						<li>Sitting at an intermediate message catch event waiting for this message; or</li>
+						<li>In a sub-process that has a boundary event that will be triggered by this message; or</li>
+						<li>Would be started by a message start event, on receiving this message.</li>
+					</ul>
+					<p>The Zeebe broker correlates a message to a running workflow instance <em>not on the job key</em> - but on <em>the value of one of the workflow variables</em> (for intermediate message events) and <em>the message name</em> (for all message events, including start messages).</p>
+					<p>So the response from your COBOL database system, sans job key, is sent back to Zeebe from the RabbitMQListener not via <code>completeJob()</code>, but with <code>publishMessage()</code>, and the value of the payload is used to figure out which workflow it is for.</p>
+					<p>In the case of the Minecraft event, a message is published to Zeebe with the Minecraft username, and that is used by Zeebe to determine which workflows are running for that user and are interested in that event.</p>
+					<p>See the article &quot;<a href="https://zeebe.io/blog/2019/08/zeebe-message-correlation/">Zeebe Message Correlation</a>&quot; for a complete example with code.</p>
+					<p><a name="publish-start-message"></a></p>
+					<a href="#publish-a-start-message" id="publish-a-start-message" style="color: inherit; text-decoration: none;">
+						<h3>Publish a Start Message</h3>
+					</a>
+					<p>You can also publish a message targeting a <a href="https://github.com/zeebe-io/zeebe/issues/1858">Message Start Event</a>.
+					In this case, the correlation key is optional, and all Message Start events that match the <code>name</code> property will receive the message.</p>
+					<p>You can use the <code>publishStartMessage()</code> method to publish a message with no correlation key (it will be set to a random uuid in the background):</p>
+					<pre><code class="language-javascript"><span class="hljs-keyword">const</span> { ZBClient, Duration } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'zeebe-node'</span>)
+
+<span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZB.ZBClient(<span class="hljs-string">'localhost:26500'</span>)
+zbc.publishStartMessage({
+    <span class="hljs-attr">messageId</span>: uuid.v4(),
+    <span class="hljs-attr">name</span>: <span class="hljs-string">'message-name'</span>,
+    <span class="hljs-attr">variables</span>: { <span class="hljs-attr">initialWorkflowVariable</span>: <span class="hljs-string">'here'</span> },
+    <span class="hljs-attr">timeToLive</span>: Duration.seconds.of(<span class="hljs-number">10</span>), <span class="hljs-comment">// seconds</span>
+})</code></pre>
+					<p>Both normal messages and start messages can be published idempotently by setting both the <code>messageId</code> and the <code>correlationKey</code>. They will only ever be correlated once. See: <a href="https://github.com/zeebe-io/zeebe/issues/1012">A message can be published idempotent</a>.</p>
+					<p><a name="activate-jobs"></a></p>
+					<a href="#activate-jobs" id="activate-jobs" style="color: inherit; text-decoration: none;">
+						<h3>Activate Jobs</h3>
+					</a>
+					<p>If you have some use case that doesn&#39;t fit the existing workers, you can write your own custom workers using the <code>ZBClient.activateJobs()</code> method. It takes an <code>ActivateJobsRequest</code> object, and returns a stream for that call.</p>
+					<p>Attach a listener to the stream&#39;s &#39;data&#39; event, and it will be called with an <code>ActivateJobsResponse</code> object if there are jobs to work on.</p>
+					<p>To complete these jobs, use the <code>ZBClient</code> methods <code>completeJob()</code>, <code>failJob()</code>, and <code>throwError()</code>.</p>
+					<p>For more details, read the source code of the library, particularly the <code>ZBWorkerBase</code> class. This is an advanced use case, and the existing code in the library is the best documentation.</p>
+					<a href="#other-concerns" id="other-concerns" style="color: inherit; text-decoration: none;">
+						<h2>Other Concerns</h2>
+					</a>
+					<p><a name = "graceful-shutdown"></a></p>
+					<a href="#graceful-shutdown" id="graceful-shutdown" style="color: inherit; text-decoration: none;">
+						<h3>Graceful Shutdown</h3>
+					</a>
+					<p>To drain workers, call the <code>close()</code> method of the ZBClient. This causes all workers using that client to stop polling for jobs, and returns a Promise that resolves when all active jobs have either finished or timed out.</p>
+					<pre><code class="language-javascript"><span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Closing client...'</span>)
+zbc.close().then(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'All workers closed'</span>))</code></pre>
+					<p><a name = "logging"></a></p>
+					<a href="#logging" id="logging" style="color: inherit; text-decoration: none;">
+						<h2>Logging</h2>
+					</a>
+					<p>Control the log output for the client library by setting the ZBClient log level. Valid log levels are <code>NONE</code> (supress all logging), <code>ERROR</code> (log only exceptions), <code>INFO</code> (general logging), or <code>DEBUG</code> (verbose logging). You can set this in the client constructor:</p>
+					<pre><code class="language-typescript"><span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZBClient(<span class="hljs-string">'localhost'</span>, { loglevel: <span class="hljs-string">'DEBUG'</span> })</code></pre>
+					<p>And also via the environment:</p>
+					<pre><code class="language-bash">ZEEBE_NODE_LOG_LEVEL=<span class="hljs-string">'ERROR'</span> node start.js</code></pre>
+					<p>By default the library uses <code>console.info</code> and <code>console.error</code> for logging. You can also pass in a custom logger, such as <a href="https://github.com/pinojs/pino">pino</a>:</p>
+					<pre><code class="language-typescript"><span class="hljs-keyword">const</span> logger = <span class="hljs-built_in">require</span>(<span class="hljs-string">'pino'</span>)()
+<span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZBClient({ stdout: logger })</code></pre>
+					<p>From version v0.23.0-alpha.1, the library logs human-readable logs by default, using the <code>ZBSimpleLogger</code>. If you want structured logs as stringified JSON, pass in <code>ZBJSONLogger</code> to the constructor <code>stdout</code> option, like this:</p>
+					<pre><code class="language-typescript"><span class="hljs-keyword">const</span> { ZBJsonLogger, ZBClient } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'zeebe-node'</span>)
+<span class="hljs-keyword">const</span> zbc = <span class="hljs-keyword">new</span> ZBClient({ stdout: ZBJsonLogger })</code></pre>
+					<p>You can also control this via environment variables:</p>
+					<pre><code class="language-bash"><span class="hljs-built_in">export</span> ZEEBE_NODE_LOG_TYPE=SIMPLE  <span class="hljs-comment"># Simple Logger (default)</span>
+<span class="hljs-built_in">export</span> ZEEBE_NODE_LOG_TYPE=JSON  <span class="hljs-comment"># JSON Logger</span></code></pre>
+					<p><a name = "generate-constants"></a></p>
+					<a href="#generating-typescript-constants-for-bpmn-models" id="generating-typescript-constants-for-bpmn-models" style="color: inherit; text-decoration: none;">
+						<h3>Generating TypeScript constants for BPMN Models</h3>
+					</a>
+					<p>Message names and Task Types are untyped magic strings. You can generate type information to avoid some classes of errors.</p>
+					<a href="#0220-alpha5-and-above" id="0220-alpha5-and-above" style="color: inherit; text-decoration: none;">
+						<h4>0.22.0-alpha.5 and above</h4>
+					</a>
+					<p>Install the package globally:</p>
+					<pre><code>npm i -g zeebe-<span class="hljs-keyword">node</span><span class="hljs-title"></span></code></pre><p>Now you have the command <code>zeebe-node &lt;filename&gt;</code> that parses a BPMN file and emits type definitions.</p>
+					<a href="#all-versions" id="all-versions" style="color: inherit; text-decoration: none;">
+						<h4>All versions</h4>
+					</a>
+					<p>The <code>BpmnParser</code> class provides a static method <code>generateConstantsForBpmnFiles()</code>.
+					This method takes a filepath and returns TypeScript definitions that you can use to avoid typos in your code, and to reason about the completeness of your task worker coverage.</p>
+					<pre><code class="language-javascript"><span class="hljs-keyword">const</span> ZB = <span class="hljs-built_in">require</span>(<span class="hljs-string">'zeebe-node'</span>)
+;<span class="hljs-function">(<span class="hljs-params"><span class="hljs-keyword">async</span> (</span>) =&gt;</span> {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-keyword">await</span> ZB.BpmnParser.generateConstantsForBpmnFiles(workflowFile))
+})()</code></pre>
+					<p>This will produce output similar to:</p>
+					<pre><code class="language-typescript"><span class="hljs-comment">// Autogenerated constants for msg-start.bpmn</span>
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">enum</span> TaskType = {
+    CONSOLE_LOG = <span class="hljs-string">"console-log"</span>
+};
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">enum</span> MessageName = {
+    MSG_EMIT_FRAME = <span class="hljs-string">"MSG-EMIT_FRAME"</span>,
+    MSG_START_JOB = <span class="hljs-string">"MSG-START_JOB"</span>
+};</code></pre>
+					<p><a name = "generate-code"></a></p>
+					<a href="#generating-code-from-a-bpm-model-file" id="generating-code-from-a-bpm-model-file" style="color: inherit; text-decoration: none;">
+						<h2>Generating code from a BPM Model file</h2>
+					</a>
+					<p>You can scaffold your worker code from a BPMN file with the <code>zeebe-node</code> command. To use this command, install the package globally with:</p>
+					<pre><code class="language-bash">npm i -g zeebe-node</code></pre>
+					<p>Pass in the path to the BPMN file, and it will output a file to implement it:</p>
+					<pre><code class="language-bash">zeebe-node my-model.bpmn</code></pre>
+					<p><a name = "strongly-typed"></a></p>
+					<a href="#writing-strongly-typed-job-workers" id="writing-strongly-typed-job-workers" style="color: inherit; text-decoration: none;">
+						<h3>Writing Strongly-typed Job Workers</h3>
+					</a>
+					<p>You can provide interfaces to get design-time type safety and intellisense on the workflow variables passed in the a worker job handler, the custom headers that it will receive, and the variables that it will pass back to Zeebe in the <code>complete.success</code> call:</p>
+					<pre><code class="language-TypeScript"><span class="hljs-keyword">interface</span> InputVariables {
+    name: <span class="hljs-built_in">string</span>,
+    age: <span class="hljs-built_in">number</span>,
+    preferences: {
+        beverage: <span class="hljs-string">'Coffee'</span> | <span class="hljs-string">'Tea'</span> | <span class="hljs-string">'Beer'</span> | <span class="hljs-string">'Water'</span>,
+        color: <span class="hljs-built_in">string</span>
+    }
+}
+
+<span class="hljs-keyword">interface</span> OutputVariables {
+    suggestedGift: <span class="hljs-built_in">string</span>
+}
+
+<span class="hljs-keyword">interface</span> CustomHeaders {
+    occasion: <span class="hljs-string">'Birthday'</span> | <span class="hljs-string">'Christmas'</span> | <span class="hljs-string">'Hannukah'</span> | <span class="hljs-string">'Diwali'</span>
+}
+
+<span class="hljs-keyword">const</span> giftSuggester = zbc.createWorker&lt;
+    InputVariables,
+    CustomHeaders,
+    OutputVariables&gt;
+    <span class="hljs-function">(<span class="hljs-params">'<span class="hljs-keyword">get</span>-gift-suggestion', (<span class="hljs-params">job, complete</span>) =&gt; {
+        <span class="hljs-keyword">const</span> suggestedGift = `${job.customHeaders.occasion} ${job.variables.preferences.beverage}`
+        complete.success(<span class="hljs-params">{ suggestedGift }</span>)
+}</span>)</span></code></pre>
+					<p>If you decouple the declaration of the job handler from the <code>createWorker</code> call, you will need to explicitly specify its type, like this:</p>
+					<pre><code class="language-TypeScript"><span class="hljs-keyword">import</span> { ZBWorkerTaskHandler } <span class="hljs-keyword">from</span> <span class="hljs-string">'zeebe-node'</span>
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getGiftSuggestion</span>(<span class="hljs-params">job, complete</span>): <span class="hljs-title">ZBWorkerTaskHandler</span>&lt;<span class="hljs-title">InputVariables</span>, <span class="hljs-title">CustomHeaders</span>, <span class="hljs-title">OutputVariables</span>&gt; </span>{
+    <span class="hljs-keyword">const</span> suggestedGift = <span class="hljs-string">`<span class="hljs-subst">${job.customHeaders.occasion}</span> <span class="hljs-subst">${job.variables.preferences.beverage}</span>`</span>
+    complete.success({ suggestedGift })
+}
+
+<span class="hljs-keyword">const</span> giftSuggester = zbc.createWorker(<span class="hljs-string">'get-gift-suggestion'</span>, getGiftSuggestion)
+</code></pre>
+					<p><a name = "run-time-safety"></a></p>
+					<a href="#run-time-type-safety" id="run-time-type-safety" style="color: inherit; text-decoration: none;">
+						<h2>Run-time Type Safety</h2>
+					</a>
+					<p>The parameterization of the client and workers helps to catch errors in code, and if your interface definitions are good, can go a long way to making sure that your workers and client emit the correct payloads and have a strong expectation about what they will receive, but it does not give you any <em>run-time safety</em>.</p>
+					<p>Your type definition may be incorrect, or the variables or custom headers may simply not be there at run-time, as there is no type checking in the broker, and other factors are involved, such as tasks with input and output mappings, and data added to the workflow variables by REST calls and other workers.</p>
+					<p>You should consider:</p>
+					<ul>
+						<li>Writing interface definitions for your payloads to get design-time assist for protection against spelling errors as you demarshal and update variables.</li>
+						<li>Testing for the existence of variables and properties on payloads, and writing defensive pathways to deal with missing properties. If you mark <em>everything</em> as optional in your interfaces, the type-checker will force you to write that code.</li>
+						<li>Surfacing code exceptions operationally to detect and diagnose mismatched expectations.</li>
+						<li>If you want to validate inputs and outputs to your system at runtime, you can use <a href="https://github.com/gcanti/io-ts">io-ts</a>. Once data goes into that, it either exits through an exception handler, or is guaranteed to have the shape of the defined codec at run-time.</li>
+					</ul>
+					<p>As with everything, it is a balancing act / trade-off between correctness, safety, and speed. You do not want to lock everything down while you are still exploring.</p>
+					<p>I recommend the following scale, to match the maturity of your system:</p>
+					<ul>
+						<li>Start with <code>&lt;any&gt;</code> typing for the workers; then</li>
+						<li>Develop interfaces to describe the DTOs represented in your workflow variables;</li>
+						<li>Use optional types on those interfaces to check your defensive programming structures;</li>
+						<li>Lock down the run-time behaviour with io-ts as the boundary validator.</li>
+					</ul>
+					<p>You may choose to start with the DTOs. Anyway, there are options.</p>
+					<p><a name = "developing"></a></p>
+					<a href="#developing-zeebe-node" id="developing-zeebe-node" style="color: inherit; text-decoration: none;">
+						<h2>Developing Zeebe Node</h2>
+					</a>
+					<p>The source is written in TypeScript in <code>src</code>, and compiled to ES6 in the <code>dist</code> directory.</p>
+					<p>To build:</p>
+					<pre><code class="language-bash">npm run build</code></pre>
+					<p>To start a watcher to build the source and API docs while you are developing:</p>
+					<pre><code class="language-bash">npm run dev</code></pre>
+					<p><a name = "tests"></a></p>
+					<a href="#tests" id="tests" style="color: inherit; text-decoration: none;">
+						<h3>Tests</h3>
+					</a>
+					<p>Tests are written in Jest, and live in the <code>src/__tests__</code> directory. To run the unit tests:</p>
+					<pre><code class="language-bash">npm t</code></pre>
+					<p>Integration tests are in the <code>src/__tests__/integration</code> directory.</p>
+					<p>They require a Zeebe broker to run. You can run them using the <a href="https://circleci.com/docs/2.0/local-cli/">Circle CI CLI</a>:</p>
+					<pre><code class="language-bash">circleci <span class="hljs-built_in">local</span> execute -c .circleci/config.yml --job <span class="hljs-built_in">test</span></code></pre>
+					<p>Or you can start a dockerised broker:</p>
+					<pre><code class="language-bash"><span class="hljs-built_in">cd</span> docker
+docker-compose up</code></pre>
+					<p>And then run them manually:</p>
+					<pre><code class="language-bash">npm run <span class="hljs-built_in">test</span>:integration</code></pre>
+					<p>For the failure test, you need to run Operate (<a href="https://github.com/zeebe-io/zeebe-docker-compose/blob/master/operate/docker-compose.yml">docker-compose config</a>) and manually verify that an incident has been raised at <a href="http://localhost:8080">http://localhost:8080</a>.</p>
+					<p><a name = "writing-tests"></a></p>
+					<a href="#writing-tests" id="writing-tests" style="color: inherit; text-decoration: none;">
+						<h3>Writing Tests</h3>
+					</a>
+					<p>Zeebe is inherently stateful, so integration tests need to be carefully isolated so that workers from one test do not service tasks in another test. Jest runs tests in a random order, so intermittent failures are the outcome of tests that mutate shared state.</p>
+					<p>The tests use a templating function to replace the process id, task types and message names in the bpmn model to produce distinct, isolated namespaces for each test and each test run.</p>
+					<p><a name = "contributors"></a></p>
+					<a href="#contributors" id="contributors" style="color: inherit; text-decoration: none;">
+						<h2>Contributors</h2>
+					</a>
+					<table>
+						<thead>
+							<tr>
+								<th>Name</th>
+							</tr>
+						</thead>
+						<tbody><tr>
+								<td><strong><a href="https://github.com/jwulf">Josh Wulf</a></strong></td>
+							</tr>
+							<tr>
+								<td><strong><a href="https://github.com/ColRad">Colin Raddatz</a></strong></td>
+							</tr>
+							<tr>
+								<td><strong><a href="https://github.com/BrighTide">Jarred Filmer</a></strong></td>
+							</tr>
+							<tr>
+								<td><strong><a href="https://github.com/s3than">Timothy Colbert</a></strong></td>
+							</tr>
+							<tr>
+								<td><strong><a href="https://github.com/OlivierAlbertini">Olivier Albertini</a></strong></td>
+							</tr>
+							<tr>
+								<td><strong><a href="https://github.com/pedesen">Patrick Dehn</a></strong></td>
+							</tr>
+					</tbody></table>
+			</div>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class="globals  ">
+						<a href="globals.html"><em>Globals</em></a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+					<li class=" tsd-kind-enum">
+						<a href="enums/partitionbrokerrole.html" class="tsd-kind-icon">Partition<wbr>Broker<wbr>Role</a>
+					</li>
+					<li class=" tsd-kind-enum">
+						<a href="enums/resourcetype.html" class="tsd-kind-icon">Resource<wbr>Type</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/bpmnparser.html" class="tsd-kind-icon">Bpmn<wbr>Parser</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/configurationhydrator.html" class="tsd-kind-icon">Configuration<wbr>Hydrator</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/connectionfactory.html" class="tsd-kind-icon">Connection<wbr>Factory</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/grpcclient.html" class="tsd-kind-icon">Grpc<wbr>Client</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/grpcmiddleware.html" class="tsd-kind-icon">Grpc<wbr>Middleware</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/mockstdout.html" class="tsd-kind-icon">Mock<wbr>Std<wbr>Out</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/oauthprovider.html" class="tsd-kind-icon">OAuth<wbr>Provider</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/statefulloginterceptor.html" class="tsd-kind-icon">Stateful<wbr>Log<wbr>Interceptor</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/utils.html" class="tsd-kind-icon">Utils</a>
+					</li>
+					<li class=" tsd-kind-class tsd-has-type-parameter">
+						<a href="classes/zbbatchworker.html" class="tsd-kind-icon">ZBBatch<wbr>Worker</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/zbclient.html" class="tsd-kind-icon">ZBClient</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/zblogger.html" class="tsd-kind-icon">ZBLogger</a>
+					</li>
+					<li class=" tsd-kind-class tsd-has-type-parameter">
+						<a href="classes/zbworker.html" class="tsd-kind-icon">ZBWorker</a>
+					</li>
+					<li class=" tsd-kind-class tsd-has-type-parameter">
+						<a href="classes/zbworkerbase.html" class="tsd-kind-icon">ZBWorker<wbr>Base</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/activatejobsrequest.html" class="tsd-kind-icon">Activate<wbr>Jobs<wbr>Request</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/activatejobsresponse.html" class="tsd-kind-icon">Activate<wbr>Jobs<wbr>Response</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/activatedjob.html" class="tsd-kind-icon">Activated<wbr>Job</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/basicauthconfig.html" class="tsd-kind-icon">Basic<wbr>Auth<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/brokerinfo.html" class="tsd-kind-icon">Broker<wbr>Info</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/camundacloudconfig.html" class="tsd-kind-icon">Camunda<wbr>Cloud<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/characteristics.html" class="tsd-kind-icon">Characteristics</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/completefn.html" class="tsd-kind-icon">Complete<wbr>Fn</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/completejobrequest.html" class="tsd-kind-icon">Complete<wbr>Job<wbr>Request</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/createworkflowinstance.html" class="tsd-kind-icon">Create<wbr>Workflow<wbr>Instance</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/createworkflowinstancerequest.html" class="tsd-kind-icon">Create<wbr>Workflow<wbr>Instance<wbr>Request</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/createworkflowinstanceresponse.html" class="tsd-kind-icon">Create<wbr>Workflow<wbr>Instance<wbr>Response</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/createworkflowinstancewithresult.html" class="tsd-kind-icon">Create<wbr>Workflow<wbr>Instance<wbr>With<wbr>Result</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/createworkflowinstancewithresultrequest.html" class="tsd-kind-icon">Create<wbr>Workflow<wbr>Instance<wbr>With<wbr>Result<wbr>Request</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/createworkflowinstancewithresultresponse.html" class="tsd-kind-icon">Create<wbr>Workflow<wbr>Instance<wbr>With<wbr>Result<wbr>Response</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/deployworkflowbuffer.html" class="tsd-kind-icon">Deploy<wbr>Workflow<wbr>Buffer</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/deployworkflowrequest.html" class="tsd-kind-icon">Deploy<wbr>Workflow<wbr>Request</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/deployworkflowresponse.html" class="tsd-kind-icon">Deploy<wbr>Workflow<wbr>Response</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/failjobrequest.html" class="tsd-kind-icon">Fail<wbr>Job<wbr>Request</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/getworkflowrequestwithbpmnprocessid.html" class="tsd-kind-icon">Get<wbr>Workflow<wbr>Request<wbr>With<wbr>Bpmn<wbr>Process<wbr>Id</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/getworkflowrequestwithworkflowkey.html" class="tsd-kind-icon">Get<wbr>Workflow<wbr>Request<wbr>With<wbr>Workflow<wbr>Key</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/getworkflowresponse.html" class="tsd-kind-icon">Get<wbr>Workflow<wbr>Response</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/grpccallstatus.html" class="tsd-kind-icon">Grpc<wbr>Call<wbr>Status</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/grpcclientctor.html" class="tsd-kind-icon">Grpc<wbr>Client<wbr>Ctor</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/grpcclientextendedoptions.html" class="tsd-kind-icon">Grpc<wbr>Client<wbr>Extended<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/grpcoptions.html" class="tsd-kind-icon">Grpc<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/jsondoc.html" class="tsd-kind-icon">JSONDoc</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/job.html" class="tsd-kind-icon">Job</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/keyedobject.html" class="tsd-kind-icon">Keyed<wbr>Object</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/listworkflowresponse.html" class="tsd-kind-icon">List<wbr>Workflow<wbr>Response</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/logger.html" class="tsd-kind-icon">Logger</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/oauthproviderconfig.html" class="tsd-kind-icon">OAuth<wbr>Provider<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/operationoptionsnoretry.html" class="tsd-kind-icon">Operation<wbr>Options<wbr>NoRetry</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/operationoptionswithretry.html" class="tsd-kind-icon">Operation<wbr>Options<wbr>With<wbr>Retry</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/partition.html" class="tsd-kind-icon">Partition</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/publishmessagerequest.html" class="tsd-kind-icon">Publish<wbr>Message<wbr>Request</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/publishstartmessagerequest.html" class="tsd-kind-icon">Publish<wbr>Start<wbr>Message<wbr>Request</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/setvariablesrequest.html" class="tsd-kind-icon">Set<wbr>Variables<wbr>Request</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/throwerrorrequest.html" class="tsd-kind-icon">Throw<wbr>Error<wbr>Request</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/token.html" class="tsd-kind-icon">Token</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/topologyresponse.html" class="tsd-kind-icon">Topology<wbr>Response</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/updatejobretriesrequest.html" class="tsd-kind-icon">Update<wbr>Job<wbr>Retries<wbr>Request</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/workflowmetadata.html" class="tsd-kind-icon">Workflow<wbr>Metadata</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/workflowrequestobject.html" class="tsd-kind-icon">Workflow<wbr>Request<wbr>Object</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/zbbatchworkerconfig.html" class="tsd-kind-icon">ZBBatch<wbr>Worker<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/zbbatchworkerconstructorconfig.html" class="tsd-kind-icon">ZBBatch<wbr>Worker<wbr>Constructor<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/zbclientoptions.html" class="tsd-kind-icon">ZBClient<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/zbcustomlogger.html" class="tsd-kind-icon">ZBCustom<wbr>Logger</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/zbgrpc.html" class="tsd-kind-icon">ZBGrpc</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/zblogmessage.html" class="tsd-kind-icon">ZBLog<wbr>Message</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/zbloggerconfig.html" class="tsd-kind-icon">ZBLogger<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/zbloggeroptions.html" class="tsd-kind-icon">ZBLogger<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/zbworkerbaseconfig.html" class="tsd-kind-icon">ZBWorker<wbr>Base<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/zbworkerbaseconstructor.html" class="tsd-kind-icon">ZBWorker<wbr>Base<wbr>Constructor</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/zbworkerconfig.html" class="tsd-kind-icon">ZBWorker<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/zbworkerconstructorconfig.html" class="tsd-kind-icon">ZBWorker<wbr>Constructor<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/zbworkeroptions.html" class="tsd-kind-icon">ZBWorker<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
+						<a href="globals.html#batchedjob" class="tsd-kind-icon">Batched<wbr>Job</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="globals.html#connectionerrorhandler" class="tsd-kind-icon">Connection<wbr>Error<wbr>Handler</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="globals.html#customheaders" class="tsd-kind-icon">Custom<wbr>Headers</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="globals.html#deployworkflowfiles" class="tsd-kind-icon">Deploy<wbr>Workflow<wbr>Files</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="globals.html#getworkflowrequest" class="tsd-kind-icon">Get<wbr>Workflow<wbr>Request</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="globals.html#grpcconnectionprofile" class="tsd-kind-icon">Grpc<wbr>Connection<wbr>Profile</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="globals.html#inputvariables" class="tsd-kind-icon">Input<wbr>Variables</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="globals.html#json" class="tsd-kind-icon">JSON</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="globals.html#logfn" class="tsd-kind-icon">Log<wbr>Fn</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="globals.html#loglevel" class="tsd-kind-icon">Loglevel</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="globals.html#operationoptions" class="tsd-kind-icon">Operation<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="globals.html#outputvariables" class="tsd-kind-icon">Output<wbr>Variables</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="globals.html#state" class="tsd-kind-icon">State</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="globals.html#workflowvariables" class="tsd-kind-icon">Workflow<wbr>Variables</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
+						<a href="globals.html#zbbatchworkertaskhandler" class="tsd-kind-icon">ZBBatch<wbr>Worker<wbr>Task<wbr>Handler</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
+						<a href="globals.html#zbworkertaskhandler" class="tsd-kind-icon">ZBWorker<wbr>Task<wbr>Handler</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#connectivitystate" class="tsd-kind-icon">connectivity<wbr>State</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#fs" class="tsd-kind-icon">fs</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#homedir" class="tsd-kind-icon">homedir</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#idcolors" class="tsd-kind-icon">id<wbr>Colors</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="globals.html#parser" class="tsd-kind-icon">parser</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#jobbuffer" class="tsd-kind-icon">Job<wbr>Buffer</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#bufferorfiles" class="tsd-kind-icon">buffer<wbr>OrFiles</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#cleanempty" class="tsd-kind-icon">clean<wbr>Empty</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#coercefilenamestoarray" class="tsd-kind-icon">coerce<wbr>Filenames<wbr>ToArray</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#createuniquetasktype" class="tsd-kind-icon">create<wbr>Unique<wbr>Task<wbr>Type</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="globals.html#decodecreatezbworkersig" class="tsd-kind-icon">decode<wbr>CreateZBWorker<wbr>Sig</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#getconstantname" class="tsd-kind-icon">get<wbr>Constant<wbr>Name</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#getsafename" class="tsd-kind-icon">get<wbr>Safe<wbr>Name</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#isbuffer" class="tsd-kind-icon">is<wbr>Buffer</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#isconfig" class="tsd-kind-icon">is<wbr>Config</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#logger" class="tsd-kind-icon">logger</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="globals.html#mapthese" class="tsd-kind-icon">map<wbr>These</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#parsepayload" class="tsd-kind-icon">parse<wbr>Payload</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="globals.html#parsevariables" class="tsd-kind-icon">parse<wbr>Variables</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="globals.html#parsevariablesandcustomheaderstojson" class="tsd-kind-icon">parse<wbr>Variables<wbr>And<wbr>Custom<wbr>Headers<wbr>ToJSON</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#readdefinitionfromfile" class="tsd-kind-icon">read<wbr>Definition<wbr>From<wbr>File</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#replacetimevalueswithmillisecondnumber" class="tsd-kind-icon">replace<wbr>Time<wbr>Values<wbr>With<wbr>Millisecond<wbr>Number</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#stringifypayload" class="tsd-kind-icon">stringify<wbr>Payload</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="globals.html#stringifyvariables" class="tsd-kind-icon">stringify<wbr>Variables</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="globals.html#toarray" class="tsd-kind-icon">to<wbr>Array</a>
+					</li>
+					<li class=" tsd-kind-object-literal">
+						<a href="globals.html#capacityevent" class="tsd-kind-icon">Capacity<wbr>Event</a>
+					</li>
+					<li class=" tsd-kind-object-literal">
+						<a href="globals.html#connectioncharacteristics" class="tsd-kind-icon">Connection<wbr>Characteristics</a>
+					</li>
+					<li class=" tsd-kind-object-literal">
+						<a href="globals.html#connectionstatusevent" class="tsd-kind-icon">Connection<wbr>Status<wbr>Event</a>
+					</li>
+					<li class=" tsd-kind-object-literal">
+						<a href="globals.html#grpcerror" class="tsd-kind-icon">Grpc<wbr>Error</a>
+					</li>
+					<li class=" tsd-kind-object-literal">
+						<a href="globals.html#grpcstate" class="tsd-kind-icon">Grpc<wbr>State</a>
+					</li>
+					<li class=" tsd-kind-object-literal">
+						<a href="globals.html#internalsignals" class="tsd-kind-icon">Internal<wbr>Signals</a>
+					</li>
+					<li class=" tsd-kind-object-literal">
+						<a href="globals.html#middlewaresignals" class="tsd-kind-icon">Middleware<wbr>Signals</a>
+					</li>
+					<li class=" tsd-kind-object-literal">
+						<a href="globals.html#zbjsonlogger" class="tsd-kind-icon">ZBJson<wbr>Logger</a>
+					</li>
+					<li class=" tsd-kind-object-literal">
+						<a href="globals.html#zbsimplelogger" class="tsd-kind-icon">ZBSimple<wbr>Logger</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-module"><span class="tsd-kind-icon">Module</span></li>
+				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
+				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
+				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
+				<li class="tsd-kind-index-signature"><span class="tsd-kind-icon">Index signature</span></li>
+				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+				<li class="tsd-kind-enum-member"><span class="tsd-kind-icon">Enumeration member</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-enum"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-enum"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-interface"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
+				<li class="tsd-kind-index-signature tsd-parent-kind-interface"><span class="tsd-kind-icon">Index signature</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
+				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class"><span class="tsd-kind-icon">Accessor</span></li>
+				<li class="tsd-kind-index-signature tsd-parent-kind-class"><span class="tsd-kind-icon">Index signature</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static property</span></li>
+				<li class="tsd-kind-call-signature tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="assets/js/main.js"></script>
+<script>if (location.protocol == 'file:') document.write('<script src="assets/js/search.js"><' + '/script>');</script>
+</body>
+</html>
