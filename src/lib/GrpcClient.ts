@@ -1,6 +1,4 @@
 // import { Client, credentials, loadPackageDefinition } from '@grpc/grpc-js'
-import { loadSync, Options, PackageDefinition } from '@grpc/proto-loader'
-import { EventEmitter } from 'events'
 import {
 	Client,
 	credentials,
@@ -8,7 +6,9 @@ import {
 	loadPackageDefinition,
 	Metadata,
 	status,
-} from 'grpc'
+} from '@grpc/grpc-js'
+import { loadSync, Options, PackageDefinition } from '@grpc/proto-loader'
+import { EventEmitter } from 'events'
 import { Duration, MaybeTimeDuration } from 'typed-duration'
 import { BasicAuthConfig } from './interfaces'
 import { Loglevel } from './interfaces-published-contract'
@@ -125,6 +125,8 @@ export class GrpcClient extends EventEmitter {
 	public longPoll?: MaybeTimeDuration
 	public connected: boolean = false
 	public client: Client
+	private closing = false
+	private channelState: number = 0
 	private packageDefinition: PackageDefinition
 	private listNameMethods: string[]
 	private gRPCRetryCount = 0
@@ -165,6 +167,7 @@ export class GrpcClient extends EventEmitter {
 		})
 
 		const proto = loadPackageDefinition(this.packageDefinition)[packageName]
+
 		const listMethods = this.packageDefinition[`${packageName}.${service}`]
 		const channelCredentials = useTLS
 			? credentials.createSsl()
@@ -240,6 +243,12 @@ export class GrpcClient extends EventEmitter {
 				this.listNameMethods.push(methodName)
 
 				this[`${methodName}Stream`] = async data => {
+					if (this.closing) {
+						// tslint:disable-next-line: no-console
+						console.log('Short-circuited on channel closed') // @DEBUG
+
+						return
+					}
 					let stream
 					const timeNormalisedRequest = replaceTimeValuesWithMillisecondNumber(
 						data
@@ -266,17 +275,32 @@ export class GrpcClient extends EventEmitter {
 						this.handleGrpcError(stream)(error)
 					)
 					stream.on('data', () => (this.gRPCRetryCount = 0))
+					stream.on('metadata', md =>
+						this.emit(
+							MiddlewareSignals.Log.Debug,
+							JSON.stringify(md)
+						)
+					)
+					stream.on('status', s =>
+						this.emit(
+							MiddlewareSignals.Log.Debug,
+							JSON.stringify(s)
+						)
+					)
 					return stream
 				}
 
 				this[`${methodName}Sync`] = data => {
+					if (this.closing) {
+						return
+					}
 					const timeNormalisedRequest = replaceTimeValuesWithMillisecondNumber(
 						data
 					)
 					const client = this.client
 					return new Promise(async (resolve, reject) => {
 						try {
-							const metadata = await this.getAuthToken()
+							const metadata = (await this.getAuthToken()) || {}
 							client[methodName](
 								timeNormalisedRequest,
 								metadata,
@@ -315,60 +339,86 @@ export class GrpcClient extends EventEmitter {
 	}
 
 	public close(timeout = 5000) {
+		// 4 === SHUTDOWN
+		const isClosed = state => state === 4
+
+		this.closing = true
+		let alreadyClosed = false
 		return new Promise((resolve, reject) => {
-			let alreadyClosed = false
 			const gRPC = this.client
-			let state: any
+			gRPC.getChannel().close()
+			gRPC.close()
 			try {
-				state = gRPC.getChannel().getConnectivityState(false)
+				this.channelState = gRPC
+					.getChannel()
+					.getConnectivityState(false)
 			} catch (e) {
 				const msg = e.toString()
-				alreadyClosed = msg.includes(
-					'Cannot call getConnectivityState on a closed Channel'
-				)
-				if (alreadyClosed) {
-					setTimeout(() => resolve(), 2000)
-				}
+				alreadyClosed =
+					isClosed(this.channelState) ||
+					msg.includes(
+						'Cannot call getConnectivityState on a closed Channel'
+					) // C-based library
 			}
-			if (!alreadyClosed) {
-				this.emit(
-					MiddlewareSignals.Log.Info,
-					`GRPC Channel State: ${connectivityState[state]}`
-				)
-				const deadline = new Date().setSeconds(
-					new Date().getSeconds() + 300
-				)
-				gRPC.getChannel().watchConnectivityState(
-					state,
-					deadline,
-					async () => {
-						try {
-							const newState = gRPC
-								.getChannel()
-								.getConnectivityState(false)
-							this.emit(
-								MiddlewareSignals.Log.Info,
-								`Grpc Channel State: ${connectivityState[newState]}`
-							)
-						} catch (e) {
-							const msg = e.toString()
-							alreadyClosed = msg.includes(
+
+			const closed = isClosed(this.channelState)
+			if (closed || alreadyClosed) {
+				this.channelClosed = true
+				this.emit(MiddlewareSignals.Log.Info, `Grpc channel closed`)
+				return resolve() // setTimeout(() => resolve(), 2000)
+			}
+
+			this.emit(
+				MiddlewareSignals.Log.Info,
+				`Grpc Channel State: ${connectivityState[this.channelState]}`
+			)
+			const deadline = new Date().setSeconds(
+				new Date().getSeconds() + 300
+			)
+			gRPC.getChannel().watchConnectivityState(
+				this.channelState,
+				deadline,
+				async () => {
+					try {
+						this.channelState = gRPC
+							.getChannel()
+							.getConnectivityState(false)
+						this.emit(
+							MiddlewareSignals.Log.Info,
+							`Grpc Channel State: ${
+								connectivityState[this.channelState]
+							}`
+						)
+						alreadyClosed = isClosed(this.channelState)
+					} catch (e) {
+						const msg = e.toString()
+						alreadyClosed =
+							msg.includes(
 								'Cannot call getConnectivityState on a closed Channel'
-							)
-							this.emit(
-								MiddlewareSignals.Log.Info,
-								`Closed: ${alreadyClosed}`
-							)
-							if (alreadyClosed) {
-								setTimeout(() => resolve(), 2000)
-							}
-						}
+							) || isClosed(this.channelState)
+						this.emit(
+							MiddlewareSignals.Log.Info,
+							`Closed: ${alreadyClosed}`
+						)
 					}
-				)
-			}
-			this.client.close()
-			this.channelClosed = true
-			setTimeout(() => (alreadyClosed ? null : reject()), timeout)
+					if (alreadyClosed) {
+						return resolve()
+					}
+				}
+			)
+
+			return setTimeout(() => {
+				// tslint:disable-next-line: no-console
+				console.log(`Channel timeout after ${timeout}`) // @DEBUG
+
+				return isClosed(this.channelState)
+					? null
+					: reject(
+							new Error(
+								`Didn't close in time: ${this.channelState}`
+							)
+					  )
+			}, timeout)
 		})
 	}
 
@@ -390,6 +440,7 @@ export class GrpcClient extends EventEmitter {
 	}
 
 	private watchGrpcChannel(): Promise<number> {
+		this.emit(MiddlewareSignals.Log.Debug, 'Start watching Grpc channel...')
 		return new Promise(resolve => {
 			const gRPC = this.client
 			if (this.channelClosed) {
@@ -398,7 +449,7 @@ export class GrpcClient extends EventEmitter {
 			const state = gRPC.getChannel().getConnectivityState(false)
 			this.emit(
 				MiddlewareSignals.Log.Error,
-				`GRPC Channel State: ${connectivityState[state]}`
+				`Grpc Channel State: ${connectivityState[state]}`
 			)
 			const deadline = new Date().setSeconds(
 				new Date().getSeconds() + 300
@@ -514,14 +565,17 @@ export class GrpcClient extends EventEmitter {
 			`Grpc Channel state: ${connectivityState[channelState]}`
 		)
 		stream.removeAllListeners()
-		if (
-			channelState === GrpcState.READY ||
-			channelState === GrpcState.IDLE
-		) {
-			this.emit(MiddlewareSignals.Log.Info, 'Grpc channel connected')
-			this.emit(InternalSignals.Ready)
-			this.emit(MiddlewareSignals.Event.Ready)
-		}
+		// if (
+		// 	channelState === GrpcState.READY ||
+		// 	channelState === GrpcState.IDLE
+		// ) {
+		// 	this.emit(MiddlewareSignals.Log.Info, 'Grpc channel connected')
+		// 	// tslint:disable-next-line: no-console
+		// 	console.log('handleGrpc', channelState) // @DEBUG
+
+		// 	this.emit(InternalSignals.Ready)
+		// 	this.emit(MiddlewareSignals.Event.Ready)
+		// }
 	}
 
 	// https://github.com/grpc/proposal/blob/master/L5-node-client-interceptors.md#proposal
@@ -540,6 +594,12 @@ export class GrpcClient extends EventEmitter {
 								return this.emit(
 									MiddlewareSignals.Event.GrpcInterceptError,
 									{ callStatus, options }
+								)
+							}
+							if (callStatus.code === 1 && this.closing) {
+								return this.emit(
+									MiddlewareSignals.Log.Debug,
+									'Closing, and error received from server'
 								)
 							}
 							// this.emit(MiddlewareSignals.Log.Error, options)

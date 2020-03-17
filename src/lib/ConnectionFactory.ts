@@ -14,11 +14,17 @@ export const ConnectionCharacteristics: {
 } = {
 	CAMUNDA_CLOUD: {
 		_tag: 'CAMUNDA_CLOUD',
-		startupTime: 5000,
+		startupTime: parseInt(
+			process.env.ZEEBE_INITIAL_CONNECTION_TOLERANCE || '5000',
+			10
+		),
 	},
 	VANILLA: {
 		_tag: 'VANILLA',
-		startupTime: 0,
+		startupTime: parseInt(
+			process.env.ZEEBE_INITIAL_CONNECTION_TOLERANCE || '0',
+			10
+		),
 	},
 }
 

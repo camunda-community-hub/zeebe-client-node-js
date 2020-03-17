@@ -1,7 +1,7 @@
 import { ZBClient } from '../../index'
 import { createUniqueTaskType } from '../../lib/createUniqueTaskType'
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
-
+jest.setTimeout(20000)
 describe('ZBClient', () => {
 	it('deploys a workflow', async () => {
 		const zbc = new ZBClient()

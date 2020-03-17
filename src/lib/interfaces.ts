@@ -182,7 +182,7 @@ export interface Job<Variables = KeyedObject, CustomHeaderShape = KeyedObject> {
 	readonly variables: Readonly<Variables>
 }
 
-export interface ZBWorkerOptions<InputVars> {
+export interface ZBWorkerOptions<InputVars = any> {
 	/**
 	 * Max concurrent tasks for this worker. Default 32.
 	 */
