@@ -1,3 +1,4 @@
+import { ClientReadableStreamImpl } from '@grpc/grpc-js/build/src/call'
 import { Chalk } from 'chalk'
 import { EventEmitter } from 'events'
 import { Duration, MaybeTimeDuration } from 'typed-duration'
@@ -95,6 +96,7 @@ export class ZBWorkerBase<
 	private stalled = false
 	private connected = true
 	private readied = false
+	private jobStreams: { [key: string]: ClientReadableStreamImpl<any> } = {}
 
 	constructor({
 		grpcClient,
@@ -199,6 +201,13 @@ export class ZBWorkerBase<
 			if (this.activeJobs <= 0) {
 				clearInterval(this.keepAlive)
 				await this.grpcClient.close(timeout)
+				this.grpcClient.removeAllListeners()
+				Object.keys(this.jobStreams).forEach(key => {
+					this.jobStreams[key].removeAllListeners()
+					this.jobStreams[key].cancel()
+					delete this.jobStreams[key]
+					this.logger.logDebug('Removed Job Stream Listeners')
+				})
 				resolve()
 			} else {
 				this.capacityEmitter.once(CapacityEvent.Empty, async () => {
@@ -372,25 +381,31 @@ export class ZBWorkerBase<
 	}
 
 	private async longPollLoop() {
+		if (this.closePromise) {
+			return
+		}
 		this.logger.logDebug('Activating Jobs...')
-		const result = await this.activateJobs()
+		const jobStream = (await this.activateJobs()) as any
+		const id = uuid.v4()
 		const start = Date.now()
 		this.logger.logDebug(
 			`Long poll loop. this.longPoll: ${Duration.value.of(
 				this.longPoll
 			)}`,
-			Object.keys(result)[0],
+			Object.keys(jobStream!)[0],
 			start
 		)
-		if (result.stream) {
+		if (jobStream.stream) {
+			this.jobStreams[id] = jobStream.stream
 			// This event happens when the server cancels the call after the deadline
 			// And when it has completed a response with work
-			result.stream.on('end', () => {
+			jobStream!.stream.on('end', () => {
 				this.logger.logDebug(
 					`Stream ended after ${(Date.now() - start) / 1000} seconds`
 				)
 				clearTimeout(this.restartPollingAfterLongPollTimeout!)
-				result.stream.removeAllListeners()
+				this.jobStreams[id].removeAllListeners()
+				delete this.jobStreams[id]
 				this.longPollLoop()
 			})
 			// We do this here because activateJobs may not result in an open gRPC call
@@ -402,13 +417,13 @@ export class ZBWorkerBase<
 				)
 			}
 		}
-		if (result.atCapacity) {
-			result.atCapacity.once(CapacityEvent.Available, () =>
+		if (jobStream!.atCapacity) {
+			jobStream!.atCapacity.once(CapacityEvent.Available, () =>
 				this.longPollLoop()
 			)
 		}
-		if (result.error) {
-			this.logger.logError(result.error.message)
+		if (jobStream!.error) {
+			this.logger.logError(jobStream!.error.message)
 			setTimeout(() => this.longPollLoop(), 1000) // @TODO implement backoff
 		}
 	}

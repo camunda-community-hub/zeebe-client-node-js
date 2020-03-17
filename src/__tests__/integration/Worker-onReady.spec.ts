@@ -61,11 +61,11 @@ describe('Worker onReady Handler', () => {
 	it(`Does not emit the ready event if there is no broker`, done => {
 		let called = 0
 		const zbc2 = new ZBClient('nobroker')
-		zbc2.createWorker(
-			null,
-			'nonsense-task',
-			(_, complete) => complete.success
-		).on('ready', () => {
+		zbc2.createWorker({
+			loglevel: 'NONE',
+			taskHandler: (_, complete) => complete.success,
+			taskType: 'nonsense-task',
+		}).on('ready', () => {
 			called++
 		})
 		setTimeout(async () => {

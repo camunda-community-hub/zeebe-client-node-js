@@ -1,6 +1,11 @@
 import { ZBClient } from '../..'
 import { createUniqueTaskType } from '../../lib/createUniqueTaskType'
 
+const trace = res => {
+	// tslint:disable-next-line: no-console
+	console.log(res)
+	return res
+}
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 jest.setTimeout(60000)
 
@@ -25,51 +30,55 @@ describe('ZBWorker', () => {
 		}
 	})
 
-	it('Causes a retry with complete.failure()', async done => {
-		const { bpmn, processId, taskTypes } = createUniqueTaskType({
-			bpmnFilePath: './src/__tests__/testdata/Worker-Failure1.bpmn',
-			messages: [],
-			taskTypes: ['wait-worker-failure'],
-		})
+	it('Causes a retry with complete.failure()', () =>
+		new Promise(async resolve => {
+			const { bpmn, processId, taskTypes } = createUniqueTaskType({
+				bpmnFilePath: './src/__tests__/testdata/Worker-Failure1.bpmn',
+				messages: [],
+				taskTypes: ['wait-worker-failure'],
+			})
 
-		const res = await zbc.deployWorkflow({
-			definition: bpmn,
-			name: `worker-failure-${processId}.bpmn`,
-		})
+			const res = await zbc
+				.deployWorkflow({
+					definition: bpmn,
+					name: `worker-failure-${processId}.bpmn`,
+				})
+				.catch(trace)
 
-		expect(res.workflows.length).toBe(1)
-		expect(res.workflows[0].bpmnProcessId).toBe(processId)
+			expect(res.workflows.length).toBe(1)
+			expect(res.workflows[0].bpmnProcessId).toBe(processId)
 
-		wf = await zbc.createWorkflowInstance(processId, {
-			conditionVariable: true,
-		})
-		const wfi = wf.workflowInstanceKey
-		expect(wfi).toBeTruthy()
+			wf = await zbc.createWorkflowInstance(processId, {
+				conditionVariable: true,
+			})
+			const wfi = wf.workflowInstanceKey
+			expect(wfi).toBeTruthy()
 
-		await zbc.setVariables({
-			elementInstanceKey: wfi,
-			local: false,
-			variables: {
-				conditionVariable: false,
-			},
-		})
+			await zbc.setVariables({
+				elementInstanceKey: wfi,
+				local: false,
+				variables: {
+					conditionVariable: false,
+				},
+			})
 
-		zbc.createWorker(
-			taskTypes['wait-worker-failure'],
-			async (job, complete) => {
-				// Succeed on the third attempt
-				if (job.retries === 1) {
-					complete.success()
-					expect(job.workflowInstanceKey).toBe(wfi)
-					expect(job.retries).toBe(1)
-					wf = undefined
-					return done()
-				}
-				await complete.failure('Triggering a retry')
-			},
-			{ loglevel: 'NONE' }
-		)
-	})
+			zbc.createWorker(
+				taskTypes['wait-worker-failure'],
+				async (job, complete) => {
+					// Succeed on the third attempt
+					if (job.retries === 1) {
+						await complete.success()
+						expect(job.workflowInstanceKey).toBe(wfi)
+						expect(job.retries).toBe(1)
+						wf = undefined
+
+						return resolve()
+					}
+					await complete.failure('Triggering a retry')
+				},
+				{ loglevel: 'NONE' }
+			)
+		}))
 
 	it('Does not fail a workflow when the handler throws, by default', async done => {
 		const { bpmn, processId, taskTypes } = createUniqueTaskType({

@@ -464,6 +464,7 @@ export class ZBClient extends EventEmitter {
 				this.emit('close')
 				this.grpc.removeAllListeners()
 				this.removeAllListeners()
+				// console.log((process as any)._getActiveHandles())
 				resolve()
 			})
 		return this.closePromise
