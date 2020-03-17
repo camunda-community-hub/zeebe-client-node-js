@@ -1,4 +1,4 @@
-# Version 0.23.0-alpha.2
+# Version 0.23.0-alpha.3
 
 ## Breaking Changes
 
@@ -11,6 +11,7 @@ _Changes in APIs or behaviour that may affect existing applications that use zee
 
 _New shiny stuff._
 
+-   The underlying gRPC implementation has been switched to the pure JS @grpc/grpc-js. This means no more dependency on node-gyp or binary rebuilds for Docker containers / Electron; and a slim-down in the installed package size from 50MB to 27MB.
 -   Timeouts can now be expressed with units using the [typed-duration](https://www.npmjs.com/package/typed-duration) package, which is included in and re-exported by the library. See the README section "A note on representing timeout durations".
 -   There is a new `ZBBatchWorker`. This allows you to batch jobs that are unrelated in a BPMN model, but are related with respect to some (for example: rate-limited) external system. See the README for details. Thanks to Jimmy Beaudoin ([@jbeaudoin11](https://github.com/jbeaudoin11)) for the suggestion, and helping with the design. Ref: [#134](https://github.com/creditsenseau/zeebe-client-node-js/issues/134).
 -   `ZBClient.createWorker` has two new, additional, method signature. The first is a single object parameter signature. This is the preferred signature if you are passing in configuration options. The second signature is a version of the original that elides the `id` for the worker. With this, you can create a worker with just a task type and a job handler. A UUID is assigned as the worker id. This is the equivalent of passing in `null` as the first parameter to the original signature. The previous method signature still works, allowing you to specify an id if you want. See [this article for details](https://www.joshwulf.com/blog/2020/02/refining-method-signature/).

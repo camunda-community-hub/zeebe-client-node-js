@@ -1,6 +1,6 @@
 {
-	"name": "zeebe-node-next",
-	"version": "v0.23.0-alpha.4",
+	"name": "zeebe-node",
+	"version": "v0.23.0-alpha.3",
 	"description": "A Node.js client library for the Zeebe Microservices Orchestration Engine.",
 	"keywords": [
 		"zeebe",
