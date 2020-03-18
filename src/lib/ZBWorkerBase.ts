@@ -385,7 +385,7 @@ export class ZBWorkerBase<
 			return
 		}
 		this.logger.logDebug('Activating Jobs...')
-		const jobStream = (await this.activateJobs()) as any
+		const jobStream = await this.activateJobs()
 		const id = uuid.v4()
 		const start = Date.now()
 		this.logger.logDebug(
@@ -399,7 +399,7 @@ export class ZBWorkerBase<
 			this.jobStreams[id] = jobStream.stream
 			// This event happens when the server cancels the call after the deadline
 			// And when it has completed a response with work
-			jobStream!.stream.on('end', () => {
+			jobStream.stream.on('end', () => {
 				this.logger.logDebug(
 					`Stream ended after ${(Date.now() - start) / 1000} seconds`
 				)
@@ -417,13 +417,13 @@ export class ZBWorkerBase<
 				)
 			}
 		}
-		if (jobStream!.atCapacity) {
-			jobStream!.atCapacity.once(CapacityEvent.Available, () =>
+		if (jobStream.atCapacity) {
+			jobStream.atCapacity.once(CapacityEvent.Available, () =>
 				this.longPollLoop()
 			)
 		}
-		if (jobStream!.error) {
-			this.logger.logError(jobStream!.error.message)
+		if (jobStream.error) {
+			this.logger.logError(jobStream.error.message)
 			setTimeout(() => this.longPollLoop(), 1000) // @TODO implement backoff
 		}
 	}

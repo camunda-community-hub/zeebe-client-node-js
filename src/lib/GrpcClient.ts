@@ -259,10 +259,11 @@ export class GrpcClient extends EventEmitter {
 							timeNormalisedRequest,
 							metadata
 						)
-					} catch (e) {
-						this.emit(MiddlewareSignals.Log.Error, e.message)
+					} catch (error) {
+						this.emit(MiddlewareSignals.Log.Error, error.message)
 						this.emit(MiddlewareSignals.Event.Error)
 						this.setNotReady()
+						return { error }
 					}
 					/**
 					 * Once this gets attached here, it is attached to *all* calls
