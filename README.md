@@ -210,6 +210,12 @@ Retry is provided by [promise-retry](https://www.npmjs.com/package/promise-retry
 
 Additionally, the gRPC Client will continually reconnect when in a failed state, such as when the gateway goes away due to pod rescheduling on Kubernetes.
 
+<a name = "eager-connection"></a>
+
+### Eager Connection
+
+The ZBClient eagerly connects to the broker by issuing a topology command in the constructor. This allows you an onReady event to be emitted. You can disable this (for example, for testing without a broker), by either passing `eagerConnection: false` to the client constructor options, or setting the environment variable `ZEEBE_NODE_EAGER_CONNECTION` to `false`.
+
 <a name = "on-ready"></a>
 
 ### onReady(), onConnectionError(), and connected

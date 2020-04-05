@@ -190,19 +190,21 @@ export class ZBClient extends EventEmitter {
 		// Send command to broker to eagerly fail / prove connection.
 		// This is useful for, for example: the Node-Red client, which wants to
 		// display the connection status.
-		this.topology()
-			.then(res => {
-				this.logger.logDirect(
-					chalk.blueBright('Zeebe cluster topology:')
-				)
-				this.logger.logDirect(res.brokers)
-			})
-			.catch(e => {
-				// Swallow exception to avoid throwing if retries are off
-				if (e.thisWillNeverHappenYo) {
-					this.emit('never')
-				}
-			})
+		if (!!this.options.eagerConnection) {
+			this.topology()
+				.then(res => {
+					this.logger.logDirect(
+						chalk.blueBright('Zeebe cluster topology:')
+					)
+					this.logger.logDirect(res.brokers)
+				})
+				.catch(e => {
+					// Swallow exception to avoid throwing if retries are off
+					if (e.thisWillNeverHappenYo) {
+						this.emit('never')
+					}
+				})
+		}
 	}
 
 	public activateJobs<
