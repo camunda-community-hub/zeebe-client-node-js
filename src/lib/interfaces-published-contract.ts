@@ -24,6 +24,7 @@ export interface ZBCustomLogger {
 
 export interface ZBClientOptions {
 	connectionTolerance?: MaybeTimeDuration
+	eagerConnection?: boolean
 	loglevel?: Loglevel
 	stdout?: ZBCustomLogger
 	retry?: boolean

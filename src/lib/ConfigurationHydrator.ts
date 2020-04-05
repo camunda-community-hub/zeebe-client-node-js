@@ -18,6 +18,7 @@ export class ConfigurationHydrator {
 			...ConfigurationHydrator.decodeConnectionString(gatewayAddress),
 			...ConfigurationHydrator.getCamundaCloudConfig(options),
 			...ConfigurationHydrator.readTLSFromEnvironment(options),
+			...ConfigurationHydrator.getEagerStatus(options),
 		}
 		return configuration
 	}
@@ -194,5 +195,16 @@ export class ConfigurationHydrator {
 		return maybeClusterId
 			? maybeClusterId.split('.zeebe.camunda.io')[0]
 			: undefined
+	}
+
+	private static getEagerStatus(options: ZBClientOptions | undefined) {
+		return {
+			eagerConnection: !(
+				(
+					process.env.ZEEBE_NODE_EAGER_CONNECT || 'trueByDefault'
+				).toLocaleLowerCase() === 'false' ||
+				options?.eagerConnection === false
+			),
+		}
 	}
 }
