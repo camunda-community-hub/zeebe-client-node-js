@@ -452,8 +452,9 @@ export class GrpcClient extends EventEmitter {
 				MiddlewareSignals.Log.Error,
 				`Grpc Channel State: ${connectivityState[state]}`
 			)
+			const delay = state === GrpcState.TRANSIENT_FAILURE ? 5 : 30
 			const deadline = new Date().setSeconds(
-				new Date().getSeconds() + 300
+				new Date().getSeconds() + delay
 			)
 			if (state === GrpcState.IDLE || state === GrpcState.READY) {
 				return resolve(state)
@@ -483,7 +484,8 @@ export class GrpcClient extends EventEmitter {
 					)
 					if (
 						newState === GrpcState.READY ||
-						newState === GrpcState.IDLE
+						newState === GrpcState.IDLE ||
+						newState === GrpcState.TRANSIENT_FAILURE
 					) {
 						return resolve(newState)
 					} else {
