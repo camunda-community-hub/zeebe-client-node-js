@@ -6,10 +6,10 @@ jest.setTimeout(15000)
 describe('StdOut Substitution', () => {
 	it('uses an injected stdout', done => {
 		const mockStd = new MockStdOut()
-		const z = new ZBClient({ stdout: mockStd })
+		const z = new ZBClient({ stdout: mockStd, eagerConnection: false })
 
 		// tslint:disable-next-line: no-console
-		z.createWorker(null, 'test', console.log)
+		z.createWorker('test', console.log)
 		setTimeout(() => {
 			z.close()
 		}, 2000)

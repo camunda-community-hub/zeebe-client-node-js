@@ -203,8 +203,8 @@ export class ZBWorkerBase<
 				await this.grpcClient.close(timeout)
 				this.grpcClient.removeAllListeners()
 				Object.keys(this.jobStreams).forEach(key => {
-					this.jobStreams[key].removeAllListeners()
-					this.jobStreams[key].cancel()
+					this.jobStreams[key]?.removeAllListeners?.()
+					this.jobStreams[key]?.cancel?.()
 					delete this.jobStreams[key]
 					this.logger.logDebug('Removed Job Stream Listeners')
 				})
@@ -399,7 +399,7 @@ export class ZBWorkerBase<
 			this.jobStreams[id] = jobStream.stream
 			// This event happens when the server cancels the call after the deadline
 			// And when it has completed a response with work
-			jobStream.stream.on('end', () => {
+			jobStream.stream.on?.('end', () => {
 				this.logger.logDebug(
 					`Stream ended after ${(Date.now() - start) / 1000} seconds`
 				)
@@ -478,7 +478,7 @@ export class ZBWorkerBase<
 			}
 		}
 
-		stream.on('data', (res: ActivateJobsResponse) => {
+		stream?.on?.('data', (res: ActivateJobsResponse) => {
 			// If we are closing, don't start working on these jobs. They will have to be timed out by the server.
 			if (this.closing) {
 				return

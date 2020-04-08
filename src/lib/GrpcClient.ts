@@ -440,14 +440,15 @@ export class GrpcClient extends EventEmitter {
 		return metadata
 	}
 
-	private watchGrpcChannel(): Promise<number> {
+	private waitForGrpcChannelReconnect(): Promise<number> {
 		this.emit(MiddlewareSignals.Log.Debug, 'Start watching Grpc channel...')
 		return new Promise(resolve => {
+			const tryToConnect = true
 			const gRPC = this.client
 			if (this.channelClosed) {
 				return
 			}
-			const state = gRPC.getChannel().getConnectivityState(false)
+			const state = gRPC.getChannel().getConnectivityState(tryToConnect)
 			this.emit(
 				MiddlewareSignals.Log.Error,
 				`Grpc Channel State: ${connectivityState[state]}`
@@ -473,7 +474,7 @@ export class GrpcClient extends EventEmitter {
 					}
 					const newState = gRPC
 						.getChannel()
-						.getConnectivityState(false)
+						.getConnectivityState(tryToConnect)
 					this.emit(
 						MiddlewareSignals.Log.Error,
 						`Grpc Channel State: ${connectivityState[newState]}`
@@ -484,8 +485,7 @@ export class GrpcClient extends EventEmitter {
 					)
 					if (
 						newState === GrpcState.READY ||
-						newState === GrpcState.IDLE ||
-						newState === GrpcState.TRANSIENT_FAILURE
+						newState === GrpcState.IDLE
 					) {
 						return resolve(newState)
 					} else {
@@ -493,7 +493,7 @@ export class GrpcClient extends EventEmitter {
 							MiddlewareSignals.Log.Error,
 							`Grpc Retry count: ${this.gRPCRetryCount}`
 						)
-						return resolve(await this.watchGrpcChannel())
+						return resolve(await this.waitForGrpcChannelReconnect())
 					}
 				}
 			)
@@ -562,17 +562,18 @@ export class GrpcClient extends EventEmitter {
 	private handleGrpcError = (stream: any) => async (err: any) => {
 		this.emit(MiddlewareSignals.Event.Error)
 		this.emit(MiddlewareSignals.Log.Error, `Grpc Error: ${err.message}`)
-		const channelState = await this.watchGrpcChannel()
+		const channelState = await this.waitForGrpcChannelReconnect()
 		this.emit(
 			MiddlewareSignals.Log.Debug,
 			`Grpc Channel state: ${connectivityState[channelState]}`
 		)
 		stream.removeAllListeners()
+		this.emit(MiddlewareSignals.Event.Ready)
 		// if (
 		// 	channelState === GrpcState.READY ||
 		// 	channelState === GrpcState.IDLE
 		// ) {
-		// 	this.emit(MiddlewareSignals.Log.Info, 'Grpc channel connected')
+		// 	this.emit(MiddlewareSignals.Log.Info, 'Grpc channel reconnected')
 		// 	// tslint:disable-next-line: no-console
 		// 	console.log('handleGrpc', channelState) // @DEBUG
 
