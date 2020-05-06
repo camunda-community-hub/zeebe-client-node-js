@@ -18,7 +18,7 @@ _Changes in APIs or behaviour that may affect existing applications that use zee
 
 _New shiny stuff._
 
--   The underlying gRPC implementation has been switched to the pure JS @grpc/grpc-js. This means no more dependency on node-gyp or binary rebuilds for Docker containers / Electron; and a slim-down in the installed package size from 50MB to 27MB.
+-   The underlying gRPC implementation has been switched to the pure JS @grpc/grpc-js. This means no more dependency on node-gyp or binary rebuilds for Docker containers / Electron; and a slim-down in the installed package size from 50MB to 27MB. All tests pass, including some new ones (for example: the worker keeps working when the broker goes away and comes back). The JS gRPC implementation _may_ have effects on the behaviour of the client that are not covered in the unit and integration tests. Please open a GitHub issue if you encounter something.
 -   Timeouts can now be expressed with units using the [typed-duration](https://www.npmjs.com/package/typed-duration) package, which is included in and re-exported by the library. See the README section "A note on representing timeout durations".
 -   There is a new `ZBBatchWorker`. This allows you to batch jobs that are unrelated in a BPMN model, but are related with respect to some (for example: rate-limited) external system. See the README for details. Thanks to Jimmy Beaudoin ([@jbeaudoin11](https://github.com/jbeaudoin11)) for the suggestion, and helping with the design. Ref: [#134](https://github.com/creditsenseau/zeebe-client-node-js/issues/134).
 -   `ZBClient.createWorker` has two new, additional, method signature. The first is a single object parameter signature. This is the preferred signature if you are passing in configuration options. The second signature is a version of the original that elides the `id` for the worker. With this, you can create a worker with just a task type and a job handler. A UUID is assigned as the worker id. This is the equivalent of passing in `null` as the first parameter to the original signature. The previous method signature still works, allowing you to specify an id if you want. See [this article for details](https://www.joshwulf.com/blog/2020/02/refining-method-signature/).
@@ -34,6 +34,8 @@ _New shiny stuff._
 -   The README also has a shiny TOC. It has grown in size such that one is needed.
 
 ## Fixes
+
+_Things that were broken and are now fixed._
 
 -   An unmaintained package in the dependency tree of kafka-node (and arguably a bug in NPM's de-duping algorithm) caused zeebe-node to break by installing the wrong version of the `long` dependency, unless the two packages were installed in a specific order. We've explicitly added `long` to the dependencies of zeebe-node to address this, and [reported it to kafka-node](https://github.com/SOHU-Co/kafka-node/issues/1332). Thanks to [@need4eat](https://github.com/need4eat) for discovering this and helping to track down the cause. See [#124](https://github.com/creditsenseau/zeebe-client-node-js/issues/124).
 -   Prior to 0.23.0 of the zeebe-node client, a worker would not reconnect if the broker was restarted, throwing gRPC channel errors until they were restarted. A stalled retry timer has been added to the worker. The worker will now automatically reconnect when the broker is available, if it goes away and comes back. See [#145](https://github.com/creditsenseau/zeebe-client-node-js/issues/145), and [#152](https://github.com/creditsenseau/zeebe-client-node-js/issues/152).
