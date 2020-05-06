@@ -19,7 +19,26 @@ describe('Worker onReady Handler', () => {
 		)
 		setTimeout(async () => {
 			expect(called).toBe(1)
+			await zbc2.close()
+			done()
+		}, 6000)
+	})
+
+	it(`Does set connected: true if there is a broker and eagerConnection: true`, done => {
+		const zbc2 = new ZBClient({
+			eagerConnection: true,
+		})
+		setTimeout(async () => {
 			expect(zbc2.connected).toBe(true)
+			await zbc2.close()
+			done()
+		}, 6000)
+	})
+
+	it(`Does not set connected: true if there is a broker and eagerConnection: false`, done => {
+		const zbc2 = new ZBClient()
+		setTimeout(async () => {
+			expect(zbc2.connected).toBe(undefined)
 			await zbc2.close()
 			done()
 		}, 6000)
@@ -36,7 +55,6 @@ describe('Worker onReady Handler', () => {
 		})
 		setTimeout(async () => {
 			expect(called).toBe(1)
-			expect(zbc2.connected).toBe(true)
 			await zbc2.close()
 			done()
 		}, 6000)
@@ -52,7 +70,6 @@ describe('Worker onReady Handler', () => {
 		})
 		setTimeout(async () => {
 			expect(called).toBe(0)
-			expect(zbc2.connected).toBe(false)
 			await zbc2.close()
 			done()
 		}, 5000)
@@ -70,7 +87,6 @@ describe('Worker onReady Handler', () => {
 		})
 		setTimeout(async () => {
 			expect(called).toBe(0)
-			expect(zbc2.connected).toBe(false)
 			await zbc2.close()
 			done()
 		}, 5000)

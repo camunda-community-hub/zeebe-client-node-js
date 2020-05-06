@@ -47,8 +47,8 @@ const idColors = [
 ]
 
 export const ConnectionStatusEvent = {
-	ConnectionError: 'connectionError',
-	Ready: 'ready',
+	ConnectionError: 'connectionError' as 'connectionError',
+	Ready: 'ready' as 'ready',
 }
 
 export class ZBClient extends EventEmitter {
@@ -62,7 +62,7 @@ export class ZBClient extends EventEmitter {
 		.ZEEBE_CONNECTION_TOLERANCE
 		? parseInt(process.env.ZEEBE_CONNECTION_TOLERANCE, 10)
 		: ZBClient.DEFAULT_CONNECTION_TOLERANCE
-	public connected = true
+	public connected?: boolean = undefined
 	public readied = false
 	public gatewayAddress: string
 	public loglevel: Loglevel
@@ -164,7 +164,7 @@ export class ZBClient extends EventEmitter {
 		})
 
 		grpcClient.on(ConnectionStatusEvent.ConnectionError, () => {
-			if (this.connected) {
+			if (this.connected !== false) {
 				this.onConnectionError?.()
 				this.emit(ConnectionStatusEvent.ConnectionError)
 			}

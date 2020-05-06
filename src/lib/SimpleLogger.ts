@@ -29,9 +29,21 @@ const logger = (loglevel: Loglevel): LogFn => (logMessage: string): void => {
 		message = logMessage
 	}
 	const time = dayjs().format('HH:mm:ss.SSS')
-	// tslint:disable-next-line: no-console
-	const logMethod = loglevel === 'INFO' ? console.info : console.error
-	logMethod(`${time} ${message}`)
+	const err = new Error('Debug stack trace')
+	const stack = err.stack!.split('\n')
+
+	// tslint:disable: no-console
+	const loggers = {
+		DEBUG: console.info,
+		ERROR: console.error,
+		INFO: console.info,
+	}
+	const logMethod = loggers[loglevel]
+	const info =
+		loglevel === 'DEBUG'
+			? `${time} ${message}\n${stack}`
+			: `${time} ${message}`
+	logMethod(info)
 }
 
 export const ZBSimpleLogger: Logger = {

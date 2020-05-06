@@ -199,12 +199,11 @@ export class ConfigurationHydrator {
 
 	private static getEagerStatus(options: ZBClientOptions | undefined) {
 		return {
-			eagerConnection: !(
+			eagerConnection:
 				(
-					process.env.ZEEBE_NODE_EAGER_CONNECT || 'trueByDefault'
-				).toLocaleLowerCase() === 'false' ||
-				options?.eagerConnection === false
-			),
+					process.env.ZEEBE_NODE_EAGER_CONNECT || 'false'
+				).toLocaleLowerCase() === 'true' ||
+				options?.eagerConnection === true,
 		}
 	}
 }

@@ -97,6 +97,7 @@ export class ZBWorkerBase<
 	private connected = true
 	private readied = false
 	private jobStreams: { [key: string]: ClientReadableStreamImpl<any> } = {}
+	private restartPollingAfterStall?: NodeJS.Timeout
 
 	constructor({
 		grpcClient,
@@ -143,6 +144,8 @@ export class ZBWorkerBase<
 		this.debugMode = options.debug === true
 		this.grpcClient = grpcClient
 		const onError = () => {
+			options.onConnectionError?.()
+
 			if (this.connected) {
 				this.emit(ConnectionStatusEvent.ConnectionError, onError)
 				options.onConnectionError?.()
@@ -368,16 +371,25 @@ export class ZBWorkerBase<
 	}
 
 	private stall() {
-		if (this.stalled) {
+		if (this.restartPollingAfterStall) {
 			return
 		}
 		this.stalled = true
 		this.logger.logError(`Stalled on Grpc Error`)
 
-		this.grpcClient.once(ConnectionStatusEvent.Ready, () => {
+		const timeout = 5000 // Duration.milliseconds.from(this.longPoll) + 100
+		this.logger.logDebug(`Stalled. Setting timeout to ${timeout}`)
+		this.restartPollingAfterStall = setTimeout(() => {
 			this.stalled = false
+			this.restartPollingAfterStall = undefined
+			this.logger.logDebug(`Restart after stall timer fired ${timeout}`)
 			this.longPollLoop()
-		})
+		}, timeout)
+
+		// this.grpcClient.once(ConnectionStatusEvent.Ready, () => {
+		// 	this.stalled = false
+		// 	this.longPollLoop()
+		// })
 	}
 
 	private async longPollLoop() {
@@ -395,7 +407,9 @@ export class ZBWorkerBase<
 			Object.keys(jobStream!)[0],
 			start
 		)
+
 		if (jobStream.stream) {
+			this.logger.logDebug('Stream opened...')
 			this.jobStreams[id] = jobStream.stream
 			// This event happens when the server cancels the call after the deadline
 			// And when it has completed a response with work
@@ -411,10 +425,12 @@ export class ZBWorkerBase<
 			// We do this here because activateJobs may not result in an open gRPC call
 			// for example, if the worker is at capacity
 			if (!this.closing) {
-				this.restartPollingAfterLongPollTimeout = setTimeout(
-					() => this.longPollLoop,
-					Duration.milliseconds.from(this.longPoll) + 100
-				)
+				const timeout = Duration.milliseconds.from(this.longPoll) + 100
+				this.logger.logDebug(`Setting timeout to ${timeout}`)
+				this.restartPollingAfterLongPollTimeout = setTimeout(() => {
+					this.logger.logDebug(`Timer fired ${timeout}`)
+					this.longPollLoop()
+				}, timeout)
 			}
 		}
 		if (jobStream.atCapacity) {
@@ -478,7 +494,11 @@ export class ZBWorkerBase<
 			}
 		}
 
-		stream?.on?.('data', (res: ActivateJobsResponse) => {
+		if (stream.error) {
+			return { error: stream.error }
+		}
+
+		stream.on('data', (res: ActivateJobsResponse) => {
 			// If we are closing, don't start working on these jobs. They will have to be timed out by the server.
 			if (this.closing) {
 				return

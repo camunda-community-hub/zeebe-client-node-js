@@ -7,7 +7,7 @@
 		"lib": ["es2018"],
 		"declaration": true /* Generates corresponding '.d.ts' file. */,
 		"sourceMap": true /* Generates corresponding '.map' file. */,
-		"outDir": "./dist" /* Redirect output structure to the directory. */,
+		"outDir": "." /* Redirect output structure to the directory. */,
 		"rootDir": "." /* Specify the root directory of input files. Use to control the output directory structure with --outDir. */,
 		/* Strict Type-Checking Options */
 		"forceConsistentCasingInFileNames": true,

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_0oin0pc" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Zeebe Modeler" exporterVersion="0.6.2">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_0oin0pc" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Zeebe Modeler" exporterVersion="0.8.0">
   <bpmn:process id="worker-failure" name="worker-failure" isExecutable="true">
     <bpmn:startEvent id="StartEvent_1">
       <bpmn:outgoing>SequenceFlow_1camkmi</bpmn:outgoing>
@@ -18,7 +18,7 @@
       <bpmn:outgoing>SequenceFlow_1ixu8oc</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:sequenceFlow id="SequenceFlow_0jlw8w3" name="conditionVariable==true" sourceRef="ExclusiveGateway_11b1kdc" targetRef="ServiceTask_18goo5h">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">conditionVariable == true</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=conditionVariable=true</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:serviceTask id="ServiceTask_15isvh5" name="Path B">
       <bpmn:extensionElements>
@@ -28,7 +28,7 @@
       <bpmn:outgoing>SequenceFlow_03w4t8z</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:sequenceFlow id="SequenceFlow_0lsaa01" name="conditionVariable==false" sourceRef="ExclusiveGateway_11b1kdc" targetRef="ServiceTask_15isvh5">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">conditionVariable == false</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=conditionVariable=false</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:endEvent id="EndEvent_1g2ztlo">
       <bpmn:incoming>SequenceFlow_1ixu8oc</bpmn:incoming>
