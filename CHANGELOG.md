@@ -1,4 +1,10 @@
-# Version 0.23.0-alpha.3
+# Version 0.23.0
+
+## Known Issues
+
+_Things that don't work or don't work as expected, and which will be addressed in a future release_
+
+-   The `onConnectionError` event of the ZBClient and ZBWorker/ZBBatchWorker is not debounced, and may be called multiple times in succession when the channel jitters, or the broker is not available. See [#161](https://github.com/creditsenseau/zeebe-client-node-js/issues/161).
 
 ## Breaking Changes
 

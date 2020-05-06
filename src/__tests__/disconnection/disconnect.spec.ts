@@ -1,3 +1,4 @@
+// tslint:disable-next-line: no-implicit-dependencies
 import { GenericContainer } from '@sitapati/testcontainers'
 import { ZBClient } from '../..'
 // import { createUniqueTaskType } from '../../lib/createUniqueTaskType'
@@ -31,7 +32,7 @@ describe('Worker disconnect/reconnect', () => {
 		const worker = zbc.createWorker({
 			loglevel: 'INFO',
 			longPoll: 5000,
-			taskHandler: (job, complete) => {
+			taskHandler: (_, complete) => {
 				complete.success()
 			},
 			taskType: 'disconnection-task',
