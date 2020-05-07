@@ -22,9 +22,11 @@ export class GrpcMiddleware {
 		this.characteristics = characteristics
 		this.blocking = this.characteristics.startupTime > 0
 		this.state = this.blocking ? 'ERROR' : 'CONNECTED'
+		log.logDebug(`Grpc Middleware blocking: ${this.blocking}`)
 		if (this.blocking) {
 			setTimeout(() => {
 				this.blocking = false
+				log.logDebug(`Grpc Middleware state: ${this.state}`)
 				if (this.state === 'ERROR') {
 					this.emitError()
 				} else {

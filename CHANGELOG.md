@@ -1,17 +1,24 @@
-# Version 0.23.0-alpha.3
+# Version 0.23.0
+
+## Known Issues
+
+_Things that don't work or don't work as expected, and which will be addressed in a future release_
+
+-   The `onConnectionError` event of the ZBClient and ZBWorker/ZBBatchWorker is not debounced, and may be called multiple times in succession when the channel jitters, or the broker is not available. See [#161](https://github.com/creditsenseau/zeebe-client-node-js/issues/161).
 
 ## Breaking Changes
 
 _Changes in APIs or behaviour that may affect existing applications that use zeebe-node._
 
 -   The `job.variables` and `job.customHeaders` in the worker job handler are now typed as read-only structures. This will only be a breaking change if your code relies on mutating these data structures. See the section "Working with Workflow Variables and Custom Headers" in the README for an explanation on doing deep key updates on the job variables.
+-   The ZBClient no longer eagerly connects to the broker by default. Previously, it did this by issuing a topology command in the constructor. This allows you an onReady event to be emitted. You can re-enable the eager connection behavior, by either passing `eagerConnection: true` to the client constructor options, or setting the environment variable `ZEEBE_NODE_EAGER_CONNECTION` to `true`. See [#151](https://github.com/creditsenseau/zeebe-client-node-js/issues/151).
 -   The library nows logs with the simplified `ZBSimpleLogger` by default, for friendly human-readable logs. This will only be a breaking change if you currently rely on the structured log output. To get the previous structured log behaviour, pass in `stdout: ZBJsonLogger` to the `ZBClient` constructor options, or set the environment variable `ZEEBE_NODE_LOG_TYPE` to `JSON`. Refer to the "Logging" section in the README.
 
 ## New Features
 
 _New shiny stuff._
 
--   The underlying gRPC implementation has been switched to the pure JS @grpc/grpc-js. This means no more dependency on node-gyp or binary rebuilds for Docker containers / Electron; and a slim-down in the installed package size from 50MB to 27MB.
+-   The underlying gRPC implementation has been switched to the pure JS @grpc/grpc-js. This means no more dependency on node-gyp or binary rebuilds for Docker containers / Electron; and a slim-down in the installed package size from 50MB to 27MB. All tests pass, including some new ones (for example: the worker keeps working when the broker goes away and comes back). The JS gRPC implementation _may_ have effects on the behaviour of the client that are not covered in the unit and integration tests. Please open a GitHub issue if you encounter something.
 -   Timeouts can now be expressed with units using the [typed-duration](https://www.npmjs.com/package/typed-duration) package, which is included in and re-exported by the library. See the README section "A note on representing timeout durations".
 -   There is a new `ZBBatchWorker`. This allows you to batch jobs that are unrelated in a BPMN model, but are related with respect to some (for example: rate-limited) external system. See the README for details. Thanks to Jimmy Beaudoin ([@jbeaudoin11](https://github.com/jbeaudoin11)) for the suggestion, and helping with the design. Ref: [#134](https://github.com/creditsenseau/zeebe-client-node-js/issues/134).
 -   `ZBClient.createWorker` has two new, additional, method signature. The first is a single object parameter signature. This is the preferred signature if you are passing in configuration options. The second signature is a version of the original that elides the `id` for the worker. With this, you can create a worker with just a task type and a job handler. A UUID is assigned as the worker id. This is the equivalent of passing in `null` as the first parameter to the original signature. The previous method signature still works, allowing you to specify an id if you want. See [this article for details](https://www.joshwulf.com/blog/2020/02/refining-method-signature/).
@@ -20,7 +27,7 @@ _New shiny stuff._
 -   `ZBClient` now contains an `activateJobs` method. This effectively exposes the entire Zeebe GRPC API, and allows you to write applications in the completely unmanaged style of the Java and Go libraries, if you have some radically different idea about application patterns.
 -   The Grpc layer has been refactored to implement the idea of "connection characteristics". When connecting to Camunda Cloud, which uses TLS and OAuth, the library would emit errors every time. The refactor allows these connection errors to be correctly interpreted as expected behaviour of the "connection characteristics". You can also set an explicit initial connection tolerance in milliseconds for any broker connection with the environment variable `ZEEBE_INITIAL_CONNECTION_TOLERANCE`. See [this article](https://www.joshwulf.com/blog/2020/03/camunda-cloud-connection-2/), issue [#133](https://github.com/creditsenseau/zeebe-client-node-js/issues/133), and the README section "Initial Connection Tolerance" for more details.
 -   The connection tolerance for transient drop-outs before reporting a connection error is now configurable via the environment variable `ZEEBE_CONNECTION_TOLERANCE`, as well as the previous constructor argument `connectionTolerance`.
--   The ZBClient eagerly connects to the broker by issuing a topology command. This allows you an onReady event to be emitted. You can disable this (for example, for testing without a broker), by either passing `eagerConnection: false` to the client constructor options, or setting the environment variable `ZEEBE_NODE_EAGER_CONNECTION` to `false`. See [#151](https://github.com/creditsenseau/zeebe-client-node-js/issues/151).
+-   The Node client now emits a client-agent header to facilitate debugging on Camunda Cloud. See [#155](https://github.com/creditsenseau/zeebe-client-node-js/issues/155).
 -   The integration tests have been refactored to allow them to run against Camunda Cloud. This required dealing with a Zeebe broker in an unknown state, so all tests now template unique process ids, unique task types, and unique message names to avoid previous test run state in the cluster interfering with subsequent test runs.
 -   I've started documenting the internal operation of the client in BPMN diagrams. These can be found in the `design` directory.
 -   The README now contains a section "Writing Strongly-typed Job Workers", on writing typed workers in TypeScript.
@@ -28,8 +35,11 @@ _New shiny stuff._
 
 ## Fixes
 
+_Things that were broken and are now fixed._
+
 -   An unmaintained package in the dependency tree of kafka-node (and arguably a bug in NPM's de-duping algorithm) caused zeebe-node to break by installing the wrong version of the `long` dependency, unless the two packages were installed in a specific order. We've explicitly added `long` to the dependencies of zeebe-node to address this, and [reported it to kafka-node](https://github.com/SOHU-Co/kafka-node/issues/1332). Thanks to [@need4eat](https://github.com/need4eat) for discovering this and helping to track down the cause. See [#124](https://github.com/creditsenseau/zeebe-client-node-js/issues/124).
--   Prior to 0.23.0-alpha.2 of the zeebe-node client, workers would not reconnect if the broker was restarted, throwing gRPC channel errors until they were restarted. The workers will now automatically reconnect when the broker is available, if it goes away and comes back. See [#145](https://github.com/creditsenseau/zeebe-client-node-js/issues/145)
+-   Prior to 0.23.0 of the zeebe-node client, a worker would not reconnect if the broker was restarted, throwing gRPC channel errors until they were restarted. A stalled retry timer has been added to the worker. The worker will now automatically reconnect when the broker is available, if it goes away and comes back. See [#145](https://github.com/creditsenseau/zeebe-client-node-js/issues/145), and [#152](https://github.com/creditsenseau/zeebe-client-node-js/issues/152).
+-   Prior to 0.23.0, a worker would periodically lose its connection to Camunda Cloud. This has been addressed with the stalled retry timer. See [#99](https://github.com/creditsenseau/zeebe-client-node-js/issues/99).
 
 # Version 0.22.1
 

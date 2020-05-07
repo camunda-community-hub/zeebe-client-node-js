@@ -2,6 +2,7 @@ import * as fs from 'fs'
 import * as got from 'got'
 import * as os from 'os'
 const homedir = os.homedir()
+import pkg = require('../../package.json')
 
 interface Token {
 	access_token: string
@@ -97,6 +98,7 @@ export class OAuthProvider {
 				body,
 				headers: {
 					'content-type': 'application/json',
+					'user-agent': `client: nodejs, version: ${pkg.version}`,
 				},
 			})
 			//   console.log(res.body);

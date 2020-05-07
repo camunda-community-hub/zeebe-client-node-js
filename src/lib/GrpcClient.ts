@@ -120,6 +120,13 @@ export interface GrpcClientCtor {
 	stdout: any
 }
 
+interface GrpcStreamError {
+	code: number
+	details: string
+	metadata: { internalRepr: any; options: any }
+	message: string
+}
+
 export class GrpcClient extends EventEmitter {
 	public channelClosed = false
 	public longPoll?: MaybeTimeDuration
@@ -153,6 +160,12 @@ export class GrpcClient extends EventEmitter {
 		this.longPoll = options.longPoll
 		this.connectionTolerance = Duration.milliseconds.from(
 			connectionTolerance
+		)
+		this.emit(
+			MiddlewareSignals.Log.Debug,
+			`Connection Tolerance: ${Duration.milliseconds.from(
+				connectionTolerance
+			)}ms`
 		)
 
 		this.on(InternalSignals.Ready, () => this.setReady())
@@ -265,6 +278,13 @@ export class GrpcClient extends EventEmitter {
 						this.setNotReady()
 						return { error }
 					}
+					if (!stream) {
+						return {
+							error: new Error(
+								`No stream returned by call to ${methodName}Stream`
+							),
+						}
+					}
 					/**
 					 * Once this gets attached here, it is attached to *all* calls
 					 * This is an issue if you do a sync call like cancelWorkflowSync
@@ -272,9 +292,15 @@ export class GrpcClient extends EventEmitter {
 					 * So we use a separate GRPCClient for the client, which never does
 					 * streaming calls, and each worker, which only does streaming calls
 					 */
-					stream.on('error', (error: any) =>
-						this.handleGrpcError(stream)(error)
-					)
+					stream.on('error', (error: GrpcStreamError) => {
+						this.emit(MiddlewareSignals.Event.Error)
+						this.emit(
+							MiddlewareSignals.Log.Error,
+							`Grpc Stream Error: ${error.message}`
+						)
+						// Do not handle stream errors the same way
+						// this.handleGrpcError(stream)(error)
+					})
 					stream.on('data', () => (this.gRPCRetryCount = 0))
 					stream.on('metadata', md =>
 						this.emit(
@@ -448,21 +474,28 @@ export class GrpcClient extends EventEmitter {
 			if (this.channelClosed) {
 				return
 			}
-			const state = gRPC.getChannel().getConnectivityState(tryToConnect)
+			const currentChannelState = gRPC
+				.getChannel()
+				.getConnectivityState(tryToConnect)
 			this.emit(
 				MiddlewareSignals.Log.Error,
-				`Grpc Channel State: ${connectivityState[state]}`
+				`Grpc Channel State: ${connectivityState[currentChannelState]}`
 			)
-			const delay = state === GrpcState.TRANSIENT_FAILURE ? 5 : 30
+			const delay =
+				currentChannelState === GrpcState.TRANSIENT_FAILURE ? 5 : 30
 			const deadline = new Date().setSeconds(
 				new Date().getSeconds() + delay
 			)
-			if (state === GrpcState.IDLE || state === GrpcState.READY) {
-				return resolve(state)
+			if (
+				currentChannelState === GrpcState.IDLE ||
+				currentChannelState === GrpcState.READY
+			) {
+				this.gRPCRetryCount = 0
+				return resolve(currentChannelState)
 			}
 
 			gRPC.getChannel().watchConnectivityState(
-				state,
+				currentChannelState,
 				deadline,
 				async error => {
 					if (this.channelClosed) {
@@ -503,6 +536,10 @@ export class GrpcClient extends EventEmitter {
 	private setReady() {
 		// debounce rapid connect / disconnect
 		if (this.readyTimer) {
+			this.emit(
+				MiddlewareSignals.Log.Debug,
+				`Reset Grpc channel ready timer.`
+			)
 			clearTimeout(this.readyTimer)
 		}
 		this.emit(
@@ -554,33 +591,35 @@ export class GrpcClient extends EventEmitter {
 					`Set Grpc Channel state to failed after ${this.connectionTolerance}ms`
 				)
 				this.failTimer = undefined
+				this.connected = false
 				this.emit(MiddlewareSignals.Event.Error)
 			}, this.connectionTolerance)
 		}
 	}
 
-	private handleGrpcError = (stream: any) => async (err: any) => {
-		this.emit(MiddlewareSignals.Event.Error)
-		this.emit(MiddlewareSignals.Log.Error, `Grpc Error: ${err.message}`)
-		const channelState = await this.waitForGrpcChannelReconnect()
-		this.emit(
-			MiddlewareSignals.Log.Debug,
-			`Grpc Channel state: ${connectivityState[channelState]}`
-		)
-		stream.removeAllListeners()
-		this.emit(MiddlewareSignals.Event.Ready)
-		// if (
-		// 	channelState === GrpcState.READY ||
-		// 	channelState === GrpcState.IDLE
-		// ) {
-		// 	this.emit(MiddlewareSignals.Log.Info, 'Grpc channel reconnected')
-		// 	// tslint:disable-next-line: no-console
-		// 	console.log('handleGrpc', channelState) // @DEBUG
+	// private handleGrpcError = (stream: any) => async (err: GrpcStreamError) => {
+	// 	this.emit(MiddlewareSignals.Event.Error)
+	// 	this.emit(MiddlewareSignals.Log.Error, err)
+	// 	this.emit(MiddlewareSignals.Log.Error, `Grpc Error: ${err.message}`)
+	// 	const channelState = await this.waitForGrpcChannelReconnect()
+	// 	this.emit(
+	// 		MiddlewareSignals.Log.Debug,
+	// 		`Grpc Channel state: ${connectivityState[channelState]}`
+	// 	)
+	// 	stream.removeAllListeners()
+	// 	// this.emit(MiddlewareSignals.Event.Ready)
+	// 	// if (
+	// 	// 	channelState === GrpcState.READY ||
+	// 	// 	channelState === GrpcState.IDLE
+	// 	// ) {
+	// 	// 	this.emit(MiddlewareSignals.Log.Info, 'Grpc channel reconnected')
+	// 	// 	// tslint:disable-next-line: no-console
+	// 	// 	console.log('handleGrpc', channelState) // @DEBUG
 
-		// 	this.emit(InternalSignals.Ready)
-		// 	this.emit(MiddlewareSignals.Event.Ready)
-		// }
-	}
+	// 	this.emit(InternalSignals.Ready)
+	// 	// 	this.emit(MiddlewareSignals.Event.Ready)
+	// 	// }
+	// }
 
 	// https://github.com/grpc/proposal/blob/master/L5-node-client-interceptors.md#proposal
 	private interceptor = (options, nextCall) => {

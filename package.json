@@ -1,6 +1,6 @@
 {
 	"name": "zeebe-node",
-	"version": "v0.23.0-alpha.5",
+	"version": "v0.23.0",
 	"description": "A Node.js client library for the Zeebe Microservices Orchestration Engine.",
 	"keywords": [
 		"zeebe",
@@ -29,16 +29,17 @@
 		"build": "tsc",
 		"watch": "tsc -w",
 		"prepare": "tsc",
-		"test": "jest --runInBand --detectOpenHandles --testPathIgnorePatterns integration local-integration",
-		"test:integration": "jest --runInBand --detectOpenHandles --verbose true",
+		"test": "jest --runInBand --detectOpenHandles --testPathIgnorePatterns integration local-integration disconnection",
+		"test:integration": "jest --runInBand --testPathIgnorePatterns disconnection --detectOpenHandles --verbose true",
 		"test:local": "jest --runInBand --verbose true --detectOpenHandles local-integration",
+		"test:disconnect": "jest --runInBand --verbose true --detectOpenHandles disconnection",
 		"test&docs": "npm test && npm run docs",
 		"dev": "tsc-watch --onSuccess \"npm run test&docs\" -p tsconfig.json --outDir dist",
 		"docs": "typedoc --out ./docs --tsconfig ./tsconfig.json --excludePrivate --mode file --sourcefile-url-prefix \"https://github.com/creditsenseau/\""
 	},
 	"husky": {
 		"hooks": {
-			"pre-commit": "npm test && npm run-script build && lint-staged"
+			"pre-commit": "npm test && npm run test:disconnect && npm run-script build && lint-staged"
 		}
 	},
 	"lint-staged": {
@@ -74,6 +75,7 @@
 		"uuid": "^3.3.2"
 	},
 	"devDependencies": {
+		"@sitapati/testcontainers": "^2.8.1",
 		"@types/debug": "0.0.31",
 		"@types/got": "^9.6.9",
 		"@types/jest": "^24.0.14",
@@ -81,6 +83,7 @@
 		"@types/promise-retry": "^1.1.3",
 		"@types/stack-trace": "0.0.29",
 		"@types/uuid": "^3.4.4",
+		"delay": "^4.3.0",
 		"husky": "^1.3.1",
 		"jest": "^25.1.0",
 		"lint-staged": "^8.1.5",
