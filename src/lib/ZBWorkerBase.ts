@@ -147,16 +147,17 @@ export class ZBWorkerBase<
 			options.onConnectionError?.()
 
 			if (this.connected) {
-				this.emit(ConnectionStatusEvent.ConnectionError, onError)
+				this.emit(ConnectionStatusEvent.ConnectionError)
 				options.onConnectionError?.()
 				this.connected = false
 				this.readied = false
+				this.stall()
 			}
 		}
 		this.grpcClient.on(ConnectionStatusEvent.ConnectionError, onError)
 		const onReady = async () => {
 			if (!this.readied) {
-				this.emit(ConnectionStatusEvent.Ready, onReady)
+				this.emit(ConnectionStatusEvent.Ready)
 				options.onReady?.()
 				this.readied = true
 				this.connected = true
