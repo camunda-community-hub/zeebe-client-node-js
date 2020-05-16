@@ -26,9 +26,9 @@
 	"main": "dist/index.js",
 	"bin": "./bin/zeebe-node",
 	"scripts": {
-		"build": "tsc",
-		"watch": "tsc -w",
-		"prepare": "tsc",
+		"build": "tsc --build src/tsconfig.json",
+		"watch": "tsc --build src/tsconfig.json -w",
+		"prepare": "tsc --build src/tsconfig.json",
 		"test": "jest --runInBand --detectOpenHandles --testPathIgnorePatterns integration local-integration disconnection",
 		"test:integration": "jest --runInBand --testPathIgnorePatterns disconnection --detectOpenHandles --verbose true",
 		"test:local": "jest --runInBand --verbose true --detectOpenHandles local-integration",

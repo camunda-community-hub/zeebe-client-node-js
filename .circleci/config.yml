@@ -83,7 +83,9 @@ jobs:
           command: npm test
       - run:
           name: build
-          command: npm run build
+          command: |-
+            npm run build
+            ls dist 2&>/dev/null || echo "dist directory missing"
       - run:
           name: npmrc
           command: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
