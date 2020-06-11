@@ -6,6 +6,9 @@
 
 This is a Node.js gRPC client for [Zeebe](https://zeebe.io). It is written in TypeScript and transpiled to JavaScript in the `dist` directory.
 
+Versions from 0.23.0 require Node 14.x.
+Versions prior to 0.23.0 require Node 8 or above.
+
 Comprehensive API documentation is available [online](https://creditsenseau.github.io/zeebe-client-node-js/).
 
 See [CHANGELOG.md](./CHANGELOG.md) to see what has changed with each release.

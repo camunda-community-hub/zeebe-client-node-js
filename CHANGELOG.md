@@ -1,9 +1,46 @@
+# Version 0.23.3
+
+## Breaking Changes
+
+-   This version goes back to the C-based gRPC implementation. We found several issues with the pure JS gRPC implementation and the nghttp2 implementation in Node. The issues differ between Node versions, and are challenging to isolate, as they occur in the Node engine itself. By default, in this version, the Zeebe Node client uses the C-based gRPC client. If you want to participate in testing the pure JS client (bug reports welcome!), you can activate the pure JS gRPC client by setting `ZEEBE_NODE_PUREJS=true`.
+-   Prior to this release, the default value for `maxRetries` was 50 (about 2 minutes). This caused workers started more than 2 minutes before the broker to abandon connection attempts and fail to connect. With this release, retries are infinite by default.
+
+# Version 0.23.2
+
+## Known Issues
+
+_Things that don't work or don't work as expected, and which will be addressed in a future release_
+
+-   Node 12 has issues with the new pure JS implementation. We don't have a compatibility matrix yet, but Node 14 works.
+-   The `onConnectionError` event of the ZBClient and ZBWorker/ZBBatchWorker is not debounced, and may be called multiple times in succession when the channel jitters, or the broker is not available. See [#161](https://github.com/creditsenseau/zeebe-client-node-js/issues/161).
+
+## Fixes
+
+_Things that were broken and are now fixed._
+
+-   The client's gRPC channel would not reconnect if a Zeebe broker in Docker is restarted. The `@grpc/grpc-js` package is updated to 1.0.4 to bring in the fix for [@grpc/grpc-js #1411](https://github.com/grpc/grpc-node/issues/1411). This enables the client to reliably reconnect to brokers that are restarted in Docker or rescheduled in Kubernetes.
+
+# Version 0.23.2
+
+## Known Issues
+
+_Things that don't work or don't work as expected, and which will be addressed in a future release_
+
+-   The `onConnectionError` event of the ZBClient and ZBWorker/ZBBatchWorker is not debounced, and may be called multiple times in succession when the channel jitters, or the broker is not available. See [#161](https://github.com/creditsenseau/zeebe-client-node-js/issues/161).
+
+## Fixes
+
+_Things that were broken and are now fixed._
+
+-   The `dist` directory is now in the published package. Thanks to [@lwille](https://github.com/lwille) for the PR that fixed the build. See [#163](https://github.com/creditsenseau/zeebe-client-node-js/issues/163).
+
 # Version 0.23.0
 
 ## Known Issues
 
 _Things that don't work or don't work as expected, and which will be addressed in a future release_
 
+-   There is no `dist` directory in this release. See [#163](https://github.com/creditsenseau/zeebe-client-node-js/issues/163), and _do not use this release_.
 -   The `onConnectionError` event of the ZBClient and ZBWorker/ZBBatchWorker is not debounced, and may be called multiple times in succession when the channel jitters, or the broker is not available. See [#161](https://github.com/creditsenseau/zeebe-client-node-js/issues/161).
 
 ## Breaking Changes
@@ -38,8 +75,7 @@ _New shiny stuff._
 _Things that were broken and are now fixed._
 
 -   An unmaintained package in the dependency tree of kafka-node (and arguably a bug in NPM's de-duping algorithm) caused zeebe-node to break by installing the wrong version of the `long` dependency, unless the two packages were installed in a specific order. We've explicitly added `long` to the dependencies of zeebe-node to address this, and [reported it to kafka-node](https://github.com/SOHU-Co/kafka-node/issues/1332). Thanks to [@need4eat](https://github.com/need4eat) for discovering this and helping to track down the cause. See [#124](https://github.com/creditsenseau/zeebe-client-node-js/issues/124).
--   Prior to 0.23.0 of the zeebe-node client, a worker would not reconnect if the broker was restarted, throwing gRPC channel errors until they were restarted. A stalled retry timer has been added to the worker. The worker will now automatically reconnect when the broker is available, if it goes away and comes back. See [#145](https://github.com/creditsenseau/zeebe-client-node-js/issues/145), and [#152](https://github.com/creditsenseau/zeebe-client-node-js/issues/152).
--   Prior to 0.23.0, a worker would periodically lose its connection to Camunda Cloud. This has been addressed with the stalled retry timer. See [#99](https://github.com/creditsenseau/zeebe-client-node-js/issues/99).
+-   Prior to 0.23.0 of the zeebe-node client, a worker would not reconnect if the broker was restarted, throwing gRPC channel errors until they were restarted. A stalled retry timer has been added to the worker. The worker will now automatically reconnect when the broker is available, if it goes away and comes back. See [#99](https://github.com/creditsenseau/zeebe-client-node-js/issues/99), [#145](https://github.com/creditsenseau/zeebe-client-node-js/issues/145), and [#152](https://github.com/creditsenseau/zeebe-client-node-js/issues/152).
 
 # Version 0.22.1
 
