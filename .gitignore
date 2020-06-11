@@ -6,3 +6,4 @@ docs
 cctest.ts
 t.ts
 yolo.bpmn
+crash-*.log

@@ -6,70 +6,89 @@ import { ZBClient } from '../..'
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 
 jest.setTimeout(60000)
-describe('Worker disconnect/reconnect', () => {
-	let container
-	afterAll(async done => {
-		await container?.stop()
-		done()
+let container
+afterEach(async done => {
+	await container?.stop()
+	done()
+})
+
+test('reconnects after a pod reschedule', async done => {
+	const delay = timeout =>
+		new Promise(res => setTimeout(() => res(), timeout))
+
+	container = await new GenericContainer(
+		'camunda/zeebe',
+		'0.23.2',
+		undefined,
+		26500
+	)
+		.withExposedPorts(26500)
+		.start()
+
+	await delay(10000)
+
+	const zbc = new ZBClient(`localhost`)
+	await zbc.deployWorkflow('./src/__tests__/testdata/disconnection.bpmn')
+	const worker = zbc.createWorker({
+		loglevel: 'INFO',
+		longPoll: 5000,
+		taskHandler: (_, complete) => {
+			complete.success()
+		},
+		taskType: 'disconnection-task',
 	})
-	it('reconnects after a pod reschedule', async done => {
-		const delay = timeout =>
-			new Promise(res => setTimeout(() => res(), timeout))
+	const wf = await zbc.createWorkflowInstanceWithResult('disconnection', {})
+	expect(wf.bpmnProcessId).toBeTruthy()
 
-		container = await new GenericContainer(
-			'camunda/zeebe',
-			'0.23.1',
-			undefined,
-			26500
-		)
-			.withExposedPorts(26500)
-			.start()
+	await container.stop()
 
-		await delay(10000)
+	container = await new GenericContainer(
+		'camunda/zeebe',
+		'0.23.1',
+		undefined,
+		26500
+	)
+		.withExposedPorts(26500)
+		.start()
 
-		const zbc = new ZBClient(`localhost`)
-		await zbc.deployWorkflow('./src/__tests__/testdata/disconnection.bpmn')
-		const worker = zbc.createWorker({
-			loglevel: 'INFO',
-			longPoll: 5000,
-			taskHandler: (_, complete) => {
-				complete.success()
-			},
-			taskType: 'disconnection-task',
-		})
-		const wf = await zbc.createWorkflowInstanceWithResult(
-			'disconnection',
-			{}
-		)
-		expect(wf.bpmnProcessId).toBeTruthy()
-		// tslint:disable-next-line: no-console
-		console.log('Stopping Zeebe Broker...')
-		await container.stop()
-		// tslint:disable-next-line: no-console
-		console.log('Zeebe Broker stopped.')
-		// tslint:disable-next-line: no-console
-		console.log('Starting Zeebe Broker...')
-		container = await new GenericContainer(
-			'camunda/zeebe',
-			'0.23.1',
-			undefined,
-			26500
-		)
-			.withExposedPorts(26500)
-			.start()
-		// tslint:disable-next-line: no-console
-		console.log('Zeebe Broker started.')
-		await delay(10000)
-		await zbc.deployWorkflow('./src/__tests__/testdata/disconnection.bpmn')
+	await delay(10000)
+	await zbc.deployWorkflow('./src/__tests__/testdata/disconnection.bpmn')
 
-		// tslint:disable-next-line: no-console
-		console.log('Creating workflow...')
-		const wf1 = await zbc.createWorkflowInstanceWithResult(
-			'disconnection',
-			{}
-		)
-		expect(wf1.bpmnProcessId).toBeTruthy()
-		await worker.close()
-		done()
+	const wf1 = await zbc.createWorkflowInstanceWithResult('disconnection', {})
+	expect(wf1.bpmnProcessId).toBeTruthy()
+	await worker.close()
+	done()
+})
+
+test('a worker that started first, connects to a broker that starts later', async done => {
+	const delay = timeout =>
+		new Promise(res => setTimeout(() => res(), timeout))
+
+	const zbc = new ZBClient(`localhost`)
+	const worker = zbc.createWorker({
+		loglevel: 'INFO',
+		longPoll: 5000,
+		taskHandler: (_, complete) => {
+			complete.success()
+		},
+		taskType: 'disconnection-task',
 	})
+
+	container = await new GenericContainer(
+		'camunda/zeebe',
+		'0.23.2',
+		undefined,
+		26500
+	)
+		.withExposedPorts(26500)
+		.start()
+
+	await delay(10000)
+
+	await zbc.deployWorkflow('./src/__tests__/testdata/disconnection.bpmn')
+
+	const wf = await zbc.createWorkflowInstanceWithResult('disconnection', {})
+	expect(wf.bpmnProcessId).toBeTruthy()
+	await worker.close()
+	done()
 })

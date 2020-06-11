@@ -204,7 +204,7 @@ const { ZBClient, Duration } = require('zeebe-node')
 
 const zbc = new ZBClient(gatewayAddress, {
     retry: true,
-    maxRetries: 50,
+    maxRetries: -1, // infinite retries
     maxRetryTimeout: Duration.seconds.of(5)
 })
 ```
