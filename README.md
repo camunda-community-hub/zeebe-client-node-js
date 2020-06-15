@@ -6,9 +6,6 @@
 
 This is a Node.js gRPC client for [Zeebe](https://zeebe.io). It is written in TypeScript and transpiled to JavaScript in the `dist` directory.
 
-Versions from 0.23.0 require Node 14.x.
-Versions prior to 0.23.0 require Node 8 or above.
-
 Comprehensive API documentation is available [online](https://creditsenseau.github.io/zeebe-client-node-js/).
 
 See [CHANGELOG.md](./CHANGELOG.md) to see what has changed with each release.
@@ -20,6 +17,7 @@ Get a hosted instance of Zeebe on [Camunda Cloud](https://camunda.io).
 ## Table of Contents
 
 -   [ Versioning ](#versioning)
+-   [ gRPC Implementation ](#grpc-implementation)
 -   [ Type difference from other Zeebe clients ](#type-difference)
 -   [ A note on representing timeout durations ](#time-duration)
 
@@ -94,6 +92,18 @@ NPM Package version 0.23.x supports Zeebe 0.22.x and above
 NPM Package version 0.22.x supports Zeebe 0.22.x
 
 NPM Package version 0.21.x supports Zeebe 0.21.x
+
+<a name="grpc-implementation"></a>
+
+## gRPC Implementation
+
+The Zeebe Node client uses the C gRPC client implementation [grpc-node](https://github.com/grpc/grpc-node) by default.
+
+From 0.23.3, you can opt-in to use the pure JavaScript implementation [@grpc/grpc-js](https://www.npmjs.com/package/@grpc/grpc-js), to assist us in testing it.
+
+To activate the pure JavaScript implementation, set `ZEEBE_NODE_PUREJS=true`.
+
+Please report any issues in [GitHub](https://github.com/creditsenseau/zeebe-client-node-js/issues).
 
 <a name = "type-difference"></a>
 
