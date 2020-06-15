@@ -3,7 +3,7 @@ import { ZBClient } from '../..'
 import { createUniqueTaskType } from '../../lib/createUniqueTaskType'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
-jest.setTimeout(30000)
+jest.setTimeout(45000)
 let zbc: ZBClient
 
 beforeEach(async () => {
@@ -28,6 +28,9 @@ test('Can start a workflow with a message', async done => {
 	expect(deploy.key).toBeTruthy()
 
 	const randomId = uuid()
+
+	// Wait 1 second to make sure the deployment is complete
+	await new Promise(res => setTimeout(() => res(), 1000))
 
 	await zbc.publishStartMessage({
 		name: messages['MSG-START_JOB'],

@@ -5,11 +5,14 @@ import { ZBClient } from '../..'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 
-jest.setTimeout(60000)
+jest.setTimeout(120000)
+
 let container
-afterEach(async done => {
+let worker
+
+afterEach(async () => {
 	await container?.stop()
-	done()
+	await worker?.stop()
 })
 
 test('reconnects after a pod reschedule', async done => {
@@ -29,9 +32,7 @@ test('reconnects after a pod reschedule', async done => {
 
 	const zbc = new ZBClient(`localhost`)
 	await zbc.deployWorkflow('./src/__tests__/testdata/disconnection.bpmn')
-	const worker = zbc.createWorker({
-		loglevel: 'INFO',
-		longPoll: 5000,
+	worker = zbc.createWorker({
 		taskHandler: (_, complete) => {
 			complete.success()
 		},
@@ -40,16 +41,28 @@ test('reconnects after a pod reschedule', async done => {
 	const wf = await zbc.createWorkflowInstanceWithResult('disconnection', {})
 	expect(wf.bpmnProcessId).toBeTruthy()
 
+	// tslint:disable-next-line: no-console
+	// console.log('##### Stopping container...') // @DEBUG
+
 	await container.stop()
+
+	// tslint:disable-next-line: no-console
+	// console.log('##### Container stopped.') // @DEBUG
+
+	// tslint:disable-next-line: no-console
+	// console.log('##### Starting container....') // @DEBUG
 
 	container = await new GenericContainer(
 		'camunda/zeebe',
-		'0.23.1',
+		'0.23.2',
 		undefined,
 		26500
 	)
 		.withExposedPorts(26500)
 		.start()
+
+	// tslint:disable-next-line: no-console
+	// console.log('##### Container started.') // @DEBUG
 
 	await delay(10000)
 	await zbc.deployWorkflow('./src/__tests__/testdata/disconnection.bpmn')
@@ -57,6 +70,9 @@ test('reconnects after a pod reschedule', async done => {
 	const wf1 = await zbc.createWorkflowInstanceWithResult('disconnection', {})
 	expect(wf1.bpmnProcessId).toBeTruthy()
 	await worker.close()
+	await container.stop()
+	container = undefined
+	worker = undefined
 	done()
 })
 
@@ -65,9 +81,7 @@ test('a worker that started first, connects to a broker that starts later', asyn
 		new Promise(res => setTimeout(() => res(), timeout))
 
 	const zbc = new ZBClient(`localhost`)
-	const worker = zbc.createWorker({
-		loglevel: 'INFO',
-		longPoll: 5000,
+	worker = zbc.createWorker({
 		taskHandler: (_, complete) => {
 			complete.success()
 		},
@@ -86,9 +100,12 @@ test('a worker that started first, connects to a broker that starts later', asyn
 	await delay(10000)
 
 	await zbc.deployWorkflow('./src/__tests__/testdata/disconnection.bpmn')
-
+	await delay(1000) // Ensure deployment has happened
 	const wf = await zbc.createWorkflowInstanceWithResult('disconnection', {})
 	expect(wf.bpmnProcessId).toBeTruthy()
 	await worker.close()
+	await container.stop()
+	container = undefined
+	worker = undefined
 	done()
 })

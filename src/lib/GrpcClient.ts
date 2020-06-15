@@ -465,17 +465,15 @@ export class GrpcClient extends EventEmitter {
 	}
 
 	private async getAuthToken() {
-		let metadata
+		const metadata = new Metadata({ waitForReady: false })
 		if (this.oAuth) {
 			const token = await this.oAuth.getToken()
-			metadata = new Metadata()
 			metadata.add('Authorization', `Bearer ${token}`)
 		}
 		if (this.basicAuth) {
 			const token = Buffer.from(
 				`${this.basicAuth.username}:${this.basicAuth.password}`
 			).toString('base64')
-			metadata = new Metadata()
 			metadata.add('Authorization', `Basic ${token}`)
 		}
 		return metadata
