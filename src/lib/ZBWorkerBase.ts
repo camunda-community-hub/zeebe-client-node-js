@@ -163,6 +163,7 @@ export class ZBWorkerBase<
 				this.connected = true
 			}
 		}
+		this.grpcClient.on(ConnectionStatusEvent.Unknown, onReady)
 		this.grpcClient.on(ConnectionStatusEvent.Ready, onReady)
 		this.cancelWorkflowOnException =
 			options.failWorkflowOnException || false

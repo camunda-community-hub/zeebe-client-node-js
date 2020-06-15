@@ -15,7 +15,7 @@ export const ConnectionCharacteristics: {
 	CAMUNDA_CLOUD: {
 		_tag: 'CAMUNDA_CLOUD',
 		startupTime: parseInt(
-			process.env.ZEEBE_INITIAL_CONNECTION_TOLERANCE || '5000',
+			process.env.ZEEBE_INITIAL_CONNECTION_TOLERANCE || '6000',
 			10
 		),
 	},
@@ -28,7 +28,7 @@ export const ConnectionCharacteristics: {
 	},
 }
 
-export type State = 'ERROR' | 'CONNECTED'
+export type State = 'ERROR' | 'CONNECTED' | 'UNKNOWN'
 
 export class ConnectionFactory {
 	public static getGrpcClient({

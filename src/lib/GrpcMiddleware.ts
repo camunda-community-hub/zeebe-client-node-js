@@ -21,7 +21,7 @@ export class GrpcMiddleware {
 	}) {
 		this.characteristics = characteristics
 		this.blocking = this.characteristics.startupTime > 0
-		this.state = this.blocking ? 'ERROR' : 'CONNECTED'
+		this.state = 'UNKNOWN'
 		log.logDebug(`Grpc Middleware blocking: ${this.blocking}`)
 		if (this.blocking) {
 			setTimeout(() => {
@@ -29,8 +29,10 @@ export class GrpcMiddleware {
 				log.logDebug(`Grpc Middleware state: ${this.state}`)
 				if (this.state === 'ERROR') {
 					this.emitError()
-				} else {
+				} else if (this.state === 'CONNECTED') {
 					this.emitReady()
+				} else if (this.state === 'UNKNOWN') {
+					this.grpcClient.emit(ConnectionStatusEvent.Unknown)
 				}
 			}, this.characteristics.startupTime)
 		}

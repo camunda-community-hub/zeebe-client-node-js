@@ -52,6 +52,7 @@ const idColors = [
 export const ConnectionStatusEvent = {
 	ConnectionError: 'connectionError' as 'connectionError',
 	Ready: 'ready' as 'ready',
+	Unknown: 'unknown' as 'unknown',
 }
 
 export class ZBClient extends EventEmitter {
