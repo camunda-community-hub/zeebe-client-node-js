@@ -32,8 +32,8 @@ jobs:
   # Runs the tests, including integration
   test:
     docker:
-      - image: circleci/node:11.10.1
-      - image: camunda/zeebe:0.23.1
+      - image: circleci/node:14.2.0
+      - image: camunda/zeebe:0.23.2
     working_directory: ~/zeebe-client-node-js
     steps:
       - checkout

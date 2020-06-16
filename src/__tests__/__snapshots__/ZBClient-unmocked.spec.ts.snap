@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ZBClient constructor throws an exception when workflowInstanceKey is malformed 1`] = `
+exports[`cancelWorkflowInstance throws an exception when workflowInstanceKey is malformed 1`] = `
 [Error: 
 		  workflowInstanceKey is malformed, value : hello-world
 		  ]

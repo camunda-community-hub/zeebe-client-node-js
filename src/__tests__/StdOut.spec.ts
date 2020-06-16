@@ -3,19 +3,17 @@ import { MockStdOut } from '../lib/MockStdOut'
 
 jest.setTimeout(15000)
 
-describe('StdOut Substitution', () => {
-	it('uses an injected stdout', done => {
-		const mockStd = new MockStdOut()
-		const z = new ZBClient({ stdout: mockStd, eagerConnection: false })
+test('uses an injected stdout', done => {
+	const mockStd = new MockStdOut()
+	const z = new ZBClient({ stdout: mockStd, eagerConnection: false })
 
-		// tslint:disable-next-line: no-console
-		z.createWorker('test', console.log)
-		setTimeout(() => {
-			z.close()
-		}, 2000)
-		setTimeout(() => {
-			expect(mockStd.messages.length > 0).toBe(true)
-			done()
-		}, 4000)
-	})
+	// tslint:disable-next-line: no-console
+	z.createWorker('test', console.log)
+	setTimeout(() => {
+		z.close()
+	}, 2000)
+	setTimeout(() => {
+		expect(mockStd.messages.length > 0).toBe(true)
+		done()
+	}, 4000)
 })

@@ -5,6 +5,7 @@ import * as NEA from 'fp-ts/lib/NonEmptyArray'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as path from 'path'
 import promiseRetry from 'promise-retry'
+import SegfaultHandler from 'segfault-handler'
 import { Duration, MaybeTimeDuration } from 'typed-duration'
 import { v4 as uuid } from 'uuid'
 import {
@@ -38,6 +39,8 @@ import { decodeCreateZBWorkerSig } from '../lib/ZBWorkerSignature'
 import { ZBBatchWorker } from './ZBBatchWorker'
 import { ZBWorker } from './ZBWorker'
 
+SegfaultHandler.registerHandler(`crash-${uuid()}.log`) // With no argument, SegfaultHandler will generate a generic log file name
+
 const idColors = [
 	chalk.yellow,
 	chalk.green,
@@ -49,13 +52,14 @@ const idColors = [
 export const ConnectionStatusEvent = {
 	ConnectionError: 'connectionError' as 'connectionError',
 	Ready: 'ready' as 'ready',
+	Unknown: 'unknown' as 'unknown',
 }
 
 export class ZBClient extends EventEmitter {
 	public static readonly DEFAULT_CONNECTION_TOLERANCE = Duration.milliseconds.of(
 		3000
 	)
-	private static readonly DEFAULT_MAX_RETRIES = 50
+	private static readonly DEFAULT_MAX_RETRIES = -1 // Infinite retry
 	private static readonly DEFAULT_MAX_RETRY_TIMEOUT = Duration.seconds.of(5)
 	private static readonly DEFAULT_LONGPOLL_PERIOD = Duration.seconds.of(30)
 	public connectionTolerance: MaybeTimeDuration = process.env
@@ -852,8 +856,9 @@ export class ZBClient extends EventEmitter {
 				})
 			},
 			{
+				forever: retries === -1,
 				maxTimeout: Duration.milliseconds.from(this.maxRetryTimeout),
-				retries,
+				retries: retries === -1 ? undefined : retries,
 			}
 		)
 	}

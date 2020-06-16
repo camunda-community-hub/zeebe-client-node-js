@@ -2,16 +2,13 @@
 const ZB = require('../dist')
 
 ;(async () => {
-	const zbc = new ZB.ZBClient()
-
+	const zbc = new ZB.ZBClient({
+		onConnectionError: err => console.log('err', err),
+		onReady: () => console.log('YOO'),
+	})
 	const topology = await zbc.topology()
 	console.log(JSON.stringify(topology, null, 2))
 
-	let workflows = await zbc.listWorkflows()
-	console.log(workflows)
-
-	await zbc.deployWorkflow('./test.bpmn')
-
-	workflows = await zbc.listWorkflows()
-	console.log(workflows)
+	const res = await zbc.deployWorkflow('./test.bpmn')
+	setTimeout(() => console.log(res), 5000)
 })()

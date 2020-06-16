@@ -17,6 +17,7 @@ Get a hosted instance of Zeebe on [Camunda Cloud](https://camunda.io).
 ## Table of Contents
 
 -   [ Versioning ](#versioning)
+-   [ gRPC Implementation ](#grpc-implementation)
 -   [ Type difference from other Zeebe clients ](#type-difference)
 -   [ A note on representing timeout durations ](#time-duration)
 
@@ -91,6 +92,18 @@ NPM Package version 0.23.x supports Zeebe 0.22.x and above
 NPM Package version 0.22.x supports Zeebe 0.22.x
 
 NPM Package version 0.21.x supports Zeebe 0.21.x
+
+<a name="grpc-implementation"></a>
+
+## gRPC Implementation
+
+The Zeebe Node client uses the C gRPC client implementation [grpc-node](https://github.com/grpc/grpc-node) by default.
+
+From 0.23.3, you can opt-in to use the pure JavaScript implementation [@grpc/grpc-js](https://www.npmjs.com/package/@grpc/grpc-js), to assist us in testing it.
+
+To activate the pure JavaScript implementation, set `ZEEBE_NODE_PUREJS=true`.
+
+Please report any issues in [GitHub](https://github.com/creditsenseau/zeebe-client-node-js/issues).
 
 <a name = "type-difference"></a>
 
@@ -201,7 +214,7 @@ const { ZBClient, Duration } = require('zeebe-node')
 
 const zbc = new ZBClient(gatewayAddress, {
     retry: true,
-    maxRetries: 50,
+    maxRetries: -1, // infinite retries
     maxRetryTimeout: Duration.seconds.of(5)
 })
 ```
