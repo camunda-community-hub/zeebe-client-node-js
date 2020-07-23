@@ -9,14 +9,16 @@ jobs:
     if: github.repository == 'jwulf/zeebe-client-node-js'
     timeout-minutes: 10
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - run: |
-          npm install
-          npm run build
-          npm run test:integration
     env:
       ZEEBE_ADDRESS: ${{ secrets.ZEEBE_ADDRESS }}
       ZEEBE_CLIENT_ID: $ {{ secrets.ZEEBE_CLIENT_ID }}
       ZEEBE_AUTHORIZATION_SERVER_URL: ${{ secrets.ZEEBE_AUTHORIZATION_SERVER_URL }}
       ZEEBE_CLIENT_SECRET: ${{ secrets.ZEEBE_CLIENT_SECRET }}
+    steps:
+      - uses: actions/checkout@v1
+      - run: |
+          env
+          npm install
+          npm run build
+          npm run test:integration
+
