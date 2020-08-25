@@ -1,3 +1,11 @@
+# Version 0.24.0
+
+## Fixes
+
+_Things that were broken and are now fixed._
+
+-   The `segfault-handler` package dependency broke cross-architecture builds. This required users to change their build chain and caused issues with AWS lambda deployment. It was added to assist in debugging the pure JS implementation of gRPC. In this release it has been removed. See [#173](https://github.com/zeebe-io/zeebe-client-node-js/issues/173).
+
 # Version 0.23.3
 
 ## Breaking Changes
