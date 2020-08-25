@@ -18,4 +18,5 @@ jobs:
         with:
           node-version: 10.0.0
       - run: npm install
+      - run: npm install -g typescript ts-node jest
       - run: npm run test:integration
