@@ -5,7 +5,6 @@ import * as NEA from 'fp-ts/lib/NonEmptyArray'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as path from 'path'
 import promiseRetry from 'promise-retry'
-import SegfaultHandler from 'segfault-handler'
 import { Duration, MaybeTimeDuration } from 'typed-duration'
 import { v4 as uuid } from 'uuid'
 import {
@@ -38,8 +37,6 @@ import { ZBJsonLogger } from '../lib/ZBJsonLogger'
 import { decodeCreateZBWorkerSig } from '../lib/ZBWorkerSignature'
 import { ZBBatchWorker } from './ZBBatchWorker'
 import { ZBWorker } from './ZBWorker'
-
-SegfaultHandler.registerHandler(`crash-${uuid()}.log`) // With no argument, SegfaultHandler will generate a generic log file name
 
 const idColors = [
 	chalk.yellow,
