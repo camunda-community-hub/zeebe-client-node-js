@@ -87,6 +87,8 @@ Get a hosted instance of Zeebe on [Camunda Cloud](https://camunda.io).
 
 To enable that the client libraries can be easily supported to the Zeebe server we map the version numbers, so that Major, Minor match the server application. Patches are independent and indicate client updates.
 
+NPM Package version 0.24.x supports Zeebe 0.22.x and above
+
 NPM Package version 0.23.x supports Zeebe 0.22.x and above
 
 NPM Package version 0.22.x supports Zeebe 0.22.x
