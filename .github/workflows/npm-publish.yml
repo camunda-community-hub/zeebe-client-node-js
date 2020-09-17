@@ -21,6 +21,11 @@ jobs:
           node-version: 12.0.0
       - run: npm install
       - run: npm run test:integration
+    env:
+      ZEEBE_ADDRESS: ${{ secrets.ZEEBE_ADDRESS }}
+      ZEEBE_CLIENT_ID: ${{ secrets.ZEEBE_CLIENT_ID }}
+      ZEEBE_AUTHORIZATION_SERVER_URL: ${{ secrets.ZEEBE_AUTHORIZATION_SERVER_URL }}
+      ZEEBE_CLIENT_SECRET: ${{ secrets.ZEEBE_CLIENT_SECRET }}
   npm-publish:
     name: npm-publish
     runs-on: ubuntu-latest
