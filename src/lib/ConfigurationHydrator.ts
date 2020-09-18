@@ -1,9 +1,27 @@
 import { parse } from 'url'
+import { getEnv } from './EnvFunction'
 import * as ZB from './interfaces'
 import { Loglevel, ZBClientOptions } from './interfaces-published-contract'
 import { OAuthProviderConfig } from './OAuthProvider'
 
 export class ConfigurationHydrator {
+	// These are the environment variables that can be used to configure the client
+
+	public static ENV = () =>
+		getEnv([
+			'ZEEBE_NODE_LOG_LEVEL',
+			'ZEEBE_GATEWAY_ADDRESS',
+			'ZEEBE_ADDRESS',
+			'ZEEBE_CLIENT_ID',
+			'ZEEBE_CLIENT_SECRET',
+			'ZEEBE_SECURE_CONNECTION',
+			'ZEEBE_TOKEN_AUDIENCE',
+			'ZEEBE_AUTHORIZATION_SERVER_URL',
+			'ZEEBE_CAMUNDA_CLOUD_CLUSTER_ID',
+			'ZEEBE_BASIC_AUTH_PASSWORD',
+			'ZEEBE_BASIC_AUTH_USERNAME',
+			'ZEEBE_NODE_EAGER_CONNECT',
+		])
 	public static configure(
 		gatewayAddress: string | undefined,
 		options: ZBClientOptions | undefined
@@ -23,23 +41,27 @@ export class ConfigurationHydrator {
 		return configuration
 	}
 	public static readonly getLogLevelFromEnv = () =>
-		process.env.ZEEBE_NODE_LOG_LEVEL as Loglevel | undefined
+		ConfigurationHydrator.ENV().ZEEBE_NODE_LOG_LEVEL as Loglevel | undefined
 
 	private static readonly DEFAULT_GATEWAY_PORT = '26500'
 	private static readonly CAMUNDA_CLOUD_AUTH_SERVER =
 		'https://login.cloud.camunda.io/oauth/token'
 
 	private static readonly getClientIdFromEnv = () =>
-		process.env.ZEEBE_CLIENT_ID
+		ConfigurationHydrator.ENV().ZEEBE_CLIENT_ID
 	private static readonly getZeebeAddressFromEnv = () =>
-		process.env.ZEEBE_ADDRESS || process.env.ZEEBE_GATEWAY_ADDRESS
+		ConfigurationHydrator.ENV().ZEEBE_ADDRESS ||
+		ConfigurationHydrator.ENV().ZEEBE_GATEWAY_ADDRESS
 	private static readonly getClientSecretFromEnv = () =>
-		process.env.ZEEBE_CLIENT_SECRET
+		ConfigurationHydrator.ENV().ZEEBE_CLIENT_SECRET
 	private static readonly getTlsFromEnv = () =>
-		(process.env.ZEEBE_SECURE_CONNECTION || '').toLowerCase() === 'true'
+		(
+			ConfigurationHydrator.ENV().ZEEBE_SECURE_CONNECTION || ''
+		).toLowerCase() === 'true'
 			? true
-			: (process.env.ZEEBE_SECURE_CONNECTION || '').toLowerCase() ===
-			  'false'
+			: (
+					ConfigurationHydrator.ENV().ZEEBE_SECURE_CONNECTION || ''
+			  ).toLowerCase() === 'false'
 			? false
 			: undefined
 
@@ -55,9 +77,11 @@ export class ConfigurationHydrator {
 	): OAuthProviderConfig | {} {
 		const clientId = ConfigurationHydrator.getClientIdFromEnv()
 		const clientSecret = ConfigurationHydrator.getClientSecretFromEnv()
-		const audience = process.env.ZEEBE_TOKEN_AUDIENCE
-		const authServerUrl = process.env.ZEEBE_AUTHORIZATION_SERVER_URL
-		const clusterId = process.env.ZEEBE_CAMUNDA_CLOUD_CLUSTER_ID
+		const audience = ConfigurationHydrator.ENV().ZEEBE_TOKEN_AUDIENCE
+		const authServerUrl = ConfigurationHydrator.ENV()
+			.ZEEBE_AUTHORIZATION_SERVER_URL
+		const clusterId = ConfigurationHydrator.ENV()
+			.ZEEBE_CAMUNDA_CLOUD_CLUSTER_ID
 
 		const isCamundaCloudShortcutConfig =
 			clusterId || (clientId && clientSecret && !audience)
@@ -81,8 +105,8 @@ export class ConfigurationHydrator {
 	}
 
 	private static readBasicAuthFromEnvironment(): ZB.BasicAuthConfig | {} {
-		const password = process.env.ZEEBE_BASIC_AUTH_PASSWORD
-		const username = process.env.ZEEBE_BASIC_AUTH_USERNAME
+		const password = ConfigurationHydrator.ENV().ZEEBE_BASIC_AUTH_PASSWORD
+		const username = ConfigurationHydrator.ENV().ZEEBE_BASIC_AUTH_USERNAME
 		return password && username
 			? {
 					basicAuth: {
@@ -99,7 +123,8 @@ export class ConfigurationHydrator {
 		}
 		// We can either take a simple clusterId, or else the whole Zeebe Address
 		// This env var is Node-client specific
-		const clusterId = process.env.ZEEBE_CAMUNDA_CLOUD_CLUSTER_ID
+		const clusterId = ConfigurationHydrator.ENV()
+			.ZEEBE_CAMUNDA_CLOUD_CLUSTER_ID
 		// This env var is compatible with zbctl and the Java and Go clients
 		const zeebeAddress = ConfigurationHydrator.getZeebeAddressFromEnv()
 		const name = clusterId ? clusterId : zeebeAddress
@@ -112,7 +137,7 @@ export class ConfigurationHydrator {
 		const clientSecret = ConfigurationHydrator.getClientSecretFromEnv()
 
 		const url =
-			process.env.ZEEBE_AUTHORIZATION_SERVER_URL ||
+			ConfigurationHydrator.ENV().ZEEBE_AUTHORIZATION_SERVER_URL ||
 			ConfigurationHydrator.CAMUNDA_CLOUD_AUTH_SERVER
 		return clientId
 			? {
@@ -201,7 +226,8 @@ export class ConfigurationHydrator {
 		return {
 			eagerConnection:
 				(
-					process.env.ZEEBE_NODE_EAGER_CONNECT || 'false'
+					ConfigurationHydrator.ENV().ZEEBE_NODE_EAGER_CONNECT ||
+					'false'
 				).toLocaleLowerCase() === 'true' ||
 				options?.eagerConnection === true,
 		}
