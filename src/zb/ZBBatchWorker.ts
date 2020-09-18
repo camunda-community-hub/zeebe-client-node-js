@@ -1,6 +1,6 @@
 import chalk from 'chalk'
-import { JobBuffer } from '../lib/BatchJobBuffer'
 import * as ZB from '../lib/interfaces'
+import { JobBatcher } from '../lib/JobBatcher'
 import {
 	ZBBatchWorkerConstructorConfig,
 	ZBWorkerBase,
@@ -59,7 +59,7 @@ export class ZBBatchWorker<
 			this.log(chalk.redBright(`=================================`))
 			this.log(`\n`)
 		}
-		this.jobBuffer = JobBuffer({
+		this.jobBuffer = new JobBatcher({
 			batchSize: this.jobBatchMinSize,
 			handler: this.taskHandler as ZB.ZBBatchWorkerTaskHandler<
 				any,
