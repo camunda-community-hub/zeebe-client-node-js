@@ -479,7 +479,14 @@ export class ZBClient extends EventEmitter {
 		const withStringifiedVariables = stringifyVariables(completeJobRequest)
 		this.logger.logDebug(withStringifiedVariables)
 		return this.executeOperation('completeJob', () =>
-			this.grpc.completeJobSync(withStringifiedVariables)
+			this.grpc.completeJobSync(withStringifiedVariables).catch(e => {
+				if (e.code === 5) {
+					e.details +=
+						'. The process may have been cancelled, the job cancelled by an interrupting event, or the job already completed.' +
+						' For more detail, see: https://forum.zeebe.io/t/command-rejected-with-code-complete/908/17'
+				}
+				throw e
+			})
 		)
 	}
 
