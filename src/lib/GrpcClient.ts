@@ -230,21 +230,21 @@ export class GrpcClient extends EventEmitter {
 			 * pings its peer to see if the transport is still alive.
 			 * Int valued, milliseconds.
 			 */
-			'grpc.keepalive_time_ms': 30000,
+			'grpc.keepalive_time_ms': 45000,
 			/**
 			 * After waiting for a duration of this time,
 			 * if the keepalive ping sender does
 			 * not receive the ping ack, it will close the
 			 * transport. Int valued, milliseconds.
 			 */
-			'grpc.keepalive_timeout_ms': 20000,
-			'grpc.http2.min_time_between_pings_ms': 15000,
+			'grpc.keepalive_timeout_ms': 60000,
+			'grpc.http2.min_time_between_pings_ms': 60000,
 			/**
 			 * Minimum allowed time between a server receiving
 			 * successive ping frames without sending any data
 			 * frame. Int valued, milliseconds
 			 */
-			'grpc.http2.min_ping_interval_without_data_ms': 20000,
+			'grpc.http2.min_ping_interval_without_data_ms': 60000,
 			/**
 			 * This channel argument if set to 1
 			 * (0 : false; 1 : true), allows keepalive pings

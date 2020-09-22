@@ -10,6 +10,8 @@ import { ConnectionStatusEvent, ZBClient } from '../zb/ZBClient'
 import { ActivateJobsRequest, ActivateJobsResponse } from './interfaces-grpc'
 import { ZBClientOptions } from './interfaces-published-contract'
 
+const MIN_ACTIVE_JOBS_RATIO_BEFORE_ACTIVATING_JOBS = 0.3
+
 const CapacityEvent = {
 	Available: 'AVAILABLE',
 	Empty: 'CAPACITY_EMPTY',
@@ -98,6 +100,7 @@ export class ZBWorkerBase<
 	private readied = false
 	private jobStreams: { [key: string]: ClientReadableStreamImpl<any> } = {}
 	private restartPollingAfterStall?: NodeJS.Timeout
+	private maxActiveJobsBeforeReactivation: number
 
 	constructor({
 		grpcClient,
@@ -130,6 +133,9 @@ export class ZBWorkerBase<
 		this.taskType = taskType
 		this.maxJobsToActivate =
 			options.maxJobsToActivate || ZBWorkerBase.DEFAULT_MAX_ACTIVE_JOBS
+		this.maxActiveJobsBeforeReactivation =
+			this.maxJobsToActivate *
+			MIN_ACTIVE_JOBS_RATIO_BEFORE_ACTIVATING_JOBS
 		this.jobBatchMinSize = Math.min(
 			options.jobBatchMinSize ?? 0,
 			this.maxJobsToActivate
@@ -255,7 +261,10 @@ export class ZBWorkerBase<
 		this.logger.logDebug(
 			`Load: ${this.activeJobs}/${this.maxJobsToActivate}`
 		)
-		if (!this.closing && this.activeJobs < this.maxJobsToActivate * 0.75) {
+
+		const hasSufficientAvailableCapacityToRequestMoreJobs =
+			this.activeJobs < this.maxActiveJobsBeforeReactivation
+		if (!this.closing && hasSufficientAvailableCapacityToRequestMoreJobs) {
 			this.capacityEmitter.emit(CapacityEvent.Available)
 		}
 		if (this.closing && this.activeJobs === 0) {
