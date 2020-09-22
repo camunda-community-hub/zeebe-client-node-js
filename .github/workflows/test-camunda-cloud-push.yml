@@ -1,11 +1,8 @@
 name: "Test on Camunda Cloud"
-on: # rebuild any PRs and main branch changes
-  pull_request:
+on: # main branch changes
   push:
-
 jobs:
-  test: # make sure build/ci work properly
-    # if: github.repository == 'jwulf/zeebe-client-node-js'
+  test:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
