@@ -1,0 +1,19 @@
+name: "Test on Camunda Cloud"
+on: # rebuild any PRs from the repo itself
+  pull_request:
+jobs:
+  test:
+    if: github.repository == github.event.pull_request.head.repo.full_name # 'zeebe-io/zeebe-client-node-js'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v1
+      - run: |
+          npm install
+          npm run build
+          npm run test:integration
+    env:
+      ZEEBE_ADDRESS: ${{ secrets.ZEEBE_ADDRESS }}
+      ZEEBE_CLIENT_ID: ${{ secrets.ZEEBE_CLIENT_ID }}
+      ZEEBE_AUTHORIZATION_SERVER_URL: ${{ secrets.ZEEBE_AUTHORIZATION_SERVER_URL }}
+      ZEEBE_CLIENT_SECRET: ${{ secrets.ZEEBE_CLIENT_SECRET }}

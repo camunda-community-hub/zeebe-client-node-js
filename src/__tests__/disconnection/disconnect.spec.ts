@@ -5,6 +5,8 @@ import { ZBClient } from '../..'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 
+const ZEEBE_DOCKER_TAG = '0.24.2'
+
 jest.setTimeout(120000)
 
 let container
@@ -21,7 +23,7 @@ test('reconnects after a pod reschedule', async done => {
 
 	container = await new GenericContainer(
 		'camunda/zeebe',
-		'0.23.2',
+		ZEEBE_DOCKER_TAG,
 		undefined,
 		26500
 	)
@@ -54,7 +56,7 @@ test('reconnects after a pod reschedule', async done => {
 
 	container = await new GenericContainer(
 		'camunda/zeebe',
-		'0.23.2',
+		ZEEBE_DOCKER_TAG,
 		undefined,
 		26500
 	)
@@ -90,7 +92,7 @@ test('a worker that started first, connects to a broker that starts later', asyn
 
 	container = await new GenericContainer(
 		'camunda/zeebe',
-		'0.23.2',
+		ZEEBE_DOCKER_TAG,
 		undefined,
 		26500
 	)
