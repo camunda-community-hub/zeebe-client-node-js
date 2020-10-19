@@ -47,7 +47,8 @@ test(`Does set connected to true if there is a broker`, done => {
 
 test(`Does emit the ready event if there is a broker and eagerConnection: true`, done => {
 	let called = 0
-	const zbc2 = new ZBClient({ eagerConnection: true }).on('ready', () => {
+	const zbc2 = new ZBClient({ eagerConnection: true })
+	zbc2.on('ready', () => {
 		called++
 	})
 

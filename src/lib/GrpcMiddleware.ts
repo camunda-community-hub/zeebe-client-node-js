@@ -32,7 +32,7 @@ export class GrpcMiddleware {
 				} else if (this.state === 'CONNECTED') {
 					this.emitReady()
 				} else if (this.state === 'UNKNOWN') {
-					this.grpcClient.emit(ConnectionStatusEvent.Unknown)
+					this.grpcClient.emit(ConnectionStatusEvent.unknown)
 				}
 			}, this.characteristics.startupTime)
 		}
@@ -72,8 +72,8 @@ export class GrpcMiddleware {
 	}
 
 	private emitError = () =>
-		this.grpcClient.emit(ConnectionStatusEvent.ConnectionError)
-	private emitReady = () => this.grpcClient.emit(ConnectionStatusEvent.Ready)
+		this.grpcClient.emit(ConnectionStatusEvent.connectionError)
+	private emitReady = () => this.grpcClient.emit(ConnectionStatusEvent.ready)
 	private handleExceptionalGrpc = ({
 		callStatus,
 		options,

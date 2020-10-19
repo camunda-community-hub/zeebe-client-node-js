@@ -63,10 +63,9 @@ test(`Calls ZBClient onConnectionError when there no broker, for the client and 
 	zbc2.createWorker('whatever', (_, complete) => complete.success, {
 		onConnectionError: () => calledD++,
 	})
-	// @TOFIX - debouncing
 	setTimeout(() => {
 		zbc2.close()
-		expect(calledD).toBe(4) // Should be 2 if it is debounced
+		expect(calledD).toBe(1)
 		done()
 	}, 10000)
 })
@@ -81,10 +80,9 @@ test(`Debounces onConnectionError`, async done => {
 	zbc2.createWorker('whatever', (_, complete) => complete.success, {
 		onConnectionError: () => called++,
 	})
-	// @TOFIX - debouncing
 	setTimeout(() => {
 		zbc2.close()
-		expect(called).toBe(5) // toBeLessThanOrEqual(1)
+		expect(called).toBe(1) // toBeLessThanOrEqual(1)
 		done()
 	}, 15000)
 })
@@ -95,10 +93,9 @@ test(`Trailing parameter worker onConnectionError handler API works`, async done
 	zbc2.createWorker('whatever', (_, complete) => complete.success, {
 		onConnectionError: () => calledE++,
 	})
-	// @TOFIX - debouncing
 	setTimeout(async () => {
 		await zbc2.close()
-		expect(calledE).toBe(4) // should be 1 if debounced
+		expect(calledE).toBe(1)
 		done()
 	}, 10000)
 })

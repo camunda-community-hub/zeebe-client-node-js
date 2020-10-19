@@ -1,5 +1,4 @@
 import chalk from 'chalk'
-import { EventEmitter } from 'events'
 import { either as E } from 'fp-ts'
 import * as NEA from 'fp-ts/lib/NonEmptyArray'
 import { pipe } from 'fp-ts/lib/pipeable'
@@ -32,6 +31,7 @@ import {
 import { OAuthProvider, OAuthProviderConfig } from '../lib/OAuthProvider'
 import { ZBSimpleLogger } from '../lib/SimpleLogger'
 import { StatefulLogInterceptor } from '../lib/StatefulLogInterceptor'
+import { TypedEmitter } from '../lib/TypedEmitter'
 import { Utils } from '../lib/utils'
 import { ZBJsonLogger } from '../lib/ZBJsonLogger'
 import { decodeCreateZBWorkerSig } from '../lib/ZBWorkerSignature'
@@ -47,18 +47,22 @@ const idColors = [
 ]
 
 export const ConnectionStatusEvent = {
-	ConnectionError: 'connectionError' as 'connectionError',
-	Ready: 'ready' as 'ready',
-	Unknown: 'unknown' as 'unknown',
+	close: 'close' as 'close',
+	connectionError: 'connectionError' as 'connectionError',
+	ready: 'ready' as 'ready',
+	unknown: 'unknown' as 'unknown',
 }
 
-export class ZBClient extends EventEmitter {
+export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	public static readonly DEFAULT_CONNECTION_TOLERANCE = Duration.milliseconds.of(
 		3000
 	)
 	private static readonly DEFAULT_MAX_RETRIES = -1 // Infinite retry
 	private static readonly DEFAULT_MAX_RETRY_TIMEOUT = Duration.seconds.of(5)
 	private static readonly DEFAULT_LONGPOLL_PERIOD = Duration.seconds.of(30)
+	private static readonly DEFAULT_POLL_INTERVAL = Duration.milliseconds.of(
+		300
+	)
 	public connectionTolerance: MaybeTimeDuration = process.env
 		.ZEEBE_CONNECTION_TOLERANCE
 		? parseInt(process.env.ZEEBE_CONNECTION_TOLERANCE, 10)
@@ -106,6 +110,7 @@ export class ZBClient extends EventEmitter {
 		const opts = options ? options : {}
 		this.options = {
 			longPoll: ZBClient.DEFAULT_LONGPOLL_PERIOD,
+			pollInterval: ZBClient.DEFAULT_POLL_INTERVAL,
 			...opts,
 			retry: (opts as any).retry !== false,
 		}
@@ -156,26 +161,29 @@ export class ZBClient extends EventEmitter {
 			logConfig: {
 				_tag: 'ZBCLIENT',
 				loglevel: this.loglevel,
-				namespace: this.options.logNamespace || 'ZBClient',
-				pollInterval: this.options.longPoll
+				longPoll: this.options.longPoll
 					? Duration.milliseconds.from(this.options.longPoll)
+					: undefined,
+				namespace: this.options.logNamespace || 'ZBClient',
+				pollInterval: this.options.pollInterval
+					? Duration.milliseconds.from(this.options.pollInterval)
 					: undefined,
 				stdout: this.stdout,
 			},
 		})
 
-		grpcClient.on(ConnectionStatusEvent.ConnectionError, () => {
+		grpcClient.on(ConnectionStatusEvent.connectionError, () => {
 			if (this.connected !== false) {
 				this.onConnectionError?.()
-				this.emit(ConnectionStatusEvent.ConnectionError)
+				this.emit(ConnectionStatusEvent.connectionError)
 			}
 			this.connected = false
 			this.readied = false
 		})
-		grpcClient.on(ConnectionStatusEvent.Ready, () => {
+		grpcClient.on(ConnectionStatusEvent.ready, () => {
 			if (!this.readied) {
 				this.onReady?.()
-				this.emit(ConnectionStatusEvent.Ready)
+				this.emit(ConnectionStatusEvent.ready)
 			}
 			this.connected = true
 			this.readied = true
@@ -202,7 +210,7 @@ export class ZBClient extends EventEmitter {
 				.catch(e => {
 					// Swallow exception to avoid throwing if retries are off
 					if (e.thisWillNeverHappenYo) {
-						this.emit('never')
+						this.emit(ConnectionStatusEvent.unknown)
 					}
 				})
 		}
@@ -464,7 +472,7 @@ export class ZBClient extends EventEmitter {
 				this.closing = true
 				await Promise.all(this.workers.map(w => w.close(timeout)))
 				await this.grpc.close(timeout) // close the client GRPC channel
-				this.emit('close')
+				this.emit(ConnectionStatusEvent.close)
 				this.grpc.removeAllListeners()
 				this.removeAllListeners()
 				// console.log((process as any)._getActiveHandles())
@@ -768,12 +776,12 @@ export class ZBClient extends EventEmitter {
 		})
 		if (grpcConfig.onConnectionError) {
 			grpcClient.on(
-				ConnectionStatusEvent.ConnectionError,
+				ConnectionStatusEvent.connectionError,
 				grpcConfig.onConnectionError
 			)
 		}
 		if (grpcConfig.onReady) {
-			grpcClient.on(ConnectionStatusEvent.Ready, grpcConfig.onReady)
+			grpcClient.on(ConnectionStatusEvent.ready, grpcConfig.onReady)
 		}
 		return { grpcClient: grpcClient as ZB.ZBGrpc, log }
 	}
@@ -806,7 +814,7 @@ export class ZBClient extends EventEmitter {
 		// 		this.connectionTolerance / 2
 		// if (!debounce) {
 		this.onConnectionError?.()
-		this.emit(ConnectionStatusEvent.ConnectionError)
+		this.emit(ConnectionStatusEvent.connectionError)
 		// }
 		// this.lastConnectionError = new Date()
 	}

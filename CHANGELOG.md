@@ -1,3 +1,13 @@
+# Version 0.24.2
+
+## Fixes
+
+_Things that were broken and are now fixed._
+
+-   The example code in `example` is updated to remove a deprecated method. See [#185](https://github.com/zeebe-io/zeebe-client-node-js/issues/185).
+-   An race condition in the ZBBatchWorker that could cause jobs to be lost in certain specific and rare race conditions has been refactored. See [#177](https://github.com/zeebe-io/zeebe-client-node-js/issues/177)
+-   The `onConnectionError` event is now debounced. See [#161](https://github.com/zeebe-io/zeebe-client-node-js/issues/161).
+
 # Version 0.24.0
 
 ## Fixes

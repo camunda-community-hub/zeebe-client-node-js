@@ -15,6 +15,10 @@ export interface ZBCustomLogger {
 	/**
 	 * Receives a JSON-stringified ZBLogMessage
 	 */
+	debug: (message: string) => void
+	/**
+	 * Receives a JSON-stringified ZBLogMessage
+	 */
 	info: (message: string) => void
 	/**
 	 * Receives a JSON-stringified ZBLogMessage
@@ -38,6 +42,7 @@ export interface ZBClientOptions {
 	useTLS?: boolean
 	logNamespace?: string
 	longPoll?: MaybeTimeDuration
+	pollInterval?: MaybeTimeDuration
 	camundaCloud?: CamundaCloudConfig
 	hostname?: string
 	port?: string

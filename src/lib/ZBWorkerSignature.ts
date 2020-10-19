@@ -35,6 +35,7 @@ export function decodeCreateZBWorkerSig<
 				stdout: conf.stdout,
 				timeout: conf.timeout,
 				jobBatchMaxTime: conf.jobBatchMaxTime,
+				onConnectionError: conf.onConnectionError,
 			},
 			taskHandler: conf.taskHandler,
 			taskType: conf.taskType,
