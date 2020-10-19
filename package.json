@@ -1,6 +1,6 @@
 {
 	"name": "zeebe-node",
-	"version": "v0.24.1",
+	"version": "v0.24.2",
 	"description": "A Node.js client library for the Zeebe Microservices Orchestration Engine.",
 	"keywords": [
 		"zeebe",
@@ -100,7 +100,7 @@
 		"tslint-config-prettier": "^1.18.0",
 		"typedoc": "^0.16.0",
 		"typedoc-plugin-sourcefile-url": "^1.0.6",
-		"typescript": "^3.8.3"
+		"typescript": "^3.9.7"
 	},
 	"author": {
 		"name": "Josh Wulf",

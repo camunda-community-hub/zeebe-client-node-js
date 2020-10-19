@@ -1,6 +1,6 @@
 dependencies:
-  "@grpc/grpc-js": 1.1.6
-  "@grpc/proto-loader": 0.5.3
+  "@grpc/grpc-js": 1.1.7
+  "@grpc/proto-loader": 0.5.5
   chalk: 2.4.2
   console-stamp: 0.2.9
   dayjs: 1.8.22
@@ -32,13 +32,13 @@ devDependencies:
   remark-cli: 6.0.1
   remark-lint: 6.0.5
   remark-preset-lint-recommended: 3.0.3
-  ts-jest: 26.3.0_jest@26.4.2+typescript@3.8.3
-  tsc-watch: 1.1.39_typescript@3.8.3
-  tslint: 5.20.1_typescript@3.8.3
+  ts-jest: 26.3.0_jest@26.4.2+typescript@3.9.7
+  tsc-watch: 1.1.39_typescript@3.9.7
+  tslint: 5.20.1_typescript@3.9.7
   tslint-config-prettier: 1.18.0
   typedoc: 0.16.11
   typedoc-plugin-sourcefile-url: 1.0.6_typedoc@0.16.11
-  typescript: 3.8.3
+  typescript: 3.9.7
 lockfileVersion: 5.1
 packages:
   /@babel/code-frame/7.8.3:
@@ -278,7 +278,7 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-v9kIhKwjeZThiWrLmj0y17CWoyddASLj9O2yvbZkbvw/N3rWOYy9zkV66ursAoVr0mV15bL8g0c4QZUE6cdDoQ==
-  /@grpc/grpc-js/1.1.6:
+  /@grpc/grpc-js/1.1.7:
     dependencies:
       "@grpc/proto-loader": 0.6.0-pre9
       "@types/node": 12.12.61
@@ -288,16 +288,16 @@ packages:
     engines:
       node: ^8.13.0 || >=10.10.0
     resolution:
-      integrity: sha512-bUeaMN/dHTkt9AqU0Tc1xdHMB3jVLyPNfg8gZ5cMyhFyMeCwoJbFcJrNBgYqRCbvYhvtaEgzQwkw91NnY4Oktg==
-  /@grpc/proto-loader/0.5.3:
+      integrity: sha512-EuxMstI0u778dp0nk6Fe3gHXYPeV6FYsWOe0/QFwxv1NQ6bc5Wl/0Yxa4xl9uBlKElL6AIxuASmSfu7KEJhqiw==
+  /@grpc/proto-loader/0.5.5:
     dependencies:
       lodash.camelcase: 4.3.0
-      protobufjs: 6.8.9
+      protobufjs: 6.10.1
     dev: false
     engines:
       node: ">=6"
     resolution:
-      integrity: sha512-8qvUtGg77G2ZT2HqdqYoM/OY97gQd/0crSG34xNmZ4ZOsv3aQT/FQV9QfZPazTGna6MIoyUd+u6AxsoZjJ/VMQ==
+      integrity: sha512-WwN9jVNdHRQoOBo9FDH7qU+mgfjPc8GygPYms3M+y3fbQLfnCe/Kv/E01t7JRgnrsOHH8euvSbed3mIalXhwqQ==
   /@grpc/proto-loader/0.6.0-pre9:
     dependencies:
       "@types/long": 4.0.1
@@ -714,6 +714,7 @@ packages:
     resolution:
       integrity: sha512-tHq6qdbT9U1IRSGf14CL0pUlULksvY9OZ+5eEgl1N7t+OA3tGvNpxJCzuKQlsNgCVwbAs670L1vcVQi8j9HjnA==
   /@types/node/10.17.17:
+    dev: true
     resolution:
       integrity: sha512-gpNnRnZP3VWzzj5k3qrpRC6Rk3H/uclhAVo1aIvwzK5p5cOrs9yEyQ8H/HBsBY0u5rrWxXEiVPQ0dEB6pkjE8Q==
   /@types/node/12.12.61:
@@ -5006,26 +5007,6 @@ packages:
     requiresBuild: true
     resolution:
       integrity: sha512-pb8kTchL+1Ceg4lFd5XUpK8PdWacbvV5SK2ULH2ebrYtl4GjJmS24m6CKME67jzV53tbJxHlnNOSqQHbTsR9JQ==
-  /protobufjs/6.8.9:
-    dependencies:
-      "@protobufjs/aspromise": 1.1.2
-      "@protobufjs/base64": 1.1.2
-      "@protobufjs/codegen": 2.0.4
-      "@protobufjs/eventemitter": 1.1.0
-      "@protobufjs/fetch": 1.1.0
-      "@protobufjs/float": 1.0.2
-      "@protobufjs/inquire": 1.1.0
-      "@protobufjs/path": 1.1.2
-      "@protobufjs/pool": 1.1.0
-      "@protobufjs/utf8": 1.1.0
-      "@types/long": 4.0.1
-      "@types/node": 10.17.17
-      long: 4.0.0
-    dev: false
-    hasBin: true
-    requiresBuild: true
-    resolution:
-      integrity: sha512-j2JlRdUeL/f4Z6x4aU4gj9I2LECglC+5qR2TrWb193Tla1qfdaNQTZ8I27Pt7K0Ajmvjjpft7O3KWTGciz4gpw==
   /ps-tree/1.2.0:
     dependencies:
       event-stream: 3.3.4
@@ -6339,7 +6320,7 @@ packages:
     dev: true
     resolution:
       integrity: sha512-rvuRbTarPXmMb79SmzEp8aqXNKcK+y0XaB298IXueQ8I2PsrATcPBCSPyK/dDNa2iWOhKlfNnOjdAOTBU/nkFA==
-  /ts-jest/26.3.0_jest@26.4.2+typescript@3.8.3:
+  /ts-jest/26.3.0_jest@26.4.2+typescript@3.9.7:
     dependencies:
       "@types/jest": 26.0.14
       bs-logger: 0.2.6
@@ -6352,7 +6333,7 @@ packages:
       make-error: 1.3.6
       mkdirp: 1.0.4
       semver: 7.1.3
-      typescript: 3.8.3
+      typescript: 3.9.7
       yargs-parser: 18.1.0
     dev: true
     engines:
@@ -6363,14 +6344,14 @@ packages:
       typescript: ">=3.8 <5.0"
     resolution:
       integrity: sha512-Jq2uKfx6bPd9+JDpZNMBJMdMQUC3sJ08acISj8NXlVgR2d5OqslEHOR2KHMgwymu8h50+lKIm0m0xj/ioYdW2Q==
-  /tsc-watch/1.1.39_typescript@3.8.3:
+  /tsc-watch/1.1.39_typescript@3.9.7:
     dependencies:
       cross-spawn: 5.1.0
       node-cleanup: 2.1.2
       ps-tree: 1.2.0
       string-argv: 0.1.2
       strip-ansi: 4.0.0
-      typescript: 3.8.3
+      typescript: 3.9.7
     dev: true
     hasBin: true
     peerDependencies:
@@ -6388,7 +6369,7 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-xPw9PgNPLG3iKRxmK7DWr+Ea/SzrvfHtjFt5LBl61gk2UBG/DB9kCXRjv+xyIU1rUtnayLeMUVJBcMX8Z17nDg==
-  /tslint/5.20.1_typescript@3.8.3:
+  /tslint/5.20.1_typescript@3.9.7:
     dependencies:
       "@babel/code-frame": 7.8.3
       builtin-modules: 1.1.1
@@ -6402,8 +6383,8 @@ packages:
       resolve: 1.15.1
       semver: 5.7.1
       tslib: 1.11.1
-      tsutils: 2.29.0_typescript@3.8.3
-      typescript: 3.8.3
+      tsutils: 2.29.0_typescript@3.9.7
+      typescript: 3.9.7
     dev: true
     engines:
       node: ">=4.8.0"
@@ -6412,10 +6393,10 @@ packages:
       typescript: ">=2.3.0-dev || >=2.4.0-dev || >=2.5.0-dev || >=2.6.0-dev || >=2.7.0-dev || >=2.8.0-dev || >=2.9.0-dev || >=3.0.0-dev || >= 3.1.0-dev || >= 3.2.0-dev"
     resolution:
       integrity: sha512-EcMxhzCFt8k+/UP5r8waCf/lzmeSyVlqxqMEDQE7rWYiQky8KpIBz1JAoYXfROHrPZ1XXd43q8yQnULOLiBRQg==
-  /tsutils/2.29.0_typescript@3.8.3:
+  /tsutils/2.29.0_typescript@3.9.7:
     dependencies:
       tslib: 1.11.1
-      typescript: 3.8.3
+      typescript: 3.9.7
     dev: true
     peerDependencies:
       typescript: ">=2.1.0 || >=2.1.0-dev || >=2.2.0-dev || >=2.3.0-dev || >=2.4.0-dev || >=2.5.0-dev || >=2.6.0-dev || >=2.7.0-dev || >=2.8.0-dev || >=2.9.0-dev || >= 3.0.0-dev || >= 3.1.0-dev"
@@ -6522,13 +6503,13 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-/P5lkRXkWHNAbcJIiHPfRoKqyd7bsyCma1hZNUGfn20qm64T6ZBlrzprymeu918H+mB/0rIg2gGK/BXkhhYgBw==
-  /typescript/3.8.3:
+  /typescript/3.9.7:
     dev: true
     engines:
       node: ">=4.2.0"
     hasBin: true
     resolution:
-      integrity: sha512-MYlEfn5VrLNsgudQTVJeNaQFUAI7DkhnOjdpAp4T+ku1TfQClewlbSuTVHiA+8skNBgaf02TL/kLOvig4y3G8w==
+      integrity: sha512-BLbiRkiBzAwsjut4x/dsibSTB6yWpwT5qWmC2OfuCg3GgVQCSgMs4vEctYPhsaGtd0AeuuHMkjZ2h2WG8MSzRw==
   /uglify-js/3.8.0:
     dependencies:
       commander: 2.20.3
@@ -7061,8 +7042,8 @@ packages:
     resolution:
       integrity: sha512-v1yFnE4+u9za42gG/b/081E7uNW9mUj3qtkmelLbW5YPROZzSH/KUUyJu9Wt8vxFJcT9otL/eZopS0YK1L5yPQ==
 specifiers:
-  "@grpc/grpc-js": ^1.0.4
-  "@grpc/proto-loader": ^0.5.3
+  "@grpc/grpc-js": ^1.1.7
+  "@grpc/proto-loader": ^0.5.5
   "@sitapati/testcontainers": ^2.8.1
   "@types/debug": 0.0.31
   "@types/got": ^9.6.9
@@ -7098,5 +7079,5 @@ specifiers:
   typed-duration: ^1.0.12
   typedoc: ^0.16.0
   typedoc-plugin-sourcefile-url: ^1.0.6
-  typescript: ^3.8.3
+  typescript: ^3.9.7
   uuid: ^3.3.2

@@ -8,7 +8,6 @@ let zbcLongPoll
 
 afterAll(async () => {
 	const zbc = new ZBClient()
-	// await zbc.cancelWorkflowInstance(wf2.workflowInstanceKey)
 	await zbcLongPoll.close()
 	await zbc.close()
 })
@@ -35,17 +34,13 @@ test('Does long poll by default', async done => {
 	const worker = zbcLongPoll.createWorker(
 		uuid.v4(),
 		async (job, complete) => {
-			// expect(job.workflowInstanceKey).toBe(wf2.workflowInstanceKey)
 			await complete.success(job.variables)
-			// expect(worker.pollCount).toBe(1)
-			// done()
 		},
 		{ loglevel: 'NONE', debug: true }
 	)
 	// Wait to outside 10s - it should have polled once when it gets the job
 	setTimeout(async () => {
-		expect(worker.pollCount).toBe(2)
+		expect(worker.pollCount).toBe(1)
 		done()
-		// wf2 = await zbcLongPoll.createWorkflowInstance('long-poll', {})
 	}, 35000)
 })

@@ -3,8 +3,8 @@ const ZB = require('../dist')
 
 ;(async () => {
 	const zbc = new ZB.ZBClient({
-		onConnectionError: err => console.log('err', err),
-		onReady: () => console.log('YOO'),
+		onConnectionError: () => console.log('Connection Error'),
+		onReady: () => console.log('Ready to work'),
 	})
 	const topology = await zbc.topology()
 	console.log(JSON.stringify(topology, null, 2))

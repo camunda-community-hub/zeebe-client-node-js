@@ -6,9 +6,6 @@ const ZB = require('../dist')
 	const topology = await zbc.topology()
 	console.log(JSON.stringify(topology, null, 2))
 
-	let workflows = await zbc.listWorkflows()
-	console.log(workflows)
-
 	await zbc.deployWorkflow('./test.bpmn')
 	workflows = await zbc.listWorkflows()
 	console.log(workflows)
@@ -20,7 +17,7 @@ const ZB = require('../dist')
 	}, 1000000)
 })()
 
-function handler(payload, complete) {
-	console.log('ZB payload', payload)
-	complete(payload.variables)
+function handler(job, complete) {
+	console.log('Job payload', job)
+	complete(job.variables)
 }

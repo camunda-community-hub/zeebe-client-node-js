@@ -9,4 +9,8 @@ export class MockStdOut implements ZBCustomLogger {
 	public error(message: string) {
 		this.messages.push(message)
 	}
+
+	public debug(message: string) {
+		this.messages.push(message)
+	}
 }

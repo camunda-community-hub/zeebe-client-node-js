@@ -130,6 +130,7 @@ export interface ZBLoggerOptions {
 	loglevel?: Loglevel
 	stdout?: any
 	color?: Chalk
+	longPoll?: MaybeTimeDuration
 	namespace: string | string[]
 	pollInterval?: MaybeTimeDuration
 	taskType?: string
