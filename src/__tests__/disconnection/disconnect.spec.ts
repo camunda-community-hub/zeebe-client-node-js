@@ -6,7 +6,7 @@ process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 
 const ZEEBE_DOCKER_TAG = '0.24.2'
 
-jest.setTimeout(120000)
+jest.setTimeout(900000)
 
 let container
 let worker
@@ -16,6 +16,11 @@ afterEach(async () => {
 	await worker?.close()
 })
 
+function log(msg) {
+	// tslint:disable-next-line: no-console
+	console.log(new Date().toString(), msg) // @DEBUG
+}
+
 test('reconnects after a pod reschedule', async done => {
 	let readyCount = 0
 	let errorCount = 0
@@ -23,7 +28,7 @@ test('reconnects after a pod reschedule', async done => {
 		new Promise(res => setTimeout(() => res(), timeout))
 
 	// tslint:disable-next-line: no-console
-	console.log('##### Starting container') // @DEBUG
+	log('##### Starting container') // @DEBUG
 
 	container = await new GenericContainer(
 		'camunda/zeebe',
@@ -38,10 +43,18 @@ test('reconnects after a pod reschedule', async done => {
 	await delay(10000)
 
 	const zbc = new ZBClient(`localhost`)
+	// tslint:disable-next-line: no-console
+	log('##### Deploying workflow') // @DEBUG
+
 	await zbc.deployWorkflow('./src/__tests__/testdata/disconnection.bpmn')
 	worker = zbc
 		.createWorker({
+			longPoll: 10000,
+			pollInterval: 300,
 			taskHandler: (_, complete) => {
+				// tslint:disable-next-line: no-console
+				log('##### Executing task handler') // @DEBUG
+
 				complete.success()
 			},
 			taskType: 'disconnection-task',
@@ -54,7 +67,7 @@ test('reconnects after a pod reschedule', async done => {
 		})
 
 	// tslint:disable-next-line: no-console
-	console.log('##### Deploying workflow') // @DEBUG
+	log('##### Starting workflow') // @DEBUG
 
 	const wf = await zbc.createWorkflowInstanceWithResult({
 		bpmnProcessId: 'disconnection',
@@ -64,15 +77,18 @@ test('reconnects after a pod reschedule', async done => {
 	expect(wf.bpmnProcessId).toBeTruthy()
 
 	// tslint:disable-next-line: no-console
-	console.log('##### Stopping container...') // @DEBUG
+	log('##### Workflow finished') // @DEBUG
+
+	// tslint:disable-next-line: no-console
+	log('##### Stopping container...') // @DEBUG
 
 	await container.stop()
 
 	// tslint:disable-next-line: no-console
-	console.log('##### Container stopped.') // @DEBUG
+	log('##### Container stopped.') // @DEBUG
 
 	// tslint:disable-next-line: no-console
-	console.log('##### Starting container....') // @DEBUG
+	log('##### Starting container....') // @DEBUG
 
 	container = await new GenericContainer(
 		'camunda/zeebe',
@@ -81,14 +97,26 @@ test('reconnects after a pod reschedule', async done => {
 		26500
 	)
 		.withExposedPorts(26500)
+		.withEnv('ZEEBE_LOG_LEVEL', 'trace')
 		.withWaitStrategy(Wait.forLogMessage('Bootstrap Broker-0 succeeded.'))
 		.start()
 
 	// tslint:disable-next-line: no-console
-	// console.log('##### Container started.') // @DEBUG
+	log('##### Container started.') // @DEBUG
 
 	await delay(10000)
+
+	// tslint:disable-next-line: no-console
+	log('##### Deploying workflow 2') // @DEBUG
 	await zbc.deployWorkflow('./src/__tests__/testdata/disconnection.bpmn')
+
+	// tslint:disable-next-line: no-console
+	// console.log('Workflow 2 deployed', _) // @DEBUG
+
+	await delay(15000)
+
+	// tslint:disable-next-line: no-console
+	log('##### Starting workflow 2') // @DEBUG
 
 	const wf1 = await zbc.createWorkflowInstanceWithResult('disconnection', {})
 	expect(wf1.bpmnProcessId).toBeTruthy()

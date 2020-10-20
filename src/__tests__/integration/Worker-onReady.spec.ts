@@ -48,7 +48,7 @@ test(`Does set connected: true if there is a broker and eagerConnection: true`, 
 test(`Does not set connected: true if there is a broker and eagerConnection: false`, done => {
 	const zbc2 = new ZBClient()
 	setTimeout(async () => {
-		expect(zbc2.connected).toBe(undefined)
+		expect(zbc2.connected).toBe(false)
 		await zbc2.close()
 		done()
 	}, 7000)
