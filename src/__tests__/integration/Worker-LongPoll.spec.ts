@@ -7,14 +7,9 @@ process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 let zbcLongPoll
 
 afterAll(async () => {
-	const zbc = new ZBClient()
 	await zbcLongPoll.close()
-	await zbc.close()
 })
 
-/**
- * This test is currently disabled
- */
 test('Does long poll by default', async done => {
 	jest.setTimeout(40000)
 	zbcLongPoll = new ZBClient({

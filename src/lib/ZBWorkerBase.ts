@@ -1,5 +1,6 @@
 import { ClientReadableStreamImpl } from '@grpc/grpc-js/build/src/call'
 import { Chalk } from 'chalk'
+import * as _debug from 'debug'
 import { EventEmitter } from 'events'
 import { Duration, MaybeTimeDuration } from 'typed-duration'
 import * as uuid from 'uuid'
@@ -10,6 +11,8 @@ import { ConnectionStatusEvent, ZBClient } from '../zb/ZBClient'
 import { ActivateJobsRequest, ActivateJobsResponse } from './interfaces-grpc'
 import { ZBClientOptions } from './interfaces-published-contract'
 import { TypedEmitter } from './TypedEmitter'
+
+const debug = _debug.default('worker')
 
 const MIN_ACTIVE_JOBS_RATIO_BEFORE_ACTIVATING_JOBS = 0.3
 
@@ -99,6 +102,7 @@ export class ZBWorkerBase<
 	private maxActiveJobsBeforeReactivation: number
 	private pollInterval: MaybeTimeDuration
 	private pollLoop: NodeJS.Timeout
+	private pollMutex: boolean = false
 
 	constructor({
 		grpcClient,
@@ -369,7 +373,7 @@ export class ZBWorkerBase<
 	}
 
 	private async poll() {
-		if (this.closePromise) {
+		if (this.closePromise || this.pollMutex) {
 			return
 		}
 		const isOverCapacity =
@@ -383,6 +387,8 @@ export class ZBWorkerBase<
 		if (this.jobStream) {
 			return
 		}
+		this.pollMutex = true
+		debug('Polling...')
 		this.logger.logDebug('Activating Jobs...')
 		const id = uuid.v4()
 		const jobStream = await this.activateJobs(id)
@@ -421,6 +427,7 @@ export class ZBWorkerBase<
 		if (jobStream.error) {
 			this.logger.logError({ id, error: jobStream.error.message })
 		}
+		this.pollMutex = false
 	}
 
 	private async activateJobs(id: string) {
@@ -435,6 +442,7 @@ export class ZBWorkerBase<
 		if (this.debugMode) {
 			this.logger.logDebug(`Activating Jobs...`)
 		}
+		debug('Activating Jobs')
 		let stream: any
 
 		const amount = this.maxJobsToActivate - this.activeJobs
@@ -449,6 +457,11 @@ export class ZBWorkerBase<
 			worker: this.id,
 		}
 		this.logger.logDebug(
+			`Requesting ${amount} jobs on [${id}] with requestTimeout ${Duration.value.of(
+				requestTimeout
+			)}, job timeout: ${Duration.value.of(this.timeout)}`
+		)
+		debug(
 			`Requesting ${amount} jobs on [${id}] with requestTimeout ${Duration.value.of(
 				requestTimeout
 			)}, job timeout: ${Duration.value.of(this.timeout)}`

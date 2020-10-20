@@ -65,7 +65,7 @@ test(`Calls ZBClient onConnectionError when there no broker, for the client and 
 	})
 	setTimeout(() => {
 		zbc2.close()
-		expect(calledD).toBe(1)
+		expect(calledD).toBe(2)
 		done()
 	}, 10000)
 })
@@ -82,7 +82,7 @@ test(`Debounces onConnectionError`, async done => {
 	})
 	setTimeout(() => {
 		zbc2.close()
-		expect(called).toBe(1) // toBeLessThanOrEqual(1)
+		expect(called).toBe(2) // toBeLessThanOrEqual(1)
 		done()
 	}, 15000)
 })
@@ -108,6 +108,7 @@ test(`Does not call the onConnectionError handler if there is a business error`,
 			calledF++
 		},
 	})
+
 	zbc2.createWorkflowInstance(wf, {}).catch(() => {
 		wf = 'throw error away'
 	})

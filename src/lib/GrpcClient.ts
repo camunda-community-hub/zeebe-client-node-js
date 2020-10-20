@@ -6,6 +6,7 @@ import {
 	status as statusJS,
 } from '@grpc/grpc-js'
 import { loadSync, Options, PackageDefinition } from '@grpc/proto-loader'
+import * as _debug from 'debug'
 import { EventEmitter } from 'events'
 import {
 	Client,
@@ -19,6 +20,8 @@ import { Duration, MaybeTimeDuration } from 'typed-duration'
 import { BasicAuthConfig } from './interfaces'
 import { Loglevel } from './interfaces-published-contract'
 import { OAuthProvider } from './OAuthProvider'
+
+const debug = _debug.default('grpc')
 
 const useJS = process.env.ZEEBE_NODE_PUREJS?.toUpperCase() === 'TRUE'
 const credentials = useJS ? credentialsJS : credentialsC
@@ -222,12 +225,16 @@ export class GrpcClient extends EventEmitter {
 			 * The maximum time between subsequent connection attempts,
 			 * in ms
 			 */
-			'grpc.max_reconnect_backoff_ms': 30000,
+			'grpc.max_reconnect_backoff_ms': 10000,
 			/**
 			 * The minimum time between subsequent connection attempts,
-			 * in ms
+			 * in ms. Default is 1000ms, but this can cause an SSL Handshake failure.
+			 * This causes an intermittent failure in the Worker-LongPoll test when run
+			 * against Camunda Cloud.
+			 * Raised to 5000ms.
+			 * See: https://github.com/grpc/grpc/issues/8382#issuecomment-259482949
 			 */
-			'grpc.min_reconnect_backoff_ms': 1000,
+			'grpc.min_reconnect_backoff_ms': 5000,
 			/**
 			 * After a duration of this time the client/server
 			 * pings its peer to see if the transport is still alive.
@@ -240,7 +247,7 @@ export class GrpcClient extends EventEmitter {
 			 * not receive the ping ack, it will close the
 			 * transport. Int valued, milliseconds.
 			 */
-			'grpc.keepalive_timeout_ms': 60000,
+			'grpc.keepalive_timeout_ms': 120000,
 			'grpc.http2.min_time_between_pings_ms': 60000,
 			/**
 			 * Minimum allowed time between a server receiving
@@ -267,6 +274,12 @@ export class GrpcClient extends EventEmitter {
 		})
 		this.listNameMethods = []
 
+		this.client.waitForReady(10000, error =>
+			error
+				? this.emit(MiddlewareSignals.Event.Error, error)
+				: this.emit(MiddlewareSignals.Event.Ready)
+		)
+
 		for (const key in listMethods) {
 			if (listMethods[key]) {
 				const methodName = listMethods[key].originalName as string
@@ -286,6 +299,7 @@ export class GrpcClient extends EventEmitter {
 					)
 					try {
 						const metadata = await this.getAuthToken()
+
 						stream = this.client[methodName](
 							timeNormalisedRequest,
 							metadata
@@ -304,6 +318,19 @@ export class GrpcClient extends EventEmitter {
 							),
 						}
 					}
+
+					// This deals with the case where during a broker restart the call returns a stream
+					// but that stream is not a legit Gateway activation. In that case, the Gateway will
+					// never time out or close the stream. So we have to manage that case.
+					const clientsideTimeoutDuration =
+						Duration.milliseconds.from(this.longPoll!) + 1000
+					const clientSideTimeout = setTimeout(() => {
+						debug(
+							`Triggered client-side timeout after ${clientsideTimeoutDuration}ms`
+						)
+						stream.emit('end')
+					}, clientsideTimeoutDuration)
+
 					/**
 					 * Once this gets attached here, it is attached to *all* calls
 					 * This is an issue if you do a sync call like cancelWorkflowSync
@@ -312,6 +339,8 @@ export class GrpcClient extends EventEmitter {
 					 * streaming calls, and each worker, which only does streaming calls
 					 */
 					stream.on('error', (error: GrpcStreamError) => {
+						clearTimeout(clientSideTimeout)
+						debug(`Error`, error)
 						this.emit(MiddlewareSignals.Event.Error)
 						if (error.message.includes('14 UNAVAILABLE')) {
 							this.emit(
@@ -341,6 +370,8 @@ export class GrpcClient extends EventEmitter {
 							`gRPC Status event: ${JSON.stringify(s)}`
 						)
 					)
+					stream.on('end', () => clearTimeout(clientSideTimeout))
+
 					return stream
 				}
 
