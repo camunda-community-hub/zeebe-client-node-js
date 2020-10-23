@@ -475,7 +475,6 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 				this.emit(ConnectionStatusEvent.close)
 				this.grpc.removeAllListeners()
 				this.removeAllListeners()
-				// console.log((process as any)._getActiveHandles())
 				resolve()
 			})
 		return this.closePromise

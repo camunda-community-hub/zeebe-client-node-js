@@ -11,3 +11,11 @@ To publish a new package, update the `package.json` package version and push a c
 There is a test that checks that the client can reconnect to a rescheduled broker, or a broker that starts after the client application.
 
 It can be run with `npm run test:disconnection` and it is run automatically when committing changes. It requires Docker to be running on your machine.
+
+## Debug logging
+
+Try this for the insane level of trace logging:
+
+```
+DEBUG=grpc,worker GRPC_TRACE=all GRPC_VERBOSITY=DEBUG jest Worker-LongPoll --detectOpenHandles
+```
