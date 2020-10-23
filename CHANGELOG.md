@@ -1,3 +1,11 @@
+# Version 0.25.0
+
+## Fixes
+
+_Things that were broken and are now fixed._
+
+-   Workers would intermittently throw an unhandled exception, and in some cases disconnect from Camunda Cloud. This was caused by network errors throwing an error event on the stream after the end event was emitted and all listeners were removed. The error event listener is no longer removed when the end event is received, and the worker no longer throws an unhandled exception. See [#99}(https://github.com/zeebe-io/zeebe-client-node-js/issues/99).
+
 # Version 0.24.2
 
 ## Fixes
