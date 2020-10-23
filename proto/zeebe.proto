@@ -138,7 +138,6 @@ message CreateWorkflowInstanceWithResultResponse {
   // JSON document
   // consists of visible variables in the root scope
   string variables = 5;
-
 }
 
 message DeployWorkflowRequest {

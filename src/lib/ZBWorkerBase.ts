@@ -209,10 +209,9 @@ export class ZBWorkerBase<
 			if (this.activeJobs <= 0) {
 				await this.grpcClient.close(timeout)
 				this.grpcClient.removeAllListeners()
-				this.jobStream?.removeAllListeners?.()
 				this.jobStream?.cancel?.()
 				this.jobStream = undefined
-				this.logger.logDebug('Removed Job Stream Listeners')
+				this.logger.logDebug('Cancelled Job Stream')
 				resolve()
 			} else {
 				this.capacityEmitter.once(CapacityEvent.Empty, async () => {
@@ -365,7 +364,6 @@ export class ZBWorkerBase<
 	}
 
 	private handleStreamEnd = id => {
-		this.jobStream?.removeAllListeners()
 		this.jobStream = undefined
 		this.logger.logDebug(
 			`Deleted job stream [${id}] listeners and job stream reference`

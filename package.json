@@ -24,7 +24,9 @@
 		"url": "https://github.com/creditsenseau/zeebe-client-node-js"
 	},
 	"main": "dist/index.js",
-	"bin": "./bin/zeebe-node",
+	"bin": {
+		"zeebe-node": "bin/zeebe-node"
+	},
 	"scripts": {
 		"debug": "NODE_DEBUG=http2 GRPC_TRACE=channel,call_stream GRPC_VERBOSITY=DEBUG ../node/out/Debug/node --inspect-brk node_modules/.bin/jest Worker-Failure",
 		"build": "tsc --build src/tsconfig.json",
