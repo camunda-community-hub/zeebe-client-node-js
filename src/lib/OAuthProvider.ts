@@ -98,7 +98,7 @@ export class OAuthProvider {
 				body,
 				headers: {
 					'content-type': 'application/json',
-					'user-agent': `client: nodejs, version: ${pkg.version}`,
+					'user-agent': `zeebe-client-nodejs/${pkg.version}`,
 				},
 			})
 			//   console.log(res.body);
