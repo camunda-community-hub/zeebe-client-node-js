@@ -209,6 +209,7 @@ To mitigate against this, the Node client implements some client-side gRPC opera
 -   Operations retry, but only for [gRPC error codes 8 and 14](https://github.com/grpc/grpc/blob/master/doc/statuscodes.md) - indicating resource exhaustion (8) or transient network failure (14). Resource exhaustion occurs when the broker starts backpressure due to latency because of load. Network failure can be caused by passing in an unresolvable gateway address (`14: DNS Resolution failed`), or by the gateway not being ready yet (`14: UNAVAILABLE: failed to connect to all addresses`).
 -   Operations that fail for other reasons, such as deploying an invalid bpmn file or cancelling a workflow that does not exist, do not retry.
 -   Retry is enabled by default, and can be disabled by passing { retry: false } to the client constructor.
+-   Values for `retry`, `maxRetries` and `maxRetryTimeout` can configured through the environment variables `ZEEBE_CLIENT_RETRY`, `ZEEBE_CLIENT_MAX_RETRIES` and `ZEEBE_CLIENT_MAX_RETRY_TIMEOUT` respectively.
 -   `maxRetries` and `maxRetryTimeout` are also configurable through the constructor options. By default, if not supplied, the values are:
 
 ```TypeScript
