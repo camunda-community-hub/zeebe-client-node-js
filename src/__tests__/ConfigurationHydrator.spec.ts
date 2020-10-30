@@ -277,6 +277,21 @@ test('Can be unsecured via the environment', () => {
 	const conf = ConfigurationHydrator.configure('localhost:26600', {})
 	expect(conf.useTLS).toBe(true)
 })
+test('Retry can be configured via the environment', () => {
+	process.env.ZEEBE_CLIENT_RETRY = 'false'
+	const conf = ConfigurationHydrator.configure('localhost:26600', {})
+	expect(conf.retry).toBeFalsy()
+})
+test('Max Retries can be configured via the environment', () => {
+	process.env.ZEEBE_CLIENT_MAX_RETRIES = '25'
+	const conf = ConfigurationHydrator.configure('localhost:26600', {})
+	expect(conf.maxRetries).toBe(25)
+})
+test('Max Retry Timeout can be configured via the environment', () => {
+	process.env.ZEEBE_CLIENT_MAX_RETRY_TIMEOUT = '5'
+	const conf = ConfigurationHydrator.configure('localhost:26600', {})
+	expect(conf.maxRetryTimeout).toBe(5)
+})
 // const clientId = process.env.ZEEBE_CLIENT_ID
 // const clientSecret = process.env.ZEEBE_CLIENT_SECRET
 // const audience = process.env.ZEEBE_TOKEN_AUDIENCE
