@@ -15,13 +15,13 @@
 		"Uber",
 		"Cadence"
 	],
-	"homepage": "https://creditsenseau.github.io/zeebe-client-node-js/",
+	"homepage": "https://github.com/zeebe-io/zeebe-client-node-js",
 	"bugs": {
-		"url": "https://github.com/creditsenseau/zeebe-client-node-js/issues"
+		"url": "https://github.com/zeebe-io/zeebe-client-node-js/issues"
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/creditsenseau/zeebe-client-node-js"
+		"url": "https://github.com/zeebe-io/zeebe-client-node-js"
 	},
 	"main": "dist/index.js",
 	"bin": {
@@ -37,8 +37,7 @@
 		"test:local": "jest --runInBand --verbose true --detectOpenHandles local-integration",
 		"test:disconnect": "jest --runInBand --verbose true --detectOpenHandles disconnection",
 		"test&docs": "npm test && npm run docs",
-		"dev": "tsc-watch --onSuccess \"npm run test&docs\" -p tsconfig.json --outDir dist",
-		"docs": "typedoc --out ./docs --tsconfig ./tsconfig.json --excludePrivate --mode file --sourcefile-url-prefix \"https://github.com/creditsenseau/\""
+		"dev": "tsc-watch --onSuccess \"npm run test&docs\" -p tsconfig.json --outDir dist"
 	},
 	"husky": {
 		"hooks": {

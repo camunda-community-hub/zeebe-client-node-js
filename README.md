@@ -1,12 +1,11 @@
 # Zeebe Node.js Client
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![CircleCI](https://circleci.com/gh/creditsenseau/zeebe-client-node-js/tree/master.svg?style=svg)](https://circleci.com/gh/creditsenseau/zeebe-client-node-js/tree/master)
 ![Test on Camunda Cloud](https://github.com/jwulf/zeebe-client-node-js/workflows/Test%20on%20Camunda%20Cloud/badge.svg)
 
 This is a Node.js gRPC client for [Zeebe](https://zeebe.io). It is written in TypeScript and transpiled to JavaScript in the `dist` directory.
 
-Comprehensive API documentation is available [online](https://creditsenseau.github.io/zeebe-client-node-js/).
+Comprehensive API documentation is available [online](https://github.com/zeebe-io/zeebe-client-node-js).
 
 See [CHANGELOG.md](./CHANGELOG.md) to see what has changed with each release.
 
@@ -105,7 +104,7 @@ From 0.23.3, you can opt-in to use the pure JavaScript implementation [@grpc/grp
 
 To activate the pure JavaScript implementation, set `ZEEBE_NODE_PUREJS=true`.
 
-Please report any issues in [GitHub](https://github.com/creditsenseau/zeebe-client-node-js/issues).
+Please report any issues in [GitHub](https://github.com/zeebe-io/zeebe-client-node-js/issues).
 
 <a name = "type-difference"></a>
 
@@ -847,7 +846,7 @@ See [this blog post](http://joshwulf.com/blog/2020/03/zb-batch-worker/) for some
 
 ### Long polling
 
-With Zeebe 0.21 onward, long polling is supported for clients, and is used by default. Rather than polling continuously for work and getting nothing back, a client can poll once and leave the request open until work appears. This reduces network traffic and CPU utilization in the server. Every JobActivation Request is appended to the event log, so continuous polling can significantly impact broker performance, especially when an exporter is loaded (see [here](https://github.com/creditsenseau/zeebe-client-node-js/issues/64#issuecomment-520233275)).
+With Zeebe 0.21 onward, long polling is supported for clients, and is used by default. Rather than polling continuously for work and getting nothing back, a client can poll once and leave the request open until work appears. This reduces network traffic and CPU utilization in the server. Every JobActivation Request is appended to the event log, so continuous polling can significantly impact broker performance, especially when an exporter is loaded (see [here](https://github.com/zeebe-io/zeebe-client-node-js/issues/64#issuecomment-520233275)).
 
 The default long polling period is 30s.
 
