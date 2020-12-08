@@ -33,7 +33,7 @@ export interface ZBClientOptions {
 	stdout?: ZBCustomLogger
 	retry?: boolean
 	maxRetries?: number
-	maxRetryTimeout?: number
+	maxRetryTimeout?: MaybeTimeDuration
 	oAuth?: OAuthProviderConfig
 	basicAuth?: {
 		username: string

@@ -21,6 +21,9 @@ export class ConfigurationHydrator {
 			'ZEEBE_BASIC_AUTH_PASSWORD',
 			'ZEEBE_BASIC_AUTH_USERNAME',
 			'ZEEBE_NODE_EAGER_CONNECT',
+			'ZEEBE_CLIENT_RETRY',
+			'ZEEBE_CLIENT_MAX_RETRIES',
+			'ZEEBE_CLIENT_MAX_RETRY_TIMEOUT',
 		])
 	public static configure(
 		gatewayAddress: string | undefined,
@@ -37,6 +40,7 @@ export class ConfigurationHydrator {
 			...ConfigurationHydrator.getCamundaCloudConfig(options),
 			...ConfigurationHydrator.readTLSFromEnvironment(options),
 			...ConfigurationHydrator.getEagerStatus(options),
+			...ConfigurationHydrator.getRetryConfiguration(options),
 		}
 		return configuration
 	}
@@ -230,6 +234,23 @@ export class ConfigurationHydrator {
 					'false'
 				).toLocaleLowerCase() === 'true' ||
 				options?.eagerConnection === true,
+		}
+	}
+
+	private static getRetryConfiguration(options: ZBClientOptions | undefined) {
+		return {
+			retry:
+				(
+					ConfigurationHydrator.ENV().ZEEBE_CLIENT_RETRY || 'false'
+				).toLocaleLowerCase() === 'true' || options?.retry === true,
+			maxRetries: parseInt(
+				ConfigurationHydrator.ENV().ZEEBE_CLIENT_MAX_RETRIES,
+				10
+			),
+			maxRetryTimeout: parseInt(
+				ConfigurationHydrator.ENV().ZEEBE_CLIENT_MAX_RETRY_TIMEOUT,
+				10
+			),
 		}
 	}
 }

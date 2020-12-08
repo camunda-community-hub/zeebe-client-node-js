@@ -84,8 +84,13 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		ZBWorker<any, any, any> | ZBBatchWorker<any, any, any>
 	> = []
 	private retry: boolean
-	private maxRetries: number
-	private maxRetryTimeout: MaybeTimeDuration
+	private maxRetries: number = process.env.ZEEBE_CLIENT_MAX_RETRIES
+		? parseInt(process.env.ZEEBE_CLIENT_MAX_RETRIES, 10)
+		: ZBClient.DEFAULT_MAX_RETRIES
+	private maxRetryTimeout: MaybeTimeDuration = process.env
+		.ZEEBE_CLIENT_MAX_RETRY_TIMEOUT
+		? parseInt(process.env.ZEEBE_CLIENT_MAX_RETRY_TIMEOUT, 10)
+		: ZBClient.DEFAULT_MAX_RETRY_TIMEOUT
 	private oAuth?: OAuthProvider
 	private basicAuth?: ZB.BasicAuthConfig
 	private useTLS: boolean
@@ -191,11 +196,24 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		this.grpc = grpcClient
 		this.logger = log
 
-		this.retry = this.options.retry !== false
+		if (process.env.ZEEBE_CLIENT_RETRY) {
+			this.options.retry =
+				process.env.ZEEBE_CLIENT_RETRY === 'true' ? true : false
+		} else {
+			this.options.retry = this.options.retry !== false
+		}
+
+		this.retry = this.options.retry
 		this.maxRetries =
-			this.options.maxRetries || ZBClient.DEFAULT_MAX_RETRIES
+			this.maxRetries ||
+			this.options.maxRetries ||
+			ZBClient.DEFAULT_MAX_RETRIES
+
 		this.maxRetryTimeout =
-			this.options.maxRetryTimeout || ZBClient.DEFAULT_MAX_RETRY_TIMEOUT
+			Duration.seconds.from(
+				this.options.maxRetryTimeout || this.maxRetryTimeout
+			) || ZBClient.DEFAULT_MAX_RETRY_TIMEOUT
+
 		// Send command to broker to eagerly fail / prove connection.
 		// This is useful for, for example: the Node-Red client, which wants to
 		// display the connection status.
