@@ -1,5 +1,5 @@
 import { MaybeTimeDuration } from 'typed-duration'
-import { KeyedObject } from './interfaces'
+import { IInputVariables, IWorkflowVariables } from './interfaces'
 
 /**
  * Request object to send the broker to request jobs for the worker.
@@ -84,7 +84,7 @@ export interface ActivateJobsResponse {
 	jobs: ActivatedJob[]
 }
 
-export interface CreateWorkflowInstanceRequest<Variables = KeyedObject> {
+export interface CreateWorkflowInstanceRequest<Variables = IWorkflowVariables> {
 	bpmnProcessId: string
 	version?: number
 	variables: Variables
@@ -197,7 +197,7 @@ export interface ListWorkflowResponse {
 	readonly workflows: WorkflowMetadata[]
 }
 
-export interface PublishMessageRequest<Variables = KeyedObject> {
+export interface PublishMessageRequest<Variables = IInputVariables> {
 	/** Should match the "Message Name" in a BPMN Message Catch  */
 	name: string
 	/** The value to match with the field specified as "Subscription Correlation Key" in BPMN */
@@ -209,7 +209,7 @@ export interface PublishMessageRequest<Variables = KeyedObject> {
 	variables: Variables
 }
 
-export interface PublishStartMessageRequest<Variables = KeyedObject> {
+export interface PublishStartMessageRequest<Variables = IWorkflowVariables> {
 	/** Should match the "Message Name" in a BPMN Message Catch  */
 	name: string
 	/** The number of seconds for the message to buffer on the broker, awaiting correlation. Omit or set to zero for no buffering. */
@@ -240,12 +240,12 @@ export interface ThrowErrorRequest {
 	errorMessage: string
 }
 
-export interface CompleteJobRequest<Variables = KeyedObject> {
+export interface CompleteJobRequest<Variables = IWorkflowVariables> {
 	readonly jobKey: string
 	variables: Variables
 }
 
-export interface SetVariablesRequest<Variables = KeyedObject> {
+export interface SetVariablesRequest<Variables = IWorkflowVariables> {
 	/*
 	The unique identifier of a particular element; can be the workflow instance key (as
 	obtained during instance creation), or a given element, such as a service task (see

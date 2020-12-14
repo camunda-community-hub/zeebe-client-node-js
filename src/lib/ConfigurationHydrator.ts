@@ -1,5 +1,8 @@
+import fs from 'fs'
+import { Duration } from 'typed-duration'
 import { parse } from 'url'
 import { getEnv } from './EnvFunction'
+import { CustomSSL } from './GrpcClient'
 import * as ZB from './interfaces'
 import { Loglevel, ZBClientOptions } from './interfaces-published-contract'
 import { OAuthProviderConfig } from './OAuthProvider'
@@ -24,7 +27,11 @@ export class ConfigurationHydrator {
 			'ZEEBE_CLIENT_RETRY',
 			'ZEEBE_CLIENT_MAX_RETRIES',
 			'ZEEBE_CLIENT_MAX_RETRY_TIMEOUT',
+			'ZEEBE_CLIENT_SSL_ROOT_CERTS_PATH',
+			'ZEEBE_CLIENT_SSL_PRIVATE_KEY_PATH',
+			'ZEEBE_CLIENT_SSL_CERT_CHAIN_PATH',
 		])
+
 	public static configure(
 		gatewayAddress: string | undefined,
 		options: ZBClientOptions | undefined
@@ -33,6 +40,7 @@ export class ConfigurationHydrator {
 		const configuration = {
 			hostname: 'localhost',
 			port: '26500',
+			...ConfigurationHydrator.readCustomSSLFromEnvironment(),
 			...ConfigurationHydrator.readBasicAuthFromEnvironment(),
 			...ConfigurationHydrator.readOAuthFromEnvironment(gatewayAddress),
 			...ConfigurationHydrator.getGatewayFromEnvironment(),
@@ -73,6 +81,20 @@ export class ConfigurationHydrator {
 		const useTLS = options.useTLS ?? ConfigurationHydrator.getTlsFromEnv()
 		return {
 			useTLS,
+		}
+	}
+
+	private static readCustomSSLFromEnvironment(): Partial<CustomSSL> {
+		const rootCerts = ConfigurationHydrator.ENV()
+			.ZEEBE_CLIENT_SSL_ROOT_CERTS_PATH
+		const certChain = ConfigurationHydrator.ENV()
+			.ZEEBE_CLIENT_SSL_CERT_CHAIN_PATH
+		const privateKey = ConfigurationHydrator.ENV()
+			.ZEEBE_CLIENT_SSL_PRIVATE_KEY_PATH
+		return {
+			certChain: certChain ? fs.readFileSync(certChain) : undefined,
+			privateKey: privateKey ? fs.readFileSync(privateKey) : undefined,
+			rootCerts: rootCerts ? fs.readFileSync(rootCerts) : undefined,
 		}
 	}
 
@@ -238,19 +260,29 @@ export class ConfigurationHydrator {
 	}
 
 	private static getRetryConfiguration(options: ZBClientOptions | undefined) {
+		const maxRetries = parseInt(
+			ConfigurationHydrator.ENV().ZEEBE_CLIENT_MAX_RETRIES,
+			10
+		)
+		const maxRetryTimeout = parseInt(
+			ConfigurationHydrator.ENV().ZEEBE_CLIENT_MAX_RETRY_TIMEOUT,
+			10
+		)
+		const retryFromEnv = ConfigurationHydrator.ENV().ZEEBE_CLIENT_RETRY
+
 		return {
 			retry:
-				(
-					ConfigurationHydrator.ENV().ZEEBE_CLIENT_RETRY || 'false'
-				).toLocaleLowerCase() === 'true' || options?.retry === true,
-			maxRetries: parseInt(
-				ConfigurationHydrator.ENV().ZEEBE_CLIENT_MAX_RETRIES,
-				10
-			),
-			maxRetryTimeout: parseInt(
-				ConfigurationHydrator.ENV().ZEEBE_CLIENT_MAX_RETRY_TIMEOUT,
-				10
-			),
+				retryFromEnv?.toLocaleLowerCase() === 'false' ||
+				options?.retry === false
+					? false
+					: true,
+
+			maxRetries: isNaN(maxRetries)
+				? undefined
+				: Duration.seconds.from(maxRetries),
+			maxRetryTimeout: isNaN(maxRetryTimeout)
+				? undefined
+				: Duration.seconds.from(maxRetryTimeout),
 		}
 	}
 }

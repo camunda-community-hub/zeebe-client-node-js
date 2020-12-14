@@ -1,4 +1,5 @@
 import { MaybeTimeDuration } from 'typed-duration'
+import { CustomSSL } from './GrpcClient'
 import { OAuthProviderConfig } from './OAuthProvider'
 
 export interface CamundaCloudConfig {
@@ -48,4 +49,5 @@ export interface ZBClientOptions {
 	port?: string
 	onReady?: () => void
 	onConnectionError?: () => void
+	customSSL?: CustomSSL
 }

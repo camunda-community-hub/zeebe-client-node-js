@@ -88,7 +88,7 @@ export class ZBWorkerBase<
 		  >
 	protected cancelWorkflowOnException = false
 	private closeCallback?: () => void
-	private closePromise?: Promise<undefined>
+	private closePromise?: Promise<null>
 	private closing = false
 	private closed = false
 	private id = uuid.v4()
@@ -197,7 +197,7 @@ export class ZBWorkerBase<
 	 * Returns a promise that the worker has stopped accepting tasks and
 	 * has drained all current active tasks. Will reject if you try to call it more than once.
 	 */
-	public close(timeout?: number) {
+	public close(timeout?: number): Promise<null> {
 		if (this.closePromise) {
 			return this.closePromise
 		}
@@ -212,14 +212,14 @@ export class ZBWorkerBase<
 				this.jobStream?.cancel?.()
 				this.jobStream = undefined
 				this.logger.logDebug('Cancelled Job Stream')
-				resolve()
+				resolve(null)
 			} else {
 				this.capacityEmitter.once(CapacityEvent.Empty, async () => {
 					await this.grpcClient.close(timeout)
 					this.grpcClient.removeAllListeners()
 					this.emit(ConnectionStatusEvent.close)
 					this.removeAllListeners()
-					resolve()
+					resolve(null)
 				})
 			}
 		})

@@ -209,7 +209,7 @@ To mitigate against this, the Node client implements some client-side gRPC opera
 -   Operations that fail for other reasons, such as deploying an invalid bpmn file or cancelling a workflow that does not exist, do not retry.
 -   Retry is enabled by default, and can be disabled by passing { retry: false } to the client constructor.
 -   Values for `retry`, `maxRetries` and `maxRetryTimeout` can be configured via the environment variables `ZEEBE_CLIENT_RETRY`, `ZEEBE_CLIENT_MAX_RETRIES` and `ZEEBE_CLIENT_MAX_RETRY_TIMEOUT` respectively.
--   `maxRetries` and `maxRetryTimeout` are also configurable through the constructor options. By default, if not supplied, the values are:
+-   `maxRetries` and `maxRetryTimeout` are also configurable through the constructor options, or through environment variables. By default, if not supplied, the values are:
 
 ```TypeScript
 const { ZBClient, Duration } = require('zeebe-node')
@@ -219,6 +219,14 @@ const zbc = new ZBClient(gatewayAddress, {
     maxRetries: -1, // infinite retries
     maxRetryTimeout: Duration.seconds.of(5)
 })
+```
+
+The environment variables are:
+
+```
+ZEEBE_CLIENT_MAX_RETRIES
+ZEEBE_CLIENT_RETRY
+ZEEBE_CLIENT_MAX_RETRY_TIMEOUT
 ```
 
 Retry is provided by [promise-retry](https://www.npmjs.com/package/promise-retry), and the back-off strategy is simple ^2.
@@ -325,7 +333,7 @@ Enable a secure connection by setting `useTLS: true`:
 ```typescript
 const { ZBClient } = require('zeebe-node')
 
-const zbc = new ZBClient(tlsProxiedGatewayAddress, {
+const zbc = new ZBClient(tlsSecuredGatewayAddress, {
 	useTLS: true,
 })
 ```
@@ -335,6 +343,40 @@ Via environment variable:
 ```bash
 ZEEBE_SECURE_CONNECTION=true
 ```
+
+### Using a Self-signed Certificate
+
+You can use a self-signed SSL certificate with the Zeebe client. You need to provide the root certificates, the private key and the SSL cert chain as Buffers. You can read them in from a file and pass them into the ZBClient constructor:
+
+```
+const rootCertsPath = '/path/to/rootCerts'
+const privateKeyPath = '/path/to/privateKey'
+const certChainPath = '/path/to/certChain'
+
+const zbc = new ZBClient({
+    useTLS: true,
+    customSSL: {
+        rootCerts: rootCertsPath,
+        privateKey: privateKeyPath,
+        certChain: certChainPath
+    }
+})
+
+Or you can put the file paths into the environment in the following variables:
+
+```
+
+ZEEBE_CLIENT_SSL_ROOT_CERTS_PATH
+ZEEBE_CLIENT_SSL_PRIVATE_KEY_PATH
+ZEEBE_CLIENT_SSL_CERT_CHAIN_PATH
+
+# Enable TLS
+
+ZEEBE_SECURE_CONNECTION=true
+
+````
+
+In this case, they will be passed to the constructor automatically.
 
 <a name = "oauth"></a>
 
@@ -350,12 +392,11 @@ const zbc = new ZBClient("my-secure-broker.io:443", {
 		url: "https://your-auth-endpoint/oauth/token",
 		audience: "my-secure-broker.io",
 		clientId: "myClientId",
-		clientSecret:
-		"randomClientSecret",
+		clientSecret: "randomClientSecret",
 		cacheOnDisk: true
 	}
 }
-```
+````
 
 The `cacheOnDisk` option will cache the token on disk in `$HOME/.camunda`, which can be useful in development if you are restarting the service frequently, or are running in a serverless environment, like AWS Lambda.
 
@@ -434,6 +475,15 @@ Self-hosted or local broker (no TLS or OAuth):
 
 ```
 ZEEBE_ADDRESS
+```
+
+Self-hosted with self-signed SSL certificate:
+
+```
+ZEEBE_CLIENT_SSL_ROOT_CERTS_PATH
+ZEEBE_CLIENT_SSL_PRIVATE_KEY_PATH
+ZEEBE_CLIENT_SSL_CERT_CHAIN_PATH
+ZEEBE_SECURE_CONNECTION=true
 ```
 
 Self-hosted or local broker with OAuth + TLS:

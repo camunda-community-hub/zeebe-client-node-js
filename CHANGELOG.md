@@ -1,3 +1,14 @@
+# Version 0.25.1
+
+## New Features
+
+_New shiny stuff._
+
+-   The library now supports connecting to a gateway that has a self-signed certificate. See the TLS section of the README for details on configuration.
+-   Client-side retries are now configurable via the environment variables `ZEEBE_CLIENT_MAX_RETRIES`, `ZEEBE_CLIENT_RETRY`, and `ZEEBE_CLIENT_MAX_RETRY_TIMEOUT`. Thanks to [@jaykanth6](https://github.com/jaikanth6) for the [implementation](https://github.com/zeebe-io/zeebe-client-node-js/issues/157).
+
+-   The Generic types used for parameterising the Client and Worker have been renamed to improve the intellisense. Previously, the `WorkflowVariables`, `CustomHeaders`, and `OutputVariables` type parameters were aliased to `KeyedObject`. In VSCode, these all displayed in intellisense as `KeyedObject`, losing the semantics of each parameter. They now display in intellisense with the type parameter name.
+
 # Version 0.25.0
 
 ## Fixes
@@ -27,6 +38,8 @@ _Things that were broken and are now fixed._
 # Version 0.23.3
 
 ## Breaking Changes
+
+_Changes in APIs or behaviour that may affect existing applications that use zeebe-node._
 
 -   This version goes back to the C-based gRPC implementation. We found several issues with the pure JS gRPC implementation and the nghttp2 implementation in Node. The issues differ between Node versions, and are challenging to isolate, as they occur in the Node engine itself. By default, in this version, the Zeebe Node client uses the C-based gRPC client. If you want to participate in testing the pure JS client (bug reports welcome!), you can activate the pure JS gRPC client by setting `ZEEBE_NODE_PUREJS=true`.
 -   Prior to this release, the default value for `maxRetries` was 50 (about 2 minutes). This caused workers started more than 2 minutes before the broker to abandon connection attempts and fail to connect. With this release, retries are infinite by default.
