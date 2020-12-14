@@ -272,7 +272,7 @@ export class ZBWorkerBase<
 			retries?: number
 		) => this.failJob({ job, errorMessage, retries })
 
-		const succeedJob = (job: ZB.Job) => (completedVariables?: Partial<T>) =>
+		const succeedJob = (job: ZB.Job) => (completedVariables?: T) =>
 			this.completeJob(job.key, completedVariables ?? {})
 
 		const errorJob = (job: ZB.Job) => (
