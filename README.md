@@ -346,7 +346,7 @@ ZEEBE_SECURE_CONNECTION=true
 
 ### Using a Self-signed Certificate
 
-You can use a self-signed SSL certificate with the Zeebe client. You need to provide the root certificates, the private key and the SSL cert chain as Buffers. You can read them in from a file and pass them into the ZBClient constructor:
+You can use a self-signed SSL certificate with the Zeebe client. You need to provide the root certificates, the private key and the SSL cert chain as Buffers. You can pass them into the ZBClient constructor:
 
 ```
 const rootCertsPath = '/path/to/rootCerts'

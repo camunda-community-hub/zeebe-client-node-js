@@ -4,7 +4,7 @@
 
 _New shiny stuff._
 
--   The library now supports connecting to a gateway that has a self-signed certificate. See the TLS section of the README for details on configuration.
+-   The library now supports connecting to a gateway that has a self-signed certificate. See the TLS section of the README for details on configuration. See [#160](https://github.com/zeebe-io/zeebe-client-node-js/issues/160).
 -   Client-side retries are now configurable via the environment variables `ZEEBE_CLIENT_MAX_RETRIES`, `ZEEBE_CLIENT_RETRY`, and `ZEEBE_CLIENT_MAX_RETRY_TIMEOUT`. Thanks to [@jaykanth6](https://github.com/jaikanth6) for the [implementation](https://github.com/zeebe-io/zeebe-client-node-js/issues/157).
 
 -   The Generic types used for parameterising the Client and Worker have been renamed to improve the intellisense. Previously, the `WorkflowVariables`, `CustomHeaders`, and `OutputVariables` type parameters were aliased to `KeyedObject`. In VSCode, these all displayed in intellisense as `KeyedObject`, losing the semantics of each parameter. They now display in intellisense with the type parameter name.
