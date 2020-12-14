@@ -107,15 +107,24 @@ export interface JSONDoc {
 	[key: string]: JSON | undefined
 }
 
-export type InputVariables = KeyedObject
-export type WorkflowVariables = KeyedObject
-export type OutputVariables = KeyedObject
-export type CustomHeaders = KeyedObject
+export interface IInputVariables {
+	[key: string]: any
+}
+
+export interface IWorkflowVariables {
+	[key: string]: any
+}
+export interface IOutputVariables {
+	[key: string]: any
+}
+export interface ICustomHeaders {
+	[key: string]: any
+}
 
 export type ZBWorkerTaskHandler<
-	WorkerInputVariables = InputVariables,
-	CustomHeaderShape = CustomHeaders,
-	WorkerOutputVariables = OutputVariables
+	WorkerInputVariables = IInputVariables,
+	CustomHeaderShape = ICustomHeaders,
+	WorkerOutputVariables = IOutputVariables
 > = (
 	job: Readonly<Job<WorkerInputVariables, CustomHeaderShape>>,
 	complete: CompleteFn<WorkerOutputVariables>,
@@ -144,7 +153,10 @@ export interface ZBLoggerConfig extends ZBLoggerOptions {
 
 export type ConnectionErrorHandler = (error?: any) => void
 
-export interface Job<Variables = KeyedObject, CustomHeaderShape = KeyedObject> {
+export interface Job<
+	Variables = IInputVariables,
+	CustomHeaderShape = ICustomHeaders
+> {
 	/** The key, a unique identifier for the job */
 	readonly key: string
 	/**
@@ -183,7 +195,7 @@ export interface Job<Variables = KeyedObject, CustomHeaderShape = KeyedObject> {
 	readonly variables: Readonly<Variables>
 }
 
-export interface ZBWorkerOptions<InputVars = any> {
+export interface ZBWorkerOptions<InputVars = IInputVariables> {
 	/**
 	 * Max concurrent tasks for this worker. Default 32.
 	 */
@@ -222,9 +234,9 @@ export interface ZBWorkerOptions<InputVars = any> {
 }
 
 export type BatchedJob<
-	Variables = KeyedObject,
-	Headers = KeyedObject,
-	Output = KeyedObject
+	Variables = IInputVariables,
+	Headers = ICustomHeaders,
+	Output = IOutputVariables
 > = Job<Variables, Headers> & CompleteFn<Output>
 
 export type ZBBatchWorkerTaskHandler<V, H, O> = (

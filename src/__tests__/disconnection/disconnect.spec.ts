@@ -25,7 +25,7 @@ test('reconnects after a pod reschedule', async done => {
 	let readyCount = 0
 	let errorCount = 0
 	const delay = timeout =>
-		new Promise(res => setTimeout(() => res(), timeout))
+		new Promise(res => setTimeout(() => res(null), timeout))
 
 	// tslint:disable-next-line: no-console
 	log('##### Starting container') // @DEBUG
@@ -134,7 +134,7 @@ test('a worker that started first, connects to a broker that starts later', asyn
 	let errorCount = 0
 
 	const delay = timeout =>
-		new Promise(res => setTimeout(() => res(), timeout))
+		new Promise(res => setTimeout(() => res(null), timeout))
 
 	const zbc = new ZBClient(`localhost`)
 	worker = zbc

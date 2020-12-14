@@ -7,9 +7,9 @@ import {
 } from '../lib/ZBWorkerBase'
 
 export class ZBBatchWorker<
-	InputVariables = ZB.InputVariables,
-	Headers = ZB.CustomHeaders,
-	OutputVariables = ZB.OutputVariables
+	InputVariables = ZB.IInputVariables,
+	Headers = ZB.ICustomHeaders,
+	OutputVariables = ZB.IOutputVariables
 > extends ZBWorkerBase<InputVariables, Headers, OutputVariables> {
 	private jobBatchMaxTime: number
 	private jobBuffer: { batch: (job: any) => void }

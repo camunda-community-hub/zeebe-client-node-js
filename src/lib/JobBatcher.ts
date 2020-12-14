@@ -1,9 +1,9 @@
 import { ZBBatchWorker } from '../zb/ZBBatchWorker'
 import {
 	BatchedJob,
-	CustomHeaders,
-	InputVariables,
-	OutputVariables,
+	ICustomHeaders,
+	IInputVariables,
+	IOutputVariables,
 	ZBBatchWorkerTaskHandler,
 } from './interfaces'
 import { Queue } from './Queue'
@@ -33,7 +33,9 @@ export class JobBatcher {
 	}
 
 	public batch(
-		batch: Array<BatchedJob<InputVariables, CustomHeaders, OutputVariables>>
+		batch: Array<
+			BatchedJob<IInputVariables, ICustomHeaders, IOutputVariables>
+		>
 	) {
 		if (!this.batchExecutionTimerHandle) {
 			this.batchExecutionTimerHandle = setTimeout(

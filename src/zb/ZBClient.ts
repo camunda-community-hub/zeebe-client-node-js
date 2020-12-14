@@ -16,6 +16,7 @@ import { ConfigurationHydrator } from '../lib/ConfigurationHydrator'
 import { ConnectionFactory } from '../lib/ConnectionFactory'
 import { readDefinitionFromFile } from '../lib/deployWorkflow/impure'
 import { bufferOrFiles, mapThese } from '../lib/deployWorkflow/pure'
+import { CustomSSL } from '../lib/GrpcClient'
 import * as ZB from '../lib/interfaces'
 // tslint:disable-next-line: no-duplicate-imports
 import {
@@ -95,6 +96,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	private basicAuth?: ZB.BasicAuthConfig
 	private useTLS: boolean
 	private stdout: ZBCustomLogger
+	private customSSL?: CustomSSL
 
 	/**
 	 *
@@ -112,18 +114,17 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 			gatewayAddress = undefined
 		}
 
-		const opts = options ? options : {}
-		this.options = {
+		const constructorOptionsWithDefaults = {
 			longPoll: ZBClient.DEFAULT_LONGPOLL_PERIOD,
 			pollInterval: ZBClient.DEFAULT_POLL_INTERVAL,
-			...opts,
-			retry: (opts as any).retry !== false,
+			...(options ? options : {}),
+			retry: options?.retry !== false,
 		}
-		this.options.loglevel =
+		constructorOptionsWithDefaults.loglevel =
 			(process.env.ZEEBE_NODE_LOG_LEVEL as Loglevel) ||
-			this.options.loglevel ||
+			constructorOptionsWithDefaults.loglevel ||
 			'INFO'
-		this.loglevel = this.options.loglevel
+		this.loglevel = constructorOptionsWithDefaults.loglevel
 
 		const logTypeFromEnvironment = () =>
 			({
@@ -131,13 +132,16 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 				SIMPLE: ZBSimpleLogger,
 			}[process.env.ZEEBE_NODE_LOG_TYPE || 'NONE'])
 
-		this.options.stdout =
-			this.options.stdout || logTypeFromEnvironment() || ZBSimpleLogger
-		this.stdout = this.options.stdout!
+		constructorOptionsWithDefaults.stdout =
+			constructorOptionsWithDefaults.stdout ||
+			logTypeFromEnvironment() ||
+			ZBSimpleLogger
+
+		this.stdout = constructorOptionsWithDefaults.stdout!
 
 		this.options = ConfigurationHydrator.configure(
 			gatewayAddress,
-			this.options
+			constructorOptionsWithDefaults
 		)
 
 		this.gatewayAddress = `${this.options.hostname}:${this.options.port}`
@@ -153,6 +157,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		this.useTLS =
 			this.options.useTLS === true ||
 			(!!this.options.oAuth && this.options.useTLS !== false)
+		this.customSSL = this.options.customSSL
 		this.basicAuth = this.options.basicAuth
 		this.connectionTolerance = Duration.milliseconds.from(
 			this.options.connectionTolerance || this.connectionTolerance
@@ -196,23 +201,12 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		this.grpc = grpcClient
 		this.logger = log
 
-		if (process.env.ZEEBE_CLIENT_RETRY) {
-			this.options.retry =
-				process.env.ZEEBE_CLIENT_RETRY === 'true' ? true : false
-		} else {
-			this.options.retry = this.options.retry !== false
-		}
-
-		this.retry = this.options.retry
+		this.retry = this.options.retry!
 		this.maxRetries =
-			this.maxRetries ||
-			this.options.maxRetries ||
-			ZBClient.DEFAULT_MAX_RETRIES
+			this.options.maxRetries || ZBClient.DEFAULT_MAX_RETRIES
 
 		this.maxRetryTimeout =
-			Duration.seconds.from(
-				this.options.maxRetryTimeout || this.maxRetryTimeout
-			) || ZBClient.DEFAULT_MAX_RETRY_TIMEOUT
+			this.options.maxRetryTimeout || ZBClient.DEFAULT_MAX_RETRY_TIMEOUT
 
 		// Send command to broker to eagerly fail / prove connection.
 		// This is useful for, for example: the Node-Red client, which wants to
@@ -235,8 +229,8 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	}
 
 	public activateJobs<
-		Variables = ZB.KeyedObject,
-		CustomHeaders = ZB.KeyedObject
+		Variables = ZB.IInputVariables,
+		CustomHeaders = ZB.ICustomHeaders
 	>(request: Grpc.ActivateJobsRequest): Promise<ZB.Job[]> {
 		return new Promise(async (resolve, reject) => {
 			try {
@@ -269,9 +263,9 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	}
 
 	public createBatchWorker<
-		WorkerInputVariables = ZB.InputVariables,
-		CustomHeaderShape = ZB.CustomHeaders,
-		WorkerOutputVariables = ZB.OutputVariables
+		WorkerInputVariables = ZB.IInputVariables,
+		CustomHeaderShape = ZB.ICustomHeaders,
+		WorkerOutputVariables = ZB.IOutputVariables
 	>(
 		conf: ZB.ZBBatchWorkerConfig<
 			WorkerInputVariables,
@@ -341,9 +335,9 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	}
 
 	public createWorker<
-		WorkerInputVariables = ZB.InputVariables,
-		CustomHeaderShape = ZB.CustomHeaders,
-		WorkerOutputVariables = ZB.OutputVariables
+		WorkerInputVariables = ZB.IInputVariables,
+		CustomHeaderShape = ZB.ICustomHeaders,
+		WorkerOutputVariables = ZB.IOutputVariables
 	>(
 		config: ZB.ZBWorkerConfig<
 			WorkerInputVariables,
@@ -352,9 +346,9 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		>
 	): ZBWorker<WorkerInputVariables, CustomHeaderShape, WorkerOutputVariables>
 	public createWorker<
-		WorkerInputVariables = ZB.InputVariables,
-		CustomHeaderShape = ZB.CustomHeaders,
-		WorkerOutputVariables = ZB.OutputVariables
+		WorkerInputVariables = ZB.IInputVariables,
+		CustomHeaderShape = ZB.ICustomHeaders,
+		WorkerOutputVariables = ZB.IOutputVariables
 	>(
 		id: string | null,
 		taskType: string,
@@ -367,9 +361,9 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		onConnectionError?: ZB.ConnectionErrorHandler | undefined
 	): ZBWorker<WorkerInputVariables, CustomHeaderShape, WorkerOutputVariables>
 	public createWorker<
-		WorkerInputVariables = ZB.InputVariables,
-		CustomHeaderShape = ZB.CustomHeaders,
-		WorkerOutputVariables = ZB.OutputVariables
+		WorkerInputVariables = ZB.IInputVariables,
+		CustomHeaderShape = ZB.ICustomHeaders,
+		WorkerOutputVariables = ZB.IOutputVariables
 	>(
 		taskType: string,
 		taskHandler: ZB.ZBWorkerTaskHandler<
@@ -381,9 +375,9 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		onConnectionError?: ZB.ConnectionErrorHandler | undefined
 	): ZBWorker<WorkerInputVariables, CustomHeaderShape, WorkerOutputVariables>
 	public createWorker<
-		WorkerInputVariables = ZB.InputVariables,
-		CustomHeaderShape = ZB.CustomHeaders,
-		WorkerOutputVariables = ZB.OutputVariables
+		WorkerInputVariables = ZB.IInputVariables,
+		CustomHeaderShape = ZB.ICustomHeaders,
+		WorkerOutputVariables = ZB.IOutputVariables
 	>(
 		idOrTaskTypeOrConfig:
 			| string
@@ -482,7 +476,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	 * @returns Promise
 	 * @memberof ZBClient
 	 */
-	public async close(timeout?: number) {
+	public async close(timeout?: number): Promise<null> {
 		this.closePromise =
 			this.closePromise ||
 			new Promise(async resolve => {
@@ -493,7 +487,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 				this.emit(ConnectionStatusEvent.close)
 				this.grpc.removeAllListeners()
 				this.removeAllListeners()
-				resolve()
+				resolve(null)
 			})
 		return this.closePromise
 	}
@@ -516,16 +510,16 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	}
 
 	// tslint:disable: no-object-literal-type-assertion
-	public createWorkflowInstance<Variables = ZB.WorkflowVariables>(
+	public createWorkflowInstance<Variables = ZB.IWorkflowVariables>(
 		bpmnProcessId: string,
 		variables: Variables
 	): Promise<Grpc.CreateWorkflowInstanceResponse>
-	public createWorkflowInstance<Variables = ZB.WorkflowVariables>(config: {
+	public createWorkflowInstance<Variables = ZB.IWorkflowVariables>(config: {
 		bpmnProcessId: string
 		variables: Variables
 		version: number
 	}): Promise<Grpc.CreateWorkflowInstanceResponse>
-	public createWorkflowInstance<Variables = ZB.WorkflowVariables>(
+	public createWorkflowInstance<Variables = ZB.IWorkflowVariables>(
 		configOrbpmnProcessId: string | CreateWorkflowInstance<Variables>,
 		variables?: Variables
 	): Promise<Grpc.CreateWorkflowInstanceResponse> {
@@ -559,21 +553,21 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	}
 
 	public createWorkflowInstanceWithResult<
-		Variables = ZB.WorkflowVariables,
-		Result = ZB.OutputVariables
+		Variables = ZB.IWorkflowVariables,
+		Result = ZB.IOutputVariables
 	>(
 		config: CreateWorkflowInstanceWithResult<Variables>
 	): Promise<Grpc.CreateWorkflowInstanceWithResultResponse<Result>>
 	public createWorkflowInstanceWithResult<
-		Variables = ZB.WorkflowVariables,
-		Result = ZB.OutputVariables
+		Variables = ZB.IWorkflowVariables,
+		Result = ZB.IOutputVariables
 	>(
 		bpmnProcessId: string,
 		variables: Variables
 	): Promise<Grpc.CreateWorkflowInstanceWithResultResponse<Result>>
 	public createWorkflowInstanceWithResult<
-		Variables = ZB.WorkflowVariables,
-		Result = ZB.OutputVariables
+		Variables = ZB.IWorkflowVariables,
+		Result = ZB.IOutputVariables
 	>(
 		configOrBpmnProcessId:
 			| CreateWorkflowInstanceWithResult<Variables>
@@ -668,8 +662,8 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	 * Publish a message to the broker for correlation with a workflow instance.
 	 * @param publishMessageRequest - The message to publish.
 	 */
-	public publishMessage<T = ZB.WorkflowVariables>(
-		publishMessageRequest: Grpc.PublishMessageRequest<T>
+	public publishMessage<WorkflowVariables = ZB.IWorkflowVariables>(
+		publishMessageRequest: Grpc.PublishMessageRequest<WorkflowVariables>
 	): Promise<void> {
 		return this.executeOperation('publishMessage', () =>
 			this.grpc.publishMessageSync(
@@ -682,8 +676,10 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	 * Publish a message to the broker for correlation with a workflow message start event.
 	 * @param publishStartMessageRequest - The message to publish.
 	 */
-	public publishStartMessage<T = ZB.WorkflowVariables>(
-		publishStartMessageRequest: Grpc.PublishStartMessageRequest<T>
+	public publishStartMessage<WorkflowVariables = ZB.IWorkflowVariables>(
+		publishStartMessageRequest: Grpc.PublishStartMessageRequest<
+			WorkflowVariables
+		>
 	): Promise<void> {
 		/**
 		 * The hash of the correlationKey is used to determine the partition where this workflow will start.
@@ -713,7 +709,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		)
 	}
 
-	public setVariables<Variables = ZB.WorkflowVariables>(
+	public setVariables<Variables = ZB.IWorkflowVariables>(
 		request: Grpc.SetVariablesRequest<Variables>
 	): Promise<void> {
 		/*
@@ -773,6 +769,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 				connectionTolerance: Duration.milliseconds.from(
 					this.connectionTolerance
 				),
+				customSSL: this.customSSL,
 				host: this.gatewayAddress,
 				loglevel: this.loglevel,
 				namespace: grpcConfig.namespace,

@@ -15,6 +15,7 @@ import {
 	loadPackageDefinition as loadPackageDefinitionC,
 	Metadata as MetadataC,
 	status as statusC,
+	VerifyOptions,
 } from 'grpc'
 import { Duration, MaybeTimeDuration } from 'typed-duration'
 import { BasicAuthConfig } from './interfaces'
@@ -137,6 +138,14 @@ export interface GrpcClientCtor {
 	tasktype?: string
 	useTLS: boolean
 	stdout: any
+	customSSL?: CustomSSL
+}
+
+export interface CustomSSL {
+	rootCerts?: Buffer
+	privateKey?: Buffer
+	certChain?: Buffer
+	verifyOptions?: VerifyOptions
 }
 
 interface GrpcStreamError {
@@ -173,6 +182,7 @@ export class GrpcClient extends EventEmitter {
 		protoPath,
 		service,
 		useTLS,
+		customSSL,
 	}: GrpcClientCtor) {
 		super()
 		this.host = host
@@ -204,7 +214,12 @@ export class GrpcClient extends EventEmitter {
 
 		const listMethods = this.packageDefinition[`${packageName}.${service}`]
 		const channelCredentials = useTLS
-			? credentials.createSsl()
+			? credentials.createSsl(
+					customSSL?.rootCerts,
+					customSSL?.privateKey,
+					customSSL?.certChain,
+					customSSL?.verifyOptions
+			  )
 			: credentials.createInsecure()
 		// Options documented here: https://github.com/grpc/grpc/blob/master/include/grpc/impl/codegen/grpc_types.h
 		this.client = new proto[service](host, channelCredentials, {
@@ -423,7 +438,7 @@ export class GrpcClient extends EventEmitter {
 		return this.listNameMethods
 	}
 
-	public close(timeout = 5000) {
+	public close(timeout = 5000): Promise<null> {
 		const STATE_SHUTDOWN = 4
 		const isClosed = state => state === STATE_SHUTDOWN
 
@@ -450,7 +465,7 @@ export class GrpcClient extends EventEmitter {
 			if (closed || alreadyClosed) {
 				this.channelClosed = true
 				this.emit(MiddlewareSignals.Log.Info, `Grpc channel closed`)
-				return resolve() // setTimeout(() => resolve(), 2000)
+				return resolve(null) // setTimeout(() => resolve(), 2000)
 			}
 
 			this.emit(
@@ -487,7 +502,7 @@ export class GrpcClient extends EventEmitter {
 						)
 					}
 					if (alreadyClosed) {
-						return resolve()
+						return resolve(null)
 					}
 				}
 			)
