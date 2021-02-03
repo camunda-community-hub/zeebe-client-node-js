@@ -19,3 +19,9 @@ Try this for the insane level of trace logging:
 ```
 DEBUG=grpc,worker GRPC_TRACE=all GRPC_VERBOSITY=DEBUG jest Worker-LongPoll --detectOpenHandles
 ```
+
+To log from the Node engine itself (useful in tracking down grpc issues in grpc-js):
+
+```
+NODE_DEBUG=http2 GRPC_TRACE=channel,call_stream GRPC_VERBOSITY=DEBUG ZEEBE_NODE_LOGLEVEL=debug ZEEBE_NODE_PUREJS=true npm run test:integration
+```

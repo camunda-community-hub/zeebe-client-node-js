@@ -1,3 +1,23 @@
+# Version 0.26.0
+
+## New Features
+
+_New shiny stuff._
+
+-   Upgraded the `grpc`, `@grpc/grpc-js` and `@grpc/proto` dependencies to the latest releases.
+
+## Breaking Changes
+
+_Changes in APIs or behaviour that may affect existing applications that use zeebe-node._
+
+-   The type of the `complete.success` parameter is changed from `Partial<T>` to `T`. This gives you an exhaustive check on this function in a typed worker. If you use the type parameters on `createWorker` and your code relies on the previous optional nature of the payload fields, you will need to change the type signature in your code. See [#198](https://github.com/zeebe-io/zeebe-client-node-js/issues/198)
+
+## Fixes
+
+_Things that were broken and are now fixed._
+
+-   A broken link in the README TOC is fixed. Thanks to [@nwittstruck](https://github.com/nwittstruck) for the PR! See [#200](https://github.com/zeebe-io/zeebe-client-node-js/pull/200).
+
 # Version 0.25.1
 
 ## New Features
