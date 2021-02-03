@@ -63,9 +63,7 @@ export interface CompleteFn<WorkerOutputVariables> {
 	 * Complete the job with a success, optionally passing in a state update to merge
 	 * with the workflow variables on the broker.
 	 */
-	success: (
-		updatedVariables?: Partial<WorkerOutputVariables>
-	) => Promise<boolean>
+	success: (updatedVariables?: WorkerOutputVariables) => Promise<boolean>
 	/**
 	 * Fail the job with an informative message as to the cause. Optionally pass in a
 	 * value remaining retries. If no value is passed for retries then the current retry
