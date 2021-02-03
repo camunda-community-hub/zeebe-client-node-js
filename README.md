@@ -364,16 +364,14 @@ const zbc = new ZBClient({
 
 Or you can put the file paths into the environment in the following variables:
 
-```
-
 ZEEBE_CLIENT_SSL_ROOT_CERTS_PATH
 ZEEBE_CLIENT_SSL_PRIVATE_KEY_PATH
 ZEEBE_CLIENT_SSL_CERT_CHAIN_PATH
+```
 
 # Enable TLS
-
+```
 ZEEBE_SECURE_CONNECTION=true
-
 ````
 
 In this case, they will be passed to the constructor automatically.
