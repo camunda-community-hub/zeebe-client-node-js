@@ -370,9 +370,10 @@ ZEEBE_CLIENT_SSL_CERT_CHAIN_PATH
 ```
 
 # Enable TLS
+
 ```
 ZEEBE_SECURE_CONNECTION=true
-````
+```
 
 In this case, they will be passed to the constructor automatically.
 
@@ -394,7 +395,7 @@ const zbc = new ZBClient("my-secure-broker.io:443", {
 		cacheOnDisk: true
 	}
 }
-````
+```
 
 The `cacheOnDisk` option will cache the token on disk in `$HOME/.camunda`, which can be useful in development if you are restarting the service frequently, or are running in a serverless environment, like AWS Lambda.
 

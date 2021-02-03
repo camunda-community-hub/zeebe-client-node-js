@@ -9,3 +9,4 @@ yolo.bpmn
 crash-*.log
 camunda-cloud.env
 tsconfig.tsbuildinfo
+.env
