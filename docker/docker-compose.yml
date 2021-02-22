@@ -18,7 +18,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
 
   zeebe:
-    image: camunda/zeebe:0.22.0-alpha1
+    image: camunda/zeebe:0.26.1
     labels:
       # Resolvable name, for routing the incoming connections
       - "traefik.http.routers.zeebe.rule=Host(`zeebe.docker.localhost`)"
