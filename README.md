@@ -4,7 +4,7 @@
 
 ![Lifecycle](https://img.shields.io/badge/Lifecycle-Stable-brightgreen)
 
-![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ![Test on Camunda Cloud](https://github.com/jwulf/zeebe-client-node-js/workflows/Test%20on%20Camunda%20Cloud/badge.svg)
 
@@ -1300,13 +1300,7 @@ npm t
 
 Integration tests are in the `src/__tests__/integration` directory.
 
-They require a Zeebe broker to run. You can run them using the [Circle CI CLI](https://circleci.com/docs/2.0/local-cli/):
-
-```bash
-circleci local execute -c .circleci/config.yml --job test
-```
-
-Or you can start a dockerised broker:
+They require a Zeebe broker to run. You can start a dockerised broker:
 
 ```bash
 cd docker
