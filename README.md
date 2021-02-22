@@ -1,6 +1,11 @@
 # Zeebe Node.js Client
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+![Community Extension](https://img.shields.io/badge/Community%20Extension-An%20open%20source%20community%20maintained%20project-FF4700)
+
+![Lifecycle](https://img.shields.io/badge/Lifecycle-Incubating-blue)
+
+![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
 ![Test on Camunda Cloud](https://github.com/jwulf/zeebe-client-node-js/workflows/Test%20on%20Camunda%20Cloud/badge.svg)
 
 This is a Node.js gRPC client for [Zeebe](https://zeebe.io). It is written in TypeScript and transpiled to JavaScript in the `dist` directory.
