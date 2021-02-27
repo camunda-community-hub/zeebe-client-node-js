@@ -140,14 +140,25 @@ export interface CreateWorkflowInstanceWithResultResponse<Result> {
 	variables: Result
 }
 
+// Describes the Raft role of the broker for a given partition
 export enum PartitionBrokerRole {
 	LEADER = 0,
 	BROKER = 1,
+	INACTIVE = 2,
+}
+
+// Describes the current health of the partition
+export enum PartitionBrokerHealth {
+	HEALTHY = 0,
+	UNHEALTHY = 1,
 }
 
 export interface Partition {
 	partitionId: number
+	// the role of the broker for this partition
 	role: PartitionBrokerRole
+	// the health of this partition
+	health: PartitionBrokerHealth
 }
 
 export interface BrokerInfo {
@@ -162,6 +173,7 @@ export interface TopologyResponse {
 	readonly clusterSize: number
 	readonly partitionsCount: number
 	readonly replicationFactor: number
+	readonly gatewayVersion: string
 }
 
 export enum ResourceType {
@@ -207,6 +219,11 @@ export interface PublishMessageRequest<Variables = IInputVariables> {
 	/** Unique ID for this message */
 	messageId?: string
 	variables: Variables
+}
+
+export interface PublishMessageResponse {
+	// the unique ID of the message that was published
+	key: number
 }
 
 export interface PublishStartMessageRequest<Variables = IWorkflowVariables> {

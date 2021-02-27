@@ -25,7 +25,7 @@ export class ZBWorker<
 		jobs: Array<ZB.Job<WorkerInputVariables, CustomHeaderShape>>
 	) {
 		// Call task handler for each new job
-		jobs.forEach(job => this.handleJob(job))
+		jobs.forEach(async job => this.handleJob(job))
 	}
 
 	protected async handleJob(

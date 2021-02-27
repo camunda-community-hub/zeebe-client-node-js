@@ -11,6 +11,7 @@ import {
 	DeployWorkflowResponse,
 	FailJobRequest,
 	PublishMessageRequest,
+	PublishMessageResponse,
 	SetVariablesRequest,
 	ThrowErrorRequest,
 	TopologyResponse,
@@ -334,7 +335,7 @@ export interface ZBGrpc extends GrpcClient {
 	activateJobsStream: any
 	publishMessageSync(
 		publishMessageRequest: PublishMessageRequest
-	): Promise<void>
+	): Promise<PublishMessageResponse>
 	throwErrorSync(throwErrorRequest: ThrowErrorRequest): Promise<void>
 	topologySync(): Promise<TopologyResponse>
 	updateJobRetriesSync(
