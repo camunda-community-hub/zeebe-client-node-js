@@ -151,14 +151,16 @@ message WorkflowRequestObject {
     // using the file extension of the name field
     FILE = 0;
     BPMN = 1; // extension 'bpmn'
-    YAML = 2; // extension 'yaml'
-  }
+    YAML = 2 [deprecated = true]; // extension 'yaml'; deprecated as of release 1.0
+}
 
   // the resource basename, e.g. myProcess.bpmn
   string name = 1;
   // the resource type; if set to BPMN or YAML then the file extension
   // is ignored
-  ResourceType type = 2;
+  // As of release 1.0, YAML support was removed and BPMN is the only supported resource type.
+  // The field was kept to not break clients.
+  ResourceType type = 2 [deprecated = true];
   // the process definition as a UTF8-encoded string
   bytes definition = 3;
 }
@@ -225,6 +227,8 @@ message PublishMessageRequest {
 }
 
 message PublishMessageResponse {
+  // the unique ID of the message that was published
+  int64 key = 1;
 }
 
 message ResolveIncidentRequest {
@@ -247,6 +251,8 @@ message TopologyResponse {
   int32 partitionsCount = 3;
   // configured replication factor for this cluster
   int32 replicationFactor = 4;
+  // gateway version
+  string gatewayVersion = 5;
 }
 
 message BrokerInfo {
@@ -265,12 +271,21 @@ message Partition {
   enum PartitionBrokerRole {
     LEADER = 0;
     FOLLOWER = 1;
+    INACTIVE = 2;
+  }
+
+  // Describes the current health of the partition
+  enum PartitionBrokerHealth {
+    HEALTHY = 0;
+    UNHEALTHY = 1;
   }
 
   // the unique ID of this partition
   int32 partitionId = 1;
   // the role of the broker for this partition
   PartitionBrokerRole role = 2;
+  // the health of this partition
+  PartitionBrokerHealth health = 3;
 }
 
 message UpdateJobRetriesRequest {

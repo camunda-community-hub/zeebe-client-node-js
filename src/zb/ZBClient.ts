@@ -664,7 +664,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	 */
 	public publishMessage<WorkflowVariables = ZB.IWorkflowVariables>(
 		publishMessageRequest: Grpc.PublishMessageRequest<WorkflowVariables>
-	): Promise<void> {
+	): Promise<Grpc.PublishMessageResponse> {
 		return this.executeOperation('publishMessage', () =>
 			this.grpc.publishMessageSync(
 				stringifyVariables(publishMessageRequest)
@@ -680,7 +680,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		publishStartMessageRequest: Grpc.PublishStartMessageRequest<
 			WorkflowVariables
 		>
-	): Promise<void> {
+	): Promise<Grpc.PublishMessageResponse> {
 		/**
 		 * The hash of the correlationKey is used to determine the partition where this workflow will start.
 		 * So we assign a random uuid to balance workflow instances created via start message across partitions.

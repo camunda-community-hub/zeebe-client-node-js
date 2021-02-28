@@ -4,3 +4,5 @@ guide
 src
 design
 docs
+.env
+*.env
