@@ -1,6 +1,6 @@
 import { v4 as uuid } from 'uuid'
-import { ZBClient } from '../..'
-import { createUniqueTaskType } from '../../lib/createUniqueTaskType'
+import { ZBClient } from '../../..'
+import { createUniqueTaskType } from '../../../lib/createUniqueTaskType'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 jest.setTimeout(45000)
@@ -30,7 +30,7 @@ test('Can start a workflow with a message', async done => {
 	const randomId = uuid()
 
 	// Wait 1 second to make sure the deployment is complete
-	await new Promise(res => setTimeout(() => res(), 1000))
+	await new Promise(res => setTimeout(() => res(null), 1000))
 
 	await zbc.publishStartMessage({
 		name: messages['MSG-START_JOB'],

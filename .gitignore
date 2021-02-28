@@ -10,3 +10,4 @@ crash-*.log
 camunda-cloud.env
 tsconfig.tsbuildinfo
 .env
+ignore-this

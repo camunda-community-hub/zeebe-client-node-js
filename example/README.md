@@ -1,11 +1,11 @@
 # Example Code
 
-## Deploy Example Workflow
+## Deploy Example Process
 
-To deploy the example workflow:
+To deploy the example process:
 
 ```bash
-node workflows.js
+node processs.js
 ```
 
 ## Start Example Worker
@@ -16,10 +16,10 @@ To start a example worker:
 node worker.js
 ```
 
-## Create Example Workflow Instances
+## Create Example Process Instances
 
-To create example workflow instances:
+To create example process instances:
 
 ```bash
-node start-workflow-instance.js
+node start-process-instance.js
 ```

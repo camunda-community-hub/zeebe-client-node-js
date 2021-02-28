@@ -6,7 +6,7 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-![Test on Camunda Cloud](https://github.com/jwulf/zeebe-client-node-js/workflows/Test%20on%20Camunda%20Cloud/badge.svg)
+![Test on Camunda Cloud](https://github.com/jwulf/zeebe-client-node-js/processes/Test%20on%20Camunda%20Cloud/badge.svg)
 
 This is a Node.js gRPC client for [Zeebe](https://zeebe.io). It is written in TypeScript and transpiled to JavaScript in the `dist` directory.
 
@@ -21,6 +21,7 @@ Get a hosted instance of Zeebe on [Camunda Cloud](https://camunda.io).
 ## Table of Contents
 
 -   [ Versioning ](#versioning)
+-   [ Breaking changes in 1.0.0 ](#breaking-1.0.0)
 -   [ gRPC Implementation ](#grpc-implementation)
 -   [ Type difference from other Zeebe clients ](#type-difference)
 -   [ A note on representing timeout durations ](#time-duration)
@@ -29,7 +30,7 @@ Get a hosted instance of Zeebe on [Camunda Cloud](https://camunda.io).
 
 -   [ Install ](#install)
 -   [ Get Broker Topology ](#get-topology)
--   [ Deploy a workflow ](#deploy-workflow)
+-   [ Deploy a process ](#deploy-process)
 
 **Connection Behaviour**
 
@@ -51,7 +52,7 @@ Get a hosted instance of Zeebe on [Camunda Cloud](https://camunda.io).
 -   [ The `ZBWorker` Job Worker ](#create-zbworker)
 -   [ Unhandled Exceptions in Task Handlers ](#unhandled-exceptions)
 -   [ Completing tasks with success, failure, error, or forwarded ](#complete-tasks)
--   [ Working with Workflow Variables and Custom Headers ](#working-with-variables)
+-   [ Working with Process Variables and Custom Headers ](#working-with-variables)
 -   [ Constraining the Variables Fetched by the Worker ](#fetch-variable)
 -   [ The "Decoupled Job Completion" pattern ](#decoupled-complete)
 -   [ The `ZBBatchWorker` Job Worker ](#zbbatchworker)
@@ -59,9 +60,9 @@ Get a hosted instance of Zeebe on [Camunda Cloud](https://camunda.io).
 
 **Client Commands**
 
--   [ Start a Workflow Instance ](#start-workflow)
--   [ Start a Workflow Instance of a specific version of a Workflow definition ](#start-specific-version)
--   [ Start a workflow instance and await the workflow outcome ](#start-await)
+-   [ Start a Process Instance ](#start-process)
+-   [ Start a Process Instance of a specific version of a Process definition ](#start-specific-version)
+-   [ Start a process instance and await the process outcome ](#start-await)
 -   [ Publish a Message ](#publish-message)
 -   [ Publish a Start Message ](#publish-start-message)
 -   [ Activate Jobs ](#activate-jobs)
@@ -91,13 +92,19 @@ Get a hosted instance of Zeebe on [Camunda Cloud](https://camunda.io).
 
 To enable that the client libraries can be easily supported to the Zeebe server we map the version numbers, so that Major, Minor match the server application. Patches are independent and indicate client updates.
 
-NPM Package version 0.24.x supports Zeebe 0.22.x and above
+NPM Package version 0.26.x supports Zeebe 0.22.x to 0.26.x
 
-NPM Package version 0.23.x supports Zeebe 0.22.x and above
+NPM Package version 1.0.0 supports Zeebe 1.0.0
 
-NPM Package version 0.22.x supports Zeebe 0.22.x
+<a name="breaking-1.0.0"></a>
 
-NPM Package version 0.21.x supports Zeebe 0.21.x
+## Breaking changes in Zeebe 1.0.0
+
+For Zeebe brokers prior to 1.0.0, use the 0.26.z version of `zeebe-node`. This README documents the 1.0.0 API. The previous API is documented [here](https://github.com/camunda-community-hub/zeebe-client-node-js/blob/v.0.25.0/README.md).
+
+Zeebe 1.0.0 contains a number of breaking changes, including the gRPC protocol and the API surface area. You must use a 1.x.y version of the client library with Zeebe 1.0.0 and later.
+
+The pre-1.0.0 API of the Node client has been deprecated, but not removed. This means that your pre-1.0.0 applications should still work, just by changing the version of `zeebe-node` in the `package.json`.
 
 <a name="grpc-implementation"></a>
 
@@ -115,7 +122,7 @@ Please report any issues in [GitHub](https://github.com/zeebe-io/zeebe-client-no
 
 ## Type difference from other Zeebe clients
 
-Protobuf fields of type `int64` are serialised as type string in the Node library. These fields are serialised as numbers (long) in the Go and Java client. See [grpc/#7229](https://github.com/grpc/grpc/issues/7229) for why the Node library serialises them as string. The Workflow instance key, and other fields that are of type long in other client libraries, are type string in this library. Fields of type `int32` are serialised as type number in the Node library.
+Protobuf fields of type `int64` are serialised as type string in the Node library. These fields are serialised as numbers (long) in the Go and Java client. See [grpc/#7229](https://github.com/grpc/grpc/issues/7229) for why the Node library serialises them as string. The Process instance key, and other fields that are of type long in other client libraries, are type string in this library. Fields of type `int32` are serialised as type number in the Node library.
 
 <a name = "time-duration"></a>
 
@@ -142,7 +149,7 @@ The second is the `requestTimeout`. Whenever the client library sends a gRPC com
 
 If no `requestTimeout` is specified, then the configured timeout of the broker gateway is used. Out of the box, this is 15 seconds by default.
 
-The most significant use of the `requestTimeout` is when using the `createWorkflowInstanceWithResult` command. If your workflow will take longer than 15 seconds to complete, you should specify a `requestTimeout`. See "[Start a Workflow Instance and await the Workflow Outcome](#start-await)".
+The most significant use of the `requestTimeout` is when using the `createProcessInstanceWithResult` command. If your process will take longer than 15 seconds to complete, you should specify a `requestTimeout`. See "[Start a Process Instance and await the Process Outcome](#start-await)".
 
 The third is the `longpoll` duration. This is the amount of time that the job worker holds a long poll request to activate jobs open.
 
@@ -160,6 +167,14 @@ The final one is the maximum back-off delay in client-side gRPC command retries.
 npm i zeebe-node
 ```
 
+For Zeebe broker versions prior to 1.0.0:
+
+```bash
+npm i zeebe-node@0
+```
+
+Refer to [here](https://github.com/camunda-community-hub/zeebe-client-node-js/blob/v.0.25.0/README.md) for the documentation for the pre-1.0.0 version of the library.
+
 <a name = "get-topology"></a>
 
 ### Get Broker Topology
@@ -174,9 +189,9 @@ void (async () => {
 })()
 ```
 
-<a name = "deploy-workflow"></a>
+<a name = "deploy-process"></a>
 
-### Deploy a workflow
+### Deploy a process
 
 ```javascript
 const ZB = require('zeebe-node')
@@ -185,16 +200,16 @@ const fs = require('fs')
 void (async () => {
 	const zbc = new ZB.ZBClient() // localhost:26500 || ZEEBE_GATEWAY_ADDRESS
 
-	const res = await zbc.deployWorkflow('./domain-mutation.bpmn')
+	const res = await zbc.deployProcess('./domain-mutation.bpmn')
 	console.log(res)
 
 	// Deploy multiple with an array of filepaths
-	await zbc.deployWorkflow(['./wf1.bpmn', './wf2.bpmn'])
+	await zbc.deployProcess(['./wf1.bpmn', './wf2.bpmn'])
 
 	const buffer = fs.readFileSync('./wf3.bpmn')
 
 	// Deploy from an in-memory buffer
-	await zbc.deployWorkflow({ definition: buffer, name: 'wf3.bpmn' })
+	await zbc.deployProcess({ definition: buffer, name: 'wf3.bpmn' })
 })()
 ```
 
@@ -204,14 +219,14 @@ void (async () => {
 
 ### Client-side gRPC retry in ZBClient
 
-If a gRPC command method fails in the ZBClient - such as `ZBClient.deployWorkflow` or `ZBClient.topology()`, the underlying gRPC library will throw an exception.
+If a gRPC command method fails in the ZBClient - such as `ZBClient.deployProcess` or `ZBClient.topology()`, the underlying gRPC library will throw an exception.
 
 If no workers have been started, this can be fatal to the process if it is not handled by the application logic. This is especially an issue when a worker container starts before the Zeebe gRPC gateway is available to service requests, and can be inconsistent as this is a race condition.
 
 To mitigate against this, the Node client implements some client-side gRPC operation retry logic by default. This can be configured, including disabled, via configuration in the client constructor.
 
 -   Operations retry, but only for [gRPC error codes 8 and 14](https://github.com/grpc/grpc/blob/master/doc/statuscodes.md) - indicating resource exhaustion (8) or transient network failure (14). Resource exhaustion occurs when the broker starts backpressure due to latency because of load. Network failure can be caused by passing in an unresolvable gateway address (`14: DNS Resolution failed`), or by the gateway not being ready yet (`14: UNAVAILABLE: failed to connect to all addresses`).
--   Operations that fail for other reasons, such as deploying an invalid bpmn file or cancelling a workflow that does not exist, do not retry.
+-   Operations that fail for other reasons, such as deploying an invalid bpmn file or cancelling a process that does not exist, do not retry.
 -   Retry is enabled by default, and can be disabled by passing { retry: false } to the client constructor.
 -   Values for `retry`, `maxRetries` and `maxRetryTimeout` can be configured via the environment variables `ZEEBE_CLIENT_RETRY`, `ZEEBE_CLIENT_MAX_RETRIES` and `ZEEBE_CLIENT_MAX_RETRY_TIMEOUT` respectively.
 -   `maxRetries` and `maxRetryTimeout` are also configurable through the constructor options, or through environment variables. By default, if not supplied, the values are:
@@ -556,10 +571,10 @@ Here is an example job:
 { key: '578',
   type: 'demo-service',
   jobHeaders:
-   { workflowInstanceKey: '574',
+   { processInstanceKey: '574',
      bpmnProcessId: 'test-process',
-     workflowDefinitionVersion: 1,
-     workflowKey: '3',
+     processDefinitionVersion: 1,
+     processKey: '3',
      elementId: 'ServiceTask_0xdwuw7',
      elementInstanceKey: '577' },
   customHeaders: '{}',
@@ -601,7 +616,7 @@ const zbWorker = zbc.createWorker({
 
 _Note: this behaviour is for the ZBWorker only. The ZBBatchWorker does not manage this._
 
-When a task handler throws an unhandled exception, the library will fail the job. Zeebe will then retry the job according to the retry settings of the task. Sometimes you want to halt the entire workflow so you can investigate. To have the library cancel the workflow on an unhandled exception, pass in `{failWorkflowOnException: true}` to the `createWorker` call:
+When a task handler throws an unhandled exception, the library will fail the job. Zeebe will then retry the job according to the retry settings of the task. Sometimes you want to halt the entire process so you can investigate. To have the library cancel the process on an unhandled exception, pass in `{failProcessOnException: true}` to the `createWorker` call:
 
 ```typescript
 const { ZBClient } = require('zeebe-node')
@@ -609,7 +624,7 @@ const { ZBClient } = require('zeebe-node')
 const zbc = new ZBClient()
 
 zbc.createWorker('console-log', maybeFaultyHandler, {
-	failWorkflowOnException: true,
+	failProcessOnException: true,
 })
 ```
 
@@ -619,7 +634,7 @@ zbc.createWorker('console-log', maybeFaultyHandler, {
 
 To complete a task, the task worker handler function receives a `complete` parameter. The complete object has `success`, `failure`, and `error` methods.
 
-Call `complete.success()` passing in a optional plain old JavaScript object (POJO) - a key:value map. These are variable:value pairs that will be used to update the workflow state in the broker. They will be merged with existing values. You can set an existing key to `null` or `undefined`, but there is no way to delete a key.
+Call `complete.success()` passing in a optional plain old JavaScript object (POJO) - a key:value map. These are variable:value pairs that will be used to update the process state in the broker. They will be merged with existing values. You can set an existing key to `null` or `undefined`, but there is no way to delete a key.
 
 Call `complete.failure()` to fail the task. You must pass in a string message describing the failure. The client library decrements the retry count, and the broker handles the retry logic. If the failure is a hard failure and should cause an incident to be raised in Operate, then pass in `0` for the optional second parameter, `retries`:
 
@@ -633,17 +648,17 @@ Call `complete.forwarded()` to release worker capacity to handle another job, wi
 
 <a name = "working-with-variables"></a>
 
-## Working with Workflow Variables and Custom Headers
+## Working with Process Variables and Custom Headers
 
-Workflow variables are available in your worker job handler callback as `job.variables`, and any custom headers are available as `job.customHeaders`.
+Process variables are available in your worker job handler callback as `job.variables`, and any custom headers are available as `job.customHeaders`.
 
 These are read-only JavaScript objects in the Zeebe Node client. However, they are not stored that way in the broker.
 
-Both workflow variables and custom headers are stored in the broker as a dictionary of named strings. That means that the variables and custom headers are JSON.parsed in the Node client when it fetches the job, and any update passed to the `success()` function is JSON.stringified.
+Both process variables and custom headers are stored in the broker as a dictionary of named strings. That means that the variables and custom headers are JSON.parsed in the Node client when it fetches the job, and any update passed to the `success()` function is JSON.stringified.
 
 If you accidentally pass in a circular JSON structure to `complete()` - like, for example the response object from an HTTP call - it will throw, as this cannot be serialised to a string.
 
-To update a key deep in the object structure of a workflow variable, you can use the [deepmerge utility](https://www.npmjs.com/package/deepmerge):
+To update a key deep in the object structure of a process variable, you can use the [deepmerge utility](https://www.npmjs.com/package/deepmerge):
 
 ```TypeScript
 const merge = require('deepmerge')
@@ -660,7 +675,7 @@ zbc.createWorker('some-task', (job, complete) => {
 
 When setting custom headers in BPMN tasks, while designing your model, you can put stringified JSON as the value for a custom header, and it will show up in the client as a JavaScript object.
 
-Workflow variables and custom headers are untyped in the Zeebe broker, however the Node client in TypeScript mode provides the option to type them to provide safety. You can type your worker as `any` to turn that off:
+Process variables and custom headers are untyped in the Zeebe broker, however the Node client in TypeScript mode provides the option to type them to provide safety. You can type your worker as `any` to turn that off:
 
 ```TypeScript
 // No type checking - totally dynamic and unchecked
@@ -679,7 +694,7 @@ See the section [Writing Strongly-typed Job Workers](#strongly-typed) for more d
 
 ## Constraining the Variables Fetched by the Worker
 
-Sometimes you only need a few specific workflow variables to service a job. One way you can achieve constraint on the workflow variables received by a worker is by using [input variable mappings](https://docs.zeebe.io/reference/variables.html#inputoutput-variable-mappings) on the task in the model.
+Sometimes you only need a few specific process variables to service a job. One way you can achieve constraint on the process variables received by a worker is by using [input variable mappings](https://docs.zeebe.io/reference/variables.html#inputoutput-variable-mappings) on the task in the model.
 
 You can also use the `fetchVariable` parameter when creating a worker. Pass an array of strings, containing the names of the variables to fetch, to the `fetchVariable` parameter when creating a worker. Here is an example, in JavaScript:
 
@@ -695,7 +710,7 @@ zbc.createWorker({
 })
 ```
 
-If you are using TypeScript, you can supply an interface describing the workflow variables, and parameterize the worker:
+If you are using TypeScript, you can supply an interface describing the process variables, and parameterize the worker:
 
 ```TypeScript
 interface Variables {
@@ -925,16 +940,16 @@ const longPollingWorker = zbc.createWorker({
 
 ## Client Commands
 
-<a name = "start-workflow"></a>
+<a name = "start-process"></a>
 
-### Start a Workflow Instance
+### Start a Process Instance
 
 ```javascript
 const ZB = require('zeebe-node')
 
 ;(async () => {
 	const zbc = new ZB.ZBClient('localhost:26500')
-	const result = await zbc.createWorkflowInstance('test-process', {
+	const result = await zbc.createProcessInstance('test-process', {
 		testData: 'something',
 	})
 	console.log(result)
@@ -945,16 +960,16 @@ Example output:
 
 ```javascript
 
-{ workflowKey: '3',
+{ processKey: '3',
   bpmnProcessId: 'test-process',
   version: 1,
-  workflowInstanceKey: '569' }
+  processInstanceKey: '569' }
 
 ```
 
 <a name = "start-specific-version"></a>
 
-### Start a Workflow Instance of a specific version of a Workflow definition
+### Start a Process Instance of a specific version of a Process definition
 
 From version 0.22 of the client onward:
 
@@ -963,7 +978,7 @@ const ZB = require('zeebe-node')
 
 ;(async () => {
 	const zbc = new ZB.ZBClient('localhost:26500')
-	const result = await zbc.createWorkflowInstance({
+	const result = await zbc.createProcessInstance({
 		bpmnProcessId: 'test-process',
 		variables: {
 			testData: 'something',
@@ -976,29 +991,29 @@ const ZB = require('zeebe-node')
 
 <a name = "start-await"></a>
 
-### Start a Workflow Instance and await the Workflow Outcome
+### Start a Process Instance and await the Process Outcome
 
-From version 0.22 of the broker and client, you can await the outcome of a workflow end-to-end execution:
+From version 0.22 of the broker and client, you can await the outcome of a process end-to-end execution:
 
 ```typescript
 async function getOutcome() {
-	const result = await zbc.createWorkflowInstanceWithResult(processId, {
+	const result = await zbc.createProcessInstanceWithResult(processId, {
 		sourceValue: 5,
 	})
 	return result
 }
 ```
 
-Be aware that by default, **this will throw an exception if the workflow takes longer than 15 seconds to complete**.
+Be aware that by default, **this will throw an exception if the process takes longer than 15 seconds to complete**.
 
-To override the gateway's default timeout for a workflow that needs more time to complete:
+To override the gateway's default timeout for a process that needs more time to complete:
 
 ```typescript
 const { ZBClient, Duration } = require('zeebe-node')
 
 const zbc = new ZBClient()
 
-const result = await zbc.createWorkflowInstanceWithResult({
+const result = await zbc.createProcessInstanceWithResult({
 	bpmnProcessId: processId,
 	variables: {
 		sourceValue: 5,
@@ -1014,7 +1029,7 @@ const result = await zbc.createWorkflowInstanceWithResult({
 
 ### Publish a Message
 
-You can publish a message to the Zeebe broker that will be correlated with a running workflow instance:
+You can publish a message to the Zeebe broker that will be correlated with a running process instance:
 
 ```javascript
 const { ZBClient, Duration } = require('zeebe-node')
@@ -1022,33 +1037,33 @@ const { ZBClient, Duration } = require('zeebe-node')
 const zbc = new ZBClient()
 
 zbc.publishMessage({
-	correlationKey: 'value-to-correlate-with-workflow-variable',
+	correlationKey: 'value-to-correlate-with-process-variable',
 	messageId: uuid.v4(),
 	name: 'message-name',
-	variables: { valueToAddToWorkflowVariables: 'here', status: 'PROCESSED' },
+	variables: { valueToAddToProcessVariables: 'here', status: 'PROCESSED' },
 	timeToLive: Duration.seconds.of(10), // seconds
 })
 ```
 
 When would you do this? Well, the sky is not even the limit when it comes to thinking creatively about building a system with Zeebe - _and_ here's one concrete example to get you thinking:
 
-Recall the example of the _remote COBOL database_ in the section "[The "Decoupled Job Completion" pattern](#decoupled-complete)". We're writing code to allow that system to be participate in a BPMN-modelling workflow orchestrated by Zeebe.
+Recall the example of the _remote COBOL database_ in the section "[The "Decoupled Job Completion" pattern](#decoupled-complete)". We're writing code to allow that system to be participate in a BPMN-modelling process orchestrated by Zeebe.
 
 But what happens if the adapter for that system has been written in such a way that there is no opportunity to attach metadata to it? In that case we have no opportunity to attach a job key. Maybe you send the fixed data for the command, and you have to correlate the response based on those fields.
 
-Another example: think of a system that emits events, and has no knowledge of a running workflow. An example from one system that I orchestrate with Zeebe is Minecraft. A logged-in user in the game performs some action, and code in the game emits an event. I can catch that event in my Node-based application, but I have no knowledge of which running workflow to target - _and_ the event was not generated from a BPMN task providing a worker with the complete context of a workflow.
+Another example: think of a system that emits events, and has no knowledge of a running process. An example from one system that I orchestrate with Zeebe is Minecraft. A logged-in user in the game performs some action, and code in the game emits an event. I can catch that event in my Node-based application, but I have no knowledge of which running process to target - _and_ the event was not generated from a BPMN task providing a worker with the complete context of a process.
 
-In these two cases, I can publish a message to Zeebe, and let the broker figure out which workflows are:
+In these two cases, I can publish a message to Zeebe, and let the broker figure out which processes are:
 
 -   Sitting at an intermediate message catch event waiting for this message; or
 -   In a sub-process that has a boundary event that will be triggered by this message; or
 -   Would be started by a message start event, on receiving this message.
 
-The Zeebe broker correlates a message to a running workflow instance _not on the job key_ - but on _the value of one of the workflow variables_ (for intermediate message events) and _the message name_ (for all message events, including start messages).
+The Zeebe broker correlates a message to a running process instance _not on the job key_ - but on _the value of one of the process variables_ (for intermediate message events) and _the message name_ (for all message events, including start messages).
 
-So the response from your COBOL database system, sans job key, is sent back to Zeebe from the RabbitMQListener not via `completeJob()`, but with `publishMessage()`, and the value of the payload is used to figure out which workflow it is for.
+So the response from your COBOL database system, sans job key, is sent back to Zeebe from the RabbitMQListener not via `completeJob()`, but with `publishMessage()`, and the value of the payload is used to figure out which process it is for.
 
-In the case of the Minecraft event, a message is published to Zeebe with the Minecraft username, and that is used by Zeebe to determine which workflows are running for that user and are interested in that event.
+In the case of the Minecraft event, a message is published to Zeebe with the Minecraft username, and that is used by Zeebe to determine which processes are running for that user and are interested in that event.
 
 See the article "[Zeebe Message Correlation](https://zeebe.io/blog/2019/08/zeebe-message-correlation/)" for a complete example with code.
 
@@ -1068,7 +1083,7 @@ const zbc = new ZB.ZBClient('localhost:26500')
 zbc.publishStartMessage({
 	messageId: uuid.v4(),
 	name: 'message-name',
-	variables: { initialWorkflowVariable: 'here' },
+	variables: { initialProcessVariable: 'here' },
 	timeToLive: Duration.seconds.of(10), // seconds
 })
 ```
@@ -1161,7 +1176,7 @@ This method takes a filepath and returns TypeScript definitions that you can use
 ```javascript
 const ZB = require('zeebe-node')
 ;(async () => {
-	console.log(await ZB.BpmnParser.generateConstantsForBpmnFiles(workflowFile))
+	console.log(await ZB.BpmnParser.generateConstantsForBpmnFiles(processFile))
 })()
 ```
 
@@ -1200,7 +1215,7 @@ zeebe-node my-model.bpmn
 
 ### Writing Strongly-typed Job Workers
 
-You can provide interfaces to get design-time type safety and intellisense on the workflow variables passed in the a worker job handler, the custom headers that it will receive, and the variables that it will pass back to Zeebe in the `complete.success` call:
+You can provide interfaces to get design-time type safety and intellisense on the process variables passed in the a worker job handler, the custom headers that it will receive, and the variables that it will pass back to Zeebe in the `complete.success` call:
 
 ```TypeScript
 interface InputVariables {
@@ -1250,7 +1265,7 @@ const giftSuggester = zbc.createWorker('get-gift-suggestion', getGiftSuggestion)
 
 The parameterization of the client and workers helps to catch errors in code, and if your interface definitions are good, can go a long way to making sure that your workers and client emit the correct payloads and have a strong expectation about what they will receive, but it does not give you any _run-time safety_.
 
-Your type definition may be incorrect, or the variables or custom headers may simply not be there at run-time, as there is no type checking in the broker, and other factors are involved, such as tasks with input and output mappings, and data added to the workflow variables by REST calls and other workers.
+Your type definition may be incorrect, or the variables or custom headers may simply not be there at run-time, as there is no type checking in the broker, and other factors are involved, such as tasks with input and output mappings, and data added to the process variables by REST calls and other workers.
 
 You should consider:
 
@@ -1264,7 +1279,7 @@ As with everything, it is a balancing act / trade-off between correctness, safet
 I recommend the following scale, to match the maturity of your system:
 
 -   Start with `<any>` typing for the workers; then
--   Develop interfaces to describe the DTOs represented in your workflow variables;
+-   Develop interfaces to describe the DTOs represented in your process variables;
 -   Use optional types on those interfaces to check your defensive programming structures;
 -   Lock down the run-time behaviour with io-ts as the boundary validator.
 

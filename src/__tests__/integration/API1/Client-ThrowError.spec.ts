@@ -1,6 +1,6 @@
 import { Duration } from 'typed-duration'
-import { ZBClient } from '../..'
-import { createUniqueTaskType } from '../../lib/createUniqueTaskType'
+import { ZBClient } from '../../..'
+import { createUniqueTaskType } from '../../../lib/createUniqueTaskType'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 jest.setTimeout(25000)
@@ -22,7 +22,7 @@ test('Throws a business error that is caught in the process', async () => {
 		taskTypes: ['throw-bpmn-error-task', 'sad-flow'],
 	})
 
-	await zbc.deployWorkflow({
+	await zbc.deployProcess({
 		definition: bpmn,
 		name: `error-throw-bpmn-error-${processId}.bpmn`,
 	})
@@ -37,7 +37,7 @@ test('Throws a business error that is caught in the process', async () => {
 			bpmnErrorCaught: true,
 		})
 	)
-	const result = await zbc.createWorkflowInstanceWithResult(processId, {
+	const result = await zbc.createProcessInstanceWithResult(processId, {
 		timeout: 20000,
 	})
 	expect(result.variables.bpmnErrorCaught).toBe(true)

@@ -1,7 +1,8 @@
-import { ZBClient } from '../..'
-import { createUniqueTaskType } from '../../lib/createUniqueTaskType'
+import { ZBClient } from '../../..'
+import { createUniqueTaskType } from '../../../lib/createUniqueTaskType'
+import { CreateProcessInstanceResponse } from '../../../lib/interfaces-grpc-1.0'
 
-const trace = res => {
+const trace = <T>(res: T) => {
 	// tslint:disable-next-line: no-console
 	console.log(res)
 	return res
@@ -10,7 +11,7 @@ process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 jest.setTimeout(60000)
 
 let zbc: ZBClient
-let wf
+let wf: CreateProcessInstanceResponse | undefined
 
 beforeEach(() => {
 	// tslint:disable-next-line: no-console
@@ -20,8 +21,8 @@ beforeEach(() => {
 
 afterEach(async done => {
 	try {
-		if (wf?.workflowInstanceKey) {
-			await zbc.cancelWorkflowInstance(wf.workflowInstanceKey)
+		if (wf?.processInstanceKey) {
+			await zbc.cancelProcessInstance(wf.processInstanceKey)
 		}
 	} catch (e) {
 		// console.log('Caught NOT FOUND') // @DEBUG
@@ -46,21 +47,21 @@ test('Causes a retry with complete.failure()', () =>
 		// tslint:disable-next-line: no-console
 		// console.log('Deploying 1...') // @DEBUG
 		const res = await zbc
-			.deployWorkflow({
+			.deployProcess({
 				definition: bpmn,
 				name: `worker-failure-${processId}.bpmn`,
 			})
 			.catch(trace)
 
-		expect(res.workflows.length).toBe(1)
-		expect(res.workflows[0].bpmnProcessId).toBe(processId)
+		expect(res.processes.length).toBe(1)
+		expect(res.processes[0].bpmnProcessId).toBe(processId)
 
 		// tslint:disable-next-line: no-console
-		// console.log('Creating workflow instance 1...') // @DEBUG
-		wf = await zbc.createWorkflowInstance(processId, {
+		// console.log('Creating process instance 1...') // @DEBUG
+		wf = await zbc.createProcessInstance(processId, {
 			conditionVariable: true,
 		})
-		const wfi = wf.workflowInstanceKey
+		const wfi = wf.processInstanceKey
 		expect(wfi).toBeTruthy()
 
 		// tslint:disable-next-line: no-console
@@ -86,11 +87,11 @@ test('Causes a retry with complete.failure()', () =>
 					// tslint:disable-next-line: no-console
 					// console.log('Job completed 1') // @DEBUG
 
-					expect(job.workflowInstanceKey).toBe(wfi)
+					expect(job.processInstanceKey).toBe(wfi)
 					expect(job.retries).toBe(1)
 					wf = undefined
 
-					return resolve()
+					return resolve(null)
 				}
 				await complete.failure('Triggering a retry')
 			},
@@ -98,21 +99,21 @@ test('Causes a retry with complete.failure()', () =>
 		)
 	}))
 
-test('Does not fail a workflow when the handler throws, by default', async done => {
+test('Does not fail a process when the handler throws, by default', async done => {
 	const { bpmn, processId, taskTypes } = createUniqueTaskType({
 		bpmnFilePath: './src/__tests__/testdata/Worker-Failure2.bpmn',
 		messages: [],
 		taskTypes: ['console-log-worker-failure-2'],
 	})
-	const res = await zbc.deployWorkflow({
+	const res = await zbc.deployProcess({
 		definition: bpmn,
 		name: `worker-failure-2-${processId}.bpmn`,
 	})
-	expect(res.workflows.length).toBe(1)
-	expect(res.workflows[0].bpmnProcessId).toBe(processId)
+	expect(res.processes.length).toBe(1)
+	expect(res.processes[0].bpmnProcessId).toBe(processId)
 	// tslint:disable-next-line: no-console
-	// console.log('Creating workflow instance 2...') // @DEBUG
-	wf = await zbc.createWorkflowInstance(processId, {})
+	// console.log('Creating process instance 2...') // @DEBUG
+	wf = await zbc.createProcessInstance(processId, {})
 
 	let alreadyFailed = false
 
@@ -126,7 +127,7 @@ test('Does not fail a workflow when the handler throws, by default', async done 
 			// console.log('Completing job 2...') // @DEBUG
 
 			if (alreadyFailed) {
-				await zbc.cancelWorkflowInstance(wf.workflowInstanceKey) // throws if not found. Should NOT throw in this test
+				await zbc.cancelProcessInstance(wf!.processInstanceKey) // throws if not found. Should NOT throw in this test
 				complete.success()
 				return w.close().then(() => done())
 			}
@@ -142,24 +143,25 @@ test('Does not fail a workflow when the handler throws, by default', async done 
 	)
 })
 
-test('Fails a workflow when the handler throws and options.failWorkflowOnException is set', async done => {
+test('Fails a process when the handler throws and options.failProcessOnException is set', async done => {
 	const { bpmn, taskTypes, processId } = createUniqueTaskType({
 		bpmnFilePath: './src/__tests__/testdata/Worker-Failure3.bpmn',
 		messages: [],
 		taskTypes: ['console-log-worker-failure-3'],
 	})
 	// tslint:disable-next-line: no-console
-	// console.log('Deploy workflow 3....') // @DEBUG
+	// console.log('Deploy process 3....') // @DEBUG
 
-	const res = await zbc.deployWorkflow({
+	const res = await zbc.deployProcess({
 		definition: bpmn,
 		name: `worker-failure-3-${processId}.bpmn`,
 	})
-	expect(res.workflows.length).toBe(1)
-	expect(res.workflows[0].bpmnProcessId).toBe(processId)
+
+	expect(res.processes.length).toBe(1)
+	expect(res.processes[0].bpmnProcessId).toBe(processId)
 	// tslint:disable-next-line: no-console
-	// console.log('Creating workflow instance 3...') // @DEBUG
-	wf = await zbc.createWorkflowInstance(processId, {})
+	// console.log('Creating process instance 3...') // @DEBUG
+	wf = await zbc.createProcessInstance(processId, {})
 
 	let alreadyFailed = false
 	// tslint:disable-next-line: no-console
@@ -173,21 +175,21 @@ test('Fails a workflow when the handler throws and options.failWorkflowOnExcepti
 				return
 			}
 			alreadyFailed = true
-			testWorkflowInstanceExists() // waits 1000ms then checks
+			testProcessInstanceExists() // waits 1000ms then checks
 			throw new Error(
 				'Unhandled exception in task handler for test purposes'
 			) // Will be caught in the library
 		},
 		{
-			failWorkflowOnException: true,
+			failProcessOnException: true,
 			loglevel: 'NONE',
 		}
 	)
 
-	function testWorkflowInstanceExists() {
+	function testProcessInstanceExists() {
 		setTimeout(async () => {
 			try {
-				await zbc.cancelWorkflowInstance(wf.workflowInstanceKey) // throws if not found. SHOULD throw in this test
+				await zbc.cancelProcessInstance(wf!.processInstanceKey) // throws if not found. SHOULD throw in this test
 			} catch (e) {
 				w.close().then(() => done())
 			}

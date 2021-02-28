@@ -21,6 +21,7 @@ import { Duration, MaybeTimeDuration } from 'typed-duration'
 import { BasicAuthConfig } from './interfaces'
 import { Loglevel } from './interfaces-published-contract'
 import { OAuthProvider } from './OAuthProvider'
+import { normaliseAPI1 } from './transform-API'
 
 const debug = _debug.default('grpc')
 
@@ -418,7 +419,7 @@ export class GrpcClient extends EventEmitter {
 									}
 									this.emit(MiddlewareSignals.Event.Ready)
 									this.setReady()
-									resolve(dat)
+									resolve(normaliseAPI1(dat))
 								}
 							)
 						} catch (e) {

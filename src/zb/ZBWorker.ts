@@ -1,4 +1,4 @@
-import * as ZB from '../lib/interfaces'
+import * as ZB from '../lib/interfaces-1.0'
 
 import { ZBWorkerBase, ZBWorkerConstructorConfig } from '../lib/ZBWorkerBase'
 
@@ -53,13 +53,13 @@ export class ZBWorker<
 			this.logger.logDebug(job)
 			this.logger.logError(e.message)
 			if (this.cancelWorkflowOnException) {
-				const { workflowInstanceKey } = job
+				const { processInstanceKey } = job
 				this.logger.logDebug(
-					`Cancelling workflow instance ${workflowInstanceKey}`
+					`Cancelling workflow instance ${processInstanceKey}`
 				)
 				try {
-					await this.zbClient.cancelWorkflowInstance(
-						workflowInstanceKey
+					await this.zbClient.cancelProcessInstance(
+						processInstanceKey
 					)
 				} finally {
 					this.drainOne()

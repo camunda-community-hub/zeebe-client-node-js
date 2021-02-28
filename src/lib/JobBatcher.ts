@@ -5,7 +5,7 @@ import {
 	IInputVariables,
 	IOutputVariables,
 	ZBBatchWorkerTaskHandler,
-} from './interfaces'
+} from './interfaces-1.0'
 import { Queue } from './Queue'
 
 export class JobBatcher {

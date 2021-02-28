@@ -1,5 +1,5 @@
 import chalk from 'chalk'
-import * as ZB from '../lib/interfaces'
+import * as ZB from '../lib/interfaces-1.0'
 import { JobBatcher } from '../lib/JobBatcher'
 import {
 	ZBBatchWorkerConstructorConfig,

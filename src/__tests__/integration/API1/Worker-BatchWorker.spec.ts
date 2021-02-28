@@ -1,5 +1,5 @@
-import { Duration, ZBClient } from '../..'
-import { createUniqueTaskType } from '../../lib/createUniqueTaskType'
+import { Duration, ZBClient } from '../../..'
+import { createUniqueTaskType } from '../../../lib/createUniqueTaskType'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 jest.setTimeout(30000)
@@ -20,15 +20,15 @@ test('BatchWorker gets ten jobs', async done => {
 		messages: [],
 		taskTypes: ['console-log'],
 	})
-	const res = await zbc.deployWorkflow({
+	const res = await zbc.deployProcess({
 		definition: bpmn,
 		name: `service-hello-world-${processId}.bpmn`,
 	})
 
-	expect(res.workflows.length).toBe(1)
+	expect(res.processes.length).toBe(1)
 
 	for (let i = 0; i < 10; i++) {
-		await zbc.createWorkflowInstance(processId, {})
+		await zbc.createProcessInstance(processId, {})
 	}
 
 	zbc.createBatchWorker({

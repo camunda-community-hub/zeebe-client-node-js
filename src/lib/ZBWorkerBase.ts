@@ -5,10 +5,13 @@ import { EventEmitter } from 'events'
 import { Duration, MaybeTimeDuration } from 'typed-duration'
 import * as uuid from 'uuid'
 import { parseVariablesAndCustomHeadersToJSON } from '../lib'
-import * as ZB from '../lib/interfaces'
+import * as ZB from '../lib/interfaces-1.0'
 import { StatefulLogInterceptor } from '../lib/StatefulLogInterceptor'
 import { ConnectionStatusEvent, ZBClient } from '../zb/ZBClient'
-import { ActivateJobsRequest, ActivateJobsResponse } from './interfaces-grpc'
+import {
+	ActivateJobsRequest,
+	ActivateJobsResponse,
+} from './interfaces-grpc-1.0'
 import { ZBClientOptions } from './interfaces-published-contract'
 import { TypedEmitter } from './TypedEmitter'
 
@@ -175,7 +178,9 @@ export class ZBWorkerBase<
 		this.grpcClient.on(ConnectionStatusEvent.unknown, onReady)
 		this.grpcClient.on(ConnectionStatusEvent.ready, onReady)
 		this.cancelWorkflowOnException =
-			options.failWorkflowOnException || false
+			options.failWorkflowOnException ??
+			options.failProcessOnException ??
+			false
 		this.zbClient = zbClient
 		this.grpcClient.topologySync().catch(e => {
 			// Swallow exception to avoid throwing if retries are off

@@ -4,11 +4,11 @@ import { ZBBatchWorker } from '../zb/ZBBatchWorker'
 import { ZBWorker } from '../zb/ZBWorker'
 import { GrpcClient } from './GrpcClient'
 import {
-	CreateWorkflowInstanceRequest,
-	CreateWorkflowInstanceResponse,
-	CreateWorkflowInstanceWithResultRequest,
-	CreateWorkflowInstanceWithResultResponse,
-	DeployWorkflowResponse,
+	CreateProcessInstanceRequest,
+	CreateProcessInstanceResponse,
+	CreateProcessInstanceWithResultRequest,
+	CreateProcessInstanceWithResultResponse,
+	DeployProcessResponse,
 	FailJobRequest,
 	PublishMessageRequest,
 	PublishMessageResponse,
@@ -16,12 +16,6 @@ import {
 	ThrowErrorRequest,
 	TopologyResponse,
 	UpdateJobRetriesRequest,
-	WorkflowRequestObject,
-} from './interfaces-grpc'
-import {
-	CreateProcessInstanceRequest,
-	CreateProcessInstanceWithResultRequest,
-	CreateProcessInstanceWithResultResponse,
 	ProcessRequestObject,
 } from './interfaces-grpc-1.0'
 import { Loglevel, ZBCustomLogger } from './interfaces-published-contract'
@@ -44,32 +38,20 @@ export interface KeyedObject {
 	[key: string]: any
 }
 
-/**
- * @deprecated use DeployProcessFiles from interfaces-1.0
- */
-export type DeployWorkflowFiles = string | string[]
+export type DeployProcessFiles = string | string[]
 
-/**
- * @deprecated use DeployProcessBuffer from interfaces-1.0
- */
-export interface DeployWorkflowBuffer {
+export interface DeployProcessBuffer {
 	definition: Buffer
 	name: string
 }
 
-/**
- * @deprecated use CreateProcessInstance instead
- */
-export interface CreateWorkflowInstance<T> {
+export interface CreateProcessInstance<T> {
 	bpmnProcessId: string
 	variables: T
 	version: number
 }
 
-/**
- * @deprecated use CreateProcessInstanceWithResult
- **/
-export interface CreateWorkflowInstanceWithResult<T> {
+export interface CreateProcessInstanceWithResult<T> {
 	bpmnProcessId: string
 	version?: number
 	variables: T
@@ -80,7 +62,7 @@ export interface CreateWorkflowInstanceWithResult<T> {
 export interface CompleteFn<WorkerOutputVariables> {
 	/**
 	 * Complete the job with a success, optionally passing in a state update to merge
-	 * with the workflow variables on the broker.
+	 * with the process variables on the broker.
 	 */
 	success: (updatedVariables?: WorkerOutputVariables) => Promise<boolean>
 	/**
@@ -97,7 +79,7 @@ export interface CompleteFn<WorkerOutputVariables> {
 	/**
 	 *
 	 * Report a business error (i.e. non-technical) that occurs while processing a job.
-	 * The error is handled in the workflow by an error catch event.
+	 * The error is handled in the process by an error catch event.
 	 * If there is no error catch event with the specified errorCode then an incident will be raised instead.
 	 */
 	error: (errorCode: string, errorMessage?: string) => void
@@ -128,7 +110,7 @@ export interface IInputVariables {
 	[key: string]: any
 }
 
-export interface IWorkflowVariables {
+export interface IProcessVariables {
 	[key: string]: any
 }
 export interface IOutputVariables {
@@ -181,19 +163,31 @@ export interface Job<
 	 * type="payment-service" />)
 	 */
 	readonly type: string
-	/** The job's workflow instance key */
+	/**
+	 * @deprecated use processInstanceKey instead
+	 **/
 	readonly workflowInstanceKey: string
-	/** The bpmn process ID of the job workflow definition */
+	/** The job's process instance key */
+	readonly processInstanceKey: string
+	/** The bpmn process ID of the job process definition */
 	readonly bpmnProcessId: string
-	/** The version of the job workflow defini` tion */
+	/**
+	 * @deprecated use processDefinitionVersion instead
+	 **/
 	readonly workflowDefinitionVersion: number
-	/** The key of the job workflow definition */
+	/** The version of the job process defini` tion */
+	readonly processDefinitionVersion: number
+	/**
+	 * @deprecated use processKey instead
+	 **/
 	readonly workflowKey: string
+	/** The key of the job process definition */
+	readonly processKey: string
 	/** The associated task element ID */
 	readonly elementId: string
 	/**
 	 * The unique key identifying the associated task, unique within the scope of the
-	 * workflow instance
+	 * process instance
 	 */
 	readonly elementInstanceKey: string
 	/**
@@ -241,9 +235,13 @@ export interface ZBWorkerOptions<InputVars = IInputVariables> {
 	 */
 	onConnectionErrorHandler?: ConnectionErrorHandler
 	/**
-	 * If a handler throws an unhandled exception, if this is set true, the workflow will be failed. Defaults to false.
-	 */
+	 * @deprecated use failProcessOnException instead
+	 **/
 	failWorkflowOnException?: boolean
+	/**
+	 * If a handler throws an unhandled exception, if this is set true, the process will be failed. Defaults to false.
+	 */
+	failProcessOnException?: boolean
 	/**
 	 * Enable debug tracking
 	 */
@@ -351,55 +349,28 @@ export interface ZBWorkerConfig<
 export interface ZBGrpc extends GrpcClient {
 	completeJobSync: any
 	activateJobsStream: any
-
-	// Deprecated methods
-	/**
-	 * @deprecated use deployProcessSync instead
-	 **/
-	deployWorkflowSync(workflows: {
-		workflows: WorkflowRequestObject[]
-	}): Promise<DeployWorkflowResponse>
-	/**
-	 * @deprecated use createProcessInstanceSync instead
-	 **/
-	createWorkflowInstanceSync(
-		createWorkflowInstanceRequest: CreateWorkflowInstanceRequest
-	): Promise<CreateWorkflowInstanceResponse>
-	/**
-	 * @deprecated use createProcessInstanceWithResultSync instead
-	 **/
-	createWorkflowInstanceWithResultSync<Result>(
-		createWorkflowInstanceWithResultRequest: CreateWorkflowInstanceWithResultRequest
-	): Promise<CreateWorkflowInstanceWithResultResponse<Result>>
-	/**
-	 * @deprecated use cancelProcessInstanceSync instead
-	 **/
-	cancelWorkflowInstanceSync(workflowInstanceKey: {
-		workflowInstanceKey: string | number
-	}): Promise<void>
-
-	// 1.0 API
-	cancelProcessInstanceSync(processInstanceKey: {
-		processInstanceKey: string | number
-	}): Promise<void>
-	createProcessInstanceSync(
-		createProcessInstanceRequest: CreateProcessInstanceRequest
-	): Promise<CreateWorkflowInstanceResponse>
-	createProcessInstanceWithResultSync<Result>(
-		createProcessInstanceWithResultRequest: CreateProcessInstanceWithResultRequest
-	): Promise<CreateProcessInstanceWithResultResponse<Result>>
-	deployProcessSync(processes: {
-		processes: ProcessRequestObject[]
-	}): Promise<DeployWorkflowResponse>
-	failJobSync(failJobRequest: FailJobRequest): Promise<void>
 	publishMessageSync(
 		publishMessageRequest: PublishMessageRequest
 	): Promise<PublishMessageResponse>
-	resolveIncidentSync(incidentKey: string): Promise<void>
-	setVariablesSync(request: SetVariablesRequest): Promise<void>
 	throwErrorSync(throwErrorRequest: ThrowErrorRequest): Promise<void>
 	topologySync(): Promise<TopologyResponse>
 	updateJobRetriesSync(
 		updateJobRetriesRequest: UpdateJobRetriesRequest
 	): Promise<void>
+	// @TODO: fix plural
+	deployProcessSync(processs: {
+		processs: ProcessRequestObject[]
+	}): Promise<DeployProcessResponse>
+	failJobSync(failJobRequest: FailJobRequest): Promise<void>
+	createProcessInstanceSync(
+		createProcessInstanceRequest: CreateProcessInstanceRequest
+	): Promise<CreateProcessInstanceResponse>
+	createProcessInstanceWithResultSync<Result>(
+		createProcessInstanceWithResultRequest: CreateProcessInstanceWithResultRequest
+	): Promise<CreateProcessInstanceWithResultResponse<Result>>
+	cancelProcessInstanceSync(processInstanceKey: {
+		processInstanceKey: string | number
+	}): Promise<void>
+	setVariablesSync(request: SetVariablesRequest): Promise<void>
+	resolveIncidentSync(incidentKey: string): Promise<void>
 }

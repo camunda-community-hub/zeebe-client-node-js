@@ -1,17 +1,18 @@
-import { ZBClient } from '../..'
-import { createUniqueTaskType } from '../../lib/createUniqueTaskType'
+import { ZBClient } from '../../..'
+import { createUniqueTaskType } from '../../../lib/createUniqueTaskType'
+import { CreateProcessInstanceResponse } from '../../../lib/interfaces-grpc-1.0'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 jest.setTimeout(30000)
 
-const trace = async result => {
+const trace = async <T>(result: T) => {
 	// tslint:disable-next-line: no-console
 	// console.log(result)
 	return result
 }
 
 let zbc: ZBClient
-let wf
+let wf: CreateProcessInstanceResponse
 
 beforeEach(async () => {
 	zbc = new ZBClient()
@@ -19,8 +20,8 @@ beforeEach(async () => {
 
 afterEach(async done => {
 	try {
-		if (wf?.workflowInstanceKey) {
-			zbc.cancelWorkflowInstance(wf.workflowInstanceKey) // Cleanup any active workflows
+		if (wf?.processInstanceKey) {
+			zbc.cancelProcessInstance(wf.processInstanceKey) // Cleanup any active processes
 		}
 	} finally {
 		await zbc.close() // Makes sure we don't forget to close connection
@@ -28,7 +29,7 @@ afterEach(async done => {
 	}
 })
 
-test('Can update workflow variables with setVariables', async done => {
+test('Can update process variables with setVariables', async done => {
 	jest.setTimeout(30000)
 
 	const { bpmn, taskTypes, processId } = createUniqueTaskType({
@@ -38,22 +39,22 @@ test('Can update workflow variables with setVariables', async done => {
 	})
 
 	const res = await zbc
-		.deployWorkflow({
+		.deployProcess({
 			definition: bpmn,
 			name: `conditional-pathway-${processId}.bpmn`,
 		})
 		.then(trace)
 
-	expect(res?.workflows?.length).toBe(1)
-	expect(res?.workflows?.[0]?.bpmnProcessId).toBe(processId)
+	expect(res?.processes?.length).toBe(1)
+	expect(res?.processes?.[0]?.bpmnProcessId).toBe(processId)
 
 	wf = await zbc
-		.createWorkflowInstance(processId, {
+		.createProcessInstance(processId, {
 			conditionVariable: true,
 		})
 		.then(trace)
 
-	const wfi = wf?.workflowInstanceKey
+	const wfi = wf?.processInstanceKey
 	expect(wfi).toBeTruthy()
 
 	zbc.setVariables({
@@ -67,8 +68,8 @@ test('Can update workflow variables with setVariables', async done => {
 	zbc.createWorker(
 		taskTypes.wait,
 		async (job, complete) => {
-			expect(job?.workflowInstanceKey).toBe(wfi)
-			trace(`Completing wait job for ${job.workflowInstanceKey}`)
+			expect(job?.processInstanceKey).toBe(wfi)
+			trace(`Completing wait job for ${job.processInstanceKey}`)
 			complete.success(job)
 		},
 		{ loglevel: 'INFO' }
@@ -77,7 +78,7 @@ test('Can update workflow variables with setVariables', async done => {
 	zbc.createWorker(
 		taskTypes.pathB,
 		async (job, complete) => {
-			expect(job?.workflowInstanceKey).toBe(wfi)
+			expect(job?.processInstanceKey).toBe(wfi)
 			expect(job?.variables?.conditionVariable).toBe(false)
 			complete.success(job.variables)
 			done()

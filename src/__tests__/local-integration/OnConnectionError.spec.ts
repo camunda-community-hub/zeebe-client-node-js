@@ -26,7 +26,9 @@ test(`Does not call the onConnectionError handler if there is a broker`, async d
 			debugger
 			calledB++
 			// tslint:disable-next-line: no-console
-			console.log('ERROR')
+			console.log(
+				'onConnection Error was called when there *is* a broker'
+			)
 			throw new Error(
 				'onConnection Error was called when there *is* a broker'
 			)
