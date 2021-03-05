@@ -42,26 +42,28 @@ test('Can raise an Operate incident with complete.failure()', async done => {
 		},
 	})
 
-	await zbc.createWorker(
-		taskTypes['wait-raise-incident'],
-		async (job, complete) => {
+	await zbc.createWorker({
+		taskType: taskTypes['wait-raise-incident'],
+		taskHandler: async job => {
 			expect(job.processInstanceKey).toBe(wfi)
-			await complete.success(job.variables)
+			return job.complete(job.variables)
 		},
-		{ loglevel: 'NONE' }
-	)
+		loglevel: 'NONE',
+	})
 
-	await zbc.createWorker(
-		taskTypes['pathB-raise-incident'],
-		async (job, complete) => {
+	await zbc.createWorker({
+		taskType: taskTypes['pathB-raise-incident'],
+		taskHandler: async job => {
 			expect(job.processInstanceKey).toBe(wfi)
 			expect(job.variables.conditionVariable).toBe(false)
-			await complete.failure('Raise an incident in Operate', 0)
+			const res = await job.fail('Raise an incident in Operate', 0)
 			// Manually verify that an incident has been raised
-			await zbc.cancelProcessInstance(job.processInstanceKey)
+			await job.cancelWorkflow()
 			// comment out the preceding line for the verification test
 			done()
+			return res
 		},
-		{ maxJobsToActivate: 1, loglevel: 'NONE' }
-	)
+		maxJobsToActivate: 1,
+		loglevel: 'NONE',
+	})
 })

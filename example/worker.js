@@ -7,17 +7,15 @@ const ZB = require('../dist')
 		console.log(JSON.stringify(topology, null, 2))
 
 		await zbc.deployProcess('./test.bpmn')
-		workflows = await zbc.listWorkflows()
-		console.log(workflows)
 
-		const zbWorker = zbc.createWorker('demo-service', handler)
+		zbc.createWorker('demo-service', (job) => {
+			console.log(job.variables)
+			job.complete()
+		})// handler)
 		setTimeout(() => {
 			console.log('Closing client...')
 			zbc.close().then(() => console.log('All workers closed'))
-		}, 1000000)
+		}, 1 * 60 * 1000)
 	})()
 
-function handler(job, complete) {
-	console.log('Job payload', job)
-	complete(job.variables)
-}
+

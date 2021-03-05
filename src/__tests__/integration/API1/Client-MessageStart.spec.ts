@@ -40,13 +40,14 @@ test('Can start a process with a message', async done => {
 		},
 	})
 
-	zbc.createWorker(
-		taskTypes['console-log-msg-start'],
-		async (job, complete) => {
-			await complete.success()
+	zbc.createWorker({
+		taskType: taskTypes['console-log-msg-start'],
+		taskHandler: async job => {
+			const res = await job.complete()
 			expect(job.variables.testKey).toBe(randomId) // Makes sure the worker isn't responding to another message
 			done()
+			return res
 		},
-		{ loglevel: 'NONE' }
-	)
+		loglevel: 'NONE',
+	})
 })

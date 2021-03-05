@@ -48,14 +48,11 @@ test('Deploys a single process', async () => {
 })
 
 test('Can create a worker', done => {
-	const worker = zbc.createWorker(
-		'test',
-		'TASK_TYPE',
-		(job, complete) => {
-			complete.success(job)
-		},
-		{ loglevel: 'NONE' }
-	)
+	const worker = zbc.createWorker({
+		taskType: 'TASK_TYPE',
+		taskHandler: job => job.complete(),
+		loglevel: 'NONE',
+	})
 	expect(worker).toBeTruthy()
 	worker.close().then(() => done())
 })

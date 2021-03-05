@@ -360,6 +360,9 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 			WorkerOutputVariables
 		>
 	): ZBWorker<WorkerInputVariables, CustomHeaderShape, WorkerOutputVariables>
+	/**
+	 * @deprecated use the object constructor instead
+	 */
 	public createWorker<
 		WorkerInputVariables = ZB.IInputVariables,
 		CustomHeaderShape = ZB.ICustomHeaders,
@@ -375,6 +378,9 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		options?: ZB.ZBWorkerOptions<WorkerInputVariables> & ZBClientOptions,
 		onConnectionError?: ZB.ConnectionErrorHandler | undefined
 	): ZBWorker<WorkerInputVariables, CustomHeaderShape, WorkerOutputVariables>
+	/**
+	 * @deprecated use the object constructor instead
+	 */
 	public createWorker<
 		WorkerInputVariables = ZB.IInputVariables,
 		CustomHeaderShape = ZB.ICustomHeaders,

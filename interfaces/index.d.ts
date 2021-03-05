@@ -1,1 +1,1 @@
-export * from '../dist/lib/interfaces'
+export * from '../dist/lib/interfaces-1.0'

@@ -26,13 +26,12 @@ test('Does long poll by default', async done => {
 	})
 	expect(res.processes.length).toBe(1)
 
-	const worker = zbcLongPoll.createWorker(
-		uuid.v4(),
-		async (job, complete) => {
-			await complete.success(job.variables)
-		},
-		{ loglevel: 'NONE', debug: true }
-	)
+	const worker = zbcLongPoll.createWorker({
+		taskType: uuid.v4(),
+		taskHandler: job => job.complete(job.variables),
+		loglevel: 'NONE',
+		debug: true,
+	})
 	// Wait to outside 10s - it should have polled once when it gets the job
 	setTimeout(async () => {
 		expect(worker.pollCount).toBe(1)

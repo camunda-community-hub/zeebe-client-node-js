@@ -6,6 +6,7 @@ import { Duration, MaybeTimeDuration } from 'typed-duration'
 import * as uuid from 'uuid'
 import { parseVariablesAndCustomHeadersToJSON } from '../lib'
 import * as ZB from '../lib/interfaces-1.0'
+import { JOB_ACTION_ACKNOWLEDGEMENT } from '../lib/interfaces-1.0'
 import { StatefulLogInterceptor } from '../lib/StatefulLogInterceptor'
 import { ConnectionStatusEvent, ZBClient } from '../zb/ZBClient'
 import {
@@ -271,7 +272,13 @@ export class ZBWorkerBase<
 		)
 	}
 
-	protected makeCompleteHandlers<T>(thisJob: ZB.Job): ZB.CompleteFn<T> {
+	protected makeCompleteHandlers<T>(
+		thisJob: ZB.Job
+	): ZB.CompleteFn<T> & ZB.JobCompletionInterface<T> {
+		const cancelWorkflow = (job: ZB.Job) => () =>
+			this.zbClient
+				.cancelProcessInstance(job.processInstanceKey)
+				.then(() => JOB_ACTION_ACKNOWLEDGEMENT)
 		const failJob = (job: ZB.Job) => (
 			errorMessage: string,
 			retries?: number
@@ -290,9 +297,19 @@ export class ZBWorkerBase<
 				job,
 			})
 		return {
+			cancelWorkflow: cancelWorkflow(thisJob),
 			error: errorJob(thisJob),
 			failure: failJob(thisJob),
-			forwarded: () => this.drainOne(),
+			fail: failJob(thisJob),
+			forwarded: () => {
+				this.drainOne()
+				return JOB_ACTION_ACKNOWLEDGEMENT
+			},
+			forward: () => {
+				this.drainOne()
+				return JOB_ACTION_ACKNOWLEDGEMENT
+			},
+			complete: succeedJob(thisJob),
 			success: succeedJob(thisJob),
 		}
 	}
@@ -306,12 +323,13 @@ export class ZBWorkerBase<
 		errorMessage: string
 		retries?: number
 	}) {
-		this.zbClient
+		return this.zbClient
 			.failJob({
 				errorMessage,
 				jobKey: job.key,
 				retries: retries ?? job.retries - 1,
 			})
+			.then(() => JOB_ACTION_ACKNOWLEDGEMENT)
 			.finally(() => {
 				this.logger.logDebug(`Failed job ${job.key} - ${errorMessage}`)
 				this.drainOne()
@@ -336,6 +354,7 @@ export class ZBWorkerBase<
 				)
 				return e
 			})
+			.then(() => JOB_ACTION_ACKNOWLEDGEMENT)
 			.finally(() => {
 				this.drainOne()
 			})
@@ -365,7 +384,10 @@ export class ZBWorkerBase<
 				)
 				this.logger.logError(e)
 			})
-			.then(() => this.drainOne())
+			.then(() => {
+				this.drainOne()
+				return JOB_ACTION_ACKNOWLEDGEMENT
+			})
 	}
 
 	private handleStreamEnd = id => {

@@ -52,9 +52,7 @@ test('Can create a worker', done => {
 	const worker = zbc.createWorker(
 		'test',
 		'TASK_TYPE',
-		(job, complete) => {
-			complete.success(job)
-		},
+		(job, complete) => complete.success(job),
 		{ loglevel: 'NONE' }
 	)
 	expect(worker).toBeTruthy()

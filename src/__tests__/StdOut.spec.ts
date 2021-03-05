@@ -8,7 +8,13 @@ test('uses an injected stdout', done => {
 	const z = new ZBClient({ stdout: mockStd, eagerConnection: false })
 
 	// tslint:disable-next-line: no-console
-	z.createWorker('test', console.log)
+	z.createWorker({
+		taskType: 'test',
+		taskHandler: job => {
+			console.log(job)
+			return job.complete()
+		},
+	})
 	setTimeout(() => {
 		z.close()
 	}, 2000)

@@ -48,8 +48,9 @@ test('Can service a task', async done => {
 		taskTypes['console-log'],
 		async (job, complete) => {
 			expect(job.workflowInstanceKey).toBe(wf.workflowInstanceKey)
-			await complete.success(job.variables)
+			const res = await complete.success(job.variables)
 			done()
+			return res
 		},
 		{ loglevel: 'NONE' }
 	)
@@ -76,8 +77,9 @@ test('Can service a task with complete.success', async done => {
 		taskTypes['console-log-complete'],
 		async (job, complete) => {
 			expect(job.workflowInstanceKey).toBe(wf.workflowInstanceKey)
-			await complete.success(job.variables)
+			const res = await complete.success(job.variables)
 			done()
+			return res
 		},
 		{ loglevel: 'NONE' }
 	)
@@ -109,7 +111,7 @@ test('Can update workflow variables with complete.success()', async done => {
 		taskTypes.wait,
 		async (job, complete) => {
 			expect(job.workflowInstanceKey).toBe(wfi)
-			await complete.success({
+			return await complete.success({
 				conditionVariable: false,
 			})
 		},
@@ -122,9 +124,10 @@ test('Can update workflow variables with complete.success()', async done => {
 		async (job, complete) => {
 			expect(job.workflowInstanceKey).toBe(wfi)
 			expect(job.variables.conditionVariable).toBe(false)
-			await complete.success(job.variables)
+			const res = await complete.success(job.variables)
 			wf = undefined
 			done()
+			return res
 		},
 		{ loglevel: 'NONE' }
 	)

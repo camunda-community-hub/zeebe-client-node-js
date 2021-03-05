@@ -69,7 +69,7 @@ test('Can update workflow variables with setVariables', async done => {
 		async (job, complete) => {
 			expect(job?.workflowInstanceKey).toBe(wfi)
 			trace(`Completing wait job for ${job.workflowInstanceKey}`)
-			complete.success(job)
+			return complete.success(job)
 		},
 		{ loglevel: 'INFO' }
 	)
@@ -79,8 +79,9 @@ test('Can update workflow variables with setVariables', async done => {
 		async (job, complete) => {
 			expect(job?.workflowInstanceKey).toBe(wfi)
 			expect(job?.variables?.conditionVariable).toBe(false)
-			complete.success(job.variables)
+			const res = complete.success(job.variables)
 			done()
+			return res
 		},
 		{ loglevel: 'INFO' }
 	)

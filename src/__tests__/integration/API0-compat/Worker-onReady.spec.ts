@@ -6,7 +6,7 @@ process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 test(`Worker calls the onReady handler once if there is a broker`, done => {
 	let called = 0
 	const zbc2 = new ZBClient()
-	zbc2.createWorker('nonsense-task', (_, complete) => complete.success, {
+	zbc2.createWorker('nonsense-task', (_, complete) => complete.success(), {
 		onReady: () => {
 			called++
 		},
@@ -21,7 +21,7 @@ test(`Worker calls the onReady handler once if there is a broker`, done => {
 test(`Worker emits the ready event once if there is a broker`, done => {
 	let called = 0
 	const zbc2 = new ZBClient()
-	zbc2.createWorker('nonsense-task', (_, complete) => complete.success).on(
+	zbc2.createWorker('nonsense-task', (_, complete) => complete.success()).on(
 		'ready',
 		() => {
 			called++
@@ -57,7 +57,7 @@ test(`Does not set connected: true if there is a broker and eagerConnection: fal
 test(`Does not call the onReady handler if there is no broker`, done => {
 	let called = 0
 	const zbc2 = new ZBClient('nobroker')
-	zbc2.createWorker('nonsense-task', (_, complete) => complete.success, {
+	zbc2.createWorker('nonsense-task', (_, complete) => complete.success(), {
 		onReady: () => {
 			called++
 		},
@@ -74,7 +74,7 @@ test(`Does not emit the ready event if there is no broker`, done => {
 	const zbc2 = new ZBClient('nobroker')
 	zbc2.createWorker({
 		loglevel: 'NONE',
-		taskHandler: (_, complete) => complete.success,
+		taskHandler: (_, complete) => complete.success(),
 		taskType: 'nonsense-task',
 	}).on('ready', () => {
 		called++

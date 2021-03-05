@@ -543,7 +543,9 @@ The `ZBWorker` takes a _job handler function_ that is invoked for each job. It i
 
 The simplest signature for a worker takes a string task type, and a job handler function.
 
-The job handler receives the job object, a callback that it can use to complete or fail the job, and a reference to the worker itself, which you can use to log using the worker's configured logger (See [Logging](#logging)).
+The job handler receives the job object, which has methods that it can use to complete or fail the job, and a reference to the worker itself, which you can use to log using the worker's configured logger (See [Logging](#logging)).
+
+Note: _The second argument is deprecated, and remains for backward-compatibility - it is a complete function. In the 1.0 version of the API, the complete function methods are available on the `job` object_.
 
 ```javascript
 const ZB = require('zeebe-node')
@@ -552,7 +554,7 @@ const zbc = new ZB.ZBClient()
 
 const zbWorker = zbc.createWorker('demo-service', handler)
 
-function handler(job, complete, worker) {
+function handler(job, _, worker) {
 	worker.log('Task variables', job.variables)
 
 	// Task worker business logic goes here
@@ -560,7 +562,7 @@ function handler(job, complete, worker) {
 		updatedProperty: 'newValue',
 	}
 
-	complete.success(updateToBrokerVariables)
+	job.complete(updateToBrokerVariables)
 }
 ```
 
@@ -632,19 +634,19 @@ zbc.createWorker('console-log', maybeFaultyHandler, {
 
 ### Completing tasks with success, failure, error, or forwarded
 
-To complete a task, the task worker handler function receives a `complete` parameter. The complete object has `success`, `failure`, and `error` methods.
+To complete a task, the job object that the task worker handler function receives has `complete`, `fail`, and `error` methods.
 
-Call `complete.success()` passing in a optional plain old JavaScript object (POJO) - a key:value map. These are variable:value pairs that will be used to update the process state in the broker. They will be merged with existing values. You can set an existing key to `null` or `undefined`, but there is no way to delete a key.
+Call `job.complete()` passing in a optional plain old JavaScript object (POJO) - a key:value map. These are variable:value pairs that will be used to update the process state in the broker. They will be merged with existing values. You can set an existing key to `null` or `undefined`, but there is no way to delete a key.
 
-Call `complete.failure()` to fail the task. You must pass in a string message describing the failure. The client library decrements the retry count, and the broker handles the retry logic. If the failure is a hard failure and should cause an incident to be raised in Operate, then pass in `0` for the optional second parameter, `retries`:
+Call `job.fail()` to fail the task. You must pass in a string message describing the failure. The client library decrements the retry count, and the broker handles the retry logic. If the failure is a hard failure and should cause an incident to be raised in Operate, then pass in `0` for the optional second parameter, `retries`:
 
 ```javascript
-complete.failure('This is a critical failure and will raise an incident', 0)
+job.fail('This is a critical failure and will raise an incident', 0)
 ```
 
-Call `complete.error()` to trigger a BPMN error throw event. You must pass in a string error code for the error code, and you can pass an optional error message as the second parameter. If no BPMN error catch event exists for the error code, an incident will be raised.
+Call `job.error()` to trigger a BPMN error throw event. You must pass in a string error code for the error code, and you can pass an optional error message as the second parameter. If no BPMN error catch event exists for the error code, an incident will be raised.
 
-Call `complete.forwarded()` to release worker capacity to handle another job, without completing the job in any way with the Zeebe broker. This method supports the _decoupled job completion_ pattern. In this pattern, the worker forwards the job to another system - a lambda or a RabbitMQ queue. Some other process is ultimately responsible for completing the job.
+Call `job.forwarded()` to release worker capacity to handle another job, without completing the job in any way with the Zeebe broker. This method supports the _decoupled job completion_ pattern. In this pattern, the worker forwards the job to another system - a lambda or a RabbitMQ queue. Some other process is ultimately responsible for completing the job.
 
 <a name = "working-with-variables"></a>
 
@@ -666,10 +668,10 @@ const { ZBClient } = require('zeebe-node')
 
 const zbc = new ZBClient()
 
-zbc.createWorker('some-task', (job, complete) => {
+zbc.createWorker('some-task', job => {
     const { people } = job.variables
     // update bob's age, keeping all his other properties the same
-    complete.success(merge(people, { bob: { age: 23 } }))
+    job.complete(merge(people, { bob: { age: 23 } }))
 })
 ```
 
@@ -681,9 +683,9 @@ Process variables and custom headers are untyped in the Zeebe broker, however th
 // No type checking - totally dynamic and unchecked
 zbc.createWorker<any>({
     taskType: 'yolo-jobs',
-    taskHandler: (job, complete, worker) => {
+    taskHandler: (job, _, worker) => {
         worker.log(`Look ma - ${job.variables.anything.goes.toUpperCase()}`)
-        complete.success({what: job.variables.could.possibly.go.wrong})
+        job.complete({what: job.variables.could.possibly.go.wrong})
     }
 })
 ```
@@ -701,10 +703,10 @@ You can also use the `fetchVariable` parameter when creating a worker. Pass an a
 ```javascript
 zbc.createWorker({
 	taskType: 'process-favorite-albums',
-	taskHandler: (job, complete, worker) => {
+	taskHandler: (job, _, worker) => {
 		const { name, albums } = job.variables
 		worker.log(`${name} has the following albums: ${albums.join(', ')}`)
-		complete.success()
+		job.complete()
 	},
 	fetchVariable: ['name', 'albums'],
 })
@@ -720,10 +722,10 @@ interface Variables {
 
 zbc.createWorker<Variables>({
     taskType: 'process-favorite-albums',
-    taskHandler: (job, complete, worker) => {
+    taskHandler: (job, _, worker) => {
         const { name, albums = [] } = job.variables
         worker.log(`${name} has the following albums: ${albums?.join?.(', ')}`)
-        complete.success()
+        job.complete()
     },
     fetchVariable: ['name', 'albums'],
 })
@@ -743,11 +745,11 @@ You can turn off the type-safety by typing the worker as `any`:
 ```TypeScript
 zbc.createWorker<any>({
     taskType: 'process-favorite-albums',
-    taskHandler: (job, complete, worker) => {
+    taskHandler: (job, _, worker) => {
         const { name, albums = [] } = job.variables
         // TS 3.7 safe access to .join _and_ safe call, to prevent run-time exceptions
         worker.log(`${name} has the following albums: ${albums?.join?.(', ')}`)
-        complete.success()
+        job.complete()
     },
     fetchVariable: ['name', 'albums'],
 })
@@ -763,7 +765,7 @@ You might activate jobs and then send them to a RabbitMQ queue, or to an AWS lam
 
 The first thing you should do is ensure that you activate the job with sufficient time for the complete execution of your system. Your worker will not be completing the job, but it informs the broker how long the expected loop will take to close.
 
-Next, call `complete.forwarded()` in your job worker handler. This has no side-effect with the broker - so nothing is communicated to Zeebe. The job is still out there with your worker as far as Zeebe is concerned. What this call does is release worker capacity to request more jobs.
+Next, call `job.forward()` in your job worker handler. This has no side-effect with the broker - so nothing is communicated to Zeebe. The job is still out there with your worker as far as Zeebe is concerned. What this call does is release worker capacity to request more jobs.
 
 If you are using the Zeebe Node library in the remote system, or if the remote system eventually reports back to you (perhaps over a different RabbitMQ queue), you can use the ZBClient methods `completeJob()`, `failJob()`, and `throwError()` to report the outcome back to the broker.
 
@@ -785,7 +787,7 @@ Here is how you do it:
 
 -   Your worker gets the job from Zeebe.
 -   Your worker makes the command and sends it down the RabbitMQ "request" queue, with the `job.jobKey` as the correlation id.
--   Your worker calls `complete.forwarded()`
+-   Your worker calls `job.forward()`
 
 Here is what that looks like in code:
 
@@ -798,7 +800,7 @@ const zbc = new ZBClient()
 const cobolWorker = zbc.createWorker({
     taskType: 'cobol-insert',
     timeout: Duration.seconds.of(20), // allow 5s over the expected 15s
-    taskHandler: (job, complete) => {
+    taskHandler: job => {
     const { jobKey, variables } = job
     const request = {
         correlationId: jobKey,
@@ -808,8 +810,8 @@ const cobolWorker = zbc.createWorker({
         channel: 'COBOL_REQ',
         request
     })
-    // Call forwarded() to release worker capacity
-    complete.forwarded()
+    // Call forward() to release worker capacity
+    job.forward()
 })
 ```
 
@@ -854,7 +856,6 @@ See also the section "[Publish a Message](#publish-message)", for a pattern that
 The `ZBBatchWorker` Job Worker batches jobs before calling the job handler. Its fundamental differences from the ZBWorker are:
 
 -   Its job handler receives an _array_ of one or more jobs.
--   The jobs have `success`, `failure`, `error`, and `forwarded` methods _attached_ to them.
 -   The handler is not invoked immediately, but rather when enough jobs are batched, or a job in the batch is at risk of being timed out by the Zeebe broker.
 
 You can use the batch worker if you have tasks that _benefit from processing together_, but are _not related in the BPMN model_.
@@ -895,9 +896,9 @@ const handler = async (jobs: BatchedJob[], worker: ZBBatchWorker) => {
         const getJob = findJobByKey(jobs)
         // Iterate over the results and call the succeed method on the corresponding job,
         // passing in the correlated outcome of the API call
-        outcomes.forEach(res => getJob(res.id)?.success(res.data))
+        outcomes.forEach(res => getJob(res.id)?.complete(res.data))
     } catch (e) {
-        jobs.forEach(job => job.failure(e.message))
+        jobs.forEach(job => job.fail(e.message))
     }
 }
 

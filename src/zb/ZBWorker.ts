@@ -45,7 +45,18 @@ export class ZBWorker<
 				WorkerInputVariables,
 				CustomHeaderShape,
 				WorkerOutputVariables
-			>)(job, workerCallback, this)
+			>)(
+				{
+					...job,
+					cancelWorkflow: workerCallback.cancelWorkflow,
+					complete: workerCallback.complete,
+					fail: workerCallback.fail,
+					error: workerCallback.error,
+					forward: workerCallback.forward,
+				},
+				workerCallback,
+				this
+			)
 		} catch (e) {
 			this.logger.logError(
 				`Caught an unhandled exception in a task handler for workflow instance ${job.workflowInstanceKey}:`

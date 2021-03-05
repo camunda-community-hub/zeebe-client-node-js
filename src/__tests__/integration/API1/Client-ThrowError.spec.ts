@@ -27,16 +27,18 @@ test('Throws a business error that is caught in the process', async () => {
 		name: `error-throw-bpmn-error-${processId}.bpmn`,
 	})
 	zbc.createWorker({
-		taskHandler: (_, complete) =>
-			complete.error('BUSINESS_ERROR', "Well, that didn't work"),
+		taskHandler: job =>
+			job.error('BUSINESS_ERROR', "Well, that didn't work"),
 		taskType: taskTypes['throw-bpmn-error-task'],
 		timeout: Duration.seconds.of(30),
 	})
-	zbc.createWorker(taskTypes['sad-flow'], (_, complete) =>
-		complete.success({
-			bpmnErrorCaught: true,
-		})
-	)
+	zbc.createWorker({
+		taskType: taskTypes['sad-flow'],
+		taskHandler: job =>
+			job.complete({
+				bpmnErrorCaught: true,
+			}),
+	})
 	const result = await zbc.createProcessInstanceWithResult(processId, {
 		timeout: 20000,
 	})

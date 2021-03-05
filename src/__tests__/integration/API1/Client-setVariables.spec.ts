@@ -65,24 +65,25 @@ test('Can update process variables with setVariables', async done => {
 		},
 	}).then(trace)
 	trace('Creating wait worker')
-	zbc.createWorker(
-		taskTypes.wait,
-		async (job, complete) => {
+	zbc.createWorker({
+		taskType: taskTypes.wait,
+		taskHandler: async job => {
 			expect(job?.processInstanceKey).toBe(wfi)
 			trace(`Completing wait job for ${job.processInstanceKey}`)
-			complete.success(job)
+			return job.complete()
 		},
-		{ loglevel: 'INFO' }
-	)
+		loglevel: 'INFO',
+	})
 
-	zbc.createWorker(
-		taskTypes.pathB,
-		async (job, complete) => {
+	zbc.createWorker({
+		taskType: taskTypes.pathB,
+		taskHandler: async job => {
 			expect(job?.processInstanceKey).toBe(wfi)
 			expect(job?.variables?.conditionVariable).toBe(false)
-			complete.success(job.variables)
+			const res = job.complete()
 			done()
+			return res
 		},
-		{ loglevel: 'INFO' }
-	)
+		loglevel: 'INFO',
+	})
 })

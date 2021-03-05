@@ -1,6 +1,6 @@
 export { ZBJsonLogger } from './lib/ZBJsonLogger'
 export { BpmnParser } from './lib/BpmnParser'
-export * from './lib/interfaces'
+export * from './lib/interfaces-1.0'
 export * from './lib/interfaces-published-contract'
 export * from './lib/interfaces-grpc'
 export * from './zb/ZBClient'

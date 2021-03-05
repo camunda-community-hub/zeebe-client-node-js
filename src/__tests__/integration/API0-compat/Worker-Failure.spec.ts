@@ -1,5 +1,6 @@
 import { CreateWorkflowInstanceResponse, ZBClient } from '../../..'
 import { createUniqueTaskType } from '../../../lib/createUniqueTaskType'
+import { JobBatcher } from '../../../lib/JobBatcher'
 
 const trace = res => {
 	// tslint:disable-next-line: no-console
@@ -80,15 +81,15 @@ test('Causes a retry with complete.failure()', () =>
 				if (job.retries === 1) {
 					// tslint:disable-next-line: no-console
 					// console.log('Complete Job 1...') // @DEBUG
-					await complete.success()
+					const res = await complete.success()
 					// tslint:disable-next-line: no-console
 					// console.log('Job completed 1') // @DEBUG
 
 					expect(job.workflowInstanceKey).toBe(wfi)
 					expect(job.retries).toBe(1)
 					wf = undefined
-
-					return resolve(null)
+					resolve(null)
+					return res
 				}
 				await complete.failure('Triggering a retry')
 			},
@@ -166,10 +167,10 @@ test('Fails a workflow when the handler throws and options.failWorkflowOnExcepti
 	// Faulty worker
 	const w = zbc.createWorker(
 		taskTypes['console-log-worker-failure-3'],
-		() => {
+		job => {
 			if (alreadyFailed) {
 				// It polls multiple times a second, and we need it to only throw once
-				return
+				return job.forward()
 			}
 			alreadyFailed = true
 			testWorkflowInstanceExists() // waits 1000ms then checks

@@ -5,7 +5,7 @@ jest.setTimeout(20000)
 test('deploys a process', async () => {
 	const zbc = new ZBClient()
 	const { bpmn, processId } = createUniqueTaskType({
-		bpmnFilePath: `./src/__tests__/testdata/Client-DeployProcess.bpmn`,
+		bpmnFilePath: `./src/__tests__/testdata/Client-DeployWorkflow.bpmn`,
 		messages: [],
 		taskTypes: [],
 	})

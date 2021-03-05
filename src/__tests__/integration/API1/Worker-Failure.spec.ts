@@ -76,27 +76,23 @@ test('Causes a retry with complete.failure()', () =>
 
 		// tslint:disable-next-line: no-console
 		// console.log('Creating worker 1...') // @DEBUG
-		zbc.createWorker(
-			taskTypes['wait-worker-failure'],
-			async (job, complete) => {
+		zbc.createWorker({
+			taskType: taskTypes['wait-worker-failure'],
+			taskHandler: async job => {
 				// Succeed on the third attempt
 				if (job.retries === 1) {
-					// tslint:disable-next-line: no-console
-					// console.log('Complete Job 1...') // @DEBUG
-					await complete.success()
-					// tslint:disable-next-line: no-console
-					// console.log('Job completed 1') // @DEBUG
-
+					const res = await job.complete()
 					expect(job.processInstanceKey).toBe(wfi)
 					expect(job.retries).toBe(1)
 					wf = undefined
 
-					return resolve(null)
+					resolve(null)
+					return res
 				}
-				await complete.failure('Triggering a retry')
+				return await job.fail('Triggering a retry')
 			},
-			{ loglevel: 'NONE' }
-		)
+			loglevel: 'NONE',
+		})
 	}))
 
 test('Does not fail a process when the handler throws, by default', async done => {
@@ -120,15 +116,12 @@ test('Does not fail a process when the handler throws, by default', async done =
 	// tslint:disable-next-line: no-console
 	// console.log('Creating worker 2...') // @DEBUG
 	// Faulty worker - throws an unhandled exception in task handler
-	const w = zbc.createWorker(
-		taskTypes['console-log-worker-failure-2'],
-		async (_, complete) => {
-			// tslint:disable-next-line: no-console
-			// console.log('Completing job 2...') // @DEBUG
-
+	const w = zbc.createWorker({
+		taskType: taskTypes['console-log-worker-failure-2'],
+		taskHandler: async job => {
 			if (alreadyFailed) {
 				await zbc.cancelProcessInstance(wf!.processInstanceKey) // throws if not found. Should NOT throw in this test
-				complete.success()
+				job.complete()
 				return w.close().then(() => done())
 			}
 			alreadyFailed = true
@@ -136,11 +129,10 @@ test('Does not fail a process when the handler throws, by default', async done =
 				'Unhandled exception in task handler for testing purposes'
 			) // Will be caught in the library
 		},
-		{
-			loglevel: 'NONE',
-			pollInterval: 10000,
-		}
-	)
+
+		loglevel: 'NONE',
+		pollInterval: 10000,
+	})
 })
 
 test('Fails a process when the handler throws and options.failProcessOnException is set', async done => {
@@ -167,12 +159,12 @@ test('Fails a process when the handler throws and options.failProcessOnException
 	// tslint:disable-next-line: no-console
 	// console.log('Creating worker...') // @DEBUG
 	// Faulty worker
-	const w = zbc.createWorker(
-		taskTypes['console-log-worker-failure-3'],
-		() => {
+	const w = zbc.createWorker({
+		taskType: taskTypes['console-log-worker-failure-3'],
+		taskHandler: job => {
 			if (alreadyFailed) {
 				// It polls multiple times a second, and we need it to only throw once
-				return
+				return job.forward()
 			}
 			alreadyFailed = true
 			testProcessInstanceExists() // waits 1000ms then checks
@@ -180,11 +172,9 @@ test('Fails a process when the handler throws and options.failProcessOnException
 				'Unhandled exception in task handler for test purposes'
 			) // Will be caught in the library
 		},
-		{
-			failProcessOnException: true,
-			loglevel: 'NONE',
-		}
-	)
+		failProcessOnException: true,
+		loglevel: 'NONE',
+	})
 
 	function testProcessInstanceExists() {
 		setTimeout(async () => {
