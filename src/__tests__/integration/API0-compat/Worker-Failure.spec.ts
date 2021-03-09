@@ -1,6 +1,5 @@
 import { CreateWorkflowInstanceResponse, ZBClient } from '../../..'
 import { createUniqueTaskType } from '../../../lib/createUniqueTaskType'
-import { JobBatcher } from '../../../lib/JobBatcher'
 
 const trace = res => {
 	// tslint:disable-next-line: no-console
@@ -91,7 +90,7 @@ test('Causes a retry with complete.failure()', () =>
 					resolve(null)
 					return res
 				}
-				await complete.failure('Triggering a retry')
+				return await complete.failure('Triggering a retry')
 			},
 			{ loglevel: 'NONE' }
 		)

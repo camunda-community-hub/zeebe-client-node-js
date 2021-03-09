@@ -14,8 +14,6 @@ let zbc: ZBClient
 let wf: CreateProcessInstanceResponse | undefined
 
 beforeEach(() => {
-	// tslint:disable-next-line: no-console
-	// console.log('Creating client...') // @DEBUG
 	zbc = new ZBClient()
 })
 
@@ -27,12 +25,7 @@ afterEach(async done => {
 	} catch (e) {
 		// console.log('Caught NOT FOUND') // @DEBUG
 	} finally {
-		// tslint:disable-next-line: no-console
-		// console.log('Closing client...') // @DEBUG
 		await zbc.close() // Makes sure we don't forget to close connection
-		// tslint:disable-next-line: no-console
-		// console.log('Client closed.') // @DEBUG
-
 		done()
 	}
 })
@@ -44,8 +37,6 @@ test('Causes a retry with complete.failure()', () =>
 			messages: [],
 			taskTypes: ['wait-worker-failure'],
 		})
-		// tslint:disable-next-line: no-console
-		// console.log('Deploying 1...') // @DEBUG
 		const res = await zbc
 			.deployProcess({
 				definition: bpmn,
@@ -55,17 +46,12 @@ test('Causes a retry with complete.failure()', () =>
 
 		expect(res.processes.length).toBe(1)
 		expect(res.processes[0].bpmnProcessId).toBe(processId)
-
-		// tslint:disable-next-line: no-console
-		// console.log('Creating process instance 1...') // @DEBUG
 		wf = await zbc.createProcessInstance(processId, {
 			conditionVariable: true,
 		})
 		const wfi = wf.processInstanceKey
 		expect(wfi).toBeTruthy()
 
-		// tslint:disable-next-line: no-console
-		// console.log('Set variables 1...') // @DEBUG
 		await zbc.setVariables({
 			elementInstanceKey: wfi,
 			local: false,
@@ -74,8 +60,6 @@ test('Causes a retry with complete.failure()', () =>
 			},
 		})
 
-		// tslint:disable-next-line: no-console
-		// console.log('Creating worker 1...') // @DEBUG
 		zbc.createWorker({
 			taskType: taskTypes['wait-worker-failure'],
 			taskHandler: async job => {
@@ -107,14 +91,11 @@ test('Does not fail a process when the handler throws, by default', async done =
 	})
 	expect(res.processes.length).toBe(1)
 	expect(res.processes[0].bpmnProcessId).toBe(processId)
-	// tslint:disable-next-line: no-console
-	// console.log('Creating process instance 2...') // @DEBUG
+
 	wf = await zbc.createProcessInstance(processId, {})
 
 	let alreadyFailed = false
 
-	// tslint:disable-next-line: no-console
-	// console.log('Creating worker 2...') // @DEBUG
 	// Faulty worker - throws an unhandled exception in task handler
 	const w = zbc.createWorker({
 		taskType: taskTypes['console-log-worker-failure-2'],
@@ -141,8 +122,6 @@ test('Fails a process when the handler throws and options.failProcessOnException
 		messages: [],
 		taskTypes: ['console-log-worker-failure-3'],
 	})
-	// tslint:disable-next-line: no-console
-	// console.log('Deploy process 3....') // @DEBUG
 
 	const res = await zbc.deployProcess({
 		definition: bpmn,
@@ -151,13 +130,11 @@ test('Fails a process when the handler throws and options.failProcessOnException
 
 	expect(res.processes.length).toBe(1)
 	expect(res.processes[0].bpmnProcessId).toBe(processId)
-	// tslint:disable-next-line: no-console
-	// console.log('Creating process instance 3...') // @DEBUG
+
 	wf = await zbc.createProcessInstance(processId, {})
 
 	let alreadyFailed = false
-	// tslint:disable-next-line: no-console
-	// console.log('Creating worker...') // @DEBUG
+
 	// Faulty worker
 	const w = zbc.createWorker({
 		taskType: taskTypes['console-log-worker-failure-3'],

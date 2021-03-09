@@ -7,9 +7,6 @@ let zbc: ZBClient
 let wf
 
 beforeEach(async () => {
-	// tslint:disable-next-line: no-console
-	// console.log('Creating client...') // @DEBUG
-
 	zbc = new ZBClient()
 })
 
@@ -38,11 +35,7 @@ test('Can service a task', async done => {
 
 	expect(res.workflows.length).toBe(1)
 
-	// tslint:disable-next-line: no-console
-	// console.log('Creating workflow instance...') // @DEBUG
 	wf = await zbc.createWorkflowInstance(processId, {})
-	// tslint:disable-next-line: no-console
-	// console.log('Creating worker...') // @DEBUG
 
 	zbc.createWorker(
 		taskTypes['console-log'],
@@ -68,11 +61,8 @@ test('Can service a task with complete.success', async done => {
 	})
 
 	expect(res.workflows.length).toBe(1)
-	// tslint:disable-next-line: no-console
-	// console.log('Creating workflow instance...') // @DEBUG
 	wf = await zbc.createWorkflowInstance(processId, {})
-	// tslint:disable-next-line: no-console
-	// console.log('Creating worker...') // @DEBUG
+
 	zbc.createWorker(
 		taskTypes['console-log-complete'],
 		async (job, complete) => {
@@ -98,15 +88,13 @@ test('Can update workflow variables with complete.success()', async done => {
 
 	expect(res.workflows.length).toBe(1)
 	expect(res.workflows[0].bpmnProcessId).toBe(processId)
-	// tslint:disable-next-line: no-console
-	// console.log('Creating workflow instance...') // @DEBUG
+
 	wf = await zbc.createWorkflowInstance(processId, {
 		conditionVariable: true,
 	})
 	const wfi = wf.workflowInstanceKey
 	expect(wfi).toBeTruthy()
-	// tslint:disable-next-line: no-console
-	// console.log('Creating worker...') // @DEBUG
+
 	zbc.createWorker(
 		taskTypes.wait,
 		async (job, complete) => {
@@ -117,8 +105,7 @@ test('Can update workflow variables with complete.success()', async done => {
 		},
 		{ loglevel: 'NONE' }
 	)
-	// tslint:disable-next-line: no-console
-	// console.log('Creating worker...') // @DEBUG
+
 	zbc.createWorker(
 		taskTypes.pathB,
 		async (job, complete) => {

@@ -56,14 +56,15 @@ test('Can raise an Operate incident with complete.failure()', async done => {
 		async (job, complete) => {
 			expect(job.workflowInstanceKey).toBe(wfi)
 			expect(job.variables.conditionVariable).toBe(false)
-			await complete.failure('Raise an incident in Operate', 0)
-			// Manually verify that an incident has been raised
-			const res = await zbc.cancelWorkflowInstance(
-				job.workflowInstanceKey
+			const res = await complete.failure(
+				'Raise an incident in Operate',
+				0
 			)
+			// Manually verify that an incident has been raised
+			await zbc.cancelWorkflowInstance(job.workflowInstanceKey)
 			// comment out the preceding line for the verification test
 			done()
-			return job.forward()
+			return res
 		},
 		{ maxJobsToActivate: 1, loglevel: 'NONE' }
 	)

@@ -279,16 +279,21 @@ export class ZBWorkerBase<
 			thisMethod: string,
 			wrappedFunction: any
 		) => {
-			if (methodCalled !== undefined) {
-				// tslint:disable-next-line: no-console
-				console.log(
-					chalk.red(`WARNING: Call to ${thisMethod}() after ${methodCalled}() was called.
-You should call only one job action method in a worker handler code branch. This is a bug in your worker handler.`)
-				)
-				return wrappedFunction
+			return (...args) => {
+				if (methodCalled !== undefined) {
+					// tslint:disable-next-line: no-console
+					console.log(
+						chalk.red(`WARNING: Call to ${thisMethod}() after ${methodCalled}() was called.
+You should call only one job action method in the worker handler. This is a bug in the ${this.taskType} worker handler.`)
+					)
+					// tslint:disable-next-line: no-console
+					console.log('handler', this.taskHandler.toString()) // @DEBUG
+
+					return wrappedFunction(...args)
+				}
+				methodCalled = thisMethod
+				return wrappedFunction(...args)
 			}
-			methodCalled = thisMethod
-			return wrappedFunction
 		}
 		const cancelWorkflow = (job: ZB.Job) => () =>
 			this.zbClient
@@ -311,18 +316,14 @@ You should call only one job action method in a worker handler code branch. This
 				errorMessage,
 				job,
 			})
+		const fail = failJob(thisJob)
+		const succeed = succeedJob(thisJob)
 		return {
 			cancelWorkflow: cancelWorkflow(thisJob),
-			complete: errorMsgOnPriorMessageCall(
-				'job.complete',
-				succeedJob(thisJob)
-			),
+			complete: errorMsgOnPriorMessageCall('job.complete', succeed),
 			error: errorMsgOnPriorMessageCall('error', errorJob(thisJob)),
-			fail: errorMsgOnPriorMessageCall('job.fail', failJob(thisJob)),
-			failure: errorMsgOnPriorMessageCall(
-				'complete.failure',
-				failJob(thisJob)
-			),
+			fail: errorMsgOnPriorMessageCall('job.fail', fail),
+			failure: errorMsgOnPriorMessageCall('complete.failure', fail),
 			forward: errorMsgOnPriorMessageCall('job.forward', () => {
 				this.drainOne()
 				return ZB.JOB_ACTION_ACKNOWLEDGEMENT
@@ -331,10 +332,7 @@ You should call only one job action method in a worker handler code branch. This
 				this.drainOne()
 				return ZB.JOB_ACTION_ACKNOWLEDGEMENT
 			}),
-			success: errorMsgOnPriorMessageCall(
-				'complete.success',
-				succeedJob(thisJob)
-			),
+			success: errorMsgOnPriorMessageCall('complete.success', succeed),
 		}
 	}
 
