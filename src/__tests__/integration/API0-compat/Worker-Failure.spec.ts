@@ -24,12 +24,7 @@ afterEach(async done => {
 	} catch (e) {
 		// console.log('Caught NOT FOUND') // @DEBUG
 	} finally {
-		// tslint:disable-next-line: no-console
-		// console.log('Closing client...') // @DEBUG
 		await zbc.close() // Makes sure we don't forget to close connection
-		// tslint:disable-next-line: no-console
-		// console.log('Client closed.') // @DEBUG
-
 		done()
 	}
 })
@@ -41,8 +36,7 @@ test('Causes a retry with complete.failure()', () =>
 			messages: [],
 			taskTypes: ['wait-worker-failure'],
 		})
-		// tslint:disable-next-line: no-console
-		// console.log('Deploying 1...') // @DEBUG
+
 		const res = await zbc
 			.deployWorkflow({
 				definition: bpmn,
@@ -53,16 +47,12 @@ test('Causes a retry with complete.failure()', () =>
 		expect(res.workflows.length).toBe(1)
 		expect(res.workflows[0].bpmnProcessId).toBe(processId)
 
-		// tslint:disable-next-line: no-console
-		// console.log('Creating workflow instance 1...') // @DEBUG
 		wf = await zbc.createWorkflowInstance(processId, {
 			conditionVariable: true,
 		})
 		const wfi = wf.workflowInstanceKey
 		expect(wfi).toBeTruthy()
 
-		// tslint:disable-next-line: no-console
-		// console.log('Set variables 1...') // @DEBUG
 		await zbc.setVariables({
 			elementInstanceKey: wfi,
 			local: false,
@@ -71,19 +61,12 @@ test('Causes a retry with complete.failure()', () =>
 			},
 		})
 
-		// tslint:disable-next-line: no-console
-		// console.log('Creating worker 1...') // @DEBUG
 		zbc.createWorker(
 			taskTypes['wait-worker-failure'],
 			async (job, complete) => {
 				// Succeed on the third attempt
 				if (job.retries === 1) {
-					// tslint:disable-next-line: no-console
-					// console.log('Complete Job 1...') // @DEBUG
 					const res = await complete.success()
-					// tslint:disable-next-line: no-console
-					// console.log('Job completed 1') // @DEBUG
-
 					expect(job.workflowInstanceKey).toBe(wfi)
 					expect(job.retries).toBe(1)
 					wf = undefined
@@ -108,21 +91,13 @@ test('Does not fail a workflow when the handler throws, by default', async done 
 	})
 	expect(res.workflows.length).toBe(1)
 	expect(res.workflows[0].bpmnProcessId).toBe(processId)
-	// tslint:disable-next-line: no-console
-	// console.log('Creating workflow instance 2...') // @DEBUG
 	wf = await zbc.createWorkflowInstance(processId, {})
 
 	let alreadyFailed = false
-
-	// tslint:disable-next-line: no-console
-	// console.log('Creating worker 2...') // @DEBUG
 	// Faulty worker - throws an unhandled exception in task handler
 	const w = zbc.createWorker(
 		taskTypes['console-log-worker-failure-2'],
 		async (_, complete) => {
-			// tslint:disable-next-line: no-console
-			// console.log('Completing job 2...') // @DEBUG
-
 			if (alreadyFailed) {
 				await zbc.cancelWorkflowInstance(wf!.workflowInstanceKey) // throws if not found. Should NOT throw in this test
 				complete.success()
@@ -146,8 +121,6 @@ test('Fails a workflow when the handler throws and options.failWorkflowOnExcepti
 		messages: [],
 		taskTypes: ['console-log-worker-failure-3'],
 	})
-	// tslint:disable-next-line: no-console
-	// console.log('Deploy workflow 3....') // @DEBUG
 
 	const res = await zbc.deployWorkflow({
 		definition: bpmn,
@@ -156,13 +129,10 @@ test('Fails a workflow when the handler throws and options.failWorkflowOnExcepti
 
 	expect(res.workflows.length).toBe(1)
 	expect(res.workflows[0].bpmnProcessId).toBe(processId)
-	// tslint:disable-next-line: no-console
-	// console.log('Creating workflow instance 3...') // @DEBUG
+
 	wf = await zbc.createWorkflowInstance(processId, {})
 
 	let alreadyFailed = false
-	// tslint:disable-next-line: no-console
-	// console.log('Creating worker...') // @DEBUG
 	// Faulty worker
 	const w = zbc.createWorker(
 		taskTypes['console-log-worker-failure-3'],
