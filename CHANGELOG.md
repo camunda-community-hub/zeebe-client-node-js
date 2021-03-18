@@ -1,11 +1,17 @@
-# Version 1.0.0
+# Version 1.0.0-alpha.3
+
+## Known Issues
+
+_Things that don't work or don't work as expected, and which will be addressed in a future release_
+
+-   `onReady` and `onConnectionError` events are not firing reliably. At the moment, the `onConnectionError` is called even when a gateway is present and accessible, and `onReady` is not called. See [#215](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/215).
 
 ## Breaking changes
 
 _Changes in APIs or behaviour that may affect existing applications that use zeebe-node._
 
-- The Zeebe API has changed in 1.0.0 and uses a gRPC protocol that is incompatible with pre-1.0.0 brokers. _The 1.0.0 package will not work with a pre-1.0.0 broker_. Nor will a pre-1.0.0 version of `zeebe-node` work with a 1.0.0 broker. See [#208](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/208).
-- The worker task handler has a new type signature: `job => Promise<JOB_ACTION_ACKNOWLEDGEMENT>`. This means that all code branches in the worker handler must return a `complete` method call (deprecated), or one of the new `job.complete`, `job.fail`, `job.error`, `job.forward`, or `job.cancelWorkflowInstance` methods. This signature means that the type system can now do an exhaustiveness check to detect code paths that will always time out in the worker. See [#210](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/210).
+-   The Zeebe API has changed in 1.0.0 and uses a gRPC protocol that is incompatible with pre-1.0.0 brokers. _The 1.0.0 package will not work with a pre-1.0.0 broker_. Nor will a pre-1.0.0 version of `zeebe-node` work with a 1.0.0 broker. See [#208](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/208).
+-   The worker task handler has a new type signature: `job => Promise<JOB_ACTION_ACKNOWLEDGEMENT>`. This means that all code branches in the worker handler must return a `complete` method call (deprecated), or one of the new `job.complete`, `job.fail`, `job.error`, `job.forward`, or `job.cancelWorkflowInstance` methods. This signature means that the type system can now do an exhaustiveness check to detect code paths that will always time out in the worker. See [#210](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/210).
 
 ## Deprecations
 

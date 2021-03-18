@@ -8,11 +8,11 @@ import { Duration, MaybeTimeDuration } from 'typed-duration'
 import { v4 as uuid } from 'uuid'
 import {
 	BpmnParser,
+	makeAPI1ResAPI0Compatible,
 	parseVariables,
 	parseVariablesAndCustomHeadersToJSON,
 	stringifyVariables,
 	transformAPI0ReqToAPI1,
-	makeAPI1ResAPI0Compatible,
 } from '../lib'
 import { ConfigurationHydrator } from '../lib/ConfigurationHydrator'
 import { ConnectionFactory } from '../lib/ConnectionFactory'
@@ -217,7 +217,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		// Send command to broker to eagerly fail / prove connection.
 		// This is useful for, for example: the Node-Red client, which wants to
 		// display the connection status.
-		if (!!this.options.eagerConnection) {
+		if (this.options.eagerConnection ?? false) {
 			this.topology()
 				.then(res => {
 					this.logger.logDirect(
@@ -258,7 +258,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	}
 	/**
 	 * @deprecated use cancelProcessInstance instead
-	 **/
+	 */
 	public async cancelWorkflowInstance(
 		workflowInstanceKey: string | number
 	): Promise<void> {

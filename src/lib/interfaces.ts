@@ -68,7 +68,7 @@ export interface CreateWorkflowInstance<T> {
 
 /**
  * @deprecated use CreateProcessInstanceWithResult
- **/
+ */
 export interface CreateWorkflowInstanceWithResult<T> {
 	bpmnProcessId: string
 	version?: number
@@ -355,25 +355,25 @@ export interface ZBGrpc extends GrpcClient {
 	// Deprecated methods
 	/**
 	 * @deprecated use deployProcessSync instead
-	 **/
+	 */
 	deployWorkflowSync(workflows: {
 		workflows: WorkflowRequestObject[]
 	}): Promise<DeployWorkflowResponse>
 	/**
 	 * @deprecated use createProcessInstanceSync instead
-	 **/
+	 */
 	createWorkflowInstanceSync(
 		createWorkflowInstanceRequest: CreateWorkflowInstanceRequest
 	): Promise<CreateWorkflowInstanceResponse>
 	/**
 	 * @deprecated use createProcessInstanceWithResultSync instead
-	 **/
+	 */
 	createWorkflowInstanceWithResultSync<Result>(
 		createWorkflowInstanceWithResultRequest: CreateWorkflowInstanceWithResultRequest
 	): Promise<CreateWorkflowInstanceWithResultResponse<Result>>
 	/**
 	 * @deprecated use cancelProcessInstanceSync instead
-	 **/
+	 */
 	cancelWorkflowInstanceSync(workflowInstanceKey: {
 		workflowInstanceKey: string | number
 	}): Promise<void>
