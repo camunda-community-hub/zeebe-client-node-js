@@ -27,6 +27,7 @@ _New shiny stuff._
 
 -   The worker task handler now has a new signature: `job => Promise<JOB_ACTION_ACKNOWLEDGEMENT>`. The `complete` parameter is deprecated, and the job object now has the methods `job.complete`, `job.fail`, `job.error`, `job.forward`. See [#209](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/209).
 -   The `job` object has a new method `job.cancelWorkflowInstance`. This allows you to cancel a workflow from within a worker, and return a `Promise<JOB_ACTION_ACKNOWLEDGEMENT>` in the worker handler. See [#211](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/211).
+-   Attempting to call two outcome methods on a job (for example: `job.complete()` and `job.fail()`, or the deprecated `complete.success()` and `complete.error()`) will now log an error to the console, alerting you to the behaviour and identifying the task type of the worker. See [#213](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/213).
 
 # Version 0.26.0
 
