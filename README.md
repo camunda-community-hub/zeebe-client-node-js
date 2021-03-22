@@ -57,6 +57,7 @@ Get a hosted instance of Zeebe on [Camunda Cloud](https://camunda.io).
 -   [ The "Decoupled Job Completion" pattern ](#decoupled-complete)
 -   [ The `ZBBatchWorker` Job Worker ](#zbbatchworker)
 -   [ Long polling ](#long-polling)
+-   [ Poll Interval ](#poll-interval)
 
 **Client Commands**
 
@@ -919,9 +920,11 @@ See [this blog post](http://joshwulf.com/blog/2020/03/zb-batch-worker/) for some
 
 With Zeebe 0.21 onward, long polling is supported for clients, and is used by default. Rather than polling continuously for work and getting nothing back, a client can poll once and leave the request open until work appears. This reduces network traffic and CPU utilization in the server. Every JobActivation Request is appended to the event log, so continuous polling can significantly impact broker performance, especially when an exporter is loaded (see [here](https://github.com/zeebe-io/zeebe-client-node-js/issues/64#issuecomment-520233275)).
 
-The default long polling period is 30s.
+Long polling sends the `ActivateJobs` command to the broker, and waits for up to the long poll interval for jobs to be available, rather than returning immediately with an empty response if no jobs are available at that moment.
 
-To use a different long polling period, pass in a long poll timeout in milliseconds to the client. All workers created with that client will use it. Alternatively, set a period per-worker.
+The default long poll duration is 30s.
+
+To use a different long polling duration, pass in a long poll timeout in milliseconds to the client. All workers created with that client will use it. Alternatively, set a period per-worker.
 
 Long polling for workers is configured in the ZBClient like this:
 
@@ -936,6 +939,28 @@ const longPollingWorker = zbc.createWorker({
 	taskType: 'task-type',
 	taskHandler: handler,
 	longPoll: Duration.minutes.of(2), // override client, poll 2m
+})
+```
+
+<a name = "poll-interval">
+
+### Poll Interval
+
+The poll interval is a timer that fires on the configured interval and sends an `ActivateJobs` command if no pending command is currently active. By default, this is set to 300ms. This guarantees that there will be a minimum of 300ms between `ActivateJobs` commands, which prevents flooding the broker.
+
+Too many `ActivateJobs` requests per period of time can cause broker backpressure to kick in, and the gateway to return a GRPC 8 error code.
+
+You can configure this with the `pollInterval` option in the client constructor, in which case all workers inherit it as their default. You can also override this by specifying a value in the `createWorker` call:
+
+```typescript
+const zbc = new ZBClient({
+	pollInterval: Duration.milliseconds.of(500),
+})
+
+const worker = zbc.createWorker({
+	taskType: 'send-email',
+	taskHandler: sendEmailWorkerHandler,
+	pollInterval: Duration.milliseconds.of(750),
 })
 ```
 
