@@ -6,3 +6,4 @@ design
 docs
 .env
 *.env
+.vscode
