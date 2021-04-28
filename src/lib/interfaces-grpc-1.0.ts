@@ -47,7 +47,7 @@ export interface ActivatedJob {
 	readonly type: string
 	/**
 	 * @deprecated use processInstanceKey instead
-	 **/
+	 */
 	readonly workflowInstanceKey: string
 	/** The job's process instance key */
 	readonly processInstanceKey: string
@@ -55,13 +55,13 @@ export interface ActivatedJob {
 	readonly bpmnProcessId: string
 	/**
 	 * @deprecated use processDefinitionVersion instead
-	 **/
+	 */
 	readonly workflowDefinitionVersion: number
 	/** The version of the job process definition */
 	readonly processDefinitionVersion: number
 	/**
 	 * @deprecated use processKey instead
-	 **/
+	 */
 	readonly workflowKey: string
 	/** The key of the job process definition */
 	readonly processKey: string
@@ -188,16 +188,8 @@ export interface TopologyResponse {
 	readonly gatewayVersion: string
 }
 
-export enum ResourceType {
-	// FILE type means the gateway will try to detect the resource type using the file extension of the name
-	FILE = 0,
-	BPMN = 1,
-	YAML = 2,
-}
-
 export interface ProcessRequestObject {
 	name?: string
-	type?: ResourceType
 	definition: Buffer // bytes, actually
 }
 

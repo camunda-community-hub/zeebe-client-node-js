@@ -1,6 +1,6 @@
 {
 	"name": "zeebe-node",
-	"version": "1.0.0-alpha.3",
+	"version": "1.0.0-alpha.7",
 	"description": "The Node.js client library for the Zeebe Process Automation Engine.",
 	"keywords": [
 		"zeebe",

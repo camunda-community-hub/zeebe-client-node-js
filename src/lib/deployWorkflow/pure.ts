@@ -1,15 +1,15 @@
 import { either as E, pipeable } from 'fp-ts'
 import * as A from 'fp-ts/lib/Array'
 import * as NEA from 'fp-ts/lib/NonEmptyArray'
-import * as ZB from '../interfaces'
+import * as ZB from '../interfaces-1.0'
 
 export const isBuffer = (
-	wf: ZB.DeployWorkflowBuffer | ZB.DeployWorkflowFiles
-): wf is ZB.DeployWorkflowBuffer => !!(wf as ZB.DeployWorkflowBuffer).definition
+	wf: ZB.DeployProcessBuffer | ZB.DeployProcessFiles
+): wf is ZB.DeployProcessBuffer => !!(wf as ZB.DeployProcessBuffer).definition
 
 export const bufferOrFiles = (
-	wf: ZB.DeployWorkflowFiles | ZB.DeployWorkflowBuffer
-): E.Either<ZB.DeployWorkflowBuffer[], string[]> =>
+	wf: ZB.DeployProcessFiles | ZB.DeployProcessBuffer
+): E.Either<ZB.DeployProcessBuffer[], string[]> =>
 	isBuffer(wf) ? E.left([wf]) : E.right(coerceFilenamesToArray(wf))
 
 export const coerceFilenamesToArray = (wf: string | string[]): string[] =>

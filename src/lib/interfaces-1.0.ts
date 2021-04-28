@@ -10,13 +10,13 @@ import {
 	CreateProcessInstanceWithResultResponse,
 	DeployProcessResponse,
 	FailJobRequest,
+	ProcessRequestObject,
 	PublishMessageRequest,
 	PublishMessageResponse,
 	SetVariablesRequest,
 	ThrowErrorRequest,
 	TopologyResponse,
 	UpdateJobRetriesRequest,
-	ProcessRequestObject,
 } from './interfaces-grpc-1.0'
 import { Loglevel, ZBCustomLogger } from './interfaces-published-contract'
 
@@ -174,25 +174,28 @@ export interface JobCompletionInterface<WorkerOutputVariables> {
 	) => Promise<JOB_ACTION_ACKNOWLEDGEMENT>
 }
 
+export interface ZeebeJob<WorkerInputVariables = IInputVariables,
+	CustomHeaderShape = ICustomHeaders,
+	WorkerOutputVariables = IOutputVariables> extends Job<WorkerInputVariables, CustomHeaderShape>, JobCompletionInterface<WorkerOutputVariables> { }
+
 export type ZBWorkerTaskHandler<
 	WorkerInputVariables = IInputVariables,
 	CustomHeaderShape = ICustomHeaders,
 	WorkerOutputVariables = IOutputVariables
-> = (
-	job: Readonly<
-		Job<WorkerInputVariables, CustomHeaderShape> &
-			JobCompletionInterface<WorkerOutputVariables>
-	>,
-	/**
-	 * @deprecated use the methods on the job object insteaad
-	 */
-	complete: CompleteFn<WorkerOutputVariables>,
-	worker: ZBWorker<
-		WorkerInputVariables,
-		CustomHeaderShape,
-		WorkerOutputVariables
-	>
-) => MustReturnJobActionAcknowledgement
+	> = (
+		job: Readonly<
+			ZeebeJob<WorkerInputVariables, CustomHeaderShape, WorkerOutputVariables>
+		>,
+		/**
+		 * @deprecated use the methods on the job object insteaad
+		 */
+		complete: CompleteFn<WorkerOutputVariables>,
+		worker: ZBWorker<
+			WorkerInputVariables,
+			CustomHeaderShape,
+			WorkerOutputVariables
+		>
+	) => MustReturnJobActionAcknowledgement
 
 export interface ZBLoggerOptions {
 	loglevel?: Loglevel
@@ -215,7 +218,7 @@ export type ConnectionErrorHandler = (error?: any) => void
 export interface Job<
 	Variables = IInputVariables,
 	CustomHeaderShape = ICustomHeaders
-> {
+	> {
 	/** The key, a unique identifier for the job */
 	readonly key: string
 	/**
@@ -225,7 +228,7 @@ export interface Job<
 	readonly type: string
 	/**
 	 * @deprecated use processInstanceKey instead
-	 **/
+	 */
 	readonly workflowInstanceKey: string
 	/** The job's process instance key */
 	readonly processInstanceKey: string
@@ -233,13 +236,13 @@ export interface Job<
 	readonly bpmnProcessId: string
 	/**
 	 * @deprecated use processDefinitionVersion instead
-	 **/
+	 */
 	readonly workflowDefinitionVersion: number
 	/** The version of the job process defini` tion */
 	readonly processDefinitionVersion: number
 	/**
 	 * @deprecated use processKey instead
-	 **/
+	 */
 	readonly workflowKey: string
 	/** The key of the job process definition */
 	readonly processKey: string
@@ -296,7 +299,7 @@ export interface ZBWorkerOptions<InputVars = IInputVariables> {
 	onConnectionErrorHandler?: ConnectionErrorHandler
 	/**
 	 * @deprecated use failProcessOnException instead
-	 **/
+	 */
 	failWorkflowOnException?: boolean
 	/**
 	 * If a handler throws an unhandled exception, if this is set true, the process will be failed. Defaults to false.
@@ -312,7 +315,7 @@ export type BatchedJob<
 	Variables = IInputVariables,
 	Headers = ICustomHeaders,
 	Output = IOutputVariables
-> = Job<Variables, Headers> &
+	> = Job<Variables, Headers> &
 	CompleteFn<Output> &
 	JobCompletionInterface<Output>
 
@@ -328,13 +331,13 @@ export type ZBBatchWorkerTaskHandler<V, H, O> = (
 ) =>
 	| MustReturnJobActionAcknowledgement[]
 	| Promise<MustReturnJobActionAcknowledgement[]>
-	| Promise<MustReturnJobActionAcknowledgement>[]
+	| Array<Promise<MustReturnJobActionAcknowledgement>>
 
 export interface ZBBatchWorkerConfig<
 	WorkerInputVariables,
 	CustomHeaderShape,
 	WorkerOutputVariables
-> extends ZBWorkerBaseConfig<WorkerInputVariables> {
+	> extends ZBWorkerBaseConfig<WorkerInputVariables> {
 	/**
 	 * A job handler - this must return an array of job actions (eg: job.complete(..), job.error(..)) in all code paths.
 	 */
@@ -400,7 +403,7 @@ export interface ZBWorkerConfig<
 	WorkerInputVariables,
 	CustomHeaderShape,
 	WorkerOutputVariables
-> extends ZBWorkerBaseConfig<WorkerInputVariables> {
+	> extends ZBWorkerBaseConfig<WorkerInputVariables> {
 	/**
 	 * A job handler - this must return a job action - e.g.: job.complete(), job.error() - in all code paths.
 	 */
