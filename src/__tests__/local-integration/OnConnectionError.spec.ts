@@ -26,7 +26,9 @@ test(`Does not call the onConnectionError handler if there is a broker`, async d
 			debugger
 			calledB++
 			// tslint:disable-next-line: no-console
-			console.log('ERROR')
+			console.log(
+				'onConnection Error was called when there *is* a broker'
+			)
 			throw new Error(
 				'onConnection Error was called when there *is* a broker'
 			)
@@ -47,8 +49,8 @@ test(`Calls ZBClient onConnectionError once when there is no broker, eagerConnec
 			calledC++
 		},
 	})
-	zbc2.createWorker(null, 'whatever', (_, complete) => complete.success)
-	zbc2.createWorker(null, 'whatever', (_, complete) => complete.success)
+	zbc2.createWorker(null, 'whatever', job => job.complete())
+	zbc2.createWorker(null, 'whatever', job => job.complete())
 	setTimeout(() => {
 		zbc2.close()
 		expect(calledC).toBe(1)
@@ -63,7 +65,7 @@ test(`Calls ZBClient onConnectionError when there no broker, for the client and 
 			calledD++
 		},
 	})
-	zbc2.createWorker('whatever', (_, complete) => complete.success, {
+	zbc2.createWorker('whatever', job => job.complete(), {
 		onConnectionError: () => calledD++,
 	})
 	setTimeout(() => {
@@ -80,7 +82,7 @@ test(`Debounces onConnectionError`, async done => {
 			called++
 		},
 	})
-	zbc2.createWorker('whatever', (_, complete) => complete.success, {
+	zbc2.createWorker('whatever', job => job.complete(), {
 		onConnectionError: () => called++,
 	})
 	setTimeout(() => {
@@ -93,7 +95,7 @@ test(`Debounces onConnectionError`, async done => {
 test(`Trailing parameter worker onConnectionError handler API works`, async done => {
 	let calledE = 0
 	const zbc2 = new ZBClient('localtoast:234532534', {})
-	zbc2.createWorker('whatever', (_, complete) => complete.success, {
+	zbc2.createWorker('whatever', job => job.complete(), {
 		onConnectionError: () => calledE++,
 	})
 	setTimeout(async () => {
@@ -108,6 +110,12 @@ test(`Does not call the onConnectionError handler if there is a business error`,
 	let wf = 'arstsrasrateiuhrastulyharsntharsie'
 	const zbc2 = new ZBClient({
 		onConnectionError: () => {
+			// tslint:disable-next-line: no-console
+			console.log('OnConnectionError!!!! Incrementing calledF') // @DEBUG
+			const e = new Error()
+			// tslint:disable-next-line: no-console
+			console.log(e.stack) // @DEBUG
+
 			calledF++
 		},
 	})

@@ -1,5 +1,6 @@
 {
 	"compilerOptions": {
+		"composite": true /* Required because referenced by src/tsconfig.json */,
 		/* Basic Options */
 		"target": "es2018" /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017','ES2018' or 'ESNEXT'. */,
 		"module": "commonjs" /* Specify module code generation: 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', or 'ESNext'. */,
@@ -26,7 +27,11 @@
 			}
 		]
 	},
-	"include": ["**/*.ts"],
-	"references": [{ "path": "../" }],
-	"exclude": ["**/*.spec.ts", "__mocks__"]
+	"references": [
+		{
+			"path": "../"
+		}
+	],
+	"include": ["../package.json", "**/*"],
+	"exclude": ["__mocks__/**/*", "__tests__/**/*"]
 }

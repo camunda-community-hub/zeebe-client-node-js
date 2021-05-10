@@ -1,4 +1,4 @@
-import { Loglevel } from '../lib/interfaces'
+import { Loglevel } from '../lib/interfaces-published-contract'
 
 export const clientOptions = {
 	_loglevel: 'NONE' as Loglevel,

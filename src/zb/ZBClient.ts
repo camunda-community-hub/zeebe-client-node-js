@@ -8,22 +8,28 @@ import { Duration, MaybeTimeDuration } from 'typed-duration'
 import { v4 as uuid } from 'uuid'
 import {
 	BpmnParser,
+	makeAPI1ResAPI0Compatible,
 	parseVariables,
 	parseVariablesAndCustomHeadersToJSON,
 	stringifyVariables,
+	transformAPI0ReqToAPI1,
 } from '../lib'
 import { ConfigurationHydrator } from '../lib/ConfigurationHydrator'
 import { ConnectionFactory } from '../lib/ConnectionFactory'
 import { readDefinitionFromFile } from '../lib/deployWorkflow/impure'
 import { bufferOrFiles, mapThese } from '../lib/deployWorkflow/pure'
 import { CustomSSL } from '../lib/GrpcClient'
-import * as ZB from '../lib/interfaces'
+import * as ZB_deprecated from '../lib/interfaces'
+import * as ZB from '../lib/interfaces-1.0'
+
 // tslint:disable-next-line: no-duplicate-imports
 import {
 	CreateWorkflowInstance,
 	CreateWorkflowInstanceWithResult,
 } from '../lib/interfaces'
-import * as Grpc from '../lib/interfaces-grpc'
+
+import * as Grpc_deprecated from '../lib/interfaces-grpc'
+import * as Grpc from '../lib/interfaces-grpc-1.0'
 import {
 	Loglevel,
 	ZBClientOptions,
@@ -130,11 +136,11 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 			({
 				JSON: ZBJsonLogger,
 				SIMPLE: ZBSimpleLogger,
-			}[process.env.ZEEBE_NODE_LOG_TYPE || 'NONE'])
+			}[process.env.ZEEBE_NODE_LOG_TYPE ?? 'NONE'])
 
 		constructorOptionsWithDefaults.stdout =
-			constructorOptionsWithDefaults.stdout ||
-			logTypeFromEnvironment() ||
+			constructorOptionsWithDefaults.stdout ??
+			logTypeFromEnvironment() ??
 			ZBSimpleLogger
 
 		this.stdout = constructorOptionsWithDefaults.stdout!
@@ -211,7 +217,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		// Send command to broker to eagerly fail / prove connection.
 		// This is useful for, for example: the Node-Red client, which wants to
 		// display the connection status.
-		if (!!this.options.eagerConnection) {
+		if (this.options.eagerConnection ?? false) {
 			this.topology()
 				.then(res => {
 					this.logger.logDirect(
@@ -250,14 +256,23 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 			}
 		})
 	}
-
+	/**
+	 * @deprecated use cancelProcessInstance instead
+	 */
 	public async cancelWorkflowInstance(
 		workflowInstanceKey: string | number
 	): Promise<void> {
 		Utils.validateNumber(workflowInstanceKey, 'workflowInstanceKey')
-		return this.executeOperation('cancelWorkflowInstance', () =>
-			this.grpc.cancelWorkflowInstanceSync({
-				workflowInstanceKey,
+		return this.cancelProcessInstance(workflowInstanceKey)
+	}
+
+	public async cancelProcessInstance(
+		processInstanceKey: string | number
+	): Promise<void> {
+		Utils.validateNumber(processInstanceKey, 'processInstanceKey')
+		return this.executeOperation('cancelProcessInstance', () =>
+			this.grpc.cancelProcessInstanceSync({
+				processInstanceKey,
 			})
 		)
 	}
@@ -345,6 +360,9 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 			WorkerOutputVariables
 		>
 	): ZBWorker<WorkerInputVariables, CustomHeaderShape, WorkerOutputVariables>
+	/**
+	 * @deprecated use the object constructor instead
+	 */
 	public createWorker<
 		WorkerInputVariables = ZB.IInputVariables,
 		CustomHeaderShape = ZB.ICustomHeaders,
@@ -360,6 +378,9 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		options?: ZB.ZBWorkerOptions<WorkerInputVariables> & ZBClientOptions,
 		onConnectionError?: ZB.ConnectionErrorHandler | undefined
 	): ZBWorker<WorkerInputVariables, CustomHeaderShape, WorkerOutputVariables>
+	/**
+	 * @deprecated use the object constructor instead
+	 */
 	public createWorker<
 		WorkerInputVariables = ZB.IInputVariables,
 		CustomHeaderShape = ZB.ICustomHeaders,
@@ -510,22 +531,47 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	}
 
 	// tslint:disable: no-object-literal-type-assertion
-	public createWorkflowInstance<Variables = ZB.IWorkflowVariables>(
+	/**
+	 * @deprecated use createProcessInstance instead
+	 */
+	public createWorkflowInstance<Variables = ZB_deprecated.IWorkflowVariables>(
 		bpmnProcessId: string,
 		variables: Variables
-	): Promise<Grpc.CreateWorkflowInstanceResponse>
-	public createWorkflowInstance<Variables = ZB.IWorkflowVariables>(config: {
+	): Promise<Grpc_deprecated.CreateWorkflowInstanceResponse>
+	public createWorkflowInstance<
+		Variables = ZB_deprecated.IWorkflowVariables
+	>(config: {
 		bpmnProcessId: string
 		variables: Variables
 		version: number
-	}): Promise<Grpc.CreateWorkflowInstanceResponse>
-	public createWorkflowInstance<Variables = ZB.IWorkflowVariables>(
+	}): Promise<Grpc_deprecated.CreateWorkflowInstanceResponse>
+	public createWorkflowInstance<Variables = ZB_deprecated.IWorkflowVariables>(
 		configOrbpmnProcessId: string | CreateWorkflowInstance<Variables>,
 		variables?: Variables
-	): Promise<Grpc.CreateWorkflowInstanceResponse> {
+	): Promise<Grpc_deprecated.CreateWorkflowInstanceResponse> {
+		return this.createProcessInstance(
+			transformAPI0ReqToAPI1(configOrbpmnProcessId),
+			transformAPI0ReqToAPI1(variables)
+		).then(res => makeAPI1ResAPI0Compatible(res))
+	}
+
+	public createProcessInstance<Variables = ZB.IProcessVariables>(
+		bpmnProcessId: string,
+		variables: Variables
+	): Promise<Grpc.CreateProcessInstanceResponse>
+	public createProcessInstance<Variables = ZB.IProcessVariables>(config: {
+		bpmnProcessId: string
+		variables: Variables
+		version: number
+	}): Promise<Grpc.CreateProcessInstanceResponse>
+	public createProcessInstance<Variables = ZB.IProcessVariables>(
+		configOrbpmnProcessId: string | ZB.CreateProcessInstance<Variables>,
+		variables?: Variables
+	): Promise<Grpc.CreateProcessInstanceResponse> {
 		const isConfigObject = (
-			conf: CreateWorkflowInstance<Variables> | string
-		): conf is CreateWorkflowInstance<Variables> => typeof conf === 'object'
+			conf: ZB.CreateProcessInstance<Variables> | string
+		): conf is ZB.CreateProcessInstance<Variables> =>
+			typeof conf === 'object'
 
 		const request = isConfigObject(configOrbpmnProcessId)
 			? {
@@ -539,44 +585,92 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 					version: -1,
 			  }
 
-		const createWorkflowInstanceRequest: Grpc.CreateWorkflowInstanceRequest = {
+		const createProcessInstanceRequest: Grpc.CreateProcessInstanceRequest = {
 			bpmnProcessId: request.bpmnProcessId,
 			variables: (request.variables as unknown) as object,
 			version: request.version,
 		}
 
-		return this.executeOperation('createWorkflowInstance', () =>
-			this.grpc.createWorkflowInstanceSync(
-				stringifyVariables(createWorkflowInstanceRequest)
+		return this.executeOperation('createProcessInstance', () =>
+			this.grpc.createProcessInstanceSync(
+				stringifyVariables(createProcessInstanceRequest)
 			)
 		)
 	}
 
+	/**
+	 * @deprecated use createProcessInstanceWithResult instead
+	 *
+	 */
 	public createWorkflowInstanceWithResult<
-		Variables = ZB.IWorkflowVariables,
+		Variables = ZB_deprecated.IWorkflowVariables,
 		Result = ZB.IOutputVariables
 	>(
 		config: CreateWorkflowInstanceWithResult<Variables>
-	): Promise<Grpc.CreateWorkflowInstanceWithResultResponse<Result>>
+	): Promise<Grpc_deprecated.CreateWorkflowInstanceWithResultResponse<Result>>
+	/**
+	 * @deprecated use createProcessInstanceWithResult instead
+	 *
+	 */
 	public createWorkflowInstanceWithResult<
-		Variables = ZB.IWorkflowVariables,
+		Variables = ZB_deprecated.IWorkflowVariables,
 		Result = ZB.IOutputVariables
 	>(
 		bpmnProcessId: string,
 		variables: Variables
-	): Promise<Grpc.CreateWorkflowInstanceWithResultResponse<Result>>
+	): Promise<Grpc_deprecated.CreateWorkflowInstanceWithResultResponse<Result>>
+	/**
+	 * @deprecated use createProcessInstanceWithResult instead
+	 *
+	 */
 	public createWorkflowInstanceWithResult<
-		Variables = ZB.IWorkflowVariables,
-		Result = ZB.IOutputVariables
+		Variables = ZB_deprecated.IWorkflowVariables,
+		// @ts-ignore - this is for backward compatibility
+		Result = ZB_deprecated.IOutputVariables
 	>(
 		configOrBpmnProcessId:
 			| CreateWorkflowInstanceWithResult<Variables>
 			| string,
 		variables?: Variables
 	) {
+		return this.createProcessInstanceWithResult(
+			transformAPI0ReqToAPI1(configOrBpmnProcessId),
+			transformAPI0ReqToAPI1(variables)
+		).then(res => makeAPI1ResAPI0Compatible(res))
+	}
+
+	public createProcessInstanceWithResult<
+		Variables = ZB.IInputVariables,
+		Result = ZB.IOutputVariables
+	>(
+		bpmnProcessId: string,
+		variables: Variables
+	): Promise<Grpc.CreateProcessInstanceWithResultResponse<Result>>
+	public createProcessInstanceWithResult<
+		Variables = ZB.IProcessVariables,
+		Result = ZB.IOutputVariables
+	>(
+		config: ZB.CreateProcessInstanceWithResult<Variables>
+	): Promise<Grpc.CreateProcessInstanceWithResultResponse<Result>>
+	public createProcessInstanceWithResult<
+		Variables = ZB.IProcessVariables,
+		Result = ZB.IOutputVariables
+	>(
+		bpmnProcessId: string,
+		variables: Variables
+	): Promise<Grpc.CreateProcessInstanceWithResultResponse<Result>>
+	public createProcessInstanceWithResult<
+		Variables = ZB.IProcessVariables,
+		Result = ZB.IOutputVariables
+	>(
+		configOrBpmnProcessId:
+			| ZB.CreateProcessInstanceWithResult<Variables>
+			| string,
+		variables?: Variables
+	) {
 		const isConfigObject = (
-			config: CreateWorkflowInstanceWithResult<Variables> | string
-		): config is CreateWorkflowInstanceWithResult<Variables> =>
+			config: ZB.CreateProcessInstanceWithResult<Variables> | string
+		): config is ZB.CreateProcessInstanceWithResult<Variables> =>
 			typeof config === 'object'
 
 		const request = isConfigObject(configOrBpmnProcessId)
@@ -595,7 +689,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 					version: -1,
 			  }
 
-		const createWorkflowInstanceRequest: Grpc.CreateWorkflowInstanceRequest = stringifyVariables(
+		const createProcessInstanceRequest: Grpc.CreateProcessInstanceRequest = stringifyVariables(
 			{
 				bpmnProcessId: request.bpmnProcessId,
 				variables: (request.variables as unknown) as object,
@@ -603,10 +697,10 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 			}
 		)
 
-		return this.executeOperation('createWorkflowInstanceWithResult', () =>
-			this.grpc.createWorkflowInstanceWithResultSync<Result>({
+		return this.executeOperation('createProcessInstanceWithResult', () =>
+			this.grpc.createProcessInstanceWithResultSync<Result>({
 				fetchVariables: request.fetchVariables,
-				request: createWorkflowInstanceRequest,
+				request: createProcessInstanceRequest,
 				requestTimeout: request.requestTimeout,
 			})
 		).then(res => parseVariables(res as any))
@@ -615,14 +709,26 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	/**
 	 *
 	 * @param workflow - A path or array of paths to .bpmn files or an object describing the workflow
+	 * @deprecated use deployProcess instead
 	 */
 	public async deployWorkflow(
-		workflow: ZB.DeployWorkflowFiles | ZB.DeployWorkflowBuffer
-	): Promise<Grpc.DeployWorkflowResponse> {
-		const deploy = (workflows: Grpc.WorkflowRequestObject[]) =>
+		workflow:
+			| ZB_deprecated.DeployWorkflowFiles
+			| ZB_deprecated.DeployWorkflowBuffer
+	): Promise<Grpc_deprecated.DeployWorkflowResponse> {
+		return this.deployProcess(workflow).then(res =>
+			makeAPI1ResAPI0Compatible(res)
+		)
+	}
+
+	public async deployProcess(
+		process: ZB.DeployProcessFiles | ZB.DeployProcessBuffer
+	): Promise<Grpc.DeployProcessResponse> {
+		// @TODO: fix plural
+		const deploy = (processes: Grpc.ProcessRequestObject[]) =>
 			this.executeOperation('deployWorkflow', () =>
-				this.grpc.deployWorkflowSync({
-					workflows,
+				this.grpc.deployProcessSync({
+					processs: processes,
 				})
 			)
 
@@ -633,7 +739,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 				)}.`
 			)
 		return pipe(
-			bufferOrFiles(workflow),
+			bufferOrFiles(process),
 			E.fold(deploy, files =>
 				pipe(
 					mapThese(files, readDefinitionFromFile),
@@ -662,8 +768,8 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	 * Publish a message to the broker for correlation with a workflow instance.
 	 * @param publishMessageRequest - The message to publish.
 	 */
-	public publishMessage<WorkflowVariables = ZB.IWorkflowVariables>(
-		publishMessageRequest: Grpc.PublishMessageRequest<WorkflowVariables>
+	public publishMessage<ProcessVariables = ZB.IProcessVariables>(
+		publishMessageRequest: Grpc.PublishMessageRequest<ProcessVariables>
 	): Promise<Grpc.PublishMessageResponse> {
 		return this.executeOperation('publishMessage', () =>
 			this.grpc.publishMessageSync(
@@ -676,9 +782,9 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	 * Publish a message to the broker for correlation with a workflow message start event.
 	 * @param publishStartMessageRequest - The message to publish.
 	 */
-	public publishStartMessage<WorkflowVariables = ZB.IWorkflowVariables>(
+	public publishStartMessage<ProcessVariables = ZB.IProcessVariables>(
 		publishStartMessageRequest: Grpc.PublishStartMessageRequest<
-			WorkflowVariables
+			ProcessVariables
 		>
 	): Promise<Grpc.PublishMessageResponse> {
 		/**
@@ -709,7 +815,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		)
 	}
 
-	public setVariables<Variables = ZB.IWorkflowVariables>(
+	public setVariables<Variables = ZB.IProcessVariables>(
 		request: Grpc.SetVariablesRequest<Variables>
 	): Promise<void> {
 		/*

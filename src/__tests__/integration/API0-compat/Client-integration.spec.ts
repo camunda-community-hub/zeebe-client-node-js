@@ -1,5 +1,5 @@
-import { ZBClient } from '../..'
-import { createUniqueTaskType } from '../../lib/createUniqueTaskType'
+import { ZBClient } from '../../..'
+import { createUniqueTaskType } from '../../../lib/createUniqueTaskType'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 jest.setTimeout(30000)
@@ -43,6 +43,7 @@ test('Deploys a single workflow', async () => {
 		definition: bpmn,
 		name: `single-hello-world-${processId}.bpmn`,
 	})
+
 	expect(res.workflows.length).toBe(1)
 	expect(res.workflows[0].bpmnProcessId).toBe(processId)
 })
@@ -51,9 +52,7 @@ test('Can create a worker', done => {
 	const worker = zbc.createWorker(
 		'test',
 		'TASK_TYPE',
-		(job, complete) => {
-			complete.success(job)
-		},
+		(job, complete) => complete.success(job),
 		{ loglevel: 'NONE' }
 	)
 	expect(worker).toBeTruthy()

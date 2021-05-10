@@ -1,14 +1,17 @@
 import { ClientReadableStreamImpl } from '@grpc/grpc-js/build/src/call'
-import { Chalk } from 'chalk'
+import chalk, { Chalk } from 'chalk'
 import * as _debug from 'debug'
 import { EventEmitter } from 'events'
 import { Duration, MaybeTimeDuration } from 'typed-duration'
 import * as uuid from 'uuid'
 import { parseVariablesAndCustomHeadersToJSON } from '../lib'
-import * as ZB from '../lib/interfaces'
+import * as ZB from '../lib/interfaces-1.0'
 import { StatefulLogInterceptor } from '../lib/StatefulLogInterceptor'
 import { ConnectionStatusEvent, ZBClient } from '../zb/ZBClient'
-import { ActivateJobsRequest, ActivateJobsResponse } from './interfaces-grpc'
+import {
+	ActivateJobsRequest,
+	ActivateJobsResponse,
+} from './interfaces-grpc-1.0'
 import { ZBClientOptions } from './interfaces-published-contract'
 import { TypedEmitter } from './TypedEmitter'
 
@@ -99,7 +102,7 @@ export class ZBWorkerBase<
 	private connected = true
 	private readied = false
 	private jobStream?: ClientReadableStreamImpl<any>
-	private maxActiveJobsBeforeReactivation: number
+	private activeJobsThresholdForReactivation: number
 	private pollInterval: MaybeTimeDuration
 	private pollLoop: NodeJS.Timeout
 	private pollMutex: boolean = false
@@ -135,7 +138,7 @@ export class ZBWorkerBase<
 		this.taskType = taskType
 		this.maxJobsToActivate =
 			options.maxJobsToActivate || ZBWorkerBase.DEFAULT_MAX_ACTIVE_JOBS
-		this.maxActiveJobsBeforeReactivation =
+		this.activeJobsThresholdForReactivation =
 			this.maxJobsToActivate *
 			MIN_ACTIVE_JOBS_RATIO_BEFORE_ACTIVATING_JOBS
 		this.jobBatchMinSize = Math.min(
@@ -175,7 +178,9 @@ export class ZBWorkerBase<
 		this.grpcClient.on(ConnectionStatusEvent.unknown, onReady)
 		this.grpcClient.on(ConnectionStatusEvent.ready, onReady)
 		this.cancelWorkflowOnException =
-			options.failWorkflowOnException || false
+			options.failWorkflowOnException ??
+			options.failProcessOnException ??
+			false
 		this.zbClient = zbClient
 		this.grpcClient.topologySync().catch(e => {
 			// Swallow exception to avoid throwing if retries are off
@@ -245,7 +250,7 @@ export class ZBWorkerBase<
 		)
 
 		const hasSufficientAvailableCapacityToRequestMoreJobs =
-			this.activeJobs < this.maxActiveJobsBeforeReactivation
+			this.activeJobs <= this.activeJobsThresholdForReactivation
 		if (!this.closing && hasSufficientAvailableCapacityToRequestMoreJobs) {
 			this.capacityEmitter.emit(CapacityEvent.Available)
 		}
@@ -266,7 +271,34 @@ export class ZBWorkerBase<
 		)
 	}
 
-	protected makeCompleteHandlers<T>(thisJob: ZB.Job): ZB.CompleteFn<T> {
+	protected makeCompleteHandlers<T>(
+		thisJob: ZB.Job
+	): ZB.CompleteFn<T> & ZB.JobCompletionInterface<T> {
+		let methodCalled: string | undefined
+		const errorMsgOnPriorMessageCall = (
+			thisMethod: string,
+			wrappedFunction: any
+		) => {
+			return (...args) => {
+				if (methodCalled !== undefined) {
+					// tslint:disable-next-line: no-console
+					console.log(
+						chalk.red(`WARNING: Call to ${thisMethod}() after ${methodCalled}() was called.
+You should call only one job action method in the worker handler. This is a bug in the ${this.taskType} worker handler.`)
+					)
+					// tslint:disable-next-line: no-console
+					console.log('handler', this.taskHandler.toString()) // @DEBUG
+
+					return wrappedFunction(...args)
+				}
+				methodCalled = thisMethod
+				return wrappedFunction(...args)
+			}
+		}
+		const cancelWorkflow = (job: ZB.Job) => () =>
+			this.zbClient
+				.cancelProcessInstance(job.processInstanceKey)
+				.then(() => ZB.JOB_ACTION_ACKNOWLEDGEMENT)
 		const failJob = (job: ZB.Job) => (
 			errorMessage: string,
 			retries?: number
@@ -284,11 +316,23 @@ export class ZBWorkerBase<
 				errorMessage,
 				job,
 			})
+		const fail = failJob(thisJob)
+		const succeed = succeedJob(thisJob)
 		return {
-			error: errorJob(thisJob),
-			failure: failJob(thisJob),
-			forwarded: () => this.drainOne(),
-			success: succeedJob(thisJob),
+			cancelWorkflow: cancelWorkflow(thisJob),
+			complete: errorMsgOnPriorMessageCall('job.complete', succeed),
+			error: errorMsgOnPriorMessageCall('error', errorJob(thisJob)),
+			fail: errorMsgOnPriorMessageCall('job.fail', fail),
+			failure: errorMsgOnPriorMessageCall('complete.failure', fail),
+			forward: errorMsgOnPriorMessageCall('job.forward', () => {
+				this.drainOne()
+				return ZB.JOB_ACTION_ACKNOWLEDGEMENT
+			}),
+			forwarded: errorMsgOnPriorMessageCall('complete.forwarded', () => {
+				this.drainOne()
+				return ZB.JOB_ACTION_ACKNOWLEDGEMENT
+			}),
+			success: errorMsgOnPriorMessageCall('complete.success', succeed),
 		}
 	}
 
@@ -301,12 +345,13 @@ export class ZBWorkerBase<
 		errorMessage: string
 		retries?: number
 	}) {
-		this.zbClient
+		return this.zbClient
 			.failJob({
 				errorMessage,
 				jobKey: job.key,
 				retries: retries ?? job.retries - 1,
 			})
+			.then(() => ZB.JOB_ACTION_ACKNOWLEDGEMENT)
 			.finally(() => {
 				this.logger.logDebug(`Failed job ${job.key} - ${errorMessage}`)
 				this.drainOne()
@@ -331,6 +376,7 @@ export class ZBWorkerBase<
 				)
 				return e
 			})
+			.then(() => ZB.JOB_ACTION_ACKNOWLEDGEMENT)
 			.finally(() => {
 				this.drainOne()
 			})
@@ -360,7 +406,10 @@ export class ZBWorkerBase<
 				)
 				this.logger.logError(e)
 			})
-			.then(() => this.drainOne())
+			.then(() => {
+				this.drainOne()
+				return ZB.JOB_ACTION_ACKNOWLEDGEMENT
+			})
 	}
 
 	private handleStreamEnd = id => {
@@ -371,20 +420,20 @@ export class ZBWorkerBase<
 	}
 
 	private async poll() {
-		if (this.closePromise || this.pollMutex) {
+		const pollAlreadyInProgress =
+			this.pollMutex || this.jobStream !== undefined
+		const workerIsClosing = this.closePromise !== undefined || this.closing
+		const insufficientCapacityAvailable =
+			this.activeJobs > this.activeJobsThresholdForReactivation
+
+		if (
+			pollAlreadyInProgress ||
+			workerIsClosing ||
+			insufficientCapacityAvailable
+		) {
 			return
 		}
-		const isOverCapacity =
-			this.activeJobs >= this.maxJobsToActivate - this.jobBatchMinSize
-		if (isOverCapacity) {
-			this.logger.logInfo(
-				`Worker at max capacity - ${this.taskType} has ${this.activeJobs}, a capacity of ${this.maxJobsToActivate}, and a minimum job batch size of ${this.jobBatchMinSize}.`
-			)
-			return
-		}
-		if (this.jobStream) {
-			return
-		}
+
 		this.pollMutex = true
 		debug('Polling...')
 		this.logger.logDebug('Activating Jobs...')

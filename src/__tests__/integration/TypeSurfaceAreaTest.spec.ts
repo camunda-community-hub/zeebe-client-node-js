@@ -6,7 +6,7 @@ test("Hasn't broken any public type contracts", async done => {
 	const zbc = new ZBClient()
 	const handler: ZBWorkerTaskHandler = (job, complete, worker) => {
 		worker.log(job.bpmnProcessId)
-		complete.success()
+		return complete.success()
 	}
 	zbc.createWorker('nope', handler)
 	await zbc.close()

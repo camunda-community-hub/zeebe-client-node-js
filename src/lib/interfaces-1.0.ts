@@ -4,25 +4,19 @@ import { ZBBatchWorker } from '../zb/ZBBatchWorker'
 import { ZBWorker } from '../zb/ZBWorker'
 import { GrpcClient } from './GrpcClient'
 import {
-	CreateWorkflowInstanceRequest,
-	CreateWorkflowInstanceResponse,
-	CreateWorkflowInstanceWithResultRequest,
-	CreateWorkflowInstanceWithResultResponse,
-	DeployWorkflowResponse,
+	CreateProcessInstanceRequest,
+	CreateProcessInstanceResponse,
+	CreateProcessInstanceWithResultRequest,
+	CreateProcessInstanceWithResultResponse,
+	DeployProcessResponse,
 	FailJobRequest,
+	ProcessRequestObject,
 	PublishMessageRequest,
 	PublishMessageResponse,
 	SetVariablesRequest,
 	ThrowErrorRequest,
 	TopologyResponse,
 	UpdateJobRetriesRequest,
-	WorkflowRequestObject,
-} from './interfaces-grpc'
-import {
-	CreateProcessInstanceRequest,
-	CreateProcessInstanceWithResultRequest,
-	CreateProcessInstanceWithResultResponse,
-	ProcessRequestObject,
 } from './interfaces-grpc-1.0'
 import { Loglevel, ZBCustomLogger } from './interfaces-published-contract'
 
@@ -44,32 +38,20 @@ export interface KeyedObject {
 	[key: string]: any
 }
 
-/**
- * @deprecated use DeployProcessFiles from interfaces-1.0
- */
-export type DeployWorkflowFiles = string | string[]
+export type DeployProcessFiles = string | string[]
 
-/**
- * @deprecated use DeployProcessBuffer from interfaces-1.0
- */
-export interface DeployWorkflowBuffer {
+export interface DeployProcessBuffer {
 	definition: Buffer
 	name: string
 }
 
-/**
- * @deprecated use CreateProcessInstance instead
- */
-export interface CreateWorkflowInstance<T> {
+export interface CreateProcessInstance<T> {
 	bpmnProcessId: string
 	variables: T
 	version: number
 }
 
-/**
- * @deprecated use CreateProcessInstanceWithResult
- */
-export interface CreateWorkflowInstanceWithResult<T> {
+export interface CreateProcessInstanceWithResult<T> {
 	bpmnProcessId: string
 	version?: number
 	variables: T
@@ -80,27 +62,43 @@ export interface CreateWorkflowInstanceWithResult<T> {
 export interface CompleteFn<WorkerOutputVariables> {
 	/**
 	 * Complete the job with a success, optionally passing in a state update to merge
-	 * with the workflow variables on the broker.
+	 * with the process variables on the broker.
+	 *
+	 * @deprecated use job.complete() instead
 	 */
-	success: (updatedVariables?: WorkerOutputVariables) => Promise<boolean>
+	success: (
+		updatedVariables?: WorkerOutputVariables
+	) => Promise<JOB_ACTION_ACKNOWLEDGEMENT>
 	/**
 	 * Fail the job with an informative message as to the cause. Optionally pass in a
 	 * value remaining retries. If no value is passed for retries then the current retry
 	 * count is decremented. Pass in `0`for retries to raise an incident in Operate.
+	 *
+	 * @deprecated use job.fail() instead
 	 */
-	failure: (errorMessage: string, retries?: number) => void
+	failure: (
+		errorMessage: string,
+		retries?: number
+	) => Promise<JOB_ACTION_ACKNOWLEDGEMENT>
 	/**
 	 * Mark this job as forwarded to another system for completion. No action is taken by the broker.
 	 * This method releases worker capacity to handle another job.
+	 *
+	 * @deprecated use job.forward() instead
 	 */
-	forwarded: () => void
+	forwarded: () => JOB_ACTION_ACKNOWLEDGEMENT
 	/**
 	 *
 	 * Report a business error (i.e. non-technical) that occurs while processing a job.
-	 * The error is handled in the workflow by an error catch event.
+	 * The error is handled in the process by an error catch event.
 	 * If there is no error catch event with the specified errorCode then an incident will be raised instead.
+	 *
+	 * @deprecated use job.error() instead
 	 */
-	error: (errorCode: string, errorMessage?: string) => void
+	error: (
+		errorCode: string,
+		errorMessage?: string
+	) => Promise<JOB_ACTION_ACKNOWLEDGEMENT>
 }
 
 export interface OperationOptionsWithRetry {
@@ -128,7 +126,7 @@ export interface IInputVariables {
 	[key: string]: any
 }
 
-export interface IWorkflowVariables {
+export interface IProcessVariables {
 	[key: string]: any
 }
 export interface IOutputVariables {
@@ -138,19 +136,66 @@ export interface ICustomHeaders {
 	[key: string]: any
 }
 
+export interface JobCompletionInterface<WorkerOutputVariables> {
+	/**
+	 * Cancel the workflow.
+	 */
+	cancelWorkflow: () => Promise<JOB_ACTION_ACKNOWLEDGEMENT>
+	/**
+	 * Complete the job with a success, optionally passing in a state update to merge
+	 * with the process variables on the broker.
+	 */
+	complete: (
+		updatedVariables?: WorkerOutputVariables
+	) => Promise<JOB_ACTION_ACKNOWLEDGEMENT>
+	/**
+	 * Fail the job with an informative message as to the cause. Optionally pass in a
+	 * value remaining retries. If no value is passed for retries then the current retry
+	 * count is decremented. Pass in `0`for retries to raise an incident in Operate.
+	 */
+	fail: (
+		errorMessage: string,
+		retries?: number
+	) => Promise<JOB_ACTION_ACKNOWLEDGEMENT>
+	/**
+	 * Mark this job as forwarded to another system for completion. No action is taken by the broker.
+	 * This method releases worker capacity to handle another job.
+	 */
+	forward: () => JOB_ACTION_ACKNOWLEDGEMENT
+	/**
+	 *
+	 * Report a business error (i.e. non-technical) that occurs while processing a job.
+	 * The error is handled in the process by an error catch event.
+	 * If there is no error catch event with the specified errorCode then an incident will be raised instead.
+	 */
+	error: (
+		errorCode: string,
+		errorMessage?: string
+	) => Promise<JOB_ACTION_ACKNOWLEDGEMENT>
+}
+
+export interface ZeebeJob<WorkerInputVariables = IInputVariables,
+	CustomHeaderShape = ICustomHeaders,
+	WorkerOutputVariables = IOutputVariables> extends Job<WorkerInputVariables, CustomHeaderShape>, JobCompletionInterface<WorkerOutputVariables> { }
+
 export type ZBWorkerTaskHandler<
 	WorkerInputVariables = IInputVariables,
 	CustomHeaderShape = ICustomHeaders,
 	WorkerOutputVariables = IOutputVariables
-> = (
-	job: Readonly<Job<WorkerInputVariables, CustomHeaderShape>>,
-	complete: CompleteFn<WorkerOutputVariables>,
-	worker: ZBWorker<
-		WorkerInputVariables,
-		CustomHeaderShape,
-		WorkerOutputVariables
-	>
-) => void
+	> = (
+		job: Readonly<
+			ZeebeJob<WorkerInputVariables, CustomHeaderShape, WorkerOutputVariables>
+		>,
+		/**
+		 * @deprecated use the methods on the job object insteaad
+		 */
+		complete: CompleteFn<WorkerOutputVariables>,
+		worker: ZBWorker<
+			WorkerInputVariables,
+			CustomHeaderShape,
+			WorkerOutputVariables
+		>
+	) => MustReturnJobActionAcknowledgement
 
 export interface ZBLoggerOptions {
 	loglevel?: Loglevel
@@ -173,7 +218,7 @@ export type ConnectionErrorHandler = (error?: any) => void
 export interface Job<
 	Variables = IInputVariables,
 	CustomHeaderShape = ICustomHeaders
-> {
+	> {
 	/** The key, a unique identifier for the job */
 	readonly key: string
 	/**
@@ -181,19 +226,31 @@ export interface Job<
 	 * type="payment-service" />)
 	 */
 	readonly type: string
-	/** The job's workflow instance key */
+	/**
+	 * @deprecated use processInstanceKey instead
+	 */
 	readonly workflowInstanceKey: string
-	/** The bpmn process ID of the job workflow definition */
+	/** The job's process instance key */
+	readonly processInstanceKey: string
+	/** The bpmn process ID of the job process definition */
 	readonly bpmnProcessId: string
-	/** The version of the job workflow defini` tion */
+	/**
+	 * @deprecated use processDefinitionVersion instead
+	 */
 	readonly workflowDefinitionVersion: number
-	/** The key of the job workflow definition */
+	/** The version of the job process defini` tion */
+	readonly processDefinitionVersion: number
+	/**
+	 * @deprecated use processKey instead
+	 */
 	readonly workflowKey: string
+	/** The key of the job process definition */
+	readonly processKey: string
 	/** The associated task element ID */
 	readonly elementId: string
 	/**
 	 * The unique key identifying the associated task, unique within the scope of the
-	 * workflow instance
+	 * process instance
 	 */
 	readonly elementInstanceKey: string
 	/**
@@ -241,9 +298,13 @@ export interface ZBWorkerOptions<InputVars = IInputVariables> {
 	 */
 	onConnectionErrorHandler?: ConnectionErrorHandler
 	/**
-	 * If a handler throws an unhandled exception, if this is set true, the workflow will be failed. Defaults to false.
+	 * @deprecated use failProcessOnException instead
 	 */
 	failWorkflowOnException?: boolean
+	/**
+	 * If a handler throws an unhandled exception, if this is set true, the process will be failed. Defaults to false.
+	 */
+	failProcessOnException?: boolean
 	/**
 	 * Enable debug tracking
 	 */
@@ -254,20 +315,31 @@ export type BatchedJob<
 	Variables = IInputVariables,
 	Headers = ICustomHeaders,
 	Output = IOutputVariables
-> = Job<Variables, Headers> & CompleteFn<Output>
+	> = Job<Variables, Headers> &
+	CompleteFn<Output> &
+	JobCompletionInterface<Output>
+
+export const JOB_ACTION_ACKNOWLEDGEMENT = 'JOB_ACTION_ACKNOWLEDGEMENT' as const
+type JOB_ACTION_ACKNOWLEDGEMENT = typeof JOB_ACTION_ACKNOWLEDGEMENT
+export type MustReturnJobActionAcknowledgement =
+	| JOB_ACTION_ACKNOWLEDGEMENT
+	| Promise<JOB_ACTION_ACKNOWLEDGEMENT>
 
 export type ZBBatchWorkerTaskHandler<V, H, O> = (
 	jobs: Array<BatchedJob<V, H, O>>,
 	worker: ZBBatchWorker<V, H, O>
-) => void
+) =>
+	| MustReturnJobActionAcknowledgement[]
+	| Promise<MustReturnJobActionAcknowledgement[]>
+	| Array<Promise<MustReturnJobActionAcknowledgement>>
 
 export interface ZBBatchWorkerConfig<
 	WorkerInputVariables,
 	CustomHeaderShape,
 	WorkerOutputVariables
-> extends ZBWorkerBaseConfig<WorkerInputVariables> {
+	> extends ZBWorkerBaseConfig<WorkerInputVariables> {
 	/**
-	 * A job handler.
+	 * A job handler - this must return an array of job actions (eg: job.complete(..), job.error(..)) in all code paths.
 	 */
 	taskHandler: ZBBatchWorkerTaskHandler<
 		WorkerInputVariables,
@@ -331,9 +403,9 @@ export interface ZBWorkerConfig<
 	WorkerInputVariables,
 	CustomHeaderShape,
 	WorkerOutputVariables
-> extends ZBWorkerBaseConfig<WorkerInputVariables> {
+	> extends ZBWorkerBaseConfig<WorkerInputVariables> {
 	/**
-	 * A job handler.
+	 * A job handler - this must return a job action - e.g.: job.complete(), job.error() - in all code paths.
 	 */
 	taskHandler: ZBWorkerTaskHandler<
 		WorkerInputVariables,
@@ -351,55 +423,28 @@ export interface ZBWorkerConfig<
 export interface ZBGrpc extends GrpcClient {
 	completeJobSync: any
 	activateJobsStream: any
-
-	// Deprecated methods
-	/**
-	 * @deprecated use deployProcessSync instead
-	 */
-	deployWorkflowSync(workflows: {
-		workflows: WorkflowRequestObject[]
-	}): Promise<DeployWorkflowResponse>
-	/**
-	 * @deprecated use createProcessInstanceSync instead
-	 */
-	createWorkflowInstanceSync(
-		createWorkflowInstanceRequest: CreateWorkflowInstanceRequest
-	): Promise<CreateWorkflowInstanceResponse>
-	/**
-	 * @deprecated use createProcessInstanceWithResultSync instead
-	 */
-	createWorkflowInstanceWithResultSync<Result>(
-		createWorkflowInstanceWithResultRequest: CreateWorkflowInstanceWithResultRequest
-	): Promise<CreateWorkflowInstanceWithResultResponse<Result>>
-	/**
-	 * @deprecated use cancelProcessInstanceSync instead
-	 */
-	cancelWorkflowInstanceSync(workflowInstanceKey: {
-		workflowInstanceKey: string | number
-	}): Promise<void>
-
-	// 1.0 API
-	cancelProcessInstanceSync(processInstanceKey: {
-		processInstanceKey: string | number
-	}): Promise<void>
-	createProcessInstanceSync(
-		createProcessInstanceRequest: CreateProcessInstanceRequest
-	): Promise<CreateWorkflowInstanceResponse>
-	createProcessInstanceWithResultSync<Result>(
-		createProcessInstanceWithResultRequest: CreateProcessInstanceWithResultRequest
-	): Promise<CreateProcessInstanceWithResultResponse<Result>>
-	deployProcessSync(processes: {
-		processes: ProcessRequestObject[]
-	}): Promise<DeployWorkflowResponse>
-	failJobSync(failJobRequest: FailJobRequest): Promise<void>
 	publishMessageSync(
 		publishMessageRequest: PublishMessageRequest
 	): Promise<PublishMessageResponse>
-	resolveIncidentSync(incidentKey: string): Promise<void>
-	setVariablesSync(request: SetVariablesRequest): Promise<void>
 	throwErrorSync(throwErrorRequest: ThrowErrorRequest): Promise<void>
 	topologySync(): Promise<TopologyResponse>
 	updateJobRetriesSync(
 		updateJobRetriesRequest: UpdateJobRetriesRequest
 	): Promise<void>
+	// @TODO: fix plural
+	deployProcessSync(processs: {
+		processs: ProcessRequestObject[]
+	}): Promise<DeployProcessResponse>
+	failJobSync(failJobRequest: FailJobRequest): Promise<void>
+	createProcessInstanceSync(
+		createProcessInstanceRequest: CreateProcessInstanceRequest
+	): Promise<CreateProcessInstanceResponse>
+	createProcessInstanceWithResultSync<Result>(
+		createProcessInstanceWithResultRequest: CreateProcessInstanceWithResultRequest
+	): Promise<CreateProcessInstanceWithResultResponse<Result>>
+	cancelProcessInstanceSync(processInstanceKey: {
+		processInstanceKey: string | number
+	}): Promise<void>
+	setVariablesSync(request: SetVariablesRequest): Promise<void>
+	resolveIncidentSync(incidentKey: string): Promise<void>
 }

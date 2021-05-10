@@ -1,3 +1,40 @@
+# Version 1.3.0
+
+## Note on Version Number
+
+Versions 1.0 - 1.2 were released two years ago, under the old numbering scheme. Version 1.3.0 is the Node client release that supports Camunda Cloud 1.0 and Zeebe 1.0.
+
+## Known Issues
+
+_Things that don't work or don't work as expected, and which will be addressed in a future release_
+
+-   `onReady` and `onConnectionError` events are not firing reliably. At the moment, the `onConnectionError` is called even when a gateway is present and accessible, and `onReady` is not called. See [#215](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/215).
+-   The TLS connection does not work with self-managed Zeebe brokers secured with TLS. See [#218](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/218) and [#219](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/219).
+-   An exception in the gRPC layer can cause an application to exit. The workaround for this at the moment is to add a handler on the process for uncaught exceptions. See [#217](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/217).
+
+## Breaking changes
+
+_Changes in APIs or behaviour that may affect existing applications that use zeebe-node._
+
+-   The Zeebe API has changed in 1.0.0 and uses a gRPC protocol that is incompatible with pre-1.0.0 brokers. _The 1.0.0 package will not work with a pre-1.0.0 broker_. Nor will a pre-1.0.0 version of `zeebe-node` work with a 1.0.0 broker. See [#208](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/208).
+-   The worker task handler has a new type signature: `job => Promise<JOB_ACTION_ACKNOWLEDGEMENT>`. This means that all code branches in the worker handler must return a `complete` method call (deprecated), or one of the new `job.complete`, `job.fail`, `job.error`, `job.forward`, or `job.cancelWorkflowInstance` methods. This signature means that the type system can now do an exhaustiveness check to detect code paths that will always time out in the worker. See [#210](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/210).
+
+## Deprecations
+
+_Things that are deprecated and will be removed in a future release. Existing code will work for now, but should be migrated at some point. New code should not use these features._
+
+-   The previous methods with the word `workflow` in them (e.g.: `deployWorkflow`, `startWorkflowInstance`) are deprecated. In the 1.0.0 package they transparently call the new methods with `process` in them (e.g.: `deployProcess`, `startProcessInstance`), so existing code does not need to be rewritten. However, new code should not use these deprecated methods. These methods are scheduled to be removed in whichever comes first: the 1.2.0 release, or three months from the release of the 1.0.0 release. See [#208](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/208).
+-   The `complete` parameter in the worker task handler callback is deprecated, and will be removed in a future release. Use the new methods on the `job` object instead.
+-   The non-object constructors for `createWorker` are deprecated, and will be removed in a future release. Use the object constructor instead.
+
+## New Features
+
+_New shiny stuff._
+
+-   The worker task handler now has a new signature: `job => Promise<JOB_ACTION_ACKNOWLEDGEMENT>`. The `complete` parameter is deprecated, and the job object now has the methods `job.complete`, `job.fail`, `job.error`, `job.forward`. See [#209](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/209).
+-   The `job` object has a new method `job.cancelWorkflowInstance`. This allows you to cancel a workflow from within a worker, and return a `Promise<JOB_ACTION_ACKNOWLEDGEMENT>` in the worker handler. See [#211](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/211).
+-   Attempting to call two outcome methods on a job (for example: `job.complete()` and `job.fail()`, or the deprecated `complete.success()` and `complete.error()`) will now log an error to the console, alerting you to the behaviour and identifying the task type of the worker. See [#213](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/213).
+
 # Version 0.26.0
 
 ## New Features

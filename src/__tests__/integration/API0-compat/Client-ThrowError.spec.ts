@@ -1,6 +1,6 @@
 import { Duration } from 'typed-duration'
-import { ZBClient } from '../..'
-import { createUniqueTaskType } from '../../lib/createUniqueTaskType'
+import { ZBClient } from '../../..'
+import { createUniqueTaskType } from '../../../lib/createUniqueTaskType'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 jest.setTimeout(25000)

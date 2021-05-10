@@ -1,5 +1,5 @@
 import { MaybeTimeDuration } from 'typed-duration'
-import { IInputVariables, IWorkflowVariables } from './interfaces'
+import { IInputVariables, IProcessVariables } from './interfaces-1.0'
 
 /**
  * Request object to send the broker to request jobs for the worker.
@@ -37,9 +37,6 @@ export interface ActivateJobsRequest {
 	requestTimeout: MaybeTimeDuration
 }
 
-/**
- * @deprecated use ActivatedJob from interfaces-grpc-1.0.ts
- */
 export interface ActivatedJob {
 	/** The key, a unique identifier for the job */
 	readonly key: string
@@ -48,19 +45,31 @@ export interface ActivatedJob {
 	 * type="payment-service" />)
 	 */
 	readonly type: string
-	/** The job's workflow instance key */
+	/**
+	 * @deprecated use processInstanceKey instead
+	 */
 	readonly workflowInstanceKey: string
-	/** The bpmn process ID of the job workflow definition */
+	/** The job's process instance key */
+	readonly processInstanceKey: string
+	/** The bpmn process ID of the job process definition */
 	readonly bpmnProcessId: string
-	/** The version of the job workflow definition */
+	/**
+	 * @deprecated use processDefinitionVersion instead
+	 */
 	readonly workflowDefinitionVersion: number
-	/** The key of the job workflow definition */
+	/** The version of the job process definition */
+	readonly processDefinitionVersion: number
+	/**
+	 * @deprecated use processKey instead
+	 */
 	readonly workflowKey: string
+	/** The key of the job process definition */
+	readonly processKey: string
 	/** The associated task element ID */
 	readonly elementId: string
 	/**
 	 * The unique key identifying the associated task, unique within the scope of the
-	 * workflow instance
+	 * process instance
 	 */
 	readonly elementInstanceKey: string
 	/**
@@ -83,30 +92,24 @@ export interface ActivatedJob {
 	readonly variables: string
 }
 
-/**
- * @deprecated use ActivateJobsResponse from interfaces-grpc-1.0.ts
- */
 export interface ActivateJobsResponse {
 	jobs: ActivatedJob[]
 }
 
-/**
- * @deprecated use CreateProcessInstanceRequest instead
- **/
-export interface CreateWorkflowInstanceRequest<Variables = IWorkflowVariables> {
+export interface CreateProcessInstanceRequest<Variables = IProcessVariables> {
 	bpmnProcessId: string
 	version?: number
 	variables: Variables
 }
 
-export interface CreateWorkflowInstanceResponse {
+export interface CreateProcessInstanceResponse {
 	/**
-	 * The unique key identifying the workflow definition (e.g. returned from a workflow
-	 * in the DeployWorkflowResponse message)
+	 * The unique key identifying the process definition (e.g. returned from a process
+	 * in the DeployProcessResponse message)
 	 */
-	readonly workflowKey: string
+	readonly processKey: string
 	/**
-	 * The BPMN process ID of the workflow definition
+	 * The BPMN process ID of the process definition
 	 */
 	readonly bpmnProcessId: string
 	/**
@@ -115,42 +118,36 @@ export interface CreateWorkflowInstanceResponse {
 	readonly version: number
 	/**
 	 * Stringified JSON document that will instantiate the variables for the root variable scope of the
-	 * workflow instance; it must be a JSON object, as variables will be mapped in a
+	 * process instance; it must be a JSON object, as variables will be mapped in a
 	 * key-value fashion. e.g. { "a": 1, "b": 2 } will create two variables, named "a" and
 	 * "b" respectively, with their associated values. [{ "a": 1, "b": 2 }] would not be a\
 	 * valid argument, as the root of the JSON document is an array and not an object.
 	 */
-	readonly workflowInstanceKey: string
+	readonly processInstanceKey: string
 }
 
-/**
- * @deprecated use CreateProcessInstanceWithResultRequest in  instead
- **/
-export interface CreateWorkflowInstanceWithResultRequest {
-	request: CreateWorkflowInstanceRequest
-	// timeout in milliseconds. the request will be closed if the workflow is not completed
+export interface CreateProcessInstanceWithResultRequest {
+	request: CreateProcessInstanceRequest
+	// timeout in milliseconds. the request will be closed if the process is not completed
 	// before the requestTimeout.
 	// if requestTimeout = 0, uses the generic requestTimeout configured in the gateway.
 	requestTimeout: number
-	// list of names of variables to be included in `CreateWorkflowInstanceWithResultResponse.variables`
+	// list of names of variables to be included in `CreateProcessInstanceWithResultResponse.variables`
 	// if empty, all visible variables in the root scope will be returned.
 	fetchVariables?: string[]
 }
 
-/**
- * @deprecated use CreateProcessInstanceWithResultResponse instead
- **/
-export interface CreateWorkflowInstanceWithResultResponse<Result> {
-	// the key of the workflow definition which was used to create the workflow instance
-	workflowKey: string
-	// the BPMN process ID of the workflow definition which was used to create the workflow
+export interface CreateProcessInstanceWithResultResponse<Result> {
+	// the key of the process definition which was used to create the process instance
+	processKey: string
+	// the BPMN process ID of the process definition which was used to create the process
 	// instance
 	bpmnProcessId: string
-	// the version of the workflow definition which was used to create the workflow instance
+	// the version of the process definition which was used to create the process instance
 	version: number
-	// the unique identifier of the created workflow instance; to be used wherever a request
-	// needs a workflow instance key (e.g. CancelWorkflowInstanceRequest)
-	workflowInstanceKey: string
+	// the unique identifier of the created process instance; to be used wherever a request
+	// needs a process instance key (e.g. CancelProcessInstanceRequest)
+	processInstanceKey: string
 	// consisting of all visible variables to the root scope
 	variables: Result
 }
@@ -191,42 +188,29 @@ export interface TopologyResponse {
 	readonly gatewayVersion: string
 }
 
-export enum ResourceType {
-	// FILE type means the gateway will try to detect the resource type using the file extension of the name
-	FILE = 0,
-	BPMN = 1,
-	YAML = 2,
-}
-
-/**
- * @deprecated use ProcessRequestObject in interfaces-1.0 instead
- **/
-export interface WorkflowRequestObject {
+export interface ProcessRequestObject {
 	name?: string
-	type?: ResourceType
 	definition: Buffer // bytes, actually
 }
 
-export interface WorkflowMetadata {
+export interface ProcessMetadata {
 	readonly bpmnProcessId: string
 	readonly version: number
-	readonly workflowKey: string
+	readonly processKey: string
 	readonly resourceName: string
 }
 
-/**
- * @deprecated use DeployProcessResponse in interfaces-grpc-1.0 instead
- **/
-export interface DeployWorkflowResponse {
+export interface DeployProcessResponse {
 	readonly key: string
-	readonly workflows: WorkflowMetadata[]
+	readonly processes: ProcessMetadata[]
 }
 
-/**
- * @deprecated use DeployProcessRequest in interfaces-grpc-1.0 instead
- **/
-export interface DeployWorkflowRequest {
-	readonly workflows: WorkflowRequestObject[]
+export interface DeployProcessRequest {
+	readonly processes: ProcessRequestObject[]
+}
+
+export interface ListProcessResponse {
+	readonly processes: ProcessMetadata[]
 }
 
 export interface PublishMessageRequest<Variables = IInputVariables> {
@@ -246,7 +230,7 @@ export interface PublishMessageResponse {
 	key: number
 }
 
-export interface PublishStartMessageRequest<Variables = IWorkflowVariables> {
+export interface PublishStartMessageRequest<Variables = IProcessVariables> {
 	/** Should match the "Message Name" in a BPMN Message Catch  */
 	name: string
 	/** The number of seconds for the message to buffer on the broker, awaiting correlation. Omit or set to zero for no buffering. */
@@ -277,14 +261,14 @@ export interface ThrowErrorRequest {
 	errorMessage: string
 }
 
-export interface CompleteJobRequest<Variables = IWorkflowVariables> {
+export interface CompleteJobRequest<Variables = IProcessVariables> {
 	readonly jobKey: string
 	variables: Variables
 }
 
-export interface SetVariablesRequest<Variables = IWorkflowVariables> {
+export interface SetVariablesRequest<Variables = IProcessVariables> {
 	/*
-	The unique identifier of a particular element; can be the workflow instance key (as
+	The unique identifier of a particular element; can be the process instance key (as
 	obtained during instance creation), or a given element, such as a service task (see
 	elementInstanceKey on the Job message)
 	*/
@@ -293,23 +277,23 @@ export interface SetVariablesRequest<Variables = IWorkflowVariables> {
 	local: boolean
 }
 
-/* either workflow key or bpmn process id and version has to be specified*/
-export type GetWorkflowRequest =
-	| GetWorkflowRequestWithBpmnProcessId
-	| GetWorkflowRequestWithWorkflowKey
+/* either process key or bpmn process id and version has to be specified*/
+export type GetProcessRequest =
+	| GetProcessRequestWithBpmnProcessId
+	| GetProcessRequestWithProcessKey
 
-export interface GetWorkflowRequestWithWorkflowKey {
-	readonly workflowKey: string
+export interface GetProcessRequestWithProcessKey {
+	readonly processKey: string
 }
 
-export interface GetWorkflowRequestWithBpmnProcessId {
+export interface GetProcessRequestWithBpmnProcessId {
 	/** by default set version = -1 to indicate to use the latest version */
 	version?: number
 	bpmnProcessId: string
 }
 
-export interface GetWorkflowResponse {
-	readonly workflowKey: string
+export interface GetProcessResponse {
+	readonly processKey: string
 	readonly version: number
 	readonly bpmnProcessId: string
 	readonly resourceName: string

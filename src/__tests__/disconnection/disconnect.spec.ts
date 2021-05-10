@@ -4,7 +4,7 @@ import { ZBClient } from '../..'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 
-const ZEEBE_DOCKER_TAG = '0.24.2'
+const ZEEBE_DOCKER_TAG = '1.0.0'
 
 jest.setTimeout(900000)
 
@@ -51,11 +51,11 @@ test('reconnects after a pod reschedule', async done => {
 		.createWorker({
 			longPoll: 10000,
 			pollInterval: 300,
-			taskHandler: (_, complete) => {
+			taskHandler: job => {
 				// tslint:disable-next-line: no-console
 				log('##### Executing task handler') // @DEBUG
 
-				complete.success()
+				return job.complete()
 			},
 			taskType: 'disconnection-task',
 		})
@@ -139,9 +139,7 @@ test('a worker that started first, connects to a broker that starts later', asyn
 	const zbc = new ZBClient(`localhost`)
 	worker = zbc
 		.createWorker({
-			taskHandler: (_, complete) => {
-				complete.success()
-			},
+			taskHandler: job => job.complete(),
 			taskType: 'disconnection-task',
 		})
 		.on('connectionError', () => {
