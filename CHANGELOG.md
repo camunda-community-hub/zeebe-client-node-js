@@ -1,10 +1,16 @@
-# Version 1.0.0-alpha.3
+# Version 1.3.0
+
+## Note on Version Number
+
+Versions 1.0 - 1.2 were released two years ago, under the old numbering scheme. Version 1.3.0 is the Node client release that supports Camunda Cloud 1.0 and Zeebe 1.0.
 
 ## Known Issues
 
 _Things that don't work or don't work as expected, and which will be addressed in a future release_
 
 -   `onReady` and `onConnectionError` events are not firing reliably. At the moment, the `onConnectionError` is called even when a gateway is present and accessible, and `onReady` is not called. See [#215](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/215).
+-   The TLS connection does not work with self-managed Zeebe brokers secured with TLS. See [#218](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/218) and [#219](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/219).
+-   An exception in the gRPC layer can cause an application to exit. The workaround for this at the moment is to add a handler on the process for uncaught exceptions. See [#217](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/217).
 
 ## Breaking changes
 
