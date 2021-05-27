@@ -1,3 +1,11 @@
+# Version 1.3.1
+
+## Fixes
+
+_Things that were broken and are now fixed._
+
+-   The user agent was not being set for gRPC calls. It is now set in the gRPC call metadata. Thanks to [@zelldon](https://github.com/Zelldon) for opening the issue and helping track it down. See [#225](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/225).
+
 # Version 1.3.0
 
 ## Note on Version Number

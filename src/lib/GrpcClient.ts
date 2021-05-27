@@ -18,6 +18,7 @@ import {
 	VerifyOptions,
 } from 'grpc'
 import { Duration, MaybeTimeDuration } from 'typed-duration'
+import pkg = require('../../package.json')
 import { BasicAuthConfig } from './interfaces'
 import { Loglevel } from './interfaces-published-contract'
 import { OAuthProvider } from './OAuthProvider'
@@ -525,6 +526,7 @@ export class GrpcClient extends EventEmitter {
 
 	private async getAuthToken() {
 		const metadata = new Metadata({ waitForReady: false })
+		metadata.add('user-agent', `zeebe-client-nodejs/${pkg.version}`)
 		if (this.oAuth) {
 			const token = await this.oAuth.getToken()
 			metadata.add('Authorization', `Bearer ${token}`)
