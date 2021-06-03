@@ -1,3 +1,11 @@
+# Version 1.3.2
+
+## Fixes
+
+_Things that were broken and are now fixed._
+
+-   Setting `maxRetries` and `maxRetryTimeout` in the ZBClient constructor had no effect. Only setting the environment variables `ZEEBE_CLIENT_MAX_RETRIES` and `ZEEBE_CLIENT_MAX_RETRY_TIMEOUT` had an effect. Now, the constructor options take effect. The constructor options will be overridden by the environment variables if those are set. See [#228](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/228).
+
 # Version 1.3.1
 
 ## Fixes

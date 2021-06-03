@@ -290,10 +290,38 @@ test('Max Retries can be configured via the environment', () => {
 	const conf = ConfigurationHydrator.configure('localhost:26600', {})
 	expect(conf.maxRetries).toBe(25)
 })
+test('Max Retries can be set in constructor', () => {
+	delete process.env.ZEEBE_CLIENT_MAX_RETRIES
+	const conf = ConfigurationHydrator.configure('localhost:26500', {
+		maxRetries: 3,
+	})
+	expect(conf.maxRetries).toBe(3)
+})
+test('Max Retries in constructor is overridden by environment', () => {
+	process.env.ZEEBE_CLIENT_MAX_RETRIES = '20'
+	const conf = ConfigurationHydrator.configure('localhost:26500', {
+		maxRetries: 3,
+	})
+	expect(conf.maxRetries).toBe(20)
+})
 test('Max Retry Timeout can be configured via the environment', () => {
 	process.env.ZEEBE_CLIENT_MAX_RETRY_TIMEOUT = '5'
 	const conf = ConfigurationHydrator.configure('localhost:26600', {})
 	expect(conf.maxRetryTimeout).toBe(5)
+})
+test('Max Retry Timeout can be set in the constructor', () => {
+	delete process.env.ZEEBE_CLIENT_MAX_RETRY_TIMEOUT
+	const conf = ConfigurationHydrator.configure('localhost:26600', {
+		maxRetryTimeout: 5000,
+	})
+	expect(conf.maxRetryTimeout).toBe(5000)
+})
+test('Max Retry Timeout in constructor is overridden by the environment', () => {
+	process.env.ZEEBE_CLIENT_MAX_RETRY_TIMEOUT = '5000'
+	const conf = ConfigurationHydrator.configure('localhost:26600', {
+		maxRetryTimeout: 10000,
+	})
+	expect(conf.maxRetryTimeout).toBe(5000)
 })
 // const clientId = process.env.ZEEBE_CLIENT_ID
 // const clientSecret = process.env.ZEEBE_CLIENT_SECRET

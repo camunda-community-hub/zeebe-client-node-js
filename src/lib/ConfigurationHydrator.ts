@@ -278,10 +278,10 @@ export class ConfigurationHydrator {
 					: true,
 
 			maxRetries: isNaN(maxRetries)
-				? undefined
+				? options?.maxRetries
 				: Duration.seconds.from(maxRetries),
 			maxRetryTimeout: isNaN(maxRetryTimeout)
-				? undefined
+				? options?.maxRetryTimeout
 				: Duration.seconds.from(maxRetryTimeout),
 		}
 	}
