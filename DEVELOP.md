@@ -2,11 +2,29 @@
 
 _Development conventions._
 
-## Publishing a new NPM Package
+## Creating a new branch
 
-The NPM package publishing is handled by a GitHub Workflows using the [publish-to-npm](https://github.com/marketplace/actions/publish-to-npm) action.
+Please create a new branch for each feature or fix, and branch from `master`.
 
-To publish a new package, update the `package.json` package version and push a commit with the commit message "Release x.y.z" matching the package version.
+## Precommit hooks
+
+There is a precommit hook that runs the disconnection test, which requires Docker to be installed and for no Zeebe container to be running.
+
+## Commit messages
+
+We use [AngularJS's commit message conventions](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#-git-commit-guidelines), enforced by [commitizen](https://github.com/commitizen/cz-cli). This is used by [semantic-release](https://www.npmjs.com/package/semantic-release) to automate releases to NPM when PRs are merged into master.
+
+Run `git commit` without the `-m` flag to get a wizard that will guide you through creating an appropriate commit message.
+
+## Pull Requests
+
+Pull Requests must be labelled before they are merged to master. This is used by [Release Drafter](https://github.com/release-drafter/release-drafter#readme) to automate Release Notes on GitHub.
+
+## Publishing a new npm package
+
+The npm package publishing is handled by a GitHub Workflow using [semantic-release](https://www.npmjs.com/package/semantic-release).
+
+A new package will be released whenever a PR is merged into master.
 
 ## Disconnection test
 
