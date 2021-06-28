@@ -18,6 +18,8 @@ Run `git commit` without the `-m` flag to get a wizard that will guide you throu
 
 ## Pull Requests
 
+Please [squash and rebase commits on master](https://blog.carbonfive.com/always-squash-and-rebase-your-git-commits/).
+
 Pull Requests must be labelled before they are merged to master. This is used by [Release Drafter](https://github.com/release-drafter/release-drafter#readme) to automate Release Notes on GitHub.
 
 ## Publishing a new npm package

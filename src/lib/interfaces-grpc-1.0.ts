@@ -274,6 +274,15 @@ export interface SetVariablesRequest<Variables = IProcessVariables> {
 	*/
 	readonly elementInstanceKey: string
 	variables: Partial<Variables>
+	/**
+	 *  if true, the variables will be merged strictly into the local scope (as indicated by
+	 *  elementInstanceKey); this means the variables is not propagated to upper scopes.
+	 *  for example, let's say we have two scopes, '1' and '2', with each having effective variables as:
+	 * 1 => `{ "foo" : 2 }`, and 2 => `{ "bar" : 1 }`. if we send an update request with
+	 * elementInstanceKey = 2, variables `{ "foo" : 5 }`, and local is true, then scope 1 will
+	 * be unchanged, and scope 2 will now be `{ "bar" : 1, "foo" 5 }`. if local was false, however,
+	 * then scope 1 would be `{ "foo": 5 }`, and scope 2 would be `{ "bar" : 1 }`.
+	 */
 	local: boolean
 }
 
