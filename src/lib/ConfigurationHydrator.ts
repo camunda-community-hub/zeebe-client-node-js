@@ -7,6 +7,8 @@ import * as ZB from './interfaces'
 import { Loglevel, ZBClientOptions } from './interfaces-published-contract'
 import { OAuthProviderConfig } from './OAuthProvider'
 
+const CamundaCloudDefaultRegion = 'bru-2'
+
 export class ConfigurationHydrator {
 	// These are the environment variables that can be used to configure the client
 
@@ -153,11 +155,9 @@ export class ConfigurationHydrator {
 			.ZEEBE_CAMUNDA_CLOUD_CLUSTER_ID
 		// This env var is compatible with zbctl and the Java and Go clients
 		const zeebeAddress = ConfigurationHydrator.getZeebeAddressFromEnv()
-		const name = clusterId ? clusterId : zeebeAddress
-		const hostname = `${ConfigurationHydrator.justClusterId(
-			name
-		)}.zeebe.camunda.io`
-		const audience = hostname
+		const hostname = clusterId
+			? `${clusterId}.${CamundaCloudDefaultRegion}.zeebe.camunda.io`
+			: zeebeAddress.split(':443')[0]
 
 		const clientId = ConfigurationHydrator.getClientIdFromEnv()
 		const clientSecret = ConfigurationHydrator.getClientSecretFromEnv()
@@ -169,7 +169,7 @@ export class ConfigurationHydrator {
 			? {
 					hostname,
 					oAuth: {
-						audience,
+						audience: hostname,
 						cacheDir: undefined, // will be set in OAuthProvider
 						cacheOnDisk: true,
 						clientId: clientId!,
@@ -220,11 +220,13 @@ export class ConfigurationHydrator {
 			const clusterId = ConfigurationHydrator.justClusterId(
 				camundaCloud.clusterId
 			)
+			const clusterRegion =
+				camundaCloud.clusterRegion || CamundaCloudDefaultRegion
 			const configuration: ZBClientOptions = {
 				...options,
-				hostname: `${clusterId}.zeebe.camunda.io`,
+				hostname: `${clusterId}.${clusterRegion}.zeebe.camunda.io`,
 				oAuth: {
-					audience: `${clusterId}.zeebe.camunda.io`,
+					audience: `${clusterId}.${clusterRegion}.zeebe.camunda.io`,
 					cacheDir: camundaCloud.cacheDir,
 					cacheOnDisk: camundaCloud.cacheOnDisk !== false,
 					clientId: camundaCloud.clientId,

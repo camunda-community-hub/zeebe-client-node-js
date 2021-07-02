@@ -4,6 +4,13 @@ import { OAuthProviderConfig } from './OAuthProvider'
 
 export interface CamundaCloudConfig {
 	clusterId: string
+	/**
+	 * Defaults to `bru-2`
+	 */
+	clusterRegion?: string
+	/**
+	 * Just the UUID of the cluster
+	 */
 	clientId: string
 	clientSecret: string
 	cacheDir?: string
