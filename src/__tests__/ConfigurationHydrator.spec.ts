@@ -89,7 +89,11 @@ test('Takes an explicit Gateway address over the environment ZEEBE_GATEWAY_ADDRE
 	expect(conf.hostname).toBe('zeebe.io')
 	expect(conf.port).toBe('26600')
 })
-test('Constructs the Camunda Cloud connection from the environment with just three parameters', () => {
+
+/**
+ * Camunda Cloud
+ */
+test('Constructs the Camunda Cloud connection from the environment with clusterId', () => {
 	process.env.ZEEBE_CAMUNDA_CLOUD_CLUSTER_ID =
 		'103ca930-6da6-4df7-aa97-941eb1f85040'
 	process.env.ZEEBE_CLIENT_SECRET =
@@ -97,6 +101,31 @@ test('Constructs the Camunda Cloud connection from the environment with just thr
 	process.env.ZEEBE_CLIENT_ID = 'yStuGvJ6a1RQhy8DQpeXJ80yEpar3pXh'
 	delete process.env.ZEEBE_GATEWAY_ADDRESS
 	// process.env.ZEEBE_GATEWAY_ADDRESS = 'zeebe://localhost:26500'
+	const conf = ConfigurationHydrator.configure(undefined, undefined)
+	expect(conf.hostname).toBe(
+		'103ca930-6da6-4df7-aa97-941eb1f85040.bru-2.zeebe.camunda.io'
+	)
+	expect(conf.port).toBe('443')
+	expect(conf.oAuth!.audience).toBe(
+		'103ca930-6da6-4df7-aa97-941eb1f85040.bru-2.zeebe.camunda.io'
+	)
+	expect(conf.oAuth!.url).toBe('https://login.cloud.camunda.io/oauth/token')
+	expect(conf.oAuth!.clientId).toBe('yStuGvJ6a1RQhy8DQpeXJ80yEpar3pXh')
+	expect(conf.oAuth!.clientSecret).toBe(
+		'WZahIGHjyj0-oQ7DZ_aH2wwNuZt5O8Sq0ZJTz0OaxfO7D6jaDBZxM_Q-BHRsiGO_'
+	)
+})
+
+test('Constructs the Camunda Cloud connection from the environment with ZEEBE_ADDRESS with no change to URL', () => {
+	delete process.env.ZEEBE_CAMUNDA_CLOUD_CLUSTER_ID
+	delete process.env.ZEEBE_GATEWAY_ADDRESS
+
+	process.env.ZEEBE_ADDRESS =
+		'103ca930-6da6-4df7-aa97-941eb1f85040.zeebe.camunda.io:443'
+	process.env.ZEEBE_CLIENT_SECRET =
+		'WZahIGHjyj0-oQ7DZ_aH2wwNuZt5O8Sq0ZJTz0OaxfO7D6jaDBZxM_Q-BHRsiGO_'
+	process.env.ZEEBE_CLIENT_ID = 'yStuGvJ6a1RQhy8DQpeXJ80yEpar3pXh'
+
 	const conf = ConfigurationHydrator.configure(undefined, undefined)
 	expect(conf.hostname).toBe(
 		'103ca930-6da6-4df7-aa97-941eb1f85040.zeebe.camunda.io'
@@ -111,7 +140,32 @@ test('Constructs the Camunda Cloud connection from the environment with just thr
 		'WZahIGHjyj0-oQ7DZ_aH2wwNuZt5O8Sq0ZJTz0OaxfO7D6jaDBZxM_Q-BHRsiGO_'
 	)
 })
-test('Constructs the Camunda Cloud connection from a CamundaCloudConfig with just three parameters', () => {
+
+// @TODO
+test('Constructs the Camunda Cloud connection from the environment with ZEEBE_ADDRESS in Belgium region', () => {
+	process.env.ZEEBE_ADDRESS =
+		'103ca930-6da6-4df7-aa97-941eb1f85040.bru-2.zeebe.camunda.io:443'
+	process.env.ZEEBE_CLIENT_SECRET =
+		'WZahIGHjyj0-oQ7DZ_aH2wwNuZt5O8Sq0ZJTz0OaxfO7D6jaDBZxM_Q-BHRsiGO_'
+	process.env.ZEEBE_CLIENT_ID = 'yStuGvJ6a1RQhy8DQpeXJ80yEpar3pXh'
+	delete process.env.ZEEBE_GATEWAY_ADDRESS
+	// process.env.ZEEBE_GATEWAY_ADDRESS = 'zeebe://localhost:26500'
+	const conf = ConfigurationHydrator.configure(undefined, undefined)
+	expect(conf.hostname).toBe(
+		'103ca930-6da6-4df7-aa97-941eb1f85040.bru-2.zeebe.camunda.io'
+	)
+	expect(conf.port).toBe('443')
+	expect(conf.oAuth!.audience).toBe(
+		'103ca930-6da6-4df7-aa97-941eb1f85040.bru-2.zeebe.camunda.io'
+	)
+	expect(conf.oAuth!.url).toBe('https://login.cloud.camunda.io/oauth/token')
+	expect(conf.oAuth!.clientId).toBe('yStuGvJ6a1RQhy8DQpeXJ80yEpar3pXh')
+	expect(conf.oAuth!.clientSecret).toBe(
+		'WZahIGHjyj0-oQ7DZ_aH2wwNuZt5O8Sq0ZJTz0OaxfO7D6jaDBZxM_Q-BHRsiGO_'
+	)
+})
+
+test('Constructs the Camunda Cloud connection with default region from a CamundaCloudConfig with just three parameters', () => {
 	delete process.env.ZEEBE_CAMUNDA_CLOUD_CLUSTER_ID
 	delete process.env.ZEEBE_CLIENT_SECRET
 	delete process.env.ZEEBE_CLIENT_ID
@@ -126,11 +180,11 @@ test('Constructs the Camunda Cloud connection from a CamundaCloudConfig with jus
 		},
 	})
 	expect(conf.hostname).toBe(
-		'103ca930-6da6-4df7-aa97-941eb1f85040.zeebe.camunda.io'
+		'103ca930-6da6-4df7-aa97-941eb1f85040.bru-2.zeebe.camunda.io'
 	)
 	expect(conf.port).toBe('443')
 	expect(conf.oAuth!.audience).toBe(
-		'103ca930-6da6-4df7-aa97-941eb1f85040.zeebe.camunda.io'
+		'103ca930-6da6-4df7-aa97-941eb1f85040.bru-2.zeebe.camunda.io'
 	)
 	expect(conf.oAuth!.url).toBe('https://login.cloud.camunda.io/oauth/token')
 	expect(conf.oAuth!.clientId).toBe('yStuGvJ6a1RQhy8DQpeXJ80yEpar3pXh')
@@ -138,30 +192,7 @@ test('Constructs the Camunda Cloud connection from a CamundaCloudConfig with jus
 		'WZahIGHjyj0-oQ7DZ_aH2wwNuZt5O8Sq0ZJTz0OaxfO7D6jaDBZxM_Q-BHRsiGO_'
 	)
 })
-test('Constructs the Camunda Cloud connection correctly when the user pastes in the entire connection string (works for Daniel in demos)', () => {
-	// process.env.ZEEBE_GATEWAY_ADDRESS = 'zeebe://localhost:26500'
-	const conf = ConfigurationHydrator.configure(undefined, {
-		camundaCloud: {
-			clientId: 'yStuGvJ6a1RQhy8DQpeXJ80yEpar3pXh',
-			clientSecret:
-				'WZahIGHjyj0-oQ7DZ_aH2wwNuZt5O8Sq0ZJTz0OaxfO7D6jaDBZxM_Q-BHRsiGO_',
-			clusterId:
-				'103ca930-6da6-4df7-aa97-941eb1f85040.zeebe.camunda.io:443',
-		},
-	})
-	expect(conf.hostname).toBe(
-		'103ca930-6da6-4df7-aa97-941eb1f85040.zeebe.camunda.io'
-	)
-	expect(conf.port).toBe('443')
-	expect(conf.oAuth!.audience).toBe(
-		'103ca930-6da6-4df7-aa97-941eb1f85040.zeebe.camunda.io'
-	)
-	expect(conf.oAuth!.url).toBe('https://login.cloud.camunda.io/oauth/token')
-	expect(conf.oAuth!.clientId).toBe('yStuGvJ6a1RQhy8DQpeXJ80yEpar3pXh')
-	expect(conf.oAuth!.clientSecret).toBe(
-		'WZahIGHjyj0-oQ7DZ_aH2wwNuZt5O8Sq0ZJTz0OaxfO7D6jaDBZxM_Q-BHRsiGO_'
-	)
-})
+
 test('Caches the JWT from Camunda Cloud by default', () => {
 	delete process.env.ZEEBE_CAMUNDA_CLOUD_CLUSTER_ID
 	delete process.env.ZEEBE_CLIENT_SECRET
@@ -210,11 +241,11 @@ test('Takes a CamundaCloudConfig over the environment', () => {
 		},
 	})
 	expect(conf.hostname).toBe(
-		'103ca930-6da6-4df7-aa97-941eb1f85040.zeebe.camunda.io'
+		'103ca930-6da6-4df7-aa97-941eb1f85040.bru-2.zeebe.camunda.io'
 	)
 	expect(conf.port).toBe('443')
 	expect(conf.oAuth!.audience).toBe(
-		'103ca930-6da6-4df7-aa97-941eb1f85040.zeebe.camunda.io'
+		'103ca930-6da6-4df7-aa97-941eb1f85040.bru-2.zeebe.camunda.io'
 	)
 	expect(conf.oAuth!.url).toBe('https://login.cloud.camunda.io/oauth/token')
 	expect(conf.oAuth!.clientId).toBe('yStuGvJ6a1RQhy8DQpeXJ80yEpar3pXh')
@@ -253,11 +284,11 @@ test('Uses the Camunda Cloud connection from a CamundaCloudConfig, overriding th
 		},
 	})
 	expect(conf.hostname).toBe(
-		'103ca930-6da6-4df7-aa97-941eb1f85040.zeebe.camunda.io'
+		'103ca930-6da6-4df7-aa97-941eb1f85040.bru-2.zeebe.camunda.io'
 	)
 	expect(conf.port).toBe('443')
 	expect(conf.oAuth!.audience).toBe(
-		'103ca930-6da6-4df7-aa97-941eb1f85040.zeebe.camunda.io'
+		'103ca930-6da6-4df7-aa97-941eb1f85040.bru-2.zeebe.camunda.io'
 	)
 	expect(conf.oAuth!.url).toBe('https://login.cloud.camunda.io/oauth/token')
 	expect(conf.oAuth!.clientId).toBe('yStuGvJ6a1RQhy8DQpeXJ80yEpar3pXh')
@@ -265,6 +296,64 @@ test('Uses the Camunda Cloud connection from a CamundaCloudConfig, overriding th
 		'WZahIGHjyj0-oQ7DZ_aH2wwNuZt5O8Sq0ZJTz0OaxfO7D6jaDBZxM_Q-BHRsiGO_'
 	)
 })
+
+test('Defaults the region to bru-2 when passed a CamundaCloudConfig with no clusterRegion', () => {
+	delete process.env.ZEEBE_CAMUNDA_CLOUD_CLUSTER_ID
+	delete process.env.ZEEBE_CLIENT_SECRET
+	delete process.env.ZEEBE_CLIENT_ID
+	delete process.env.ZEEBE_GATEWAY_ADDRESS
+	// process.env.ZEEBE_GATEWAY_ADDRESS = 'zeebe://localhost:26500'
+	const conf = ConfigurationHydrator.configure('localhost:26600', {
+		camundaCloud: {
+			clientId: 'yStuGvJ6a1RQhy8DQpeXJ80yEpar3pXh',
+			clientSecret:
+				'WZahIGHjyj0-oQ7DZ_aH2wwNuZt5O8Sq0ZJTz0OaxfO7D6jaDBZxM_Q-BHRsiGO_',
+			clusterId: '103ca930-6da6-4df7-aa97-941eb1f85040',
+		},
+	})
+	expect(conf.hostname).toBe(
+		'103ca930-6da6-4df7-aa97-941eb1f85040.bru-2.zeebe.camunda.io'
+	)
+	expect(conf.port).toBe('443')
+	expect(conf.oAuth!.audience).toBe(
+		'103ca930-6da6-4df7-aa97-941eb1f85040.bru-2.zeebe.camunda.io'
+	)
+	expect(conf.oAuth!.url).toBe('https://login.cloud.camunda.io/oauth/token')
+	expect(conf.oAuth!.clientId).toBe('yStuGvJ6a1RQhy8DQpeXJ80yEpar3pXh')
+	expect(conf.oAuth!.clientSecret).toBe(
+		'WZahIGHjyj0-oQ7DZ_aH2wwNuZt5O8Sq0ZJTz0OaxfO7D6jaDBZxM_Q-BHRsiGO_'
+	)
+})
+
+test('Uses the explicit region passed in a CamundaCloudConfig', () => {
+	delete process.env.ZEEBE_CAMUNDA_CLOUD_CLUSTER_ID
+	delete process.env.ZEEBE_CLIENT_SECRET
+	delete process.env.ZEEBE_CLIENT_ID
+	delete process.env.ZEEBE_GATEWAY_ADDRESS
+	// process.env.ZEEBE_GATEWAY_ADDRESS = 'zeebe://localhost:26500'
+	const conf = ConfigurationHydrator.configure('localhost:26600', {
+		camundaCloud: {
+			clientId: 'yStuGvJ6a1RQhy8DQpeXJ80yEpar3pXh',
+			clientSecret:
+				'WZahIGHjyj0-oQ7DZ_aH2wwNuZt5O8Sq0ZJTz0OaxfO7D6jaDBZxM_Q-BHRsiGO_',
+			clusterId: '103ca930-6da6-4df7-aa97-941eb1f85040',
+			clusterRegion: 'us-1',
+		},
+	})
+	expect(conf.hostname).toBe(
+		'103ca930-6da6-4df7-aa97-941eb1f85040.us-1.zeebe.camunda.io'
+	)
+	expect(conf.port).toBe('443')
+	expect(conf.oAuth!.audience).toBe(
+		'103ca930-6da6-4df7-aa97-941eb1f85040.us-1.zeebe.camunda.io'
+	)
+	expect(conf.oAuth!.url).toBe('https://login.cloud.camunda.io/oauth/token')
+	expect(conf.oAuth!.clientId).toBe('yStuGvJ6a1RQhy8DQpeXJ80yEpar3pXh')
+	expect(conf.oAuth!.clientSecret).toBe(
+		'WZahIGHjyj0-oQ7DZ_aH2wwNuZt5O8Sq0ZJTz0OaxfO7D6jaDBZxM_Q-BHRsiGO_'
+	)
+})
+
 test('Is insecure by default', () => {
 	delete process.env.ZEEBE_INSECURE_CONNECTION
 	const conf = ConfigurationHydrator.configure('localhost:26600', {})

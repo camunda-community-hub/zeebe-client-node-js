@@ -1,3 +1,17 @@
+# Version 1.4.0
+
+## Breaking changes
+
+_Changes in APIs or behaviour that may affect existing applications that use zeebe-node._
+
+-   Previously, you could pass an entire URL to the `clusterId` field in the `camundaCloud` option in the `ZBClient` constructor. The library would parse this and extract the cluster ID. With the changes to support multiple regions, this no longer works. From version 1.4.0, you must pass in only the cluster Id, not the complete URL. See [#232](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/232).
+
+## New Features
+
+_New shiny stuff._
+
+-   With Camunda Cloud 1.1, the DNS schema for the hosted service has been upgraded to include regions. To support this, the `camundaCloud` object in the ZBClient constructor now has an optional `clusterRegion` field. When no value is specified it defaults to `bru-2` (Belgium). See [#232](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/232).
+
 # Version 1.3.2
 
 ## Fixes

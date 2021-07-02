@@ -329,7 +329,7 @@ zbWorker.on('ready', () => console.log(`Worker connected!`))
 zbWorker.on('connectionError', () => console.log(`Worker disconnected!`))
 ```
 
-<a href = "initial-connection-tolerance" >
+<a href = "initial-connection-tolerance" ></a>
 
 ### Initial Connection Tolerance
 
@@ -460,11 +460,14 @@ const zbc = new ZBClient({
 		clientId,
 		clientSecret,
 		clusterId,
+		clusterRegion, // optional, defaults to bru-2
 	},
 })
 ```
 
 That's it! Under the hood, the client lib will construct the OAuth configuration for Camunda Cloud and set the gateway address and port for you.
+
+We recommend the [Zero-conf constructor](#zero-conf) with the configuration passed in via environment variables. This allows you to run your application against different environments via configuration.
 
 <a name = "zero-conf"></a>
 
@@ -488,7 +491,6 @@ Camunda Cloud:
 
 ```
 ZEEBE_ADDRESS
-ZEEBE_AUTHORIZATION_SERVER_URL
 ZEEBE_CLIENT_SECRET
 ZEEBE_CLIENT_ID
 ```
