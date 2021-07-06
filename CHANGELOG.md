@@ -12,6 +12,12 @@ _New shiny stuff._
 
 -   With Camunda Cloud 1.1, the DNS schema for the hosted service has been upgraded to include regions. To support this, the `camundaCloud` object in the ZBClient constructor now has an optional `clusterRegion` field. When no value is specified it defaults to `bru-2` (Belgium). See [#232](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/232).
 
+## Chores
+
+_Things that shouldn't have a visible impact._
+
+-   Package dependencies have been updated to pass Snyk vulnerability scanning and `npm audit report`.
+
 # Version 1.3.2
 
 ## Fixes

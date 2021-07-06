@@ -55,11 +55,7 @@ export class ZBLogger {
 			optionalParameters.length > 0
 				? this.makeMessage(frame, 30, message, optionalParameters)
 				: this.makeMessage(frame, 30, message)
-		if (this.stdout === console) {
-			this.stdout.info(msg)
-		} else {
-			this.stdout.info(msg)
-		}
+		this.stdout.info(msg)
 	}
 
 	public error(message, ...optionalParameters: any[]) {
@@ -102,11 +98,7 @@ export class ZBLogger {
 			optionalParameters.length > 0
 				? this.makeMessage(frame, 30, message, optionalParameters)
 				: this.makeMessage(frame, 30, message)
-		if (this.stdout === console) {
-			this.stdout.info(msg)
-		} else {
-			this.stdout.info(msg)
-		}
+		this.stdout.info(msg)
 	}
 
 	private makeMessage(

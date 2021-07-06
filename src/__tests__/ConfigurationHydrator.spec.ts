@@ -174,6 +174,7 @@ test('Constructs the Camunda Cloud connection with default region from a Camunda
 	const conf = ConfigurationHydrator.configure(undefined, {
 		camundaCloud: {
 			clientId: 'yStuGvJ6a1RQhy8DQpeXJ80yEpar3pXh',
+			// file deepcode ignore HardcodedNonCryptoSecret/test: <please specify a reason of ignoring this>
 			clientSecret:
 				'WZahIGHjyj0-oQ7DZ_aH2wwNuZt5O8Sq0ZJTz0OaxfO7D6jaDBZxM_Q-BHRsiGO_',
 			clusterId: '103ca930-6da6-4df7-aa97-941eb1f85040',

@@ -269,11 +269,10 @@ ${messageEnumMembers}
 		return [...new Set(taskTypes.sort())]
 
 		async function scanRecursively(obj: object) {
-			let k: any
 			if (!(obj instanceof Object)) {
 				return // not an Object so obj[k] here is a value
 			}
-			for (k in obj) {
+			for (const k in obj) {
 				if (obj.hasOwnProperty(k)) {
 					if (k === 'bpmn:serviceTask') {
 						const tasks = toArray(obj[k])
@@ -304,11 +303,10 @@ ${messageEnumMembers}
 		return [...new Set(messageNames.sort())]
 
 		async function scanRecursively(obj: object) {
-			let k: any
 			if (!(obj instanceof Object)) {
 				return // not an Object so obj[k] here is a value
 			}
-			for (k in obj) {
+			for (const k in obj) {
 				if (obj.hasOwnProperty(k)) {
 					if (k === 'bpmn:message') {
 						const messages = toArray(obj[k])

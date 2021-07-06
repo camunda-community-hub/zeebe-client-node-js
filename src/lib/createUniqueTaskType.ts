@@ -16,7 +16,7 @@ export function createUniqueTaskType({
 	messages: { [key: string]: string }
 	processId: string
 } {
-	const bpmn = readFileSync(bpmnFilePath, 'utf-8')
+	const bpmn = readFileSync(bpmnFilePath, 'utf8')
 	const newTaskTypes = taskTypes.map(t => ({ [t]: uuid() }))
 	const newMessages = messages.map(m => ({ [m]: uuid() }))
 

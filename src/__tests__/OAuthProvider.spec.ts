@@ -109,6 +109,7 @@ test('Throws in the constructor if the token cache is not writable', () => {
 			cacheDir: tokenCache,
 			cacheOnDisk: true,
 			clientId: 'clientId',
+			// file deepcode ignore HardcodedNonCryptoSecret/test: <please specify a reason of ignoring this>
 			clientSecret: 'clientSecret',
 			url: 'url',
 		})
