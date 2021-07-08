@@ -17,6 +17,7 @@ _New shiny stuff._
 _Things that shouldn't have a visible impact._
 
 -   Package dependencies have been updated to pass Snyk vulnerability scanning and `npm audit report`.
+-   Husky has been updated to version 7.
 
 # Version 1.3.2
 
