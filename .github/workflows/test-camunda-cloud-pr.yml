@@ -3,7 +3,7 @@ on: # rebuild any PRs from the repo itself
   pull_request:
 jobs:
   test:
-    if: github.repository == github.event.pull_request.head.repo.full_name # 'zeebe-io/zeebe-client-node-js'
+    # if: github.repository == github.event.pull_request.head.repo.full_name # 'zeebe-io/zeebe-client-node-js'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
