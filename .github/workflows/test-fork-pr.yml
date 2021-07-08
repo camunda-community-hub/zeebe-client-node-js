@@ -1,0 +1,19 @@
+name: "Test PR with container"
+on:
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      zeebe:
+        image: camunda/zeebe
+        ports:
+          - 26500:26500
+          - 9600:9600
+    steps:
+      - uses: actions/checkout@v1
+      - run: |
+          npm install
+          npm run build
+          npm run test:integration
