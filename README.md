@@ -559,7 +559,7 @@ const zbc = new ZB.ZBClient()
 
 const zbWorker = zbc.createWorker('demo-service', handler)
 
-asyncfunction handler(job, _, worker) {
+function handler(job, _, worker) {
 	worker.log('Task variables', job.variables)
 
 	// Task worker business logic goes here
