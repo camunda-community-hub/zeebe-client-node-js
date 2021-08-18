@@ -567,7 +567,7 @@ function handler(job, _, worker) {
 		updatedProperty: 'newValue',
 	}
 
-	job.complete(updateToBrokerVariables)
+	return job.complete(updateToBrokerVariables)
 }
 ```
 
@@ -806,18 +806,19 @@ const cobolWorker = zbc.createWorker({
     taskType: 'cobol-insert',
     timeout: Duration.seconds.of(20), // allow 5s over the expected 15s
     taskHandler: job => {
-    const { jobKey, variables } = job
-    const request = {
-        correlationId: jobKey,
-        command: `INSERT ${variables.customer} INTO CUSTOMERS`
+        const { key, variables } = job
+        const request = {
+            correlationId: key,
+            command: `INSERT ${variables.customer} INTO CUSTOMERS`
+        }
+        RabbitMQSender.send({
+            channel: 'COBOL_REQ',
+            request
+        })
+        // Call forward() to release worker capacity
+        return job.forward()
     }
-    RabbitMQSender.send({
-        channel: 'COBOL_REQ',
-        request
-    })
-    // Call forward() to release worker capacity
-    job.forward()
-})
+)
 ```
 
 Now for the response part:
@@ -839,6 +840,7 @@ const RabbitMQListener.listen({
         if (outcome.SUCCESS) {
             zbc.completeJob({
                 jobKey: correlationId,
+                variables: {}
             })
         }
         if (outcome.ERROR) {
