@@ -87,9 +87,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	private grpc: ZB.ZBGrpc
 	private options: ZBClientOptions
 	private workerCount = 0
-	private workers: Array<
-		ZBWorker<any, any, any> | ZBBatchWorker<any, any, any>
-	> = []
+	private workers: (ZBWorker<any, any, any> | ZBBatchWorker<any, any, any>)[] = []
 	private retry: boolean
 	private maxRetries: number = process.env.ZEEBE_CLIENT_MAX_RETRIES
 		? parseInt(process.env.ZEEBE_CLIENT_MAX_RETRIES, 10)
@@ -809,9 +807,11 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		)
 	}
 
-	public resolveIncident(incidentKey: string): Promise<void> {
+	public resolveIncident(
+		resolveIncidentRequest: Grpc.ResolveIncidentRequest
+	): Promise<void> {
 		return this.executeOperation('resolveIncident', () =>
-			this.grpc.resolveIncidentSync(incidentKey)
+			this.grpc.resolveIncidentSync(resolveIncidentRequest)
 		)
 	}
 
