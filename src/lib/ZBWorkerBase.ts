@@ -106,6 +106,7 @@ export class ZBWorkerBase<
 	private pollInterval: MaybeTimeDuration
 	private pollLoop: NodeJS.Timeout
 	private pollMutex: boolean = false
+	private backPressureRetryCount: number = 0
 
 	constructor({
 		grpcClient,
@@ -459,6 +460,7 @@ You should call only one job action method in the worker handler. This is a bug 
 						1000} seconds`
 				)
 				this.handleStreamEnd(id)
+				this.backPressureRetryCount = 0
 			})
 
 			jobStream.stream.on('error', error => {
@@ -467,12 +469,20 @@ You should call only one job action method in the worker handler. This is a bug 
 						1000} seconds`,
 					error
 				)
-				this.handleStreamEnd(id)
+				if (error.code === 8) {
+					setTimeout(
+						() => this.handleStreamEnd(id),
+						1000 * 2 ** this.backPressureRetryCount++
+					)
+				} else {
+					this.handleStreamEnd(id)
+				}
 			})
 		}
 
 		if (jobStream.error) {
-			this.logger.logError({ id, error: jobStream.error.message })
+			const error = (jobStream.error as any)?.message
+			this.logger.logError({ id, error })
 		}
 		this.pollMutex = false
 	}
