@@ -17,6 +17,7 @@ import {
 	ThrowErrorRequest,
 	TopologyResponse,
 	UpdateJobRetriesRequest,
+	ResolveIncidentRequest,
 } from './interfaces-grpc-1.0'
 import { Loglevel, ZBCustomLogger } from './interfaces-published-contract'
 
@@ -174,28 +175,32 @@ export interface JobCompletionInterface<WorkerOutputVariables> {
 	) => Promise<JOB_ACTION_ACKNOWLEDGEMENT>
 }
 
-export interface ZeebeJob<WorkerInputVariables = IInputVariables,
+export interface ZeebeJob<
+	WorkerInputVariables = IInputVariables,
 	CustomHeaderShape = ICustomHeaders,
-	WorkerOutputVariables = IOutputVariables> extends Job<WorkerInputVariables, CustomHeaderShape>, JobCompletionInterface<WorkerOutputVariables> { }
+	WorkerOutputVariables = IOutputVariables
+>
+	extends Job<WorkerInputVariables, CustomHeaderShape>,
+		JobCompletionInterface<WorkerOutputVariables> {}
 
 export type ZBWorkerTaskHandler<
 	WorkerInputVariables = IInputVariables,
 	CustomHeaderShape = ICustomHeaders,
 	WorkerOutputVariables = IOutputVariables
-	> = (
-		job: Readonly<
-			ZeebeJob<WorkerInputVariables, CustomHeaderShape, WorkerOutputVariables>
-		>,
-		/**
-		 * @deprecated use the methods on the job object insteaad
-		 */
-		complete: CompleteFn<WorkerOutputVariables>,
-		worker: ZBWorker<
-			WorkerInputVariables,
-			CustomHeaderShape,
-			WorkerOutputVariables
-		>
-	) => MustReturnJobActionAcknowledgement
+> = (
+	job: Readonly<
+		ZeebeJob<WorkerInputVariables, CustomHeaderShape, WorkerOutputVariables>
+	>,
+	/**
+	 * @deprecated use the methods on the job object insteaad
+	 */
+	complete: CompleteFn<WorkerOutputVariables>,
+	worker: ZBWorker<
+		WorkerInputVariables,
+		CustomHeaderShape,
+		WorkerOutputVariables
+	>
+) => MustReturnJobActionAcknowledgement
 
 export interface ZBLoggerOptions {
 	loglevel?: Loglevel
@@ -218,7 +223,7 @@ export type ConnectionErrorHandler = (error?: any) => void
 export interface Job<
 	Variables = IInputVariables,
 	CustomHeaderShape = ICustomHeaders
-	> {
+> {
 	/** The key, a unique identifier for the job */
 	readonly key: string
 	/**
@@ -292,7 +297,7 @@ export interface ZBWorkerOptions<InputVars = IInputVariables> {
 	/**
 	 * Constrain payload to these keys only.
 	 */
-	fetchVariable?: Array<keyof InputVars>
+	fetchVariable?: (keyof InputVars)[]
 	/**
 	 * This handler is called when the worker cannot connect to the broker, or loses its connection.
 	 */
@@ -315,7 +320,7 @@ export type BatchedJob<
 	Variables = IInputVariables,
 	Headers = ICustomHeaders,
 	Output = IOutputVariables
-	> = Job<Variables, Headers> &
+> = Job<Variables, Headers> &
 	CompleteFn<Output> &
 	JobCompletionInterface<Output>
 
@@ -326,18 +331,18 @@ export type MustReturnJobActionAcknowledgement =
 	| Promise<JOB_ACTION_ACKNOWLEDGEMENT>
 
 export type ZBBatchWorkerTaskHandler<V, H, O> = (
-	jobs: Array<BatchedJob<V, H, O>>,
+	jobs: BatchedJob<V, H, O>[],
 	worker: ZBBatchWorker<V, H, O>
 ) =>
 	| MustReturnJobActionAcknowledgement[]
 	| Promise<MustReturnJobActionAcknowledgement[]>
-	| Array<Promise<MustReturnJobActionAcknowledgement>>
+	| Promise<MustReturnJobActionAcknowledgement>[]
 
 export interface ZBBatchWorkerConfig<
 	WorkerInputVariables,
 	CustomHeaderShape,
 	WorkerOutputVariables
-	> extends ZBWorkerBaseConfig<WorkerInputVariables> {
+> extends ZBWorkerBaseConfig<WorkerInputVariables> {
 	/**
 	 * A job handler - this must return an array of job actions (eg: job.complete(..), job.error(..)) in all code paths.
 	 */
@@ -403,7 +408,7 @@ export interface ZBWorkerConfig<
 	WorkerInputVariables,
 	CustomHeaderShape,
 	WorkerOutputVariables
-	> extends ZBWorkerBaseConfig<WorkerInputVariables> {
+> extends ZBWorkerBaseConfig<WorkerInputVariables> {
 	/**
 	 * A job handler - this must return a job action - e.g.: job.complete(), job.error() - in all code paths.
 	 */
@@ -446,5 +451,7 @@ export interface ZBGrpc extends GrpcClient {
 		processInstanceKey: string | number
 	}): Promise<void>
 	setVariablesSync(request: SetVariablesRequest): Promise<void>
-	resolveIncidentSync(incidentKey: string): Promise<void>
+	resolveIncidentSync(
+		resolveIncidentRequest: ResolveIncidentRequest
+	): Promise<void>
 }
