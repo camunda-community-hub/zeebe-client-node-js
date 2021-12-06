@@ -66,14 +66,14 @@ test('Causes a retry with complete.failure()', () =>
 			async (job, complete) => {
 				// Succeed on the third attempt
 				if (job.retries === 1) {
-					const res = await complete.success()
+					const res1 = await complete.success()
 					expect(job.workflowInstanceKey).toBe(wfi)
 					expect(job.retries).toBe(1)
 					wf = undefined
 					resolve(null)
-					return res
+					return res1
 				}
-				return await complete.failure('Triggering a retry')
+				return complete.failure('Triggering a retry')
 			},
 			{ loglevel: 'NONE' }
 		)
@@ -158,6 +158,7 @@ test('Fails a workflow when the handler throws and options.failWorkflowOnExcepti
 			try {
 				await zbc.cancelWorkflowInstance(wf!.workflowInstanceKey) // throws if not found. SHOULD throw in this test
 			} catch (e) {
+				// deepcode ignore PromiseNotCaughtNode: test
 				w.close().then(() => done())
 			}
 		}, 1500)

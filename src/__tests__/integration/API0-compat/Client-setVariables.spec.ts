@@ -37,6 +37,7 @@ test('Can update workflow variables with setVariables', async done => {
 		taskTypes: ['pathB', 'wait'],
 	})
 
+	// deepcode ignore PromiseNotCaughtNode: test
 	const res = await zbc
 		.deployWorkflow({
 			definition: bpmn,
@@ -47,6 +48,7 @@ test('Can update workflow variables with setVariables', async done => {
 	expect(res?.workflows?.length).toBe(1)
 	expect(res?.workflows?.[0]?.bpmnProcessId).toBe(processId)
 
+	// deepcode ignore PromiseNotCaughtNode: test
 	wf = await zbc
 		.createWorkflowInstance(processId, {
 			conditionVariable: true,
@@ -56,6 +58,7 @@ test('Can update workflow variables with setVariables', async done => {
 	const wfi = wf?.workflowInstanceKey
 	expect(wfi).toBeTruthy()
 
+	// deepcode ignore PromiseNotCaughtNode: test
 	zbc.setVariables({
 		elementInstanceKey: wfi,
 		local: false,
@@ -79,9 +82,9 @@ test('Can update workflow variables with setVariables', async done => {
 		async (job, complete) => {
 			expect(job?.workflowInstanceKey).toBe(wfi)
 			expect(job?.variables?.conditionVariable).toBe(false)
-			const res = complete.success(job.variables)
+			const res1 = complete.success(job.variables)
 			done()
-			return res
+			return res1
 		},
 		{ loglevel: 'INFO' }
 	)

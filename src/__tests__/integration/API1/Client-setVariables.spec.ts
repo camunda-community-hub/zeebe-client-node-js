@@ -38,6 +38,7 @@ test('Can update process variables with setVariables', async done => {
 		taskTypes: ['pathB', 'wait'],
 	})
 
+	// deepcode ignore PromiseNotCaughtNode: test
 	const res = await zbc
 		.deployProcess({
 			definition: bpmn,
@@ -48,6 +49,7 @@ test('Can update process variables with setVariables', async done => {
 	expect(res?.processes?.length).toBe(1)
 	expect(res?.processes?.[0]?.bpmnProcessId).toBe(processId)
 
+	// deepcode ignore PromiseNotCaughtNode: test
 	wf = await zbc
 		.createProcessInstance(processId, {
 			conditionVariable: true,
@@ -57,6 +59,7 @@ test('Can update process variables with setVariables', async done => {
 	const wfi = wf?.processInstanceKey
 	expect(wfi).toBeTruthy()
 
+	// deepcode ignore PromiseNotCaughtNode: test
 	zbc.setVariables({
 		elementInstanceKey: wfi,
 		local: false,
@@ -80,9 +83,9 @@ test('Can update process variables with setVariables', async done => {
 		taskHandler: async job => {
 			expect(job?.processInstanceKey).toBe(wfi)
 			expect(job?.variables?.conditionVariable).toBe(false)
-			const res = job.complete()
+			const res1 = job.complete()
 			done()
-			return res
+			return res1
 		},
 		loglevel: 'INFO',
 	})

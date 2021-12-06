@@ -137,47 +137,53 @@ test('reconnects after a pod reschedule', () =>
 		resolve(null)
 	}))
 
-test('a worker that started first, connects to a broker that starts later', async done => {
-	let readyCount = 0
-	let errorCount = 0
+test('a worker that started first, connects to a broker that starts later', () =>
+	new Promise(async resolve => {
+		let readyCount = 0
+		let errorCount = 0
 
-	const delay = timeout =>
-		new Promise(res => setTimeout(() => res(null), timeout))
+		const delay = timeout =>
+			new Promise(res => setTimeout(() => res(null), timeout))
 
-	const zbc = new ZBClient(`localhost`)
-	worker = zbc
-		.createWorker({
-			taskHandler: job => job.complete(),
-			taskType: 'disconnection-task',
-		})
-		.on('connectionError', () => {
-			errorCount++
-		})
-		.on('ready', () => {
-			readyCount++
-		})
+		const zbc = new ZBClient(`localhost`)
+		worker = zbc
+			.createWorker({
+				taskHandler: job => job.complete(),
+				taskType: 'disconnection-task',
+			})
+			.on('connectionError', () => {
+				errorCount++
+			})
+			.on('ready', () => {
+				readyCount++
+			})
 
-	container = await new GenericContainer(
-		'camunda/zeebe',
-		ZEEBE_DOCKER_TAG,
-		undefined,
-		26500
-	)
-		.withExposedPorts(26500)
-		.withWaitStrategy(Wait.forLogMessage('Bootstrap Broker-0 succeeded.'))
-		.start()
+		container = await new GenericContainer(
+			'camunda/zeebe',
+			ZEEBE_DOCKER_TAG,
+			undefined,
+			26500
+		)
+			.withExposedPorts(26500)
+			.withWaitStrategy(
+				Wait.forLogMessage('Bootstrap Broker-0 succeeded.')
+			)
+			.start()
 
-	await delay(10000)
+		await delay(10000)
 
-	await zbc.deployWorkflow('./src/__tests__/testdata/disconnection.bpmn')
-	await delay(1000) // Ensure deployment has happened
-	const wf = await zbc.createWorkflowInstanceWithResult('disconnection', {})
-	expect(wf.bpmnProcessId).toBeTruthy()
-	await worker.close()
-	await container.stop()
-	container = undefined
-	worker = undefined
-	expect(readyCount).toBe(1)
-	expect(errorCount).toBe(1)
-	done()
-})
+		await zbc.deployWorkflow('./src/__tests__/testdata/disconnection.bpmn')
+		await delay(1000) // Ensure deployment has happened
+		const wf = await zbc.createWorkflowInstanceWithResult(
+			'disconnection',
+			{}
+		)
+		expect(wf.bpmnProcessId).toBeTruthy()
+		await worker.close()
+		await container.stop()
+		container = undefined
+		worker = undefined
+		expect(readyCount).toBe(1)
+		expect(errorCount).toBe(1)
+		resolve(null)
+	}))

@@ -17,7 +17,7 @@ beforeEach(() => {
 	zbc = new ZBClient()
 })
 
-afterEach(async done => {
+afterEach(async () => {
 	try {
 		if (wf?.processInstanceKey) {
 			await zbc.cancelProcessInstance(wf.processInstanceKey)
@@ -26,7 +26,6 @@ afterEach(async done => {
 		// console.log('Caught NOT FOUND') // @DEBUG
 	} finally {
 		await zbc.close() // Makes sure we don't forget to close connection
-		done()
 	}
 })
 
@@ -65,15 +64,15 @@ test('Causes a retry with complete.failure()', () =>
 			taskHandler: async job => {
 				// Succeed on the third attempt
 				if (job.retries === 1) {
-					const res = await job.complete()
+					const res1 = await job.complete()
 					expect(job.processInstanceKey).toBe(wfi)
 					expect(job.retries).toBe(1)
 					wf = undefined
 
 					resolve(null)
-					return res
+					return res1
 				}
-				return await job.fail('Triggering a retry')
+				return job.fail('Triggering a retry')
 			},
 			loglevel: 'NONE',
 		})
