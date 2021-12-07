@@ -11,21 +11,16 @@ beforeEach(() => {
 	zbc = new ZBClient()
 })
 
-afterEach(async done => {
-	try {
-		if (wf && wf.workflowInstanceKey) {
-			await zbc
-				.cancelWorkflowInstance(wf.workflowInstanceKey)
-				.catch(e => e) // Cleanup any active workflows
-		}
-	} finally {
-		done()
+afterEach(() => {
+	if (wf && wf.workflowInstanceKey) {
+		return zbc.cancelWorkflowInstance(wf.workflowInstanceKey).catch(e => e) // Cleanup any active workflows
+	} else {
+		return Promise.resolve(null)
 	}
 })
 
-afterAll(async done => {
+afterAll(async () => {
 	await zbc.close()
-	done()
 })
 
 test('Can get the broker topology', async () => {

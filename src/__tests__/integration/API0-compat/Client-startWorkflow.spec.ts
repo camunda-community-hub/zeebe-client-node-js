@@ -11,9 +11,8 @@ beforeEach(async () => {
 	zbc = new ZBClient()
 })
 
-afterEach(async done => {
+afterEach(async () => {
 	await zbc.close() // Makes sure we don't forget to close connection
-	done()
 })
 
 test('Can start a workflow', async () => {

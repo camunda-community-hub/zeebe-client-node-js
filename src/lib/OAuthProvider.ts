@@ -4,6 +4,8 @@ import * as os from 'os'
 const homedir = os.homedir()
 import pkg = require('../../package.json')
 
+const BACKOFF_TOKEN_ENDPOINT_FAILURE = 1000
+
 interface Token {
 	access_token: string
 	scope: string
@@ -36,6 +38,7 @@ export class OAuthProvider {
 	public clientSecret: string
 	public useFileCache: boolean
 	public tokenCache = {}
+	private failed = false
 
 	constructor({
 		/** OAuth Endpoint URL */
@@ -87,32 +90,60 @@ export class OAuthProvider {
 				return cachedToken.access_token
 			}
 		}
-		try {
-			const body = JSON.stringify({
-				audience: this.audience,
-				client_id: this.clientId,
-				client_secret: this.clientSecret,
-				grant_type: 'client_credentials',
-			})
-			const res = await got.post(this.url, {
+
+		return new Promise((resolve, reject) => {
+			setTimeout(
+				() => {
+					this.debouncedTokenRequest()
+						.then(res => {
+							this.failed = false
+							resolve(res)
+						})
+						.catch(e => {
+							this.failed = true
+							reject(e)
+						})
+				},
+				this.failed ? BACKOFF_TOKEN_ENDPOINT_FAILURE : 1
+			)
+		})
+	}
+
+	private debouncedTokenRequest() {
+		const body = JSON.stringify({
+			audience: this.audience,
+			client_id: this.clientId,
+			client_secret: this.clientSecret,
+			grant_type: 'client_credentials',
+		})
+		return got
+			.post(this.url, {
 				body,
 				headers: {
 					'content-type': 'application/json',
 					'user-agent': `zeebe-client-nodejs/${pkg.version}`,
 				},
 			})
-			//   console.log(res.body);
-			const token = JSON.parse(res.body)
-			if (this.useFileCache) {
-				this.toFileCache(token)
-			}
-			this.tokenCache[this.clientId] = token
-			this.startExpiryTimer(token)
+			.then(res => {
+				return this.safeJSONParse(res.body).then(token => {
+					if (this.useFileCache) {
+						this.toFileCache(token)
+					}
+					this.tokenCache[this.clientId] = token
+					this.startExpiryTimer(token)
+					return token.access_token
+				})
+			})
+	}
 
-			return token.access_token
-		} catch (e) {
-			throw new Error(e)
-		}
+	private safeJSONParse(thing: any): Promise<Token> {
+		return new Promise((resolve, reject) => {
+			try {
+				resolve(JSON.parse(thing))
+			} catch (e) {
+				reject(e)
+			}
+		})
 	}
 
 	private fromFileCache(clientId: string) {

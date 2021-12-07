@@ -9,38 +9,38 @@ beforeEach(async () => {
 	zbc = new ZBClient()
 })
 
-afterEach(async done => {
-	await zbc.close() // Makes sure we don't forget to close connection
-	done()
+afterEach(done => {
+	zbc.close().then(done) // Makes sure we don't forget to close connection
 })
 
-test('BatchWorker gets ten jobs', async done => {
-	const { bpmn, taskTypes, processId } = createUniqueTaskType({
-		bpmnFilePath: './src/__tests__/testdata/hello-world.bpmn',
-		messages: [],
-		taskTypes: ['console-log'],
-	})
-	const res = await zbc.deployWorkflow({
-		definition: bpmn,
-		name: `service-hello-world-${processId}.bpmn`,
-	})
+test('BatchWorker gets ten jobs', () =>
+	new Promise(async done => {
+		const { bpmn, taskTypes, processId } = createUniqueTaskType({
+			bpmnFilePath: './src/__tests__/testdata/hello-world.bpmn',
+			messages: [],
+			taskTypes: ['console-log'],
+		})
+		const res = await zbc.deployWorkflow({
+			definition: bpmn,
+			name: `service-hello-world-${processId}.bpmn`,
+		})
 
-	expect(res.workflows.length).toBe(1)
+		expect(res.workflows.length).toBe(1)
 
-	for (let i = 0; i < 10; i++) {
-		await zbc.createWorkflowInstance(processId, {})
-	}
+		for (let i = 0; i < 10; i++) {
+			await zbc.createWorkflowInstance(processId, {})
+		}
 
-	zbc.createBatchWorker({
-		jobBatchMaxTime: Duration.seconds.from(120),
-		jobBatchMinSize: 10,
-		loglevel: 'NONE',
-		taskHandler: async jobs => {
-			expect(jobs.length).toBe(10)
-			const res = await Promise.all(jobs.map(job => job.success()))
-			done()
-			return res
-		},
-		taskType: taskTypes['console-log'],
-	})
-})
+		zbc.createBatchWorker({
+			jobBatchMaxTime: Duration.seconds.from(120),
+			jobBatchMinSize: 10,
+			loglevel: 'NONE',
+			taskHandler: async jobs => {
+				expect(jobs.length).toBe(10)
+				const res1 = await Promise.all(jobs.map(job => job.success()))
+				done(null)
+				return res1
+			},
+			taskType: taskTypes['console-log'],
+		})
+	}))

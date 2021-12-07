@@ -17,7 +17,7 @@ beforeEach(() => {
 	zbc = new ZBClient()
 })
 
-afterEach(async done => {
+afterEach(async () => {
 	try {
 		if (wf?.processInstanceKey) {
 			await zbc.cancelProcessInstance(wf.processInstanceKey)
@@ -26,7 +26,6 @@ afterEach(async done => {
 		// console.log('Caught NOT FOUND') // @DEBUG
 	} finally {
 		await zbc.close() // Makes sure we don't forget to close connection
-		done()
 	}
 })
 
@@ -65,101 +64,103 @@ test('Causes a retry with complete.failure()', () =>
 			taskHandler: async job => {
 				// Succeed on the third attempt
 				if (job.retries === 1) {
-					const res = await job.complete()
+					const res1 = await job.complete()
 					expect(job.processInstanceKey).toBe(wfi)
 					expect(job.retries).toBe(1)
 					wf = undefined
 
 					resolve(null)
-					return res
+					return res1
 				}
-				return await job.fail('Triggering a retry')
+				return job.fail('Triggering a retry')
 			},
 			loglevel: 'NONE',
 		})
 	}))
 
-test('Does not fail a process when the handler throws, by default', async done => {
-	const { bpmn, processId, taskTypes } = createUniqueTaskType({
-		bpmnFilePath: './src/__tests__/testdata/Worker-Failure2.bpmn',
-		messages: [],
-		taskTypes: ['console-log-worker-failure-2'],
-	})
-	const res = await zbc.deployProcess({
-		definition: bpmn,
-		name: `worker-failure-2-${processId}.bpmn`,
-	})
-	expect(res.processes.length).toBe(1)
-	expect(res.processes[0].bpmnProcessId).toBe(processId)
+test('Does not fail a process when the handler throws, by default', () =>
+	new Promise(async done => {
+		const { bpmn, processId, taskTypes } = createUniqueTaskType({
+			bpmnFilePath: './src/__tests__/testdata/Worker-Failure2.bpmn',
+			messages: [],
+			taskTypes: ['console-log-worker-failure-2'],
+		})
+		const res = await zbc.deployProcess({
+			definition: bpmn,
+			name: `worker-failure-2-${processId}.bpmn`,
+		})
+		expect(res.processes.length).toBe(1)
+		expect(res.processes[0].bpmnProcessId).toBe(processId)
 
-	wf = await zbc.createProcessInstance(processId, {})
+		wf = await zbc.createProcessInstance(processId, {})
 
-	let alreadyFailed = false
+		let alreadyFailed = false
 
-	// Faulty worker - throws an unhandled exception in task handler
-	const w = zbc.createWorker({
-		taskType: taskTypes['console-log-worker-failure-2'],
-		taskHandler: async job => {
-			if (alreadyFailed) {
-				await zbc.cancelProcessInstance(wf!.processInstanceKey) // throws if not found. Should NOT throw in this test
-				job.complete()
-				return w.close().then(() => done())
-			}
-			alreadyFailed = true
-			throw new Error(
-				'Unhandled exception in task handler for testing purposes'
-			) // Will be caught in the library
-		},
+		// Faulty worker - throws an unhandled exception in task handler
+		const w = zbc.createWorker({
+			taskType: taskTypes['console-log-worker-failure-2'],
+			taskHandler: async job => {
+				if (alreadyFailed) {
+					await zbc.cancelProcessInstance(wf!.processInstanceKey) // throws if not found. Should NOT throw in this test
+					job.complete()
+					return w.close().then(() => done(null))
+				}
+				alreadyFailed = true
+				throw new Error(
+					'Unhandled exception in task handler for testing purposes'
+				) // Will be caught in the library
+			},
 
-		loglevel: 'NONE',
-		pollInterval: 10000,
-	})
-})
+			loglevel: 'NONE',
+			pollInterval: 10000,
+		})
+	}))
 
-test('Fails a process when the handler throws and options.failProcessOnException is set', async done => {
-	const { bpmn, taskTypes, processId } = createUniqueTaskType({
-		bpmnFilePath: './src/__tests__/testdata/Worker-Failure3.bpmn',
-		messages: [],
-		taskTypes: ['console-log-worker-failure-3'],
-	})
+test('Fails a process when the handler throws and options.failProcessOnException is set', () =>
+	new Promise(async done => {
+		const { bpmn, taskTypes, processId } = createUniqueTaskType({
+			bpmnFilePath: './src/__tests__/testdata/Worker-Failure3.bpmn',
+			messages: [],
+			taskTypes: ['console-log-worker-failure-3'],
+		})
 
-	const res = await zbc.deployProcess({
-		definition: bpmn,
-		name: `worker-failure-3-${processId}.bpmn`,
-	})
+		const res = await zbc.deployProcess({
+			definition: bpmn,
+			name: `worker-failure-3-${processId}.bpmn`,
+		})
 
-	expect(res.processes.length).toBe(1)
-	expect(res.processes[0].bpmnProcessId).toBe(processId)
+		expect(res.processes.length).toBe(1)
+		expect(res.processes[0].bpmnProcessId).toBe(processId)
 
-	wf = await zbc.createProcessInstance(processId, {})
+		wf = await zbc.createProcessInstance(processId, {})
 
-	let alreadyFailed = false
+		let alreadyFailed = false
 
-	// Faulty worker
-	const w = zbc.createWorker({
-		taskType: taskTypes['console-log-worker-failure-3'],
-		taskHandler: job => {
-			if (alreadyFailed) {
-				// It polls multiple times a second, and we need it to only throw once
-				return job.forward()
-			}
-			alreadyFailed = true
-			testProcessInstanceExists() // waits 1000ms then checks
-			throw new Error(
-				'Unhandled exception in task handler for test purposes'
-			) // Will be caught in the library
-		},
-		failProcessOnException: true,
-		loglevel: 'NONE',
-	})
+		// Faulty worker
+		const w = zbc.createWorker({
+			taskType: taskTypes['console-log-worker-failure-3'],
+			taskHandler: job => {
+				if (alreadyFailed) {
+					// It polls multiple times a second, and we need it to only throw once
+					return job.forward()
+				}
+				alreadyFailed = true
+				testProcessInstanceExists() // waits 1000ms then checks
+				throw new Error(
+					'Unhandled exception in task handler for test purposes'
+				) // Will be caught in the library
+			},
+			failProcessOnException: true,
+			loglevel: 'NONE',
+		})
 
-	function testProcessInstanceExists() {
-		setTimeout(async () => {
-			try {
-				await zbc.cancelProcessInstance(wf!.processInstanceKey) // throws if not found. SHOULD throw in this test
-			} catch (e) {
-				w.close().then(() => done())
-			}
-		}, 1500)
-	}
-})
+		function testProcessInstanceExists() {
+			setTimeout(async () => {
+				try {
+					await zbc.cancelProcessInstance(wf!.processInstanceKey) // throws if not found. SHOULD throw in this test
+				} catch (e) {
+					w.close().then(() => done(null))
+				}
+			}, 1500)
+		}
+	}))

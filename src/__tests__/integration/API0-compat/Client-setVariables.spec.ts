@@ -17,72 +17,75 @@ beforeEach(async () => {
 	zbc = new ZBClient()
 })
 
-afterEach(async done => {
+afterEach(async () => {
 	try {
 		if (wf?.workflowInstanceKey) {
 			zbc.cancelWorkflowInstance(wf.workflowInstanceKey) // Cleanup any active workflows
 		}
 	} finally {
 		await zbc.close() // Makes sure we don't forget to close connection
-		done()
 	}
 })
 
-test('Can update workflow variables with setVariables', async done => {
-	jest.setTimeout(30000)
+test('Can update workflow variables with setVariables', () =>
+	new Promise(async done => {
+		jest.setTimeout(30000)
 
-	const { bpmn, taskTypes, processId } = createUniqueTaskType({
-		bpmnFilePath: './src/__tests__/testdata/conditional-pathway.bpmn',
-		messages: [],
-		taskTypes: ['pathB', 'wait'],
-	})
-
-	const res = await zbc
-		.deployWorkflow({
-			definition: bpmn,
-			name: `conditional-pathway-${processId}.bpmn`,
+		const { bpmn, taskTypes, processId } = createUniqueTaskType({
+			bpmnFilePath: './src/__tests__/testdata/conditional-pathway.bpmn',
+			messages: [],
+			taskTypes: ['pathB', 'wait'],
 		})
-		.then(trace)
 
-	expect(res?.workflows?.length).toBe(1)
-	expect(res?.workflows?.[0]?.bpmnProcessId).toBe(processId)
+		// deepcode ignore PromiseNotCaughtNode: test
+		const res = await zbc
+			.deployWorkflow({
+				definition: bpmn,
+				name: `conditional-pathway-${processId}.bpmn`,
+			})
+			.then(trace)
 
-	wf = await zbc
-		.createWorkflowInstance(processId, {
-			conditionVariable: true,
-		})
-		.then(trace)
+		expect(res?.workflows?.length).toBe(1)
+		expect(res?.workflows?.[0]?.bpmnProcessId).toBe(processId)
 
-	const wfi = wf?.workflowInstanceKey
-	expect(wfi).toBeTruthy()
+		// deepcode ignore PromiseNotCaughtNode: test
+		wf = await zbc
+			.createWorkflowInstance(processId, {
+				conditionVariable: true,
+			})
+			.then(trace)
 
-	zbc.setVariables({
-		elementInstanceKey: wfi,
-		local: false,
-		variables: {
-			conditionVariable: false,
-		},
-	}).then(trace)
-	trace('Creating wait worker')
-	zbc.createWorker(
-		taskTypes.wait,
-		async (job, complete) => {
-			expect(job?.workflowInstanceKey).toBe(wfi)
-			trace(`Completing wait job for ${job.workflowInstanceKey}`)
-			return complete.success(job)
-		},
-		{ loglevel: 'INFO' }
-	)
+		const wfi = wf?.workflowInstanceKey
+		expect(wfi).toBeTruthy()
 
-	zbc.createWorker(
-		taskTypes.pathB,
-		async (job, complete) => {
-			expect(job?.workflowInstanceKey).toBe(wfi)
-			expect(job?.variables?.conditionVariable).toBe(false)
-			const res = complete.success(job.variables)
-			done()
-			return res
-		},
-		{ loglevel: 'INFO' }
-	)
-})
+		// deepcode ignore PromiseNotCaughtNode: test
+		zbc.setVariables({
+			elementInstanceKey: wfi,
+			local: false,
+			variables: {
+				conditionVariable: false,
+			},
+		}).then(trace)
+		trace('Creating wait worker')
+		zbc.createWorker(
+			taskTypes.wait,
+			async (job, complete) => {
+				expect(job?.workflowInstanceKey).toBe(wfi)
+				trace(`Completing wait job for ${job.workflowInstanceKey}`)
+				return complete.success(job)
+			},
+			{ loglevel: 'INFO' }
+		)
+
+		zbc.createWorker(
+			taskTypes.pathB,
+			async (job, complete) => {
+				expect(job?.workflowInstanceKey).toBe(wfi)
+				expect(job?.variables?.conditionVariable).toBe(false)
+				const res1 = complete.success(job.variables)
+				done(null)
+				return res1
+			},
+			{ loglevel: 'INFO' }
+		)
+	}))
