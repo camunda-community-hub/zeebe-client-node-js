@@ -1,3 +1,12 @@
+# Version 1.3.5
+
+## Fixes
+
+_Things that were broken and are now fixed._
+
+-   Incident resolution via `ZBClient.resolveIncident()` now works. Thanks to [mrsateeshp](https://github.com/mrsateeshp) for the Pull Request. See [#242](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/242) for more details.
+-   Auth token retries now have an automatic back-off to avoid saturating the endpoint and getting blacklisted if invalid credentials are supplied. See [#244](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/244) for more details.
+
 # Version 1.3.3
 
 ## Breaking changes
