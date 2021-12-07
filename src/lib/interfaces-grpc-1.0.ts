@@ -308,3 +308,7 @@ export interface GetProcessResponse {
 	readonly resourceName: string
 	readonly bpmnXml: string
 }
+
+export interface ResolveIncidentRequest {
+	readonly incidentKey: string
+}

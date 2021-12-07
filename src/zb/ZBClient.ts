@@ -810,9 +810,11 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		)
 	}
 
-	public resolveIncident(incidentKey: string): Promise<void> {
+	public resolveIncident(
+		resolveIncidentRequest: Grpc.ResolveIncidentRequest
+	): Promise<void> {
 		return this.executeOperation('resolveIncident', () =>
-			this.grpc.resolveIncidentSync(incidentKey)
+			this.grpc.resolveIncidentSync(resolveIncidentRequest)
 		)
 	}
 
