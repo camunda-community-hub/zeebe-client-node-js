@@ -12,19 +12,15 @@ beforeEach(() => {
 	zbc = new ZBClient()
 })
 
-afterEach(async done => {
-	try {
-		if (wf && wf.processInstanceKey) {
-			await zbc.cancelProcessInstance(wf.processInstanceKey).catch(e => e) // Cleanup any active processes
-		}
-	} finally {
-		done()
+afterEach(done => {
+	if (wf && wf.processInstanceKey) {
+		zbc.cancelProcessInstance(wf.processInstanceKey).catch(e => e) // Cleanup any active processes
 	}
+	done()
 })
 
-afterAll(async done => {
-	await zbc.close()
-	done()
+afterAll(done => {
+	zbc.close().then(done)
 })
 
 test('Can get the broker topology', async () => {

@@ -15,57 +15,58 @@ afterAll(async () => {
 	await zbc.close()
 })
 
-test('Can raise an Operate incident with complete.failure()', async done => {
-	const { bpmn, processId, taskTypes } = createUniqueTaskType({
-		bpmnFilePath: './src/__tests__/testdata/Worker-RaiseIncident.bpmn',
-		messages: [],
-		taskTypes: ['wait-raise-incident', 'pathB-raise-incident'],
-	})
-	const res = await zbc.deployWorkflow({
-		definition: bpmn,
-		name: `raise-incident-${processId}.bpmn`,
-	})
-	expect(res.workflows.length).toBe(1)
-	expect(res.workflows[0].bpmnProcessId).toBe(processId)
+test('Can raise an Operate incident with complete.failure()', () =>
+	new Promise(async done => {
+		const { bpmn, processId, taskTypes } = createUniqueTaskType({
+			bpmnFilePath: './src/__tests__/testdata/Worker-RaiseIncident.bpmn',
+			messages: [],
+			taskTypes: ['wait-raise-incident', 'pathB-raise-incident'],
+		})
+		const res = await zbc.deployWorkflow({
+			definition: bpmn,
+			name: `raise-incident-${processId}.bpmn`,
+		})
+		expect(res.workflows.length).toBe(1)
+		expect(res.workflows[0].bpmnProcessId).toBe(processId)
 
-	const wf = await zbc.createWorkflowInstance(processId, {
-		conditionVariable: true,
-	})
-	wfi = wf.workflowInstanceKey
-	expect(wfi).toBeTruthy()
+		const wf = await zbc.createWorkflowInstance(processId, {
+			conditionVariable: true,
+		})
+		wfi = wf.workflowInstanceKey
+		expect(wfi).toBeTruthy()
 
-	await zbc.setVariables({
-		elementInstanceKey: wfi,
-		local: false,
-		variables: {
-			conditionVariable: false,
-		},
-	})
+		await zbc.setVariables({
+			elementInstanceKey: wfi,
+			local: false,
+			variables: {
+				conditionVariable: false,
+			},
+		})
 
-	await zbc.createWorker(
-		taskTypes['wait-raise-incident'],
-		async (job, complete) => {
-			expect(job.workflowInstanceKey).toBe(wfi)
-			return await complete.success(job.variables)
-		},
-		{ loglevel: 'NONE' }
-	)
+		await zbc.createWorker(
+			taskTypes['wait-raise-incident'],
+			async (job, complete) => {
+				expect(job.workflowInstanceKey).toBe(wfi)
+				return complete.success(job.variables)
+			},
+			{ loglevel: 'NONE' }
+		)
 
-	await zbc.createWorker(
-		taskTypes['pathB-raise-incident'],
-		async (job, complete) => {
-			expect(job.workflowInstanceKey).toBe(wfi)
-			expect(job.variables.conditionVariable).toBe(false)
-			const res = await complete.failure(
-				'Raise an incident in Operate',
-				0
-			)
-			// Manually verify that an incident has been raised
-			await zbc.cancelWorkflowInstance(job.workflowInstanceKey)
-			// comment out the preceding line for the verification test
-			done()
-			return res
-		},
-		{ maxJobsToActivate: 1, loglevel: 'NONE' }
-	)
-})
+		await zbc.createWorker(
+			taskTypes['pathB-raise-incident'],
+			async (job, complete) => {
+				expect(job.workflowInstanceKey).toBe(wfi)
+				expect(job.variables.conditionVariable).toBe(false)
+				const res1 = await complete.failure(
+					'Raise an incident in Operate',
+					0
+				)
+				// Manually verify that an incident has been raised
+				await zbc.cancelWorkflowInstance(job.workflowInstanceKey)
+				// comment out the preceding line for the verification test
+				done(null)
+				return res1
+			},
+			{ maxJobsToActivate: 1, loglevel: 'NONE' }
+		)
+	}))
