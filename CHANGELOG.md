@@ -1,3 +1,11 @@
+# Version 2.4.0
+
+## Breaking changes
+
+_Changes in APIs or behaviour that may affect existing applications that use zeebe-node._
+
+-   The C-based gRPC implementation has been removed in this release. It is unmaintained, and does not build with Node 17. The Zeebe Node client now uses the pure JS gRPC implementation and requires Node version 12.22.5+, 14.17.5+, or 16.6.1+. See [#201](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/201) and [#247](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/247) for more details.
+
 # Version 1.3.5
 
 ## Fixes
