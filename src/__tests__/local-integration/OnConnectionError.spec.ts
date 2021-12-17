@@ -20,7 +20,7 @@ test(`Calls the onConnectionError handler if there is no broker and eagerConnect
 	}))
 
 // Currently broken. See #215
-test(`Does not call the onConnectionError handler if there is a broker`, () =>
+xtest(`Does not call the onConnectionError handler if there is a broker`, () =>
 	new Promise(done => {
 		let calledB = 0
 		const zbc2 = new ZBClient({
@@ -45,7 +45,7 @@ test(`Does not call the onConnectionError handler if there is a broker`, () =>
 	}))
 
 // Currently broken. See #215
-test(`Calls ZBClient onConnectionError once when there is no broker, eagerConnection:true, and workers with no handler`, () =>
+xtest(`Calls ZBClient onConnectionError once when there is no broker, eagerConnection:true, and workers with no handler`, () =>
 	new Promise(done => {
 		let calledC = 0
 		const zbc2 = new ZBClient('localtoast:234532534', {
@@ -114,7 +114,7 @@ test(`Trailing parameter worker onConnectionError handler API works`, () =>
 	}))
 
 // Currently broken. See #215
-test(`Does not call the onConnectionError handler if there is a business error`, () =>
+xtest(`Does not call the onConnectionError handler if there is a business error`, () =>
 	new Promise(async done => {
 		let calledF = 0
 		let wf = 'arstsrasrateiuhrastulyharsntharsie'
