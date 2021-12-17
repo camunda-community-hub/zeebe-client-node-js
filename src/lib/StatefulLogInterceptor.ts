@@ -4,13 +4,14 @@ import { ZBLoggerConfig } from './interfaces'
 import { ZBLogger } from './ZBLogger'
 
 export class StatefulLogInterceptor {
-	public characteristics: any
+	public characteristics: Characteristics
 	public log: ZBLogger
 	public blocking: boolean
 	public state: State = 'ERROR'
 	public errors = []
 	public logs = []
 	public initialConnection: boolean
+	private blockingTimer?: NodeJS.Timeout
 	constructor({
 		characteristics,
 		logConfig,
@@ -29,7 +30,7 @@ export class StatefulLogInterceptor {
 					'Authenticating client with Camunda Cloud...'
 				)
 			)
-			setTimeout(() => {
+			this.blockingTimer = setTimeout(() => {
 				if (!this.blocking) {
 					return
 				}
@@ -38,6 +39,12 @@ export class StatefulLogInterceptor {
 					? this.emptyErrors()
 					: this.emptyLogs()
 			}, this.characteristics.startupTime)
+		}
+	}
+
+	public close() {
+		if (this.blockingTimer) {
+			clearTimeout(this.blockingTimer)
 		}
 	}
 

@@ -47,6 +47,13 @@ export class ConnectionFactory {
 			config: grpcConfig,
 			log,
 		}).getGrpcClient()
+		const _close = grpcClient.close.bind(grpcClient)
+		grpcClient.close = async () => {
+			log.close()
+			_close()
+			return null
+		}
+
 		return { grpcClient, log }
 	}
 

@@ -23,6 +23,7 @@ Get a hosted instance of Zeebe on [Camunda Cloud](https://camunda.io).
 ## Table of Contents
 
 -   [ Versioning ](#versioning)
+-   [ Compatible Node Versions ](#node-versions)
 -   [ Breaking changes in 1.0.0 ](#breaking-1.0.0)
 -   [ gRPC Implementation ](#grpc-implementation)
 -   [ Type difference from other Zeebe clients ](#type-difference)
@@ -95,15 +96,25 @@ Get a hosted instance of Zeebe on [Camunda Cloud](https://camunda.io).
 
 To enable that the client libraries can be easily supported to the Zeebe server we map the version numbers, so that Major, Minor match the server application. Patches are independent and indicate client updates.
 
-NPM Package version 0.26.x supports Zeebe 0.22.x to 0.26.x
+NPM Package version 0.26.x supports Zeebe 0.22.x to 0.26.x.
 
-NPM Package version 1.0.0 supports Zeebe 1.0.0
+NPM Package version 1.x supports Zeebe 1.x. It uses the C-based gRPC library by default.
+
+NPM Package version 2.x supports Zeebe 1.x, and requires Node >= 16.6.1, >=14.17.5, or >=12.22.5. It removes the C-based gRPC library and uses the pure JS implementation.
+
+<a name="node-versions"></a>
+
+## Compatible Node Versions
+
+Version 1.x of the package: Node versions <=16.x. Version 1.x uses the C-based gRPC library and does not work with Node 17. The C-based gRPC library is deprecated and no longer being maintained.
+
+Version 2.x of the package: Node versions 12.22.5+, 14.17.5+, or 16.6.1+. Version 2.x uses the pure JS implementation of the gRPC library, and requires a fix to the `nghttp2` library in Node (See [#201](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/201)).
 
 <a name="breaking-1.0.0"></a>
 
 ## Breaking changes in Zeebe 1.0.0
 
-For Zeebe brokers prior to 1.0.0, use the 0.26.z version of `zeebe-node`. This README documents the 1.0.0 API. The previous API is documented [here](https://github.com/camunda-community-hub/zeebe-client-node-js/blob/v.0.25.0/README.md).
+For Zeebe brokers prior to 1.0.0, use the 0.26.z version of `zeebe-node`. This README documents the Zeebe 1.0.0 API. The previous API is documented [here](https://github.com/camunda-community-hub/zeebe-client-node-js/blob/v.0.25.0/README.md).
 
 Zeebe 1.0.0 contains a number of breaking changes, including the gRPC protocol and the API surface area. You must use a 1.x.y version of the client library with Zeebe 1.0.0 and later.
 
@@ -113,13 +124,9 @@ The pre-1.0.0 API of the Node client has been deprecated, but not removed. This 
 
 ## gRPC Implementation
 
-The Zeebe Node client uses the C gRPC client implementation [grpc-node](https://github.com/grpc/grpc-node) by default.
+For version 2.x, the Zeebe Node client uses the pure JS gRPC client implementation.
 
-From 0.23.3, you can opt-in to use the pure JavaScript implementation [@grpc/grpc-js](https://www.npmjs.com/package/@grpc/grpc-js), to assist us in testing it.
-
-To activate the pure JavaScript implementation, set `ZEEBE_NODE_PUREJS=true`.
-
-Please report any issues in [GitHub](https://github.com/zeebe-io/zeebe-client-node-js/issues).
+For version 1.x, the Zeebe Node client uses the C gRPC client implementation [grpc-node](https://github.com/grpc/grpc-node) by default. The C-based gRPC implementation is deprecated and is not being maintained.
 
 <a name = "type-difference"></a>
 

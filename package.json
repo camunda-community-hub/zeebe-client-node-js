@@ -1,7 +1,7 @@
 {
 	"name": "zeebe-node",
-	"version": "1.3.5",
-	"description": "The Node.js client library for the Zeebe Process Automation Engine.",
+	"version": "2.0.0",
+	"description": "The Node.js client library for the Zeebe Workflow Automation Engine.",
 	"keywords": [
 		"zeebe",
 		"zeebe.io",
@@ -9,8 +9,11 @@
 		"orchestration",
 		"bpmn",
 		"conductor",
-		"camunda",
+		"Camunda",
 		"Netflix",
+		"cloud",
+		"automation",
+		"process",
 		"workflow",
 		"Uber",
 		"Cadence"
@@ -57,7 +60,7 @@
 		]
 	},
 	"dependencies": {
-		"@grpc/grpc-js": "^1.3.7",
+		"@grpc/grpc-js": "^1.4.4",
 		"@grpc/proto-loader": "^0.6.4",
 		"chalk": "^2.4.2",
 		"console-stamp": "^3.0.2",
@@ -66,7 +69,6 @@
 		"fast-xml-parser": "^3.12.12",
 		"fp-ts": "^2.5.1",
 		"got": "^9.6.0",
-		"grpc": "^1.24.11",
 		"long": "^4.0.0",
 		"promise-retry": "^1.1.1",
 		"stack-trace": "0.0.10",
@@ -103,7 +105,7 @@
 	},
 	"author": {
 		"name": "Josh Wulf",
-		"email": "josh@magikcraft.io"
+		"email": "josh.wulf@camunda.com"
 	},
 	"contributors": [
 		{
@@ -122,6 +124,9 @@
 			"name": "Patrick Dehn"
 		}
 	],
+	"engines": {
+		"node": ">=16.6.1"
+	},
 	"license": "Apache-2.0",
 	"config": {
 		"commitizen": {
