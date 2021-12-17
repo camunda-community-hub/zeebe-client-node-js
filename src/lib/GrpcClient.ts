@@ -1,22 +1,16 @@
 import {
-	credentials as credentialsJS,
-	InterceptingCall as InterceptingCallJS,
-	loadPackageDefinition as loadPackageDefinitionJS,
-	Metadata as MetadataJS,
-	status as statusJS,
+	credentials,
+	InterceptingCall,
+	loadPackageDefinition,
+	Metadata,
+	status,
+	Client,
 } from '@grpc/grpc-js'
+import { VerifyOptions } from '@grpc/grpc-js/build/src/channel-credentials'
 import { loadSync, Options, PackageDefinition } from '@grpc/proto-loader'
 import * as _debug from 'debug'
 import { EventEmitter } from 'events'
-import {
-	Client,
-	credentials as credentialsC,
-	InterceptingCall as InterceptingCallC,
-	loadPackageDefinition as loadPackageDefinitionC,
-	Metadata as MetadataC,
-	status as statusC,
-	VerifyOptions,
-} from 'grpc'
+
 import { Duration, MaybeTimeDuration } from 'typed-duration'
 import pkg = require('../../package.json')
 import { BasicAuthConfig } from './interfaces'
@@ -25,15 +19,6 @@ import { OAuthProvider } from './OAuthProvider'
 import { normaliseAPI1 } from './transform-API'
 
 const debug = _debug.default('grpc')
-
-const useJS = process.env.ZEEBE_NODE_PUREJS?.toUpperCase() === 'TRUE'
-const credentials = useJS ? credentialsJS : credentialsC
-const InterceptingCall = useJS ? InterceptingCallJS : InterceptingCallC
-const loadPackageDefinition = useJS
-	? loadPackageDefinitionJS
-	: loadPackageDefinitionC
-const Metadata = useJS ? MetadataJS : MetadataC
-const status = useJS ? statusJS : statusC
 
 export interface GrpcClientExtendedOptions {
 	longPoll?: MaybeTimeDuration

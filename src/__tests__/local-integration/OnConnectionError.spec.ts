@@ -20,46 +20,48 @@ test(`Calls the onConnectionError handler if there is no broker and eagerConnect
 	}))
 
 // Currently broken. See #215
-xtest(`Does not call the onConnectionError handler if there is a broker`, async done => {
-	let calledB = 0
-	const zbc2 = new ZBClient({
-		onConnectionError: () => {
-			// tslint:disable-next-line: no-debugger
-			debugger
-			calledB++
-			// tslint:disable-next-line: no-console
-			console.log(
-				'onConnection Error was called when there *is* a broker'
-			)
-			throw new Error(
-				'onConnection Error was called when there *is* a broker'
-			)
-		},
-	})
-	setTimeout(async () => {
-		expect(calledB).toBe(0)
-		await zbc2.close()
-		done()
-	}, 5000)
-})
+xtest(`Does not call the onConnectionError handler if there is a broker`, () =>
+	new Promise(done => {
+		let calledB = 0
+		const zbc2 = new ZBClient({
+			onConnectionError: () => {
+				// tslint:disable-next-line: no-debugger
+				debugger
+				calledB++
+				// tslint:disable-next-line: no-console
+				console.log(
+					'onConnection Error was called when there *is* a broker'
+				)
+				throw new Error(
+					'onConnection Error was called when there *is* a broker'
+				)
+			},
+		})
+		setTimeout(async () => {
+			expect(calledB).toBe(0)
+			await zbc2.close()
+			done(null)
+		}, 5000)
+	}))
 
 // Currently broken. See #215
-xtest(`Calls ZBClient onConnectionError once when there is no broker, eagerConnection:true, and workers with no handler`, async done => {
-	let calledC = 0
-	const zbc2 = new ZBClient('localtoast:234532534', {
-		eagerConnection: true,
-		onConnectionError: () => {
-			calledC++
-		},
-	})
-	zbc2.createWorker(null, 'whatever', job => job.complete())
-	zbc2.createWorker(null, 'whatever', job => job.complete())
-	setTimeout(() => {
-		zbc2.close()
-		expect(calledC).toBe(1)
-		done()
-	}, 10000)
-})
+xtest(`Calls ZBClient onConnectionError once when there is no broker, eagerConnection:true, and workers with no handler`, () =>
+	new Promise(done => {
+		let calledC = 0
+		const zbc2 = new ZBClient('localtoast:234532534', {
+			eagerConnection: true,
+			onConnectionError: () => {
+				calledC++
+			},
+		})
+		zbc2.createWorker(null, 'whatever', job => job.complete())
+		zbc2.createWorker(null, 'whatever', job => job.complete())
+		setTimeout(() => {
+			zbc2.close()
+			expect(calledC).toBe(1)
+			done(null)
+		}, 10000)
+	}))
 
 test(`Calls ZBClient onConnectionError when there no broker, for the client and each worker with a handler`, () =>
 	new Promise(async done => {

@@ -9,6 +9,7 @@ export class GrpcMiddleware {
 	public log: StatefulLogInterceptor
 	private grpcClient: GrpcClient
 	private characteristics: Characteristics
+	private blockingTimer?: NodeJS.Timeout
 
 	constructor({
 		characteristics,
@@ -24,7 +25,7 @@ export class GrpcMiddleware {
 		this.state = 'UNKNOWN'
 		log.logDebug(`Grpc Middleware blocking: ${this.blocking}`)
 		if (this.blocking) {
-			setTimeout(() => {
+			this.blockingTimer = setTimeout(() => {
 				this.blocking = false
 				log.logDebug(`Grpc Middleware state: ${this.state}`)
 				if (this.state === 'ERROR') {
@@ -44,6 +45,14 @@ export class GrpcMiddleware {
 	private createInterceptedGrpcClient(config: GrpcClientCtor) {
 		const grpcClient = new GrpcClient(config)
 		const logInterceptor = this.log
+		const _close = grpcClient.close.bind(grpcClient)
+		grpcClient.close = async () => {
+			if (this.blockingTimer) {
+				clearTimeout(this.blockingTimer)
+			}
+			_close()
+			return null
+		}
 		grpcClient.on(MiddlewareSignals.Log.Debug, logInterceptor.logDebug)
 		grpcClient.on(MiddlewareSignals.Log.Info, logInterceptor.logInfo)
 		grpcClient.on(MiddlewareSignals.Log.Error, logInterceptor.logError)

@@ -74,7 +74,7 @@ test(`Does not call the onReady handler if there is no broker`, done => {
 	}, 5000)
 })
 
-test(`Does not emit the ready event if there is no broker`, done => {
+xtest(`Does not emit the ready event if there is no broker`, done => {
 	let called = 0
 	const zbc2 = new ZBClient('nobroker')
 	zbc2.createWorker({
