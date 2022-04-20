@@ -300,10 +300,16 @@ You should call only one job action method in the worker handler. This is a bug 
 			this.zbClient
 				.cancelProcessInstance(job.processInstanceKey)
 				.then(() => ZB.JOB_ACTION_ACKNOWLEDGEMENT)
+
+
 		const failJob = (job: ZB.Job) => (
-			errorMessage: string,
+			errorMessageOrFailureConfig: string | ZB.JobFailureConfiguration,
 			retries?: number
-		) => this.failJob({ job, errorMessage, retries })
+		) => {
+			const errorMessage = (typeof errorMessageOrFailureConfig === "string") ? errorMessageOrFailureConfig : (errorMessageOrFailureConfig as ZB.JobFailureConfiguration).errorMessage
+			const retryBackOff = (typeof errorMessageOrFailureConfig === "string") ? 0 : (errorMessageOrFailureConfig as ZB.JobFailureConfiguration).retryBackOff ?? 0
+			return this.failJob({ job, errorMessage, retries, retryBackOff })
+		}
 
 		const succeedJob = (job: ZB.Job) => (completedVariables?: T) =>
 			this.completeJob(job.key, completedVariables ?? {})
@@ -341,16 +347,19 @@ You should call only one job action method in the worker handler. This is a bug 
 		job,
 		errorMessage,
 		retries,
+		retryBackOff
 	}: {
 		job: ZB.Job
 		errorMessage: string
 		retries?: number
+		retryBackOff?: number
 	}) {
 		return this.zbClient
 			.failJob({
 				errorMessage,
 				jobKey: job.key,
 				retries: retries ?? job.retries - 1,
+				retryBackOff: retryBackOff ?? 0
 			})
 			.then(() => ZB.JOB_ACTION_ACKNOWLEDGEMENT)
 			.finally(() => {

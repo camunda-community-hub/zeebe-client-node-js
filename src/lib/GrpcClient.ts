@@ -242,7 +242,7 @@ export class GrpcClient extends EventEmitter {
 			 * pings its peer to see if the transport is still alive.
 			 * Int valued, milliseconds.
 			 */
-			'grpc.keepalive_time_ms': 45000,
+			'grpc.keepalive_time_ms': 90000,
 			/**
 			 * After waiting for a duration of this time,
 			 * if the keepalive ping sender does
@@ -250,13 +250,13 @@ export class GrpcClient extends EventEmitter {
 			 * transport. Int valued, milliseconds.
 			 */
 			'grpc.keepalive_timeout_ms': 120000,
-			'grpc.http2.min_time_between_pings_ms': 60000,
+			'grpc.http2.min_time_between_pings_ms': 90000,
 			/**
 			 * Minimum allowed time between a server receiving
 			 * successive ping frames without sending any data
 			 * frame. Int valued, milliseconds
 			 */
-			'grpc.http2.min_ping_interval_without_data_ms': 60000,
+			'grpc.http2.min_ping_interval_without_data_ms': 90000,
 			/**
 			 * This channel argument if set to 1
 			 * (0 : false; 1 : true), allows keepalive pings
@@ -307,7 +307,7 @@ export class GrpcClient extends EventEmitter {
 							metadata
 						)
 						this.setReady()
-					} catch (error) {
+					} catch (error: any) {
 						this.emit(MiddlewareSignals.Log.Error, error.message)
 						this.emit(MiddlewareSignals.Event.Error)
 						this.setNotReady()
@@ -439,7 +439,7 @@ export class GrpcClient extends EventEmitter {
 				this.channelState = gRPC
 					.getChannel()
 					.getConnectivityState(false)
-			} catch (e) {
+			} catch (e: any) {
 				const msg = e.toString()
 				alreadyClosed =
 					isClosed(this.channelState) ||
@@ -477,7 +477,7 @@ export class GrpcClient extends EventEmitter {
 							}`
 						)
 						alreadyClosed = isClosed(this.channelState)
-					} catch (e) {
+					} catch (e: any) {
 						const msg = e.toString()
 						alreadyClosed =
 							msg.includes(

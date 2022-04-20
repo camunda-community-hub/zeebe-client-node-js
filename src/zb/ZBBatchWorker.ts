@@ -71,7 +71,7 @@ export class ZBBatchWorker<
 		})
 	}
 
-	protected async handleJobs(jobs: Array<ZB.Job<InputVariables, Headers>>) {
+	protected async handleJobs(jobs: ZB.Job<InputVariables, Headers>[]) {
 		const batchedJobs = jobs.map(
 			(job): ZB.BatchedJob<InputVariables, Headers, OutputVariables> => ({
 				...job,

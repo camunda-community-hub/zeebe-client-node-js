@@ -235,7 +235,7 @@ export interface ZBWorkerOptions<InputVars = IInputVariables> {
 	/**
 	 * Constrain payload to these keys only.
 	 */
-	fetchVariable?: Array<keyof InputVars>
+	fetchVariable?: (keyof InputVars)[]
 	/**
 	 * This handler is called when the worker cannot connect to the broker, or loses its connection.
 	 */
@@ -257,7 +257,7 @@ export type BatchedJob<
 > = Job<Variables, Headers> & CompleteFn<Output>
 
 export type ZBBatchWorkerTaskHandler<V, H, O> = (
-	jobs: Array<BatchedJob<V, H, O>>,
+	jobs: BatchedJob<V, H, O>[],
 	worker: ZBBatchWorker<V, H, O>
 ) => void
 

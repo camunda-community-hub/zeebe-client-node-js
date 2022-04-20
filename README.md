@@ -10,7 +10,7 @@
 
 ![Test on Camunda Cloud](https://github.com/jwulf/zeebe-client-node-js/processes/Test%20on%20Camunda%20Cloud/badge.svg)
 
-This is a Node.js gRPC client for [Zeebe](https://zeebe.io). It is written in TypeScript and transpiled to JavaScript in the `dist` directory.
+This is a Node.js gRPC client for [Zeebe](https://zeebe.io), the workflow engine in [Camunda Platform 8](https://camunda.com/platform/). It is written in TypeScript and transpiled to JavaScript in the `dist` directory.
 
 Comprehensive API documentation is available [online](https://github.com/zeebe-io/zeebe-client-node-js).
 
@@ -108,7 +108,7 @@ NPM Package version 2.x supports Zeebe 1.x, and requires Node >= 16.6.1, >=14.17
 
 Version 1.x of the package: Node versions <=16.x. Version 1.x uses the C-based gRPC library and does not work with Node 17. The C-based gRPC library is deprecated and no longer being maintained.
 
-Version 2.x of the package: Node versions 12.22.5+, 14.17.5+, or 16.6.1+. Version 2.x uses the pure JS implementation of the gRPC library, and requires a fix to the `nghttp2` library in Node (See [#201](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/201)).
+Version 2.x and later of the package: Node versions 12.22.5+, 14.17.5+, or 16.6.1+. Version 2.x uses the pure JS implementation of the gRPC library, and requires a fix to the `nghttp2` library in Node (See [#201](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/201)).
 
 <a name="breaking-1.0.0"></a>
 
@@ -124,7 +124,7 @@ The pre-1.0.0 API of the Node client has been deprecated, but not removed. This 
 
 ## gRPC Implementation
 
-For version 2.x, the Zeebe Node client uses the pure JS gRPC client implementation.
+From version 2.x, the Zeebe Node client uses the pure JS gRPC client implementation.
 
 For version 1.x, the Zeebe Node client uses the C gRPC client implementation [grpc-node](https://github.com/grpc/grpc-node) by default. The C-based gRPC implementation is deprecated and is not being maintained.
 
@@ -654,6 +654,12 @@ Call `job.fail()` to fail the task. You must pass in a string message describing
 
 ```javascript
 job.fail('This is a critical failure and will raise an incident', 0)
+```
+
+From version 8.0.0 of the package, used with a 8.0.0 Zeebe broker, you can specify to the broker an optional backoff for the reactivation of the job, like this:
+
+```javascript
+job.fail({errorMessage: 'Triggering a retry with a two second back-off', retryBackOff: 2000, retries: 1})
 ```
 
 Call `job.error()` to trigger a BPMN error throw event. You must pass in a string error code for the error code, and you can pass an optional error message as the second parameter. If no BPMN error catch event exists for the error code, an incident will be raised.

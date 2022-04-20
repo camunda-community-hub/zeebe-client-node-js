@@ -1,3 +1,13 @@
+# Version 8.0.0
+
+Version 8.0.0 is the release to support Camunda Platform 8. The semver change does not denote a breaking API change. It's a product marketing alignment, rather than a technical semver change.
+
+## New Features
+
+_New shiny stuff._
+
+-   Zeebe 8.0.0 and later support an optional retry backoff for failed jobs. This is a communication to the broker about how long it should delay before making the job available for activation again. This is implemented as a new interface for `job.fail`. See [[#248](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/248)] for more details.
+
 # Version 2.4.0
 
 ## Breaking changes
@@ -5,6 +15,12 @@
 _Changes in APIs or behaviour that may affect existing applications that use zeebe-node._
 
 -   The C-based gRPC implementation has been removed in this release. It is unmaintained, and does not build with Node 17. The Zeebe Node client now uses the pure JS gRPC implementation and requires Node version 12.22.5+, 14.17.5+, or 16.6.1+. See [#201](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/201) and [#247](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/247) for more details.
+
+## Known Issues
+
+_Things that don't work or don't work as expected, and which will be addressed in a future release_
+
+-   The `onConnectionError` and `onReady` events do not work as expected. Applications that rely on these should not upgrade until this is fixed. See [#215](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/215).
 
 # Version 1.3.5
 

@@ -5,7 +5,7 @@
 To deploy the example process:
 
 ```bash
-node processs.js
+node process.js
 ```
 
 ## Start Example Worker

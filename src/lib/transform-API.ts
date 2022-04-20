@@ -3,24 +3,23 @@ interface JSONDoc {
 	[key: string]: JSON
 }
 
-// @TODO: fix spelling
-const ZeroToOneMapping: Array<[from: string, to: string]> = [
-	['workflows', 'processs'],
+const ZeroToOneMapping: [from: string, to: string][] = [
+	['workflows', 'processes'],
 	['workflow', 'process'],
-	['Workflows', 'Processs'],
+	['Workflows', 'Processes'],
 	['Workflow', 'Process']
 ]
 
-const OneToZeroMapping: Array<[from: string, to: string]> = [
+const OneToZeroMapping: [from: string, to: string][] = [
 	['processes', 'workflows'],
 	['Processes', 'Workflows'],
 	['process', 'workflow'],
 	['Process', 'Workflow'],
 ]
 
-const NormaliseOneMapping: Array<[from: string, to: string]> = [
-	['processs', 'processes'],
-	['Processs', 'processes']
+const NormaliseOneMapping: [from: string, to: string][] = [
+	['processes', 'processes'],
+	['Processes', 'processes']
 ]
 
 const IgnoreDuringTransform = ['bpmnProcessId']
