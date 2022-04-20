@@ -2,8 +2,8 @@ syntax = 'proto3';
 package gateway_protocol;
 
 option java_multiple_files = false;
-option java_package = "io.zeebe.gateway.protocol";
-option go_package = "pb";
+option java_package = "io.camunda.zeebe.gateway.protocol";
+option go_package = "./;pb";
 
 // For a more complete documentation, refer to Zeebe documentation at:
 // https://docs.camunda.io/docs/reference/grpc
@@ -45,7 +45,7 @@ message ActivatedJob {
   // the version of the job process definition
   int32 processDefinitionVersion = 5;
   // the key of the job process definition
-  int64 processKey = 6;
+  int64 processDefinitionKey = 6;
   // the associated task element ID
   string elementId = 7;
   // the unique key identifying the associated task, unique within the scope of the
@@ -87,7 +87,7 @@ message CompleteJobResponse {
 message CreateProcessInstanceRequest {
   // the unique key identifying the process definition (e.g. returned from a process
   // in the DeployProcessResponse message)
-  int64 processKey = 1;
+  int64 processDefinitionKey = 1;
   // the BPMN process ID of the process definition
   string bpmnProcessId = 2;
   // the version of the process; set to -1 to use the latest version
@@ -102,7 +102,7 @@ message CreateProcessInstanceRequest {
 
 message CreateProcessInstanceResponse {
   // the key of the process definition which was used to create the process instance
-  int64 processKey = 1;
+  int64 processDefinitionKey = 1;
   // the BPMN process ID of the process definition which was used to create the process
   // instance
   string bpmnProcessId = 2;
@@ -126,7 +126,7 @@ message CreateProcessInstanceWithResultRequest {
 
 message CreateProcessInstanceWithResultResponse {
   // the key of the process definition which was used to create the process instance
-  int64 processKey = 1;
+  int64 processDefinitionKey = 1;
   // the BPMN process ID of the process definition which was used to create the process
   // instance
   string bpmnProcessId = 2;
@@ -143,11 +143,10 @@ message CreateProcessInstanceWithResultResponse {
 
 message DeployProcessRequest {
   // List of process resources to deploy
-  repeated ProcessRequestObject processs = 1;
+  repeated ProcessRequestObject processes = 1;
 }
 
 message ProcessRequestObject {
-
   // the resource basename, e.g. myProcess.bpmn
   string name = 1;
   // the process definition as a UTF8-encoded string
@@ -157,8 +156,8 @@ message ProcessRequestObject {
 message DeployProcessResponse {
   // the unique key identifying the deployment
   int64 key = 1;
-  // a list of deployed processs
-  repeated ProcessMetadata processs = 2;
+  // a list of deployed processes
+  repeated ProcessMetadata processes = 2;
 }
 
 message ProcessMetadata {
@@ -168,7 +167,7 @@ message ProcessMetadata {
   // the assigned process version
   int32 version = 2;
   // the assigned key, which acts as a unique identifier for this process
-  int64 processKey = 3;
+  int64 processDefinitionKey = 3;
   // the resource name (see: ProcessRequestObject.name) from which this process was
   // parsed
   string resourceName = 4;
@@ -183,6 +182,8 @@ message FailJobRequest {
   // this is particularly useful if a job runs out of retries and an incident is raised,
   // as it this message can help explain why an incident was raised
   string errorMessage = 3;
+  // the backoff timeout for the next retry
+  int64 retryBackOff = 4;
 }
 
 message FailJobResponse {
@@ -269,6 +270,7 @@ message Partition {
   enum PartitionBrokerHealth {
     HEALTHY = 0;
     UNHEALTHY = 1;
+    DEAD = 2;
   }
 
   // the unique ID of this partition
@@ -356,17 +358,17 @@ service Gateway {
     Creates and starts an instance of the specified process. The process definition to use to
     create the instance can be specified either using its unique key (as returned by
     DeployProcess), or using the BPMN process ID and a version. Pass -1 as the version to use the
-    latest deployed version. Note that only processs with none start events can be started through
+    latest deployed version. Note that only processes with none start events can be started through
     this command.
 
     Errors:
       NOT_FOUND:
-        - no process with the given key exists (if processKey was given)
+        - no process with the given key exists (if processDefinitionKey was given)
         - no process with the given process ID exists (if bpmnProcessId was given but version was -1)
         - no process with the given process ID and version exists (if both bpmnProcessId and version were given)
 
       FAILED_PRECONDITION:
-        - the process definition does not contain a none start event; only processs with none
+        - the process definition does not contain a none start event; only processes with none
           start event can be started manually.
 
       INVALID_ARGUMENT:
@@ -383,14 +385,13 @@ service Gateway {
   }
 
   /*
-    Deploys one or more processs to Zeebe. Note that this is an atomic call,
-    i.e. either all processs are deployed, or none of them are.
+    Deploys one or more processes to Zeebe. Note that this is an atomic call,
+    i.e. either all processes are deployed, or none of them are.
 
     Errors:
       INVALID_ARGUMENT:
         - no resources given.
         - if at least one resource is invalid. A resource is considered invalid if:
-          - it is not a BPMN or YAML file (currently detected through the file extension)
           - the resource data is not deserializable (e.g. detected as BPMN, but it's broken XML)
           - the process is invalid (e.g. an event-based gateway has an outgoing sequence flow to a task)
    */

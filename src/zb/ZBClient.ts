@@ -729,7 +729,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		const deploy = (processes: Grpc.ProcessRequestObject[]) =>
 			this.executeOperation('deployWorkflow', () =>
 				this.grpc.deployProcessSync({
-					processs: processes,
+					processes,
 				})
 			)
 

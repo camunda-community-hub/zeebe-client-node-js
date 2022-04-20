@@ -64,7 +64,7 @@ export interface ActivatedJob {
 	 */
 	readonly workflowKey: string
 	/** The key of the job process definition */
-	readonly processKey: string
+	readonly processDefinitionKey: string
 	/** The associated task element ID */
 	readonly elementId: string
 	/**
@@ -107,7 +107,7 @@ export interface CreateProcessInstanceResponse {
 	 * The unique key identifying the process definition (e.g. returned from a process
 	 * in the DeployProcessResponse message)
 	 */
-	readonly processKey: string
+	readonly processDefinitionKey: string
 	/**
 	 * The BPMN process ID of the process definition
 	 */
@@ -139,7 +139,7 @@ export interface CreateProcessInstanceWithResultRequest {
 
 export interface CreateProcessInstanceWithResultResponse<Result> {
 	// the key of the process definition which was used to create the process instance
-	processKey: string
+	processDefinitionKey: string
 	// the BPMN process ID of the process definition which was used to create the process
 	// instance
 	bpmnProcessId: string
@@ -163,6 +163,7 @@ export enum PartitionBrokerRole {
 export enum PartitionBrokerHealth {
 	HEALTHY = 0,
 	UNHEALTHY = 1,
+	DEAD = 2
 }
 
 export interface Partition {
@@ -196,7 +197,7 @@ export interface ProcessRequestObject {
 export interface ProcessMetadata {
 	readonly bpmnProcessId: string
 	readonly version: number
-	readonly processKey: string
+	readonly processDefinitionKey: string
 	readonly resourceName: string
 }
 
@@ -250,6 +251,7 @@ export interface FailJobRequest {
 	readonly jobKey: string
 	retries: number
 	errorMessage: string
+	retryBackOff: number
 }
 
 export interface ThrowErrorRequest {

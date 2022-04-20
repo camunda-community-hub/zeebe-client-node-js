@@ -137,6 +137,25 @@ export interface ICustomHeaders {
 	[key: string]: any
 }
 
+export interface JobFailureConfiguration {
+	errorMessage: string,
+	/**
+	 * If not specified, the library will decrement the "current remaining retries" count by one
+	 */
+	retries?: number,
+	/**
+	 * Optional backoff for subsequent retries, in milliseconds. If not specified, it is zero.
+	 */
+	retryBackOff?: number
+}
+
+declare function FailureHandler (
+	errorMessage: string,
+	retries?: number
+): Promise<JOB_ACTION_ACKNOWLEDGEMENT>
+
+declare function FailureHandler (failureConfiguration: JobFailureConfiguration): Promise<JOB_ACTION_ACKNOWLEDGEMENT>
+
 export interface JobCompletionInterface<WorkerOutputVariables> {
 	/**
 	 * Cancel the workflow.
@@ -150,14 +169,13 @@ export interface JobCompletionInterface<WorkerOutputVariables> {
 		updatedVariables?: WorkerOutputVariables
 	) => Promise<JOB_ACTION_ACKNOWLEDGEMENT>
 	/**
-	 * Fail the job with an informative message as to the cause. Optionally pass in a
+	 * Fail the job with an informative message as to the cause. Optionally, pass in a
 	 * value remaining retries. If no value is passed for retries then the current retry
-	 * count is decremented. Pass in `0`for retries to raise an incident in Operate.
+	 * count is decremented. Pass in `0`for retries to raise an incident in Operate. Optionally,
+	 * specify a retry backoff period in milliseconds. Default is 0ms (immediate retry) if not
+	 * specified.
 	 */
-	fail: (
-		errorMessage: string,
-		retries?: number
-	) => Promise<JOB_ACTION_ACKNOWLEDGEMENT>
+	fail: typeof FailureHandler
 	/**
 	 * Mark this job as forwarded to another system for completion. No action is taken by the broker.
 	 * This method releases worker capacity to handle another job.
@@ -436,9 +454,8 @@ export interface ZBGrpc extends GrpcClient {
 	updateJobRetriesSync(
 		updateJobRetriesRequest: UpdateJobRetriesRequest
 	): Promise<void>
-	// @TODO: fix plural
-	deployProcessSync(processs: {
-		processs: ProcessRequestObject[]
+	deployProcessSync(processes: {
+		processes: ProcessRequestObject[]
 	}): Promise<DeployProcessResponse>
 	failJobSync(failJobRequest: FailJobRequest): Promise<void>
 	createProcessInstanceSync(

@@ -7,4 +7,5 @@ const zbc = new ZBClient({
 test('it can get the topology', async () => {
 	const res = await zbc.topology()
 	expect(Array.isArray(res?.brokers)).toBe(true)
+	await zbc.close()
 })

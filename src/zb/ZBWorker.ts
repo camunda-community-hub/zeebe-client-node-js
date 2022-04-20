@@ -22,7 +22,7 @@ export class ZBWorker<
 	}
 
 	protected handleJobs(
-		jobs: Array<ZB.Job<WorkerInputVariables, CustomHeaderShape>>
+		jobs: ZB.Job<WorkerInputVariables, CustomHeaderShape>[]
 	) {
 		// Call task handler for each new job
 		jobs.forEach(async job => this.handleJob(job))
@@ -57,7 +57,7 @@ export class ZBWorker<
 				workerCallback,
 				this
 			)
-		} catch (e) {
+		} catch (e: any) {
 			this.logger.logError(
 				`Caught an unhandled exception in a task handler for workflow instance ${job.workflowInstanceKey}:`
 			)
@@ -83,6 +83,7 @@ export class ZBWorker<
 						errorMessage: `Unhandled exception in task handler ${e}`,
 						jobKey: job.key,
 						retries,
+						retryBackOff: 0
 					})
 				} catch (e) {
 					this.logger.logDebug(e)
