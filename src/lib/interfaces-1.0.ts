@@ -18,6 +18,8 @@ import {
 	TopologyResponse,
 	UpdateJobRetriesRequest,
 	ResolveIncidentRequest,
+	DeployResourceRequest,
+	DeployResourceResponse,
 } from './interfaces-grpc-1.0'
 import { Loglevel, ZBCustomLogger } from './interfaces-published-contract'
 
@@ -138,23 +140,25 @@ export interface ICustomHeaders {
 }
 
 export interface JobFailureConfiguration {
-	errorMessage: string,
+	errorMessage: string
 	/**
 	 * If not specified, the library will decrement the "current remaining retries" count by one
 	 */
-	retries?: number,
+	retries?: number
 	/**
 	 * Optional backoff for subsequent retries, in milliseconds. If not specified, it is zero.
 	 */
 	retryBackOff?: number
 }
 
-declare function FailureHandler (
+declare function FailureHandler(
 	errorMessage: string,
 	retries?: number
 ): Promise<JOB_ACTION_ACKNOWLEDGEMENT>
 
-declare function FailureHandler (failureConfiguration: JobFailureConfiguration): Promise<JOB_ACTION_ACKNOWLEDGEMENT>
+declare function FailureHandler(
+	failureConfiguration: JobFailureConfiguration
+): Promise<JOB_ACTION_ACKNOWLEDGEMENT>
 
 export interface JobCompletionInterface<WorkerOutputVariables> {
 	/**
@@ -457,6 +461,9 @@ export interface ZBGrpc extends GrpcClient {
 	deployProcessSync(processes: {
 		processes: ProcessRequestObject[]
 	}): Promise<DeployProcessResponse>
+	deployResourceSync(
+		resource: DeployResourceRequest
+	): Promise<DeployResourceResponse>
 	failJobSync(failJobRequest: FailJobRequest): Promise<void>
 	createProcessInstanceSync(
 		createProcessInstanceRequest: CreateProcessInstanceRequest

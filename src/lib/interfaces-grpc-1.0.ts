@@ -163,7 +163,7 @@ export enum PartitionBrokerRole {
 export enum PartitionBrokerHealth {
 	HEALTHY = 0,
 	UNHEALTHY = 1,
-	DEAD = 2
+	DEAD = 2,
 }
 
 export interface Partition {
@@ -199,6 +199,65 @@ export interface ProcessMetadata {
 	readonly version: number
 	readonly processDefinitionKey: string
 	readonly resourceName: string
+}
+
+export interface DecisionMetadata {
+	// the dmn decision ID, as parsed during deployment; together with the
+	// versions forms a unique identifier for a specific decision
+	dmnDecisionId: string
+	// the dmn name of the decision, as parsed during deployment
+	dmnDecisionName: string
+	// the assigned decision version
+	version: number
+	// the assigned decision key, which acts as a unique identifier for this
+	// decision
+	decisionKey: number
+	// the dmn ID of the decision requirements graph that this decision is part
+	// of, as parsed during deployment
+	dmnDecisionRequirementsId: string
+	// the assigned key of the decision requirements graph that this decision is
+	// part of
+	decisionRequirementsKey: number
+}
+
+export interface DecisionRequirementsMetadata {
+	// the dmn decision requirements ID, as parsed during deployment; together
+	// with the versions forms a unique identifier for a specific decision
+	dmnDecisionRequirementsId: string
+	// the dmn name of the decision requirements, as parsed during deployment
+	dmnDecisionRequirementsName: string
+	// the assigned decision requirements version
+	version: number
+	// the assigned decision requirements key, which acts as a unique identifier
+	// for this decision requirements
+	decisionRequirementsKey: number
+	// the resource name (see: Resource.name) from which this decision
+	// requirements was parsed
+	resourceName: string
+}
+
+export type Deployment =
+	| { process: ProcessMetadata }
+	| { decision: DecisionMetadata }
+	| { decisionRequirements: DecisionRequirementsMetadata }
+
+export interface DeployResourceResponse {
+	// the unique key identifying the deployment
+	readonly key: number
+	// a list of deployed resources, e.g. processes
+	readonly deployments: Deployment[]
+}
+
+export interface DeployResourceRequest {
+	// list of resources to deploy
+	resources: Resource[]
+}
+
+export interface Resource {
+	// the resource name, e.g. myProcess.bpmn or myDecision.dmn
+	name: string
+	// the file content as a UTF8-encoded string
+	content: Buffer
 }
 
 export interface DeployProcessResponse {
