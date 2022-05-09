@@ -64,6 +64,7 @@ Get a hosted instance of Zeebe on [Camunda Cloud](https://camunda.io).
 
 **Client Commands**
 
+-   [ Deploy Process Models and DMN Tables ](#deploy-resource)
 -   [ Start a Process Instance ](#start-process)
 -   [ Start a Process Instance of a specific version of a Process definition ](#start-specific-version)
 -   [ Start a process instance and await the process outcome ](#start-await)
@@ -650,7 +651,7 @@ To complete a task, the job object that the task worker handler function receive
 
 Call `job.complete()` passing in a optional plain old JavaScript object (POJO) - a key:value map. These are variable:value pairs that will be used to update the process state in the broker. They will be merged with existing values. You can set an existing key to `null` or `undefined`, but there is no way to delete a key.
 
-Call `job.fail()` to fail the task. You must pass in a string message describing the failure. The client library decrements the retry count, and the broker handles the retry logic. If the failure is a hard failure and should cause an incident to be raised in Operate, then pass in `0` for the optional second parameter, `retries`:
+Call `job.fail()` to fail the task. You mus t pass in a string message describing the failure. The client library decrements the retry count, and the broker handles the retry logic. If the failure is a hard failure and should cause an incident to be raised in Operate, then pass in `0` for the optional second parameter, `retries`:
 
 ```javascript
 job.fail('This is a critical failure and will raise an incident', 0)
@@ -659,7 +660,11 @@ job.fail('This is a critical failure and will raise an incident', 0)
 From version 8.0.0 of the package, used with a 8.0.0 Zeebe broker, you can specify to the broker an optional backoff for the reactivation of the job, like this:
 
 ```javascript
-job.fail({errorMessage: 'Triggering a retry with a two second back-off', retryBackOff: 2000, retries: 1})
+job.fail({
+	errorMessage: 'Triggering a retry with a two second back-off',
+	retryBackOff: 2000,
+	retries: 1,
+})
 ```
 
 Call `job.error()` to trigger a BPMN error throw event. You must pass in a string error code for the error code, and you can pass an optional error message as the second parameter. If no BPMN error catch event exists for the error code, an incident will be raised.
@@ -984,6 +989,70 @@ const worker = zbc.createWorker({
 ```
 
 ## Client Commands
+
+<a name = "deploy-resource"></a>
+
+### Deploy Process Models and Decision Tables
+
+From version 8 of Zeebe, `deployProcess` in deprecated in favor of `deployResource` which allows you to deploy both process models and DMN tables.
+
+You can deploy a resource as a buffer, or by passing a filename - in which case the client library will load the file into a buffer for you.
+
+### Deploy Process Model
+
+By passing a filename, and allowing the client library to load the file into a buffer:
+
+```typescript
+async function deploy() {
+	const zbc = new ZBClient()
+	const result = await zbc.deployResource({
+		processFilename: `./src/__tests__/testdata/Client-DeployWorkflow.bpmn`,
+	})
+}
+```
+
+By passing a buffer, and a name:
+
+```typescript
+async function deploy() {
+	const zbc = new ZBClient()
+	const process = fs.readFileSync(
+		`./src/__tests__/testdata/Client-DeployWorkflow.bpmn`
+	)
+	const result = await zbc.deployResource({
+		process,
+		name: `Client-DeployWorkflow.bpmn`,
+	})
+}
+```
+
+### Deploy DMN Table
+
+By passing a filename, and allowing the client library to load the file into a buffer:
+
+```typescript
+async function deploy() {
+	const zbc = new ZBClient()
+	const result = await zbc.deployResource({
+		decisionFilename: `./src/__tests__/testdata/quarantine-duration.dmn`,
+	})
+}
+```
+
+By passing a buffer, and a name:
+
+```typescript
+async function deploy() {
+	const zbc = new ZBClient()
+	const decision = fs.readFileSync(
+		`./src/__tests__/testdata/quarantine-duration.dmn`
+	)
+	const result = await zbc.deployResource({
+		decision,
+		name: `quarantine-duration.dmn`,
+	})
+}
+```
 
 <a name = "start-process"></a>
 

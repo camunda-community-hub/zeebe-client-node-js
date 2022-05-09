@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?><definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:biodi="http://bpmn.io/schema/dmn/biodi/2.0" xmlns:camunda="http://camunda.org/schema/1.0/dmn" xmlns:di="http://www.omg.org/spec/DMN/20180521/DI/" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0km8yib" name="DRD" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.0.0-alpha.1" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="1.3.0" camunda:diagramRelationId="c8664c70-0ebb-4019-a889-f6955ca84ed5">
+  <decision id="Decision_Quarantine" name="Quarantine Duration">
+    <informationRequirement id="InformationRequirement_1ameg5i">
+      <requiredInput href="#InputData_1n9f9g0"/>
+    </informationRequirement>
+    <informationRequirement id="InformationRequirement_0232whi">
+      <requiredInput href="#InputData_050kw7s"/>
+    </informationRequirement>
+    <decisionTable id="DecisionTable_1k51h70">
+      <input id="Input_1" label="Employment Category" biodi:width="192" camunda:inputVariable="employment_category">
+        <inputExpression id="InputExpression_1" typeRef="string">
+          <text>employment_category</text>
+        </inputExpression>
+        <inputValues id="UnaryTests_0zouyl8">
+          <text>"critical infrastructure","non-critical infrastructure"</text>
+        </inputValues>
+      </input>
+      <input id="InputClause_13kripg" label="Age" camunda:inputVariable="age">
+        <inputExpression id="LiteralExpression_0u4zv60" typeRef="integer">
+          <text>age</text>
+        </inputExpression>
+      </input>
+      <output id="Output_1" label="Quarantine Duration" name="quarantine_duration" typeRef="string"/>
+      <rule id="DecisionRule_0gdlhm9">
+        <description>People who  are 30 and under recover faster, and we need to keep critical infrastructure running</description>
+        <inputEntry id="UnaryTests_1apsxgi">
+          <text>"critical infrastructure"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_02b280j">
+          <text>&lt;=30</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1cy0fkh">
+          <text>"P5D"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1bu9re1">
+        <description>People who  are 30 and under recover faster</description>
+        <inputEntry id="UnaryTests_0xu0quu">
+          <text>"non-critical infrastructure"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1lje5e9">
+          <text>&lt;=30</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_14h5x1a">
+          <text>"P7D"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_13oo3zh">
+        <description>People who are over 30 take longer to recover</description>
+        <inputEntry id="UnaryTests_1qebdx2">
+          <text/>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1pdhuab">
+          <text>&gt;30</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0jneoia">
+          <text>"P10D"</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <inputData id="InputData_1n9f9g0" name="Age"/>
+  <inputData id="InputData_050kw7s" name="Employment Category"/>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram>
+      <dmndi:DMNShape dmnElementRef="Decision_Quarantine">
+        <dc:Bounds height="80" width="180" x="160" y="100"/>
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="DMNShape_02x0shu" dmnElementRef="InputData_1n9f9g0">
+        <dc:Bounds height="45" width="125" x="187" y="337"/>
+      </dmndi:DMNShape>
+      <dmndi:DMNEdge id="DMNEdge_05yd1p8" dmnElementRef="InformationRequirement_1ameg5i">
+        <di:waypoint x="250" y="337"/>
+        <di:waypoint x="220" y="200"/>
+        <di:waypoint x="220" y="180"/>
+      </dmndi:DMNEdge>
+      <dmndi:DMNShape id="DMNShape_18cra2k" dmnElementRef="InputData_050kw7s">
+        <dc:Bounds height="45" width="125" x="427" y="337"/>
+      </dmndi:DMNShape>
+      <dmndi:DMNEdge id="DMNEdge_0h2io8x" dmnElementRef="InformationRequirement_0232whi">
+        <di:waypoint x="490" y="337"/>
+        <di:waypoint x="280" y="200"/>
+        <di:waypoint x="280" y="180"/>
+      </dmndi:DMNEdge>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>

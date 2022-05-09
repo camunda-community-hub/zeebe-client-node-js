@@ -44,6 +44,7 @@ import { ZBJsonLogger } from '../lib/ZBJsonLogger'
 import { decodeCreateZBWorkerSig } from '../lib/ZBWorkerSignature'
 import { ZBBatchWorker } from './ZBBatchWorker'
 import { ZBWorker } from './ZBWorker'
+import { readFileSync } from 'fs'
 
 const idColors = [
 	chalk.yellow,
@@ -722,10 +723,95 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		)
 	}
 
+	public async deployResource(
+		resource:
+			| { processFilename: string }
+			| { name: string; process: Buffer }
+	): Promise<Grpc.DeployResourceResponse<Grpc.ProcessDeployment>>
+	public async deployResource(
+		resource:
+			| { decisionFilename: string }
+			| { name: string; decision: Buffer }
+	): Promise<Grpc.DeployResourceResponse<Grpc.DecisionDeployment>>
+	async deployResource(
+		resource:
+			| { processFilename: string }
+			| { name: string; process: Buffer }
+			| { name: string; decision: Buffer }
+			| { decisionFilename: string }
+	): Promise<
+		Grpc.DeployResourceResponse<
+			| Grpc.ProcessDeployment
+			| Grpc.DecisionDeployment
+			| Grpc.DecisionRequirementsDeployment
+		>
+	> {
+		const isProcess = (
+			maybeProcess: any
+		): maybeProcess is { process: Buffer; name: string } =>
+			!!maybeProcess.process
+		const isProcessFilename = (
+			maybeProcessFilename: any
+		): maybeProcessFilename is { processFilename: string } =>
+			!!maybeProcessFilename.processFilename
+		const isDecision = (
+			maybeDecision: any
+		): maybeDecision is { decision: Buffer; name: string } =>
+			!!maybeDecision.decision
+		if (isProcessFilename(resource)) {
+			const filename = resource.processFilename
+			const process = readFileSync(filename)
+			return this.executeOperation('deployResource', () =>
+				this.grpc.deployResourceSync({
+					resources: [
+						{
+							name: filename,
+							content: process,
+						},
+					],
+				})
+			)
+		} else if (isProcess(resource)) {
+			return this.executeOperation('deployResource', () =>
+				this.grpc.deployResourceSync({
+					resources: [
+						{
+							name: resource.name,
+							content: resource.process,
+						},
+					],
+				})
+			)
+		} else if (isDecision(resource)) {
+			return this.executeOperation('deployResource', () =>
+				this.grpc.deployResourceSync({
+					resources: [
+						{
+							name: resource.name,
+							content: resource.decision,
+						},
+					],
+				})
+			)
+		} else {
+			const filename = resource.decisionFilename
+			const decision = readFileSync(filename)
+			return this.executeOperation('deployResource', () =>
+				this.grpc.deployResourceSync({
+					resources: [
+						{
+							name: filename,
+							content: decision,
+						},
+					],
+				})
+			)
+		}
+	}
+
 	public async deployProcess(
 		process: ZB.DeployProcessFiles | ZB.DeployProcessBuffer
 	): Promise<Grpc.DeployProcessResponse> {
-		// @TODO: fix plural
 		const deploy = (processes: Grpc.ProcessRequestObject[]) =>
 			this.executeOperation('deployWorkflow', () =>
 				this.grpc.deployProcessSync({
