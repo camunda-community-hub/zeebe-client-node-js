@@ -1,3 +1,9 @@
+# Version 8.0.1
+
+_New shiny stuff._
+
+-   `deployProcess` is deprecated, and is replaced by the new `deployResource` API method. This method allows the deployment of both process models and DMN tables. See the README for documentation, and [[#255](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/255)] for more details.
+
 # Version 8.0.0
 
 Version 8.0.0 is the release to support Camunda Platform 8. The semver change does not denote a breaking API change. It's a product marketing alignment, rather than a technical semver change.
