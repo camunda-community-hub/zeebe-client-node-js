@@ -11,3 +11,5 @@ camunda-cloud.env
 tsconfig.tsbuildinfo
 .env
 ignore-this
+.dccache
+target/npmlist.json

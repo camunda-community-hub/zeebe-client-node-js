@@ -461,9 +461,9 @@ export interface ZBGrpc extends GrpcClient {
 	deployProcessSync(processes: {
 		processes: ProcessRequestObject[]
 	}): Promise<DeployProcessResponse>
-	deployResourceSync(
+	deployResourceSync<T>(
 		resource: DeployResourceRequest
-	): Promise<DeployResourceResponse>
+	): Promise<DeployResourceResponse<T>>
 	failJobSync(failJobRequest: FailJobRequest): Promise<void>
 	createProcessInstanceSync(
 		createProcessInstanceRequest: CreateProcessInstanceRequest

@@ -236,16 +236,25 @@ export interface DecisionRequirementsMetadata {
 	resourceName: string
 }
 
+export interface ProcessDeployment {
+	process: ProcessMetadata
+}
+export interface DecisionDeployment {
+	decision: DecisionMetadata
+}
+export interface DecisionRequirementsDeployment {
+	decisionRequirements: DecisionRequirementsMetadata
+}
 export type Deployment =
-	| { process: ProcessMetadata }
-	| { decision: DecisionMetadata }
-	| { decisionRequirements: DecisionRequirementsMetadata }
+	| ProcessDeployment
+	| DecisionDeployment
+	| DecisionRequirementsDeployment
 
-export interface DeployResourceResponse {
+export interface DeployResourceResponse<T> {
 	// the unique key identifying the deployment
 	readonly key: number
 	// a list of deployed resources, e.g. processes
-	readonly deployments: Deployment[]
+	readonly deployments: T[]
 }
 
 export interface DeployResourceRequest {

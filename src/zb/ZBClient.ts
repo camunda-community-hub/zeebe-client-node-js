@@ -727,24 +727,37 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		resource:
 			| { processFilename: string }
 			| { name: string; process: Buffer }
+	): Promise<Grpc.DeployResourceResponse<Grpc.ProcessDeployment>>
+	public async deployResource(
+		resource:
+			| { decisionFilename: string }
+			| { name: string; decision: Buffer }
+	): Promise<Grpc.DeployResourceResponse<Grpc.DecisionDeployment>>
+	async deployResource(
+		resource:
+			| { processFilename: string }
+			| { name: string; process: Buffer }
 			| { name: string; decision: Buffer }
 			| { decisionFilename: string }
-	) {
-		function isProcess(
+	): Promise<
+		Grpc.DeployResourceResponse<
+			| Grpc.ProcessDeployment
+			| Grpc.DecisionDeployment
+			| Grpc.DecisionRequirementsDeployment
+		>
+	> {
+		const isProcess = (
 			maybeProcess: any
-		): maybeProcess is { process: Buffer; name: string } {
-			return !!maybeProcess.processFilename
-		}
-		function isProcessFilename(
+		): maybeProcess is { process: Buffer; name: string } =>
+			!!maybeProcess.process
+		const isProcessFilename = (
 			maybeProcessFilename: any
-		): maybeProcessFilename is { processFilename: string } {
-			return !!maybeProcessFilename.processFilename
-		}
-		function isDecision(
+		): maybeProcessFilename is { processFilename: string } =>
+			!!maybeProcessFilename.processFilename
+		const isDecision = (
 			maybeDecision: any
-		): maybeDecision is { decision: Buffer; name: string } {
-			return !!maybeDecision.decision
-		}
+		): maybeDecision is { decision: Buffer; name: string } =>
+			!!maybeDecision.decision
 		if (isProcessFilename(resource)) {
 			const filename = resource.processFilename
 			const process = readFileSync(filename)
