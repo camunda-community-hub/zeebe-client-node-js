@@ -4,7 +4,7 @@ import { ZBClient } from '../..'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 
-const ZEEBE_DOCKER_TAG = '1.0.0'
+const ZEEBE_DOCKER_TAG = '8.0.2'
 
 jest.setTimeout(900000)
 
@@ -29,7 +29,7 @@ test('reconnects after a pod reschedule', () =>
 			new Promise(res => setTimeout(() => res(null), timeout))
 
 		// tslint:disable-next-line: no-console
-		log('##### Starting container') // @DEBUG
+		log('##### Starting container (reconnects after a pod reschedule)') // @DEBUG
 
 		container = await new GenericContainer(
 			'camunda/zeebe',
@@ -38,9 +38,7 @@ test('reconnects after a pod reschedule', () =>
 			26500
 		)
 			.withExposedPorts(26500)
-			.withWaitStrategy(
-				Wait.forLogMessage('Bootstrap Broker-0 succeeded.')
-			)
+			.withWaitStrategy(Wait.forLogMessage('Broker is ready!'))
 			.start()
 
 		await delay(10000)
@@ -49,7 +47,7 @@ test('reconnects after a pod reschedule', () =>
 		// tslint:disable-next-line: no-console
 		log('##### Deploying workflow') // @DEBUG
 
-		await zbc.deployWorkflow('./src/__tests__/testdata/disconnection.bpmn')
+		await zbc.deployProcess('./src/__tests__/testdata/disconnection.bpmn')
 		worker = zbc
 			.createWorker({
 				longPoll: 10000,
@@ -72,7 +70,7 @@ test('reconnects after a pod reschedule', () =>
 		// tslint:disable-next-line: no-console
 		log('##### Starting workflow') // @DEBUG
 
-		const wf = await zbc.createWorkflowInstanceWithResult({
+		const wf = await zbc.createProcessInstanceWithResult({
 			bpmnProcessId: 'disconnection',
 			requestTimeout: 25000,
 			variables: {},
@@ -101,9 +99,7 @@ test('reconnects after a pod reschedule', () =>
 		)
 			.withExposedPorts(26500)
 			.withEnv('ZEEBE_LOG_LEVEL', 'trace')
-			.withWaitStrategy(
-				Wait.forLogMessage('Bootstrap Broker-0 succeeded.')
-			)
+			.withWaitStrategy(Wait.forLogMessage('Broker is ready!'))
 			.start()
 
 		// tslint:disable-next-line: no-console
@@ -113,7 +109,7 @@ test('reconnects after a pod reschedule', () =>
 
 		// tslint:disable-next-line: no-console
 		log('##### Deploying workflow 2') // @DEBUG
-		await zbc.deployWorkflow('./src/__tests__/testdata/disconnection.bpmn')
+		await zbc.deployProcess('./src/__tests__/testdata/disconnection.bpmn')
 
 		// tslint:disable-next-line: no-console
 		// console.log('Workflow 2 deployed', _) // @DEBUG
@@ -123,7 +119,7 @@ test('reconnects after a pod reschedule', () =>
 		// tslint:disable-next-line: no-console
 		log('##### Starting workflow 2') // @DEBUG
 
-		const wf1 = await zbc.createWorkflowInstanceWithResult(
+		const wf1 = await zbc.createProcessInstanceWithResult(
 			'disconnection',
 			{}
 		)
@@ -165,16 +161,14 @@ test('a worker that started first, connects to a broker that starts later', () =
 			26500
 		)
 			.withExposedPorts(26500)
-			.withWaitStrategy(
-				Wait.forLogMessage('Bootstrap Broker-0 succeeded.')
-			)
+			.withWaitStrategy(Wait.forLogMessage('Broker is ready!'))
 			.start()
 
 		await delay(10000)
 
 		await zbc.deployWorkflow('./src/__tests__/testdata/disconnection.bpmn')
 		await delay(1000) // Ensure deployment has happened
-		const wf = await zbc.createWorkflowInstanceWithResult(
+		const wf = await zbc.createProcessInstanceWithResult(
 			'disconnection',
 			{}
 		)
