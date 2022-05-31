@@ -207,7 +207,7 @@ export class ConfigurationHydrator {
 			: `zeebe://${connectionString}`
 		const url = parse(gatewayAddress)
 		url.port = url.port || ConfigurationHydrator.DEFAULT_GATEWAY_PORT
-		url.hostname = url.hostname || url.path
+		url.hostname = ( url.hostname || url.path) as string
 		return {
 			hostname: url.hostname,
 			port: url.port,
