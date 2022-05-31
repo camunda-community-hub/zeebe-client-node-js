@@ -372,7 +372,7 @@ export interface GetProcessRequestWithBpmnProcessId {
 }
 
 export interface GetProcessResponse {
-	readonly processKey: string
+	readonly processDefinitionKey: string
 	readonly version: number
 	readonly bpmnProcessId: string
 	readonly resourceName: string

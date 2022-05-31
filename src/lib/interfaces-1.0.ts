@@ -271,8 +271,13 @@ export interface Job<
 	 * @deprecated use processKey instead
 	 */
 	readonly workflowKey: string
-	/** The key of the job process definition */
+	/** 
+	 * The key of the job process definition 
+	 * @deprecated as of Zeebe v8, use processDefinitionKey instead
+	 */
 	readonly processKey: string
+	/** The key of the job process definition */
+	readonly processDefinitionKey: string
 	/** The associated task element ID */
 	readonly elementId: string
 	/**
