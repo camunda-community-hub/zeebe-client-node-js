@@ -1,4 +1,4 @@
-import parser = require('fast-xml-parser')
+import { XMLValidator, XMLParser } from 'fast-xml-parser'
 import fs = require('fs')
 import * as path from 'path'
 
@@ -31,13 +31,14 @@ export class BpmnParser {
 	 * @param filenames - A single BPMN file path, or array of BPMN file paths.
 	 */
 	public static parseBpmn(filenames: string | string[]): object {
+		const parser = new XMLParser(BpmnParser.parserOptions)
 		if (typeof filenames === 'string') {
 			filenames = [filenames]
 		}
 		return filenames.map(filename => {
 			const xmlData = fs.readFileSync(filename).toString()
-			if (parser.validate(xmlData)) {
-				return parser.parse(xmlData, BpmnParser.parserOptions)
+			if (XMLValidator.validate(xmlData)) {
+				return parser.parse(xmlData)
 			}
 			return {}
 		})
@@ -46,6 +47,7 @@ export class BpmnParser {
 	// @ TODO: examine Camunda's parse BPMN code
 	// https://github.com/camunda/camunda-bpmn-model/tree/master/src/main/java/org/camunda/bpm/model/bpmn
 	public static getProcessId(bpmnString: string) {
+		const parser = new XMLParser(BpmnParser.parserOptions)
 		const jsonObj = parser.parse(bpmnString, BpmnParser.parserOptions)
 		return jsonObj?.['bpmn:definitions']?.['bpmn:process']?.attr?.['@_id']
 	}

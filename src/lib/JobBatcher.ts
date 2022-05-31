@@ -61,7 +61,7 @@ export class JobBatcher {
 			this.worker.error(
 				`An unhandled exception occurred in the worker task handler!`
 			)
-			this.worker.error(e.message)
+			// this.worker.error(e.message)
 			this.worker.error(e)
 		}
 	}
