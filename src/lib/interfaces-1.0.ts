@@ -1,4 +1,4 @@
-import { Chalk } from 'chalk'
+import chalk from 'chalk'
 import { MaybeTimeDuration } from 'typed-duration'
 import { ZBBatchWorker } from '../zb/ZBBatchWorker'
 import { ZBWorker } from '../zb/ZBWorker'
@@ -227,7 +227,7 @@ export type ZBWorkerTaskHandler<
 export interface ZBLoggerOptions {
 	loglevel?: Loglevel
 	stdout?: any
-	color?: Chalk
+	color?: chalk.Chalk
 	longPoll?: MaybeTimeDuration
 	namespace: string | string[]
 	pollInterval?: MaybeTimeDuration

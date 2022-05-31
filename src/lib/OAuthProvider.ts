@@ -116,7 +116,7 @@ export class OAuthProvider {
 			client_secret: this.clientSecret,
 			grant_type: 'client_credentials',
 		})
-		return got
+		return got.default
 			.post(this.url, {
 				body,
 				headers: {

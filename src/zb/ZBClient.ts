@@ -51,7 +51,7 @@ const idColors = [
 	chalk.green,
 	chalk.cyan,
 	chalk.magenta,
-	chalk.blue,
+	chalk.blue
 ]
 
 export const ConnectionStatusEvent = {

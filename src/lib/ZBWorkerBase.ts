@@ -1,5 +1,5 @@
 import { ClientReadableStreamImpl } from '@grpc/grpc-js/build/src/call'
-import chalk, { Chalk } from 'chalk'
+import chalk from 'chalk'
 import * as _debug from 'debug'
 import { EventEmitter } from 'events'
 import { Duration, MaybeTimeDuration } from 'typed-duration'
@@ -29,7 +29,7 @@ export interface ZBWorkerBaseConstructor<T> {
 	id: string | null
 	taskType: string
 	options: ZB.ZBWorkerOptions<T> & ZBClientOptions
-	idColor: Chalk
+	idColor: chalk.Chalk
 	zbClient: ZBClient
 	log: StatefulLogInterceptor
 }

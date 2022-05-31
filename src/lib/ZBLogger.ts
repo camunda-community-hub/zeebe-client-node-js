@@ -1,4 +1,4 @@
-import { Chalk } from 'chalk'
+import chalk from 'chalk'
 import dayjs from 'dayjs'
 import * as stackTrace from 'stack-trace'
 import { Duration, MaybeTimeDuration } from 'typed-duration'
@@ -10,7 +10,7 @@ export class ZBLogger {
 	// tslint:disable-next-line: variable-name
 	public _tag: 'ZBCLIENT' | 'ZBWORKER'
 	public loglevel: Loglevel
-	private colorFn: Chalk
+	private colorFn: typeof chalk
 	private taskType?: string
 	private id?: string
 	private stdout: any
