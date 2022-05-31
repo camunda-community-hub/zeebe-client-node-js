@@ -583,21 +583,25 @@ Here is an example job:
 
 ```javascript
 
-{ key: '578',
-  type: 'demo-service',
-  jobHeaders:
-   { processInstanceKey: '574',
-     bpmnProcessId: 'test-process',
-     processDefinitionVersion: 1,
-     processKey: '3',
-     elementId: 'ServiceTask_0xdwuw7',
-     elementInstanceKey: '577' },
-  customHeaders: '{}',
-  worker: 'test-worker',
-  retries: 3,
-  deadline: '1546915422636',
-  variables: { testData: 'something' } }
-
+{ key: "578",
+  type: "demo-service",
+  workflowInstanceKey: "2251799813781091",
+  processInstanceKey: "2251799813781091",
+  bpmnProcessId: "test-process",
+  workflowDefinitionVersion: 1,
+  processDefinitionVersion: 1,
+  workflowDefinitionKey: "2251799813775439",
+  processDefinitionKey: "2251799813775439",
+  elementId: "Activity_14thgzk",
+  elementInstanceKey: "2251799813781095",
+  customHeaders: {
+    "io.camunda.zeebe:formKey": "camunda-forms:bpmn:userTaskForm_3jbgs4p"
+  },
+  worker: "a3662d31-fc67-48dd-90e6-da74371d83ba",
+  retries: 1,
+  deadline: "1654012834438",
+  variables: { testData: "something" }
+}
 ```
 
 The worker can be configured with options. To do this, you should use the object parameter constructor.
@@ -1073,12 +1077,12 @@ const ZB = require('zeebe-node')
 Example output:
 
 ```javascript
-
-{ processKey: '3',
-  bpmnProcessId: 'test-process',
+{
+  processDefinitionKey: "2251799813775439",
+  bpmnProcessId: "test-form",
   version: 1,
-  processInstanceKey: '569' }
-
+  processInstanceKey: "4503599627466395",
+}
 ```
 
 <a name = "start-specific-version"></a>
