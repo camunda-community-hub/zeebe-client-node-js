@@ -16,7 +16,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@master
         with:
-          node-version: 16.13.1
+          node-version: 16.17.0
       - run: npm install
       - run: npm run test:integration
     env:
