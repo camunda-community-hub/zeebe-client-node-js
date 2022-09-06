@@ -1,0 +1,65 @@
+name: Tag and publish a new version
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version'
+        required: true
+
+jobs:
+  tag-and-publish:
+    runs-on: ubuntu-latest
+    services:
+      elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.17.5
+        env:
+          discovery.type: single-node
+          cluster.name: docker-cluster
+          bootstrap.memory_lock: true
+          xpack.security.enabled: false
+          ES_JAVA_OPTS: -Xms1024m -Xmx1024m
+        ports:
+          - 9200:9200
+          - 9300:9300
+      zeebe:
+        image: camunda/zeebe:8.1.0-alpha4
+        env:
+          JAVA_TOOL_OPTIONS: "-Xms512m -Xmx512m"
+          ZEEBE_BROKER_EXPORTERS_ELASTICSEARCH_CLASSNAME: io.camunda.zeebe.exporter.ElasticsearchExporter
+          ZEEBE_BROKER_EXPORTERS_ELASTICSEARCH_ARGS_URL: http://elasticsearch:9200
+          ZEEBE_BROKER_EXPORTERS_ELASTICSEARCH_ARGS_BULK_SIZE: 1
+          ZEEBE_BROKER_BACKPRESSURE_ENABLED: false
+        ports:
+          - 26500:26500
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.17.0
+          cache: 'npm'
+      - name: Install
+        run: npm ci --ignore-scripts
+      - name: Run integration tests
+        run: npm run test:integration
+      - name: Run tests
+        run: npm run test
+      - name: Run local integration tests
+        run: npm run test:local
+      - name: Build
+        run: npm run build
+      - name: Set version
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          npm version ${{ inputs.version }} -m "Publish v%s"
+      - name: Publish to NPM
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access=public
+      - name: Push changes
+        run: git push --follow-tags
