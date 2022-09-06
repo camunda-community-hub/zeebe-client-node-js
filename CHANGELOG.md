@@ -1,3 +1,11 @@
+# Version 8.0.2
+
+## Fixes
+
+_Things that were broken and are now fixed._
+
+-   Custom SSL certificates configured via environment variables now work correctly. See [PR #263](https://github.com/camunda-community-hub/zeebe-client-node-js/pull/263) for the details. Thanks to [@barmac](https://github.com/barmac) for the PR.
+
 # Version 8.0.0
 
 Version 8.0.0 is the release to support Camunda Platform 8. The semver change does not denote a breaking API change. It's a product marketing alignment, rather than a technical semver change.
