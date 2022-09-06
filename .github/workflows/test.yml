@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       zeebe:
-        image: camunda/zeebe:1.0.0
+        image: camunda/zeebe:8.0.6
         ports:
           - 26500:26500
     steps:
@@ -19,8 +19,8 @@ jobs:
           node-version: 16.17.0
       - run: npm install
       - run: npm run test:integration
-    env:
-      ZEEBE_ADDRESS: ${{ secrets.ZEEBE_ADDRESS }}
-      ZEEBE_CLIENT_ID: ${{ secrets.ZEEBE_CLIENT_ID }}
-      ZEEBE_AUTHORIZATION_SERVER_URL: ${{ secrets.ZEEBE_AUTHORIZATION_SERVER_URL }}
-      ZEEBE_CLIENT_SECRET: ${{ secrets.ZEEBE_CLIENT_SECRET }}
+    # env:
+    #   ZEEBE_ADDRESS: ${{ secrets.ZEEBE_ADDRESS }}
+    #   ZEEBE_CLIENT_ID: ${{ secrets.ZEEBE_CLIENT_ID }}
+    #   ZEEBE_AUTHORIZATION_SERVER_URL: ${{ secrets.ZEEBE_AUTHORIZATION_SERVER_URL }}
+    #   ZEEBE_CLIENT_SECRET: ${{ secrets.ZEEBE_CLIENT_SECRET }}
