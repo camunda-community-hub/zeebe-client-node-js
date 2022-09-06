@@ -68,15 +68,21 @@ test('Can specify a retryBackoff with complete.failure()', () =>
 					const now = new Date()
 					const res1 = await job.complete()
 					expect(job.processInstanceKey).toBe(wfi)
-					expect(now as any - (then as any)).toBeGreaterThan(1800)
+					expect((now as any) - (then as any)).toBeGreaterThan(1800)
 					wf = undefined
 
+					zbc.cancelProcessInstance(wfi)
 					resolve(null)
 					return res1
 				}
 				then = new Date()
 				// Fail on the first attempt, with a 2s backoff
-				return job.fail({errorMessage: 'Triggering a retry with a two second back-off', retryBackOff: 2000, retries: 1})
+				return job.fail({
+					errorMessage:
+						'Triggering a retry with a two second back-off',
+					retryBackOff: 2000,
+					retries: 1,
+				})
 			},
 			loglevel: 'NONE',
 		})
