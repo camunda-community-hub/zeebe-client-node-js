@@ -1,5 +1,7 @@
 import { ConfigurationHydrator } from '../lib/ConfigurationHydrator'
 
+jest.mock('fs');
+
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 // const gatewayAddress = process.env.ZEEBE_GATEWAY_ADDRESS || '0.0.0.0:26500'
 
@@ -15,6 +17,9 @@ const ENV_VARS_TO_STORE = [
 	'ZEEBE_CLIENT_MAX_RETRIES',
 	'ZEEBE_CLIENT_RETRY',
 	'ZEEBE_CLIENT_MAX_RETRY_TIMEOUT',
+	'ZEEBE_CLIENT_SSL_ROOT_CERTS_PATH',
+	'ZEEBE_CLIENT_SSL_PRIVATE_KEY_PATH',
+	'ZEEBE_CLIENT_SSL_CERT_CHAIN_PATH',
 ]
 
 beforeAll(() => {
@@ -369,6 +374,21 @@ test('Can be unsecured via the environment', () => {
 	process.env.ZEEBE_SECURE_CONNECTION = 'true'
 	const conf = ConfigurationHydrator.configure('localhost:26600', {})
 	expect(conf.useTLS).toBe(true)
+})
+test('Cert chain path can be configured via the environment', () => {
+	process.env.ZEEBE_CLIENT_SSL_CERT_CHAIN_PATH = '/my/path'
+	const conf = ConfigurationHydrator.configure('localhost:26600', {})
+	expect(conf.customSSL?.certChain).toBe('file-contents')
+})
+test('Private key path can be configured via the environment', () => {
+	process.env.ZEEBE_CLIENT_SSL_PRIVATE_KEY_PATH = '/my/path'
+	const conf = ConfigurationHydrator.configure('localhost:26600', {})
+	expect(conf.customSSL?.privateKey).toBe('file-contents')
+})
+test('Root certs path can be configured via the environment', () => {
+	process.env.ZEEBE_CLIENT_SSL_ROOT_CERTS_PATH = '/my/path'
+	const conf = ConfigurationHydrator.configure('localhost:26600', {})
+	expect(conf.customSSL?.rootCerts).toBe('file-contents')
 })
 test('Retry can be configured via the environment', () => {
 	process.env.ZEEBE_CLIENT_RETRY = 'false'
