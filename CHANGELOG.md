@@ -1,3 +1,11 @@
+# Version 8.0.3
+
+## Fixes
+
+_Things that were broken and are now fixed._
+
+-   Previously, the `fetchVariable` option passed to `createWorker` had no effect. All variables were always fetched by workers. This option setting is now respected, allowing you to constrain the variables fetched by workers. See [#264](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/264) for details. Thanks to [@Veckatimest](https://github.com/Veckatimest) for reporting this.
+
 # Version 8.0.2
 
 ## Fixes
