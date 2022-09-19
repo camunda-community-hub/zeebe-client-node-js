@@ -3,7 +3,7 @@ import dayjs from 'dayjs'
 import * as stackTrace from 'stack-trace'
 import { Duration, MaybeTimeDuration } from 'typed-duration'
 import { ConfigurationHydrator } from './ConfigurationHydrator'
-import { ZBLoggerConfig } from './interfaces'
+import { ZBLoggerConfig } from './interfaces-1.0'
 import { Loglevel } from './interfaces-published-contract'
 
 export class ZBLogger {

@@ -1,4 +1,4 @@
-import * as ZB from './interfaces'
+import * as ZB from './interfaces-1.0'
 import { ZBClientOptions } from './interfaces-published-contract'
 
 function isConfig(

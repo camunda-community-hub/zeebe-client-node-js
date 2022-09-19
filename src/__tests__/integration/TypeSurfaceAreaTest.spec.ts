@@ -8,11 +8,11 @@ test("Hasn't broken any public type contracts", async () => {
 	const zbc = new ZBClient({
 		loglevel: 'NONE',
 	})
-	const handler: ZBWorkerTaskHandler = (job, complete, worker) => {
+	const handler: ZBWorkerTaskHandler = (job, worker) => {
 		worker.log(job.bpmnProcessId)
-		return complete.success()
+		return job.complete()
 	}
-	zbc.createWorker('nope', handler)
+	zbc.createWorker({ taskType: 'nope', taskHandler: handler })
 	await zbc.close()
 	expect(true).toBeTruthy()
 })

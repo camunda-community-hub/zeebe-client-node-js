@@ -179,10 +179,7 @@ export class ZBWorkerBase<
 		}
 		this.grpcClient.on(ConnectionStatusEvent.unknown, onReady)
 		this.grpcClient.on(ConnectionStatusEvent.ready, onReady)
-		this.cancelWorkflowOnException =
-			options.failWorkflowOnException ??
-			options.failProcessOnException ??
-			false
+		this.cancelWorkflowOnException = options.failProcessOnException ?? false
 		this.zbClient = zbClient
 		this.grpcClient.topologySync().catch(e => {
 			// Swallow exception to avoid throwing if retries are off
@@ -277,7 +274,7 @@ export class ZBWorkerBase<
 
 	protected makeCompleteHandlers<T>(
 		thisJob: ZB.Job
-	): ZB.CompleteFn<T> & ZB.JobCompletionInterface<T> {
+	): ZB.JobCompletionInterface<T> & ZB.JobCompletionInterface<T> {
 		let methodCalled: string | undefined
 		const errorMsgOnPriorMessageCall = (
 			thisMethod: string,
@@ -340,16 +337,10 @@ You should call only one job action method in the worker handler. This is a bug 
 			complete: errorMsgOnPriorMessageCall('job.complete', succeed),
 			error: errorMsgOnPriorMessageCall('error', errorJob(thisJob)),
 			fail: errorMsgOnPriorMessageCall('job.fail', fail),
-			failure: errorMsgOnPriorMessageCall('complete.failure', fail),
 			forward: errorMsgOnPriorMessageCall('job.forward', () => {
 				this.drainOne()
 				return ZB.JOB_ACTION_ACKNOWLEDGEMENT
 			}),
-			forwarded: errorMsgOnPriorMessageCall('complete.forwarded', () => {
-				this.drainOne()
-				return ZB.JOB_ACTION_ACKNOWLEDGEMENT
-			}),
-			success: errorMsgOnPriorMessageCall('complete.success', succeed),
 		}
 	}
 

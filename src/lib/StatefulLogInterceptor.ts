@@ -1,6 +1,6 @@
 import chalk from 'chalk'
 import { Characteristics, State } from './ConnectionFactory'
-import { ZBLoggerConfig } from './interfaces'
+import { ZBLoggerConfig } from './interfaces-1.0'
 import { ZBLogger } from './ZBLogger'
 
 export class StatefulLogInterceptor {

@@ -8,27 +8,17 @@ import { Duration, MaybeTimeDuration } from 'typed-duration'
 import { v4 as uuid } from 'uuid'
 import {
 	BpmnParser,
-	makeAPI1ResAPI0Compatible,
 	parseVariables,
 	parseVariablesAndCustomHeadersToJSON,
 	stringifyVariables,
-	transformAPI0ReqToAPI1,
 } from '../lib'
 import { ConfigurationHydrator } from '../lib/ConfigurationHydrator'
 import { ConnectionFactory } from '../lib/ConnectionFactory'
 import { readDefinitionFromFile } from '../lib/deployWorkflow/impure'
 import { bufferOrFiles, mapThese } from '../lib/deployWorkflow/pure'
 import { CustomSSL } from '../lib/GrpcClient'
-import * as ZB_deprecated from '../lib/interfaces'
 import * as ZB from '../lib/interfaces-1.0'
 
-// tslint:disable-next-line: no-duplicate-imports
-import {
-	CreateWorkflowInstance,
-	CreateWorkflowInstanceWithResult,
-} from '../lib/interfaces'
-
-import * as Grpc_deprecated from '../lib/interfaces-grpc'
 import * as Grpc from '../lib/interfaces-grpc-1.0'
 import {
 	Loglevel,
@@ -258,15 +248,6 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 			}
 		})
 	}
-	/**
-	 * @deprecated use cancelProcessInstance instead
-	 */
-	public async cancelWorkflowInstance(
-		workflowInstanceKey: string | number
-	): Promise<void> {
-		Utils.validateNumber(workflowInstanceKey, 'workflowInstanceKey')
-		return this.cancelProcessInstance(workflowInstanceKey)
-	}
 
 	public async cancelProcessInstance(
 		processInstanceKey: string | number
@@ -361,73 +342,6 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 			CustomHeaderShape,
 			WorkerOutputVariables
 		>
-	): ZBWorker<WorkerInputVariables, CustomHeaderShape, WorkerOutputVariables>
-	/**
-	 * @deprecated use the object constructor instead
-	 */
-	public createWorker<
-		WorkerInputVariables = ZB.IInputVariables,
-		CustomHeaderShape = ZB.ICustomHeaders,
-		WorkerOutputVariables = ZB.IOutputVariables
-	>(
-		id: string | null,
-		taskType: string,
-		taskHandler: ZB.ZBWorkerTaskHandler<
-			WorkerInputVariables,
-			CustomHeaderShape,
-			WorkerOutputVariables
-		>,
-		options?: ZB.ZBWorkerOptions<WorkerInputVariables> & ZBClientOptions,
-		onConnectionError?: ZB.ConnectionErrorHandler | undefined
-	): ZBWorker<WorkerInputVariables, CustomHeaderShape, WorkerOutputVariables>
-	/**
-	 * @deprecated use the object constructor instead
-	 */
-	public createWorker<
-		WorkerInputVariables = ZB.IInputVariables,
-		CustomHeaderShape = ZB.ICustomHeaders,
-		WorkerOutputVariables = ZB.IOutputVariables
-	>(
-		taskType: string,
-		taskHandler: ZB.ZBWorkerTaskHandler<
-			WorkerInputVariables,
-			CustomHeaderShape,
-			WorkerOutputVariables
-		>,
-		options?: ZB.ZBWorkerOptions<WorkerInputVariables> & ZBClientOptions,
-		onConnectionError?: ZB.ConnectionErrorHandler | undefined
-	): ZBWorker<WorkerInputVariables, CustomHeaderShape, WorkerOutputVariables>
-	public createWorker<
-		WorkerInputVariables = ZB.IInputVariables,
-		CustomHeaderShape = ZB.ICustomHeaders,
-		WorkerOutputVariables = ZB.IOutputVariables
-	>(
-		idOrTaskTypeOrConfig:
-			| string
-			| null
-			| ZB.ZBWorkerConfig<
-					WorkerInputVariables,
-					CustomHeaderShape,
-					WorkerOutputVariables
-			  >,
-		taskTypeOrTaskHandler?:
-			| string
-			| ZB.ZBWorkerTaskHandler<
-					WorkerInputVariables,
-					CustomHeaderShape,
-					WorkerOutputVariables
-			  >,
-		taskHandlerOrOptions?:
-			| ZB.ZBWorkerTaskHandler<
-					WorkerInputVariables,
-					CustomHeaderShape,
-					WorkerOutputVariables
-			  >
-			| (ZB.ZBWorkerOptions<WorkerInputVariables> & ZBClientOptions),
-		optionsOrOnConnectionError?:
-			| (ZB.ZBWorkerOptions<WorkerInputVariables> & ZBClientOptions)
-			| ZB.ConnectionErrorHandler,
-		onConnectionError?: ZB.ConnectionErrorHandler | null
 	): ZBWorker<
 		WorkerInputVariables,
 		CustomHeaderShape,
@@ -437,13 +351,6 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 			throw new Error('Client is closing. No worker creation allowed!')
 		}
 		const idColor = idColors[this.workerCount++ % idColors.length]
-		const config = decodeCreateZBWorkerSig({
-			idOrTaskTypeOrConfig,
-			onConnectionError,
-			optionsOrOnConnectionError,
-			taskHandlerOrOptions,
-			taskTypeOrTaskHandler,
-		})
 
 		// Merge parent client options with worker override
 		const options = {
@@ -451,7 +358,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 			loglevel: this.loglevel,
 			onConnectionError: undefined, // Do not inherit client handler
 			onReady: undefined, // Do not inherit client handler
-			...config.options,
+			...config,
 		}
 
 		// Give worker its own gRPC connection
@@ -533,30 +440,6 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	}
 
 	// tslint:disable: no-object-literal-type-assertion
-	/**
-	 * @deprecated use createProcessInstance instead
-	 */
-	public createWorkflowInstance<Variables = ZB_deprecated.IWorkflowVariables>(
-		bpmnProcessId: string,
-		variables: Variables
-	): Promise<Grpc_deprecated.CreateWorkflowInstanceResponse>
-	public createWorkflowInstance<
-		Variables = ZB_deprecated.IWorkflowVariables
-	>(config: {
-		bpmnProcessId: string
-		variables: Variables
-		version: number
-	}): Promise<Grpc_deprecated.CreateWorkflowInstanceResponse>
-	public createWorkflowInstance<Variables = ZB_deprecated.IWorkflowVariables>(
-		configOrbpmnProcessId: string | CreateWorkflowInstance<Variables>,
-		variables?: Variables
-	): Promise<Grpc_deprecated.CreateWorkflowInstanceResponse> {
-		return this.createProcessInstance(
-			transformAPI0ReqToAPI1(configOrbpmnProcessId),
-			transformAPI0ReqToAPI1(variables)
-		).then(res => makeAPI1ResAPI0Compatible(res))
-	}
-
 	public createProcessInstance<Variables = ZB.IProcessVariables>(
 		bpmnProcessId: string,
 		variables: Variables
@@ -598,47 +481,6 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 				stringifyVariables(createProcessInstanceRequest)
 			)
 		)
-	}
-
-	/**
-	 * @deprecated use createProcessInstanceWithResult instead
-	 *
-	 */
-	public createWorkflowInstanceWithResult<
-		Variables = ZB_deprecated.IWorkflowVariables,
-		Result = ZB.IOutputVariables
-	>(
-		config: CreateWorkflowInstanceWithResult<Variables>
-	): Promise<Grpc_deprecated.CreateWorkflowInstanceWithResultResponse<Result>>
-	/**
-	 * @deprecated use createProcessInstanceWithResult instead
-	 *
-	 */
-	public createWorkflowInstanceWithResult<
-		Variables = ZB_deprecated.IWorkflowVariables,
-		Result = ZB.IOutputVariables
-	>(
-		bpmnProcessId: string,
-		variables: Variables
-	): Promise<Grpc_deprecated.CreateWorkflowInstanceWithResultResponse<Result>>
-	/**
-	 * @deprecated use createProcessInstanceWithResult instead
-	 *
-	 */
-	public createWorkflowInstanceWithResult<
-		Variables = ZB_deprecated.IWorkflowVariables,
-		// @ts-ignore - this is for backward compatibility
-		Result = ZB_deprecated.IOutputVariables
-	>(
-		configOrBpmnProcessId:
-			| CreateWorkflowInstanceWithResult<Variables>
-			| string,
-		variables?: Variables
-	) {
-		return this.createProcessInstanceWithResult(
-			transformAPI0ReqToAPI1(configOrBpmnProcessId),
-			transformAPI0ReqToAPI1(variables)
-		).then(res => makeAPI1ResAPI0Compatible(res))
 	}
 
 	public createProcessInstanceWithResult<
@@ -706,21 +548,6 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 				requestTimeout: request.requestTimeout,
 			})
 		).then(res => parseVariables(res as any))
-	}
-
-	/**
-	 *
-	 * @param workflow - A path or array of paths to .bpmn files or an object describing the workflow
-	 * @deprecated use deployProcess instead
-	 */
-	public async deployWorkflow(
-		workflow:
-			| ZB_deprecated.DeployWorkflowFiles
-			| ZB_deprecated.DeployWorkflowBuffer
-	): Promise<Grpc_deprecated.DeployWorkflowResponse> {
-		return this.deployProcess(workflow).then(res =>
-			makeAPI1ResAPI0Compatible(res)
-		)
 	}
 
 	public async deployResource(
@@ -855,7 +682,9 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	 * Publish a message to the broker for correlation with a workflow instance.
 	 * @param publishMessageRequest - The message to publish.
 	 */
-	public publishMessage<ProcessVariables = ZB.IProcessVariables>(
+	public publishMessage<
+		ProcessVariables extends { [key: string]: any } = ZB.IProcessVariables
+	>(
 		publishMessageRequest: Grpc.PublishMessageRequest<ProcessVariables>
 	): Promise<Grpc.PublishMessageResponse> {
 		return this.executeOperation('publishMessage', () =>
@@ -869,7 +698,9 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	 * Publish a message to the broker for correlation with a workflow message start event.
 	 * @param publishStartMessageRequest - The message to publish.
 	 */
-	public publishStartMessage<ProcessVariables = ZB.IProcessVariables>(
+	public publishStartMessage<
+		ProcessVariables extends ZB.IInputVariables = ZB.IProcessVariables
+	>(
 		publishStartMessageRequest: Grpc.PublishStartMessageRequest<
 			ProcessVariables
 		>

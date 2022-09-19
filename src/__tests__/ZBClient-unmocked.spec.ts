@@ -7,17 +7,17 @@ test('ZBClient constructor throws an exception when there is no broker and retry
 	const zbc = new ZBClient('localhoster', { retry: false })
 	expect.assertions(1)
 	try {
-		await zbc.deployWorkflow('./src/__tests__/testdata/hello-world.bpmn')
+		await zbc.deployProcess('./src/__tests__/testdata/hello-world.bpmn')
 	} catch (e) {
 		expect(e.message.indexOf('14 UNAVAILABLE:')).toEqual(0)
 	}
 })
 
-test('cancelWorkflowInstance throws an exception when workflowInstanceKey is malformed', async () => {
+test('cancelProcessInstance throws an exception when workflowInstanceKey is malformed', async () => {
 	const zbc = new ZBClient('localhoster', { retry: false })
 	expect.assertions(1)
 	try {
-		await zbc.cancelWorkflowInstance('hello-world')
+		await zbc.cancelProcessInstance('hello-world')
 	} catch (e) {
 		expect(e).toMatchSnapshot()
 	}

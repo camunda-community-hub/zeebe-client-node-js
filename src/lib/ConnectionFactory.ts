@@ -1,6 +1,6 @@
 import { GrpcClientCtor } from './GrpcClient'
 import { GrpcMiddleware } from './GrpcMiddleware'
-import { ZBLoggerConfig } from './interfaces'
+import { ZBLoggerConfig } from './interfaces-1.0'
 import { StatefulLogInterceptor } from './StatefulLogInterceptor'
 
 export type GrpcConnectionProfile = 'CAMUNDA_CLOUD' | 'VANILLA'

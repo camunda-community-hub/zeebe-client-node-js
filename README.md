@@ -24,6 +24,7 @@ Get a hosted instance of Zeebe on [Camunda Cloud](https://camunda.io).
 
 -   [ Versioning ](#versioning)
 -   [ Compatible Node Versions ](#node-versions)
+-   [ Breaking changes in 8.1.0 ](#breaking-8.1.0)
 -   [ Breaking changes in 1.0.0 ](#breaking-1.0.0)
 -   [ gRPC Implementation ](#grpc-implementation)
 -   [ Type difference from other Zeebe clients ](#type-difference)
@@ -111,6 +112,12 @@ Version 1.x of the package: Node versions <=16.x. Version 1.x uses the C-based g
 
 Version 2.x and later of the package: Node versions 12.22.5+, 14.17.5+, or 16.6.1+. Version 2.x uses the pure JS implementation of the gRPC library, and requires a fix to the `nghttp2` library in Node (See [#201](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/201)).
 
+<a name="breaking-8.1.0"></a>
+
+## Breaking changes in Zeebe 8.1.0
+
+All deprecated APIs are removed in the 8.1.0 package version. If your code relies on deprecated methods and method signatures, you need to use a package version prior to 8.1.0 or update your application code.
+
 <a name="breaking-1.0.0"></a>
 
 ## Breaking changes in Zeebe 1.0.0
@@ -152,7 +159,7 @@ const timeoutMs = Duration.milliseconds.of(30000) // 30s timeout in milliseconds
 
 Using the value types makes your code more semantically specific.
 
-There are four timeouts to take into account.
+There are five timeouts to take into account.
 
 The first is the job `timeout`. This is the amount of time that the broker allocates exclusive responsibility for a job to a worker instance. By default, this is 60 seconds. This is the default value set by this client library. See "[Job Workers](#job-workers)".
 
@@ -164,7 +171,9 @@ The most significant use of the `requestTimeout` is when using the `createProces
 
 The third is the `longpoll` duration. This is the amount of time that the job worker holds a long poll request to activate jobs open.
 
-The final one is the maximum back-off delay in client-side gRPC command retries. See "[Client-side gRPC retry in ZBClient](#client-side-retry)".
+The fourth is the maximum back-off delay in client-side gRPC command retries. See "[Client-side gRPC retry in ZBClient](#client-side-retry)".
+
+Finally, the `connectionTolerance` option for ZBClient can also take a typed duration. This value is used to buffer reporting connection errors while establishing a connection - for example with Camunda SaaS, which requires a token exchange as part of the connection process.
 
 ## Quick Start
 
@@ -316,7 +325,7 @@ const zbWorker = zbc.createWorker({
 	taskHandler: handler,
     onReady: () => console.log(`Worker connected!`),
     onConnectionError: () => console.log(`Worker disconnected!`),
-    connectionTolerance: Duration.seconds.of(3.5)
+    connectionTolerance: Duration.seconds.of(3.5) // 3500 milliseconds
 })
 ```
 
@@ -379,7 +388,7 @@ ZEEBE_SECURE_CONNECTION=true
 
 You can use a self-signed SSL certificate with the Zeebe client. You need to provide the root certificates, the private key and the SSL cert chain as Buffers. You can pass them into the ZBClient constructor:
 
-```
+```typescript
 const rootCertsPath = '/path/to/rootCerts'
 const privateKeyPath = '/path/to/privateKey'
 const certChainPath = '/path/to/certChain'
@@ -495,9 +504,9 @@ With no relevant environment variables set, it will default to localhost on the 
 
 The following environment variable configurations are possible with the Zero-conf constructor:
 
-Camunda Cloud:
+Camunda SaaS:
 
-```
+```bash
 ZEEBE_ADDRESS
 ZEEBE_CLIENT_SECRET
 ZEEBE_CLIENT_ID
@@ -505,13 +514,13 @@ ZEEBE_CLIENT_ID
 
 Self-hosted or local broker (no TLS or OAuth):
 
-```
+```bash
 ZEEBE_ADDRESS
 ```
 
 Self-hosted with self-signed SSL certificate:
 
-```
+```bash
 ZEEBE_CLIENT_SSL_ROOT_CERTS_PATH
 ZEEBE_CLIENT_SSL_PRIVATE_KEY_PATH
 ZEEBE_CLIENT_SSL_CERT_CHAIN_PATH
@@ -520,7 +529,7 @@ ZEEBE_SECURE_CONNECTION=true
 
 Self-hosted or local broker with OAuth + TLS:
 
-```
+```bash
 ZEEBE_CLIENT_ID
 ZEEBE_CLIENT_SECRET
 ZEEBE_TOKEN_AUDIENCE
@@ -530,7 +539,7 @@ ZEEBE_ADDRESS
 
 Basic Auth:
 
-```
+```bash
 ZEEBE_BASIC_AUTH_PASSWORD
 ZEEBE_BASIC_AUTH_USERNAME
 ```
@@ -681,7 +690,7 @@ These are read-only JavaScript objects in the Zeebe Node client. However, they a
 
 Both process variables and custom headers are stored in the broker as a dictionary of named strings. That means that the variables and custom headers are JSON.parsed in the Node client when it fetches the job, and any update passed to the `success()` function is JSON.stringified.
 
-If you accidentally pass in a circular JSON structure to `complete()` - like, for example the response object from an HTTP call - it will throw, as this cannot be serialised to a string.
+If you pass in a circular JSON structure to `complete()` - like, for example the response object from an HTTP call - it will throw, as this cannot be serialised to a string.
 
 To update a key deep in the object structure of a process variable, you can use the [deepmerge utility](https://www.npmjs.com/package/deepmerge):
 
