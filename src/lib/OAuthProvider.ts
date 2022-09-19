@@ -110,17 +110,19 @@ export class OAuthProvider {
 	}
 
 	private debouncedTokenRequest() {
-		const body = JSON.stringify({
+		const body = {
 			audience: this.audience,
 			client_id: this.clientId,
 			client_secret: this.clientSecret,
 			grant_type: 'client_credentials',
-		})
+		}
+
 		return got
 			.post(this.url, {
 				body,
+				form: true,
 				headers: {
-					'content-type': 'application/json',
+					'content-type': 'application/x-www-form-urlencoded',
 					'user-agent': `zeebe-client-nodejs/${pkg.version}`,
 				},
 			})
