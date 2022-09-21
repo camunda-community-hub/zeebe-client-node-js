@@ -96,9 +96,11 @@ export const ${getSafeName(t)}Worker = zbc.createWorker<
 WorkflowVariables,
 ${getSafeName(t)}CustomHeaders,
 WorkflowVariables
->(null, TaskType.${taskEnumDict[t]}, (job, complete, worker) => {
-	worker.log(job)
-	complete.success()
+>({ taskType: TaskType.${taskEnumDict[t]},
+	taskHandler: job => {
+		console.log(job)
+		return job.complete()
+	}
 })
 `
 			)
