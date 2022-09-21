@@ -13,10 +13,9 @@ import { EventEmitter } from 'events'
 
 import { Duration, MaybeTimeDuration } from 'typed-duration'
 import pkg = require('../../package.json')
-import { BasicAuthConfig } from './interfaces'
+import { BasicAuthConfig } from './interfaces-1.0'
 import { Loglevel } from './interfaces-published-contract'
 import { OAuthProvider } from './OAuthProvider'
-import { normaliseAPI1 } from './transform-API'
 
 const debug = _debug.default('grpc')
 
@@ -242,7 +241,8 @@ export class GrpcClient extends EventEmitter {
 			 * pings its peer to see if the transport is still alive.
 			 * Int valued, milliseconds.
 			 */
-			'grpc.keepalive_time_ms': 90000,
+			'grpc.keepalive_time_ms':
+				process.env.GRPC_KEEPALIVE_TIME_MS ?? 180000,
 			/**
 			 * After waiting for a duration of this time,
 			 * if the keepalive ping sender does
@@ -307,7 +307,7 @@ export class GrpcClient extends EventEmitter {
 							metadata
 						)
 						this.setReady()
-					} catch (error: any) {
+					} catch (error) {
 						this.emit(MiddlewareSignals.Log.Error, error.message)
 						this.emit(MiddlewareSignals.Event.Error)
 						this.setNotReady()
@@ -405,7 +405,7 @@ export class GrpcClient extends EventEmitter {
 									}
 									this.emit(MiddlewareSignals.Event.Ready)
 									this.setReady()
-									resolve(normaliseAPI1(dat))
+									resolve(dat)
 								}
 							)
 						} catch (e) {
@@ -439,7 +439,7 @@ export class GrpcClient extends EventEmitter {
 				this.channelState = gRPC
 					.getChannel()
 					.getConnectivityState(false)
-			} catch (e: any) {
+			} catch (e) {
 				const msg = e.toString()
 				alreadyClosed =
 					isClosed(this.channelState) ||
@@ -477,7 +477,7 @@ export class GrpcClient extends EventEmitter {
 							}`
 						)
 						alreadyClosed = isClosed(this.channelState)
-					} catch (e: any) {
+					} catch (e) {
 						const msg = e.toString()
 						alreadyClosed =
 							msg.includes(

@@ -45,24 +45,12 @@ export interface ActivatedJob {
 	 * type="payment-service" />)
 	 */
 	readonly type: string
-	/**
-	 * @deprecated use processInstanceKey instead
-	 */
-	readonly workflowInstanceKey: string
 	/** The job's process instance key */
 	readonly processInstanceKey: string
 	/** The bpmn process ID of the job process definition */
 	readonly bpmnProcessId: string
-	/**
-	 * @deprecated use processDefinitionVersion instead
-	 */
-	readonly workflowDefinitionVersion: number
 	/** The version of the job process definition */
 	readonly processDefinitionVersion: number
-	/**
-	 * @deprecated use processKey instead
-	 */
-	readonly workflowKey: string
 	/** The key of the job process definition */
 	readonly processDefinitionKey: string
 	/** The associated task element ID */

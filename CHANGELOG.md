@@ -1,3 +1,17 @@
+# Version 8.1
+
+## Breaking changes
+
+_Changes in APIs or behaviour that may affect existing applications that use zeebe-node._
+
+-   Remove all deprecated APIs. All methods and interfaces that were marked as deprecated in the 1.3.0 release have been removed. All support for application code using the pre-1.0 Zeebe API is now gone. You will need to update your application code to refactor the deprecated methods and interfaces, or stay on version 8.0.3 of the package.
+
+## Fixes
+
+_Things that were broken and are now fixed._
+
+-   Previously, the `connectionTolerance` option to `createWorker` did not take a `MaybeTimeDuration`, requiring users to provide a number (the value units is milliseconds). The signature has now been fixed, and `connectionTolerance` can now take a number or a typed Duration. See [#260](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/260) for more detail. Thanks to [@dancrumb](https://github.com/dancrumb) for reporting this.
+
 # Version 8.0.3
 
 ## Fixes

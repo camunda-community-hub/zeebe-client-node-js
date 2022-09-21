@@ -54,19 +54,18 @@ export class ZBWorker<
 					error: workerCallback.error,
 					forward: workerCallback.forward,
 				},
-				workerCallback,
 				this
 			)
-		} catch (e: any) {
+		} catch (e) {
 			this.logger.logError(
-				`Caught an unhandled exception in a task handler for workflow instance ${job.workflowInstanceKey}:`
+				`Caught an unhandled exception in a task handler for process instance ${job.processInstanceKey}:`
 			)
 			this.logger.logDebug(job)
 			this.logger.logError(e.message)
 			if (this.cancelWorkflowOnException) {
 				const { processInstanceKey } = job
 				this.logger.logDebug(
-					`Cancelling workflow instance ${processInstanceKey}`
+					`Cancelling process instance ${processInstanceKey}`
 				)
 				try {
 					await this.zbClient.cancelProcessInstance(
@@ -83,7 +82,7 @@ export class ZBWorker<
 						errorMessage: `Unhandled exception in task handler ${e}`,
 						jobKey: job.key,
 						retries,
-						retryBackOff: 0
+						retryBackOff: 0,
 					})
 				} catch (e) {
 					this.logger.logDebug(e)

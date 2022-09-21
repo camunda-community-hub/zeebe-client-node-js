@@ -54,8 +54,14 @@ xtest(`Calls ZBClient onConnectionError once when there is no broker, eagerConne
 				calledC++
 			},
 		})
-		zbc2.createWorker(null, 'whatever', job => job.complete())
-		zbc2.createWorker(null, 'whatever', job => job.complete())
+		zbc2.createWorker({
+			taskType: 'whatever',
+			taskHandler: job => job.complete(),
+		})
+		zbc2.createWorker({
+			taskType: 'whatever',
+			taskHandler: job => job.complete(),
+		})
 		setTimeout(() => {
 			zbc2.close()
 			expect(calledC).toBe(1)
@@ -71,7 +77,9 @@ test(`Calls ZBClient onConnectionError when there no broker, for the client and 
 				calledD++
 			},
 		})
-		zbc2.createWorker('whatever', job => job.complete(), {
+		zbc2.createWorker({
+			taskType: 'whatever',
+			taskHandler: job => job.complete(),
 			onConnectionError: () => calledD++,
 		})
 		setTimeout(() => {
@@ -89,7 +97,9 @@ test(`Debounces onConnectionError`, () =>
 				called++
 			},
 		})
-		zbc2.createWorker('whatever', job => job.complete(), {
+		zbc2.createWorker({
+			taskType: 'whatever',
+			taskHandler: job => job.complete(),
 			onConnectionError: () => called++,
 		})
 		setTimeout(() => {
@@ -103,7 +113,9 @@ test(`Trailing parameter worker onConnectionError handler API works`, () =>
 	new Promise(done => {
 		let calledE = 0
 		const zbc2 = new ZBClient('localtoast:234532534', {})
-		zbc2.createWorker('whatever', job => job.complete(), {
+		zbc2.createWorker({
+			taskType: 'whatever',
+			taskHandler: job => job.complete(),
 			onConnectionError: () => calledE++,
 		})
 		setTimeout(async () => {
@@ -129,7 +141,7 @@ xtest(`Does not call the onConnectionError handler if there is a business error`
 			},
 		})
 
-		zbc2.createWorkflowInstance(wf, {}).catch(() => {
+		zbc2.createProcessInstance(wf, {}).catch(() => {
 			wf = 'throw error away'
 		})
 		setTimeout(async () => {

@@ -166,7 +166,7 @@ test('a worker that started first, connects to a broker that starts later', () =
 
 		await delay(10000)
 
-		await zbc.deployWorkflow('./src/__tests__/testdata/disconnection.bpmn')
+		await zbc.deployProcess('./src/__tests__/testdata/disconnection.bpmn')
 		await delay(1000) // Ensure deployment has happened
 		const wf = await zbc.createProcessInstanceWithResult(
 			'disconnection',
