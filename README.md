@@ -8,7 +8,7 @@
 
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
-![Test on Camunda Cloud](https://github.com/jwulf/zeebe-client-node-js/processes/Test%20on%20Camunda%20Cloud/badge.svg)
+![Test on Camunda Cloud](https://github.com/camunda-community-hub/zeebe-client-node-js/workflows/Test%20on%20Camunda%20Cloud/badge.svg)
 
 This is a Node.js gRPC client for [Zeebe](https://zeebe.io), the workflow engine in [Camunda Platform 8](https://camunda.com/platform/). It is written in TypeScript and transpiled to JavaScript in the `dist` directory.
 
