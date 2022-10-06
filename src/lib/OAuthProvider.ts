@@ -1,8 +1,7 @@
 import * as fs from 'fs'
-import * as got from 'got'
+import got from 'got'
 import * as os from 'os'
 const homedir = os.homedir()
-import pkg = require('../../package.json')
 
 const BACKOFF_TOKEN_ENDPOINT_FAILURE = 1000
 
@@ -110,7 +109,7 @@ export class OAuthProvider {
 	}
 
 	private debouncedTokenRequest() {
-		const body = {
+		const json = {
 			audience: this.audience,
 			client_id: this.clientId,
 			client_secret: this.clientSecret,
@@ -119,12 +118,7 @@ export class OAuthProvider {
 
 		return got
 			.post(this.url, {
-				body,
-				form: true,
-				headers: {
-					'content-type': 'application/x-www-form-urlencoded',
-					'user-agent': `zeebe-client-nodejs/${pkg.version}`,
-				},
+				json,
 			})
 			.then(res => {
 				return this.safeJSONParse(res.body).then(token => {
