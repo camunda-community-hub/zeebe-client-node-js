@@ -1,3 +1,11 @@
+# Version 8.1.1
+
+## Chores
+
+_Things that shouldn't have a visible impact._
+
+-   Bump got to 11.8.5 to fix [CVE-2022-33987](https://github.com/advisories/GHSA-pfrx-2q88-qq97). Thanks to [@nithinssabu](https://github.com/nithinssabu) for the PR. See [#275](https://github.com/camunda-community-hub/zeebe-client-node-js/pull/275) for more detail.
+
 # Version 8.1
 
 ## Breaking changes
