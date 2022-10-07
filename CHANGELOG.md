@@ -1,3 +1,17 @@
+# Version 8.1.2
+
+## Fixes
+
+_Things that were broken and are now fixed._
+
+-   In 8.1.1, the update to the version of `got` introduced a regression that broke the OAuth token request with certain gateway configurations. This is now reverted, and a test has been introduced to ensure this regression does not happen again. See [#280](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/280) for more details.
+
+## New Features
+
+_New shiny stuff._
+
+-   Applications can now extend the user agent identifier by setting a value for the environment variable `ZEEBE_CLIENT_CUSTOM_AGENT_STRING`. This will be appended to the standard user agent string. See [#279](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/279) for more details.
+
 # Version 8.1.1
 
 ## Chores
