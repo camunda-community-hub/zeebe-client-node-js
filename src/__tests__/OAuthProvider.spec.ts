@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { OAuthProvider } from '../lib/OAuthProvider'
+import http from 'http'
 
 const STORED_ENV = {}
 const ENV_VARS_TO_STORE = ['ZEEBE_TOKEN_CACHE_DIR']
@@ -122,4 +123,49 @@ test('Throws in the constructor if the token cache is not writable', () => {
 		fs.rmdirSync(tokenCache)
 	}
 	expect(fs.existsSync(tokenCache)).toBe(false)
+})
+
+test('Can set a custom user agent', () => {
+	process.env.ZEEBE_CLIENT_CUSTOM_AGENT_STRING = 'modeler'
+	const o = new OAuthProvider({
+		audience: 'token',
+		cacheOnDisk: true,
+		clientId: 'clientId',
+		clientSecret: 'clientSecret',
+		url: 'url',
+	})
+	expect(o.userAgentString.includes(' modeler')).toBe(true)
+})
+
+test('Uses form encoding for request', done => {
+	const o = new OAuthProvider({
+		audience: 'token',
+		cacheOnDisk: false,
+		clientId: 'clientId',
+		clientSecret: 'clientSecret',
+		url: 'http://127.0.0.1:3001',
+	})
+	const server = http
+		.createServer((req, res) => {
+			if (req.method === 'POST') {
+				let body = ''
+				req.on('data', chunk => {
+					body += chunk
+				})
+
+				req.on('end', () => {
+					res.writeHead(200, { 'Content-Type': 'application/json' })
+					res.end('{"token": "something"}')
+					server.close()
+					expect(body).toEqual(
+						'audience=token&client_id=clientId&client_secret=clientSecret&grant_type=client_credentials'
+					)
+					done()
+				})
+			}
+		})
+		.listen(3001)
+	o.getToken()
+
+	expect(o.userAgentString.includes(' modeler')).toBe(true)
 })
