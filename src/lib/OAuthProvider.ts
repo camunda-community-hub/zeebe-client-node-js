@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import got from 'got'
 import * as os from 'os'
+import pkg = require('../../package.json')
 const homedir = os.homedir()
 
 const BACKOFF_TOKEN_ENDPOINT_FAILURE = 1000
@@ -38,6 +39,7 @@ export class OAuthProvider {
 	public useFileCache: boolean
 	public tokenCache = {}
 	private failed = false
+	userAgentString: string
 
 	constructor({
 		/** OAuth Endpoint URL */
@@ -63,6 +65,11 @@ export class OAuthProvider {
 		this.clientSecret = clientSecret
 		this.useFileCache = cacheOnDisk
 		this.cacheDir = cacheDir || OAuthProvider.getTokenCacheDirFromEnv()
+
+		const CUSTOM_AGENT_STRING = process.env.ZEEBE_CLIENT_CUSTOM_AGENT_STRING
+		this.userAgentString = `zeebe-client-nodejs/${pkg.version}${
+			CUSTOM_AGENT_STRING ? ' ' + CUSTOM_AGENT_STRING : ''
+		}`
 
 		if (this.useFileCache) {
 			try {
@@ -109,7 +116,7 @@ export class OAuthProvider {
 	}
 
 	private debouncedTokenRequest() {
-		const json = {
+		const form = {
 			audience: this.audience,
 			client_id: this.clientId,
 			client_secret: this.clientSecret,
@@ -118,7 +125,11 @@ export class OAuthProvider {
 
 		return got
 			.post(this.url, {
-				json,
+				form,
+				headers: {
+					'content-type': 'application/x-www-form-urlencoded',
+					'user-agent': this.userAgentString,
+				},
 			})
 			.then(res => {
 				return this.safeJSONParse(res.body).then(token => {
