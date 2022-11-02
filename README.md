@@ -574,9 +574,12 @@ const ZB = require('zeebe-node')
 
 const zbc = new ZB.ZBClient()
 
-const zbWorker = zbc.createWorker('demo-service', handler)
+const zbWorker = zbc.createWorker({
+	taskType: 'demo-service',
+	taskHandler: handler,
+})
 
-function handler(job, _, worker) {
+function handler(job) {
 	worker.log('Task variables', job.variables)
 
 	// Task worker business logic goes here
@@ -606,7 +609,6 @@ Here is an example job:
   retries: 3,
   deadline: '1546915422636',
   variables: { testData: 'something' } }
-
 ```
 
 The worker can be configured with options. To do this, you should use the object parameter constructor.
@@ -647,7 +649,9 @@ const { ZBClient } = require('zeebe-node')
 
 const zbc = new ZBClient()
 
-zbc.createWorker('console-log', maybeFaultyHandler, {
+zbc.createWorker({
+	taskType: 'console-log',
+	taskHandler: maybeFaultyHandler,
 	failProcessOnException: true,
 })
 ```
@@ -700,10 +704,13 @@ const { ZBClient } = require('zeebe-node')
 
 const zbc = new ZBClient()
 
-zbc.createWorker('some-task', job => {
-    const { people } = job.variables
-    // update bob's age, keeping all his other properties the same
-    job.complete(merge(people, { bob: { age: 23 } }))
+zbc.createWorker({
+    taskType: 'some-task',
+    taskHandler: job => {
+        const { people } = job.variables
+        // update bob's age, keeping all his other properties the same
+        job.complete(merge(people, { bob: { age: 23 } }))
+    }
 })
 ```
 
@@ -715,8 +722,8 @@ Process variables and custom headers are untyped in the Zeebe broker, however th
 // No type checking - totally dynamic and unchecked
 zbc.createWorker<any>({
     taskType: 'yolo-jobs',
-    taskHandler: (job, _, worker) => {
-        worker.log(`Look ma - ${job.variables.anything.goes.toUpperCase()}`)
+    taskHandler: (job) => {
+        console.log(`Look ma - ${job.variables?.anything?.goes?.toUpperCase()}`)
         job.complete({what: job.variables.could.possibly.go.wrong})
     }
 })
@@ -735,9 +742,9 @@ You can also use the `fetchVariable` parameter when creating a worker. Pass an a
 ```javascript
 zbc.createWorker({
 	taskType: 'process-favorite-albums',
-	taskHandler: (job, _, worker) => {
+	taskHandler: job => {
 		const { name, albums } = job.variables
-		worker.log(`${name} has the following albums: ${albums.join(', ')}`)
+		console.log(`${name} has the following albums: ${albums.join(', ')}`)
 		job.complete()
 	},
 	fetchVariable: ['name', 'albums'],
@@ -754,9 +761,9 @@ interface Variables {
 
 zbc.createWorker<Variables>({
     taskType: 'process-favorite-albums',
-    taskHandler: (job, _, worker) => {
+    taskHandler: (job) => {
         const { name, albums = [] } = job.variables
-        worker.log(`${name} has the following albums: ${albums?.join?.(', ')}`)
+        console.log(`${name} has the following albums: ${albums?.join?.(', ')}`)
         job.complete()
     },
     fetchVariable: ['name', 'albums'],
@@ -777,10 +784,10 @@ You can turn off the type-safety by typing the worker as `any`:
 ```TypeScript
 zbc.createWorker<any>({
     taskType: 'process-favorite-albums',
-    taskHandler: (job, _, worker) => {
+    taskHandler: (job) => {
         const { name, albums = [] } = job.variables
         // TS 3.7 safe access to .join _and_ safe call, to prevent run-time exceptions
-        worker.log(`${name} has the following albums: ${albums?.join?.(', ')}`)
+        console.log(`${name} has the following albums: ${albums?.join?.(', ')}`)
         job.complete()
     },
     fetchVariable: ['name', 'albums'],
@@ -916,8 +923,8 @@ const zbc = new ZBClient()
 // Helper function to find a job by its key
 const findJobByKey = jobs => key => jobs.filter(job => job.jobKey === id)?.[0] ?? []
 
-const handler = async (jobs: BatchedJob[], worker: ZBBatchWorker) => {
-    worker.log("Let's do this!")
+const handler = async (jobs: BatchedJob[]) => {
+    console.log("Let's do this!")
     const {jobKey, variables} = job
     // Construct some hypothetical payload with correlation ids and requests
     const req = jobs.map(job => ({id: jobKey, data: variables.request}))
@@ -1362,9 +1369,9 @@ const giftSuggester = zbc.createWorker<
     InputVariables,
     CustomHeaders,
     OutputVariables>
-    ('get-gift-suggestion', (job, complete) => {
+    ('get-gift-suggestion', (job) => {
         const suggestedGift = `${job.customHeaders.occasion} ${job.variables.preferences.beverage}`
-        complete.success({ suggestedGift })
+        job.complete({ suggestedGift })
 })
 ```
 
@@ -1373,13 +1380,15 @@ If you decouple the declaration of the job handler from the `createWorker` call,
 ```TypeScript
 import { ZBWorkerTaskHandler } from 'zeebe-node'
 
-function getGiftSuggestion(job, complete): ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariables> {
+function getGiftSuggestion(job): ZBWorkerTaskHandler<InputVariables, CustomHeaders, OutputVariables> {
     const suggestedGift = `${job.customHeaders.occasion} ${job.variables.preferences.beverage}`
-    complete.success({ suggestedGift })
+    job.complete({ suggestedGift })
 }
 
-const giftSuggester = zbc.createWorker('get-gift-suggestion', getGiftSuggestion)
-
+const giftSuggester = zbc.createWorker({
+    taskType: 'get-gift-suggestion',
+    taskHandler: getGiftSuggestion
+})
 ```
 
 <a name = "run-time-safety"></a>
