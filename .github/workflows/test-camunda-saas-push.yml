@@ -1,4 +1,4 @@
-name: "Test on Camunda Cloud"
+name: "Test on Camunda 8 SaaS"
 on: # main branch changes
   push:
 jobs:

@@ -1,4 +1,4 @@
-name: "Test on Camunda Cloud"
+name: "Test on Camunda 8 SaaS"
 on: # rebuild any PRs from the repo itself
   pull_request:
 jobs:
