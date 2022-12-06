@@ -442,7 +442,7 @@ The `cacheOnDisk` option will cache the token on disk in `$HOME/.camunda`, which
 
 If the cache directory is not writable, the ZBClient constructor will throw an exception. This is considered fatal, as it can lead to denial of service or hefty bills if you think caching is on when it is not.
 
-The `customRootCert` argument is optional. It can be used to provide a custom TLS cerificate as a Buffer, which will be used while obtaining the OAuth token from the specified URL. If not provided, the CAs provided by [Mozilla](https://ccadb-public.secure.force.com/mozilla/IncludedCACertificateReport) will be used.
+The `customRootCert` argument is optional. It can be used to provide a custom TLS certificate as a Buffer, which will be used while obtaining the OAuth token from the specified URL. If not provided, the CAs provided by [Mozilla](https://ccadb-public.secure.force.com/mozilla/IncludedCACertificateReport) will be used.
 
 <a name = "basic-auth"></a>
 
