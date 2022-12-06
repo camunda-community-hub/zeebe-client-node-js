@@ -147,6 +147,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		this.oAuth = this.options.oAuth
 			? new OAuthProvider(
 					this.options.oAuth as OAuthProviderConfig & {
+						customRootCert: Buffer
 						cacheDir: string
 						cacheOnDisk: boolean
 					}
