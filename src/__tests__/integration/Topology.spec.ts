@@ -1,4 +1,4 @@
-import { ZBClient } from '../../..'
+import { ZBClient } from '../..'
 
 const zbc = new ZBClient({
 	eagerConnection: false,

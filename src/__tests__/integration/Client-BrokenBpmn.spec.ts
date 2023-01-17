@@ -1,4 +1,4 @@
-import { ZBClient } from '../../..'
+import { ZBClient } from '../..'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 

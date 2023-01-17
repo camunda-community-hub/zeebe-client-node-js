@@ -1,6 +1,6 @@
-import { ZBClient } from '../../..'
-import { createUniqueTaskType } from '../../../lib/createUniqueTaskType'
-import { CreateProcessInstanceResponse } from '../../../lib/interfaces-grpc-1.0'
+import { ZBClient } from '../..'
+import { createUniqueTaskType } from '../../lib/createUniqueTaskType'
+import { CreateProcessInstanceResponse } from '../../lib/interfaces-grpc-1.0'
 
 const trace = <T>(res: T) => {
 	// tslint:disable-next-line: no-console
