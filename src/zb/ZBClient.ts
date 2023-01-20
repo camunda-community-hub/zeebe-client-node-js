@@ -51,6 +51,16 @@ export const ConnectionStatusEvent = {
 	unknown: 'unknown' as 'unknown',
 }
 
+/**
+ * @description A client for interacting with a Zeebe broker. With the connection credentials set in the environment, you can use a "zero-conf" constructor with no arguments.
+ * @example
+ * ```
+ * const zbc = new ZBClient()
+ * zbc.topology().then(info =>
+ *     console.log(JSON.stringify(info, null, 2))
+ * )
+ * ```
+ */
 export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	public static readonly DEFAULT_CONNECTION_TOLERANCE = Duration.milliseconds.of(
 		3000
@@ -226,6 +236,28 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		}
 	}
 
+	/**
+	 * @description activateJobs allows you to manually activate jobs, effectively building a worker; rather than using the ZBWorker class.
+	 * @example
+	 * ```
+	 * const zbc = new ZBClient()
+	 * zbc.activateJobs({
+	 *   maxJobsToActivate: 5,
+	 *   requestTimeout: 6000,
+	 *   timeout: 5 * 60 * 1000,
+	 *   type: 'process-payment',
+	 *   worker: 'my-worker-uuid'
+	 * }).then(jobs =>
+	 * 	 jobs.forEach(job =>
+	 *     // business logic
+	 *     zbc.completeJob({
+	 *       jobKey: job.key,
+	 *       variables: {}
+	 *     ))
+	 *   )
+	 * })
+	 * ```
+	 */
 	public activateJobs<
 		Variables = ZB.IInputVariables,
 		CustomHeaders = ZB.ICustomHeaders
@@ -249,6 +281,19 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		})
 	}
 
+	/**
+	 *
+	 * @description Cancel a process instance by process instance key.
+	 * @example
+	 * ```
+	 * const zbc = new ZBClient()
+	 *
+	 * zbc.cancelProcessInstance(processInstanceId)
+	 * 	.catch(
+	 * 		(e: any) => console.log(`Error cancelling instance: ${e.message}`)
+	 * )
+	 * ```
+	 */
 	public async cancelProcessInstance(
 		processInstanceKey: string | number
 	): Promise<void> {
@@ -260,6 +305,44 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		)
 	}
 
+	/**
+	 *
+	 * @description Create a new Batch Worker. This is useful when you need to rate limit access to an external resource.
+	 * @example
+	 * ```
+	 * const zbc = new ZBClient()
+	 * // Helper function to find a job by its key
+	 * const findJobByKey = jobs => key => jobs.filter(job => job.jobKey === id)?.[0] ?? []
+	 *
+	 * const handler = async (jobs: BatchedJob[]) => {
+	 *   console.log("Let's do this!")
+	 *   const {jobKey, variables} = job
+	 *   // Construct some hypothetical payload with correlation ids and requests
+	 *   const req = jobs.map(job => ({id: jobKey, data: variables.request}))
+	 *   // An uncaught exception will not be managed by the library
+	 * 	 try {
+	 *     // Our API wrapper turns that into a request, and returns
+	 *     // an array of results with ids
+	 *     const outcomes = await API.post(req)
+	 *     // Construct a find function for these jobs
+	 *     const getJob = findJobByKey(jobs)
+	 *     // Iterate over the results and call the succeed method on the corresponding job,
+	 *     // passing in the correlated outcome of the API call
+	 *     outcomes.forEach(res => getJob(res.id)?.complete(res.data))
+	 *   } catch (e) {
+	 *     jobs.forEach(job => job.fail(e.message))
+	 *   }
+	 * }
+	 *
+	 * const batchWorker = zbc.createBatchWorker({
+	 *   taskType: 'get-data-from-external-api',
+	 *   taskHandler: handler,
+	 *   jobBatchMinSize: 10, // at least 10 at a time
+	 *   jobBatchMaxTime: 60, // or every 60 seconds, whichever comes first
+	 *   timeout: Duration.seconds.of(80) // 80 second timeout means we have 20 seconds to process at least
+	 * })
+	 * ```
+	 */
 	public createBatchWorker<
 		WorkerInputVariables = ZB.IInputVariables,
 		CustomHeaderShape = ZB.ICustomHeaders,
@@ -332,6 +415,51 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		return worker
 	}
 
+	/**
+	 *
+	 * @description Create a worker that polls the gateway for jobs and executes a job handler when units of work are available.
+	 * @example
+	 * ```
+	 * const zbc = new ZB.ZBClient()
+	 *
+	 * const zbWorker = zbc.createWorker({
+	 *   taskType: 'demo-service',
+	 *   taskHandler: myTaskHandler,
+	 * })
+	 *
+	 * // A job handler must return one of job.complete, job.fail, job.error, or job.forward
+	 * // Note: unhandled exceptions in the job handler cause the library to call job.fail
+	 * async function myTaskHandler(job) {
+	 *   zbWorker.log('Task variables', job.variables)
+	 *
+	 *   // Task worker business logic goes here
+	 *   const updateToBrokerVariables = {
+	 *     updatedProperty: 'newValue',
+	 *   }
+	 *
+	 *   const res = await callExternalSystem(job.variables)
+	 *
+	 *   if (res.code === 'SUCCESS') {
+	 *     return job.complete({
+	 *        ...updateToBrokerVariables,
+	 *        ...res.values
+	 *     })
+	 *   }
+	 *   if (res.code === 'BUSINESS_ERROR') {
+	 *     return job.error({
+	 *       code: res.errorCode,
+	 *       message: res.message
+	 *     })
+	 *   }
+	 *   if (res.code === 'ERROR') {
+	 *     return job.fail({
+	 *        errorMessage: res.message,
+	 *        retryBackOff: 2000
+	 *     })
+	 *   }
+	 * }
+	 * ```
+	 */
 	public createWorker<
 		WorkerInputVariables = ZB.IInputVariables,
 		CustomHeaderShape = ZB.ICustomHeaders,
@@ -389,11 +517,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 			idColor,
 			log,
 			options: { ...this.options, ...options },
-			taskHandler: config.taskHandler as ZB.ZBWorkerTaskHandler<
-				WorkerInputVariables,
-				CustomHeaderShape,
-				WorkerOutputVariables
-			>,
+			taskHandler: config.taskHandler,
 			taskType: config.taskType,
 			zbClient: this,
 		})
@@ -402,9 +526,23 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	}
 
 	/**
-	 * Gracefully shut down all workers, draining existing tasks, and return when it is safe to exit.
-	 * @returns Promise
-	 * @memberof ZBClient
+	 * @description Gracefully shut down all workers, draining existing tasks, and return when it is safe to exit.
+	 *
+	 * @example
+	 * ```
+	 * const zbc = new ZBClient()
+	 *
+	 * zbc.createWorker({
+	 *   taskType:
+	 * })
+	 *
+	 * setTimeout(async () => {
+	 *   await zbc.close()
+	 *   console.log('All work completed.')
+	 * }),
+	 *   5 * 60 * 1000 // 5 mins
+	 * )
+	 * ```
 	 */
 	public async close(timeout?: number): Promise<null> {
 		this.closePromise =
@@ -422,6 +560,29 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		return this.closePromise
 	}
 
+	/**
+	 *
+	 * @description Explicitly complete a job. The method is useful for manually constructing a worker.
+	 * @example
+	 * ```
+	 * const zbc = new ZBClient()
+	 * zbc.activateJobs({
+	 *   maxJobsToActivate: 5,
+	 *   requestTimeout: 6000,
+	 *   timeout: 5 * 60 * 1000,
+	 *   type: 'process-payment',
+	 *   worker: 'my-worker-uuid'
+	 * }).then(jobs =>
+	 * 	 jobs.forEach(job =>
+	 *     // business logic
+	 *     zbc.completeJob({
+	 *       jobKey: job.key,
+	 *       variables: {}
+	 *     ))
+	 *   )
+	 * })
+	 * ```
+	 */
 	public completeJob(
 		completeJobRequest: Grpc.CompleteJobRequest
 	): Promise<void> {
@@ -440,6 +601,22 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	}
 
 	// tslint:disable: no-object-literal-type-assertion
+	/**
+	 *
+	 * @description Create a new process instance. Asynchronously returns a process instance id.
+	 * @example
+	 * ```
+	 * const zbc = new ZBClient()
+	 *
+	 * zbc.createProcessInstance({
+	 *   bpmnProcessId: 'onboarding-process',
+	 *   variables: {
+	 *     customerId: 'uuid-3455'
+	 *   },
+	 *   version: 5 // optional, will use latest by default
+	 * })
+	 * ```
+	 */
 	public createProcessInstance<Variables = ZB.IProcessVariables>(
 		bpmnProcessId: string,
 		variables: Variables
@@ -483,6 +660,20 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		)
 	}
 
+	/**
+	 *
+	 * @description Create a process instance, and return a Promise that returns the outcome of the process.
+	 * @example
+	 * ```
+	 * const zbc = new ZBClient()
+	 *
+	 * zbc.createProcessInstanceWithResult('order-process', {
+	 *   customerId: 123,
+	 *   invoiceId: 567
+	 * })
+	 *   .then(console.log)
+	 * ```
+	 */
 	public createProcessInstanceWithResult<
 		Variables = ZB.IInputVariables,
 		Result = ZB.IOutputVariables
@@ -550,6 +741,18 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		).then(res => parseVariables(res as any))
 	}
 
+	/**
+	 *
+	 * @description Deploy a BPMN model or DMN table to the Zeebe cluster.
+	 * @example
+	 * ```
+	 * import {join} from 'path'
+	 * const zbc = new ZBClient()
+	 *
+	 * zbc.deployResource({ processFilename: join(process.cwd(), 'bpmn', 'onboarding.bpmn' })
+	 * zbc.deployResource({ decisionFilename: join(process.cwd(), 'dmn', 'approval.dmn')})
+	 * ```
+	 */
 	public async deployResource(
 		resource:
 			| { processFilename: string }
@@ -636,6 +839,29 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		}
 	}
 
+	/**
+	 *
+	 * @description Deploy a process model.
+	 * @example
+	 * ```
+	 * import { readFileSync } from 'fs'
+	 * import { join } from 'path'
+	 *
+	 * const zbc = new ZBClient()
+	 * const bpmnFilePath = join(process.cwd(), 'bpmn', 'onboarding.bpmn')
+	 *
+	 * // Loading the process model allows you to perform modifications or analysis
+	 * const bpmn = readFileSync(bpmnFilePath, 'utf8')
+	 *
+	 * zbc.deployProcess({
+	 *    definition: bpmn,
+	 *    name: 'onboarding.bpmn'
+	 * })
+	 *
+	 * // If you don't need access to model contents, simply pass a file path
+	 * zbc.deployProcess(bpmnFilePath)
+	 * ```
+	 */
 	public async deployProcess(
 		process: ZB.DeployProcessFiles | ZB.DeployProcessBuffer
 	): Promise<Grpc.DeployProcessResponse> {
@@ -663,6 +889,22 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		)
 	}
 
+	/**
+	 *
+	 * @description Fail a job. This is useful if you are using the decoupled completion pattern or building your own worker.
+	 * For the retry count, the current count is available in the job metadata.
+	 *
+	 * @example
+	 * ```
+	 * const zbc = new ZBClient()
+	 * zbc.failJob( {
+	 *   jobKey: '345424343451',
+	 *   retries: 3,
+	 *   errorMessage: 'Could not get a response from the order invoicing API',
+	 *   retryBackOff: 30 * 1000 // optional, otherwise available for reactivation immediately
+	 * })
+	 * ```
+	 */
 	public failJob(failJobRequest: Grpc.FailJobRequest): Promise<void> {
 		return this.executeOperation('failJob', () =>
 			this.grpc.failJobSync(failJobRequest)
@@ -670,8 +912,14 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	}
 
 	/**
-	 * Return an array of task-types specified in a BPMN file.
-	 * @param file - Path to bpmn file.
+	 * @description Return an array of task types contained in a BPMN file or array of BPMN files. This can be useful, for example, to do
+	 * @example
+	 * ```
+	 * const zbc = new ZBClient()
+	 * zbc.getServiceTypesFromBpmn(['bpmn/onboarding.bpmn', 'bpmn/process-sale.bpmn'])
+	 *   .then(tasktypes => console.log('The task types are:', tasktypes))
+	 *
+	 * ```
 	 */
 	public getServiceTypesFromBpmn(files: string | string[]) {
 		const fileArray = typeof files === 'string' ? [files] : files
@@ -679,8 +927,20 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	}
 
 	/**
-	 * Publish a message to the broker for correlation with a workflow instance.
-	 * @param publishMessageRequest - The message to publish.
+	 * @description Publish a message to the broker for correlation with a workflow instance. See [this tutorial](https://docs.camunda.io/docs/guides/message-correlation/) for a detailed description of message correlation.
+	 * @example
+	 * ```
+	 * const zbc = new ZBClient()
+	 *
+	 * zbc.publishMessage({
+	 *   // Should match the "Message Name" in a BPMN Message Catch
+	 *   name: 'order_status',
+	 *   correlationKey: 'uuid-124-532-5432',
+	 *   variables: {
+	 *     event: 'PROCESSED'
+	 *   }
+	 * })
+	 * ```
 	 */
 	public publishMessage<
 		ProcessVariables extends { [key: string]: any } = ZB.IProcessVariables
@@ -695,8 +955,35 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	}
 
 	/**
-	 * Publish a message to the broker for correlation with a workflow message start event.
-	 * @param publishStartMessageRequest - The message to publish.
+	 * @description Publish a message to the broker for correlation with a workflow message start event.
+	 * For a message targeting a start event, the correlation key is not needed to target a specific running process instance.
+	 * However, the hash of the correlationKey is used to determine the partition where this workflow will start.
+	 * So we assign a random uuid to balance workflow instances created via start message across partitions.
+	 *
+	 * We make the correlationKey optional, because the caller can specify a correlationKey + messageId
+	 * to guarantee an idempotent message.
+	 *
+	 * Multiple messages with the same correlationKey + messageId combination will only start a workflow once.
+	 * See: https://github.com/zeebe-io/zeebe/issues/1012 and https://github.com/zeebe-io/zeebe/issues/1022
+	 * @example
+	 * ```
+	 * const zbc = new ZBClient()
+	 * zbc.publishStartMessage({
+	 *   name: 'Start_New_Onboarding_Flow',
+	 *   variables: {
+	 *     customerId: 'uuid-348-234-8908'
+	 *   }
+	 * })
+	 *
+	 * // To do the same in an idempotent fashion - note: only idempotent during the lifetime of the created instance.
+	 * zbc.publishStartMessage({
+	 *   name: 'Start_New_Onboarding_Flow',
+	 *   messageId: 'uuid-348-234-8908', // use customerId to make process idempotent per customer
+	 *   variables: {
+	 *     customerId: 'uuid-348-234-8908'
+	 *   }
+	 * })
+	 * ```
 	 */
 	public publishStartMessage<
 		ProcessVariables extends ZB.IInputVariables = ZB.IProcessVariables
@@ -727,6 +1014,37 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		)
 	}
 
+	/**
+	 *
+	 * @description Resolve an incident by incident key.
+	 * @example
+	 * ```
+	 * type JSONObject = {[key: string]: string | number | boolean | JSONObject}
+	 *
+	 * const zbc = new ZBClient()
+	 *
+	 * async updateAndResolveIncident({
+	 *   processInstanceId,
+	 *   incidentKey,
+	 *   variables
+	 * } : {
+	 *   processInstanceId: string,
+	 *   incidentKey: string,
+	 *   variables: JSONObject
+	 * }) {
+	 *   await zbc.setVariables({
+	 *     elementInstanceKey: processInstanceId,
+	 *     variables
+	 *   })
+	 *   await zbc.updateRetries()
+	 *   zbc.resolveIncident({
+	 *     incidentKey
+	 *   })
+	 *   zbc.resolveIncident(incidentKey)
+	 * }
+	 *
+	 * ```
+	 */
 	public resolveIncident(
 		resolveIncidentRequest: Grpc.ResolveIncidentRequest
 	): Promise<void> {
@@ -735,6 +1053,40 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		)
 	}
 
+	/**
+	 *
+	 * @description Directly modify the variables is a process instance. This can be used with `resolveIncident` to update the process and resolve an incident.
+	 * @example
+	 * ```
+	 * type JSONObject = {[key: string]: string | number | boolean | JSONObject}
+	 *
+	 * const zbc = new ZBClient()
+	 *
+	 * async function updateAndResolveIncident({
+	 *   incidentKey,
+	 *   processInstanceKey,
+	 *   jobKey,
+	 *   variableUpdate
+	 * } : {
+	 *   incidentKey: string
+	 *   processInstanceKey: string
+	 *   jobKey: string
+	 *   variableUpdate: JSONObject
+	 * }) {
+	 *   await zbc.setVariables({
+	 *     elementInstanceKey: processInstanceKey,
+	 *     variables: variableUpdate
+	 *   })
+	 *   await zbc.updateJobRetries({
+	 *     jobKey,
+	 *     retries: 1
+	 *   })
+	 *   return zbc.resolveIncident({
+	 *     incidentKey
+	 *   })
+	 * }
+	 * ```
+	 */
 	public setVariables<Variables = ZB.IProcessVariables>(
 		request: Grpc.SetVariablesRequest<Variables>
 	): Promise<void> {
@@ -752,9 +1104,47 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 
 	/**
 	 *
-	 * Report a business error (i.e. non-technical) that occurs while processing a job.
+	 * @description Fail a job by throwing a business error (i.e. non-technical) that occurs while processing a job.
 	 * The error is handled in the workflow by an error catch event.
-	 * If there is no error catch event with the specified errorCode then an incident will be raised instead.
+	 * If there is no error catch event with the specified `errorCode` then an incident will be raised instead.
+	 * This method is useful when building a worker, for example for the decoupled completion pattern.
+	 * @example
+	 * ```
+	 * type JSONObject = {[key: string]: string | number | boolean | JSONObject}
+	 *
+	 * interface errorResult {
+	 *   resultType: 'ERROR' as 'ERROR'
+	 * 	 errorCode: string
+	 *   errorMessage: string
+	 * }
+	 *
+	 * interface successResult {
+	 *   resultType: 'SUCCESS' as 'SUCCESS'
+	 *   variableUpdate: JSONObject
+	 * }
+	 *
+	 * type Result = errorResult | successResult
+	 *
+	 * const zbc = new ZBClient()
+	 *
+	 *
+	 * // This could be a listener on a return queue from an external system
+	 * async function handleJob(jobKey: string, result: Result) {
+	 *   if (resultType === 'ERROR') {
+	 *     const { errorMessage, errorCode } = result
+	 * 		zbc.throwError({
+	 *        jobKey,
+	 *        errorCode,
+	 * 		  errorMessage
+	 *     })
+	 *   } else {
+	 *     zbc.completeJob({
+	 *       jobKey,
+	 *       variables: result.variableUpdate
+	 *     })
+	 *   }
+	 * }
+	 * ```
 	 */
 	public throwError(throwErrorRequest: Grpc.ThrowErrorRequest) {
 		return this.executeOperation('throwError', () =>
@@ -763,12 +1153,52 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	}
 
 	/**
-	 * Return the broker cluster topology
+	 * @description Return the broker cluster topology.
+	 * @example
+	 * ```
+	 * const zbc = new ZBClient()
+	 *
+	 * zbc.topology().then(res => console.res(JSON.stringify(res, null, 2)))
+	 * ```
 	 */
 	public topology(): Promise<Grpc.TopologyResponse> {
 		return this.executeOperation('topology', this.grpc.topologySync)
 	}
 
+	/**
+	 *
+	 * @description Update the number of retries for a Job. This is useful if a job has zero remaining retries and fails, raising an incident.
+	 * @example
+	 * ```
+	 * type JSONObject = {[key: string]: string | number | boolean | JSONObject}
+	 *
+	 * const zbc = new ZBClient()
+	 *
+	 * async function updateAndResolveIncident({
+	 *   incidentKey,
+	 *   processInstanceKey,
+	 *   jobKey,
+	 *   variableUpdate
+	 * } : {
+	 *   incidentKey: string
+	 *   processInstanceKey: string
+	 *   jobKey: string
+	 *   variableUpdate: JSONObject
+	 * }) {
+	 *   await zbc.setVariables({
+	 *     elementInstanceKey: processInstanceKey,
+	 *     variables: variableUpdate
+	 *   })
+	 *   await zbc.updateJobRetries({
+	 *     jobKey,
+	 *     retries: 1
+	 *   })
+	 *   return zbc.resolveIncident({
+	 *     incidentKey
+	 *   })
+	 * }
+	 * ```
+	 */
 	public updateJobRetries(
 		updateJobRetriesRequest: Grpc.UpdateJobRetriesRequest
 	): Promise<void> {

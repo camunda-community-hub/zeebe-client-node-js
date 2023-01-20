@@ -1,4 +1,4 @@
-import { ZBClient } from '../../..'
+import { ZBClient } from '../..'
 
 jest.setTimeout(40000)
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
