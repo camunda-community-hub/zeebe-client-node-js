@@ -1,4 +1,4 @@
-import { ZBClient } from '../../..'
+import { ZBClient } from '../../index'
 import { createUniqueTaskType } from '../../lib/createUniqueTaskType'
 import { CreateProcessInstanceResponse } from '../../lib/interfaces-grpc-1.0'
 
