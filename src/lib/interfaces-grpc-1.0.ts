@@ -344,29 +344,6 @@ export interface SetVariablesRequest<Variables = IProcessVariables> {
 	local: boolean
 }
 
-/* either process key or bpmn process id and version has to be specified*/
-export type GetProcessRequest =
-	| GetProcessRequestWithBpmnProcessId
-	| GetProcessRequestWithProcessKey
-
-export interface GetProcessRequestWithProcessKey {
-	readonly processKey: string
-}
-
-export interface GetProcessRequestWithBpmnProcessId {
-	/** by default set version = -1 to indicate to use the latest version */
-	version?: number
-	bpmnProcessId: string
-}
-
-export interface GetProcessResponse {
-	readonly processKey: string
-	readonly version: number
-	readonly bpmnProcessId: string
-	readonly resourceName: string
-	readonly bpmnXml: string
-}
-
 export interface ResolveIncidentRequest {
 	readonly incidentKey: string
 }

@@ -179,8 +179,8 @@ export class ConfigurationHydrator {
 						audience: hostname,
 						cacheDir: undefined, // will be set in OAuthProvider
 						cacheOnDisk: true,
-						clientId: clientId!,
-						clientSecret: clientSecret!,
+						clientId,
+						clientSecret,
 						url,
 					},
 					port: '443',
