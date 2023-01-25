@@ -432,6 +432,7 @@ const zbc = new ZBClient("my-secure-broker.io:443", {
 		audience: "my-secure-broker.io",
 		clientId: "myClientId",
 		clientSecret: "randomClientSecret",
+		customRootCert: fs.readFileSync('./my_CA.pem'),
 		cacheOnDisk: true
 	}
 }
@@ -440,6 +441,8 @@ const zbc = new ZBClient("my-secure-broker.io:443", {
 The `cacheOnDisk` option will cache the token on disk in `$HOME/.camunda`, which can be useful in development if you are restarting the service frequently, or are running in a serverless environment, like AWS Lambda.
 
 If the cache directory is not writable, the ZBClient constructor will throw an exception. This is considered fatal, as it can lead to denial of service or hefty bills if you think caching is on when it is not.
+
+The `customRootCert` argument is optional. It can be used to provide a custom TLS certificate as a Buffer, which will be used while obtaining the OAuth token from the specified URL. If not provided, the CAs provided by [Mozilla](https://ccadb-public.secure.force.com/mozilla/IncludedCACertificateReport) will be used.
 
 <a name = "basic-auth"></a>
 

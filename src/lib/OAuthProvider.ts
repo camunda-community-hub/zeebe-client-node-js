@@ -21,6 +21,8 @@ export interface OAuthProviderConfig {
 	audience: string
 	clientId: string
 	clientSecret: string
+	/** Custom TLS certificate for OAuth */
+	customRootCert?: Buffer
 	/** Cache token in memory and on filesystem? */
 	cacheOnDisk?: boolean
 	/** Override default token cache directory */
@@ -36,6 +38,7 @@ export class OAuthProvider {
 	public url: string
 	public clientId: string
 	public clientSecret: string
+	public customRootCert?: Buffer
 	public useFileCache: boolean
 	public tokenCache = {}
 	private failed = false
@@ -49,6 +52,8 @@ export class OAuthProvider {
 		cacheDir,
 		clientId,
 		clientSecret,
+		/** Custom TLS certificate for OAuth */
+		customRootCert,
 		/** Cache token in memory and on filesystem? */
 		cacheOnDisk,
 	}: {
@@ -57,12 +62,14 @@ export class OAuthProvider {
 		cacheDir?: string
 		clientId: string
 		clientSecret: string
+		customRootCert?: Buffer
 		cacheOnDisk: boolean
 	}) {
 		this.url = url
 		this.audience = audience
 		this.clientId = clientId
 		this.clientSecret = clientSecret
+		this.customRootCert = customRootCert
 		this.useFileCache = cacheOnDisk
 		this.cacheDir = cacheDir || OAuthProvider.getTokenCacheDirFromEnv()
 
@@ -130,6 +137,9 @@ export class OAuthProvider {
 					'content-type': 'application/x-www-form-urlencoded',
 					'user-agent': this.userAgentString,
 				},
+				https: {
+					certificateAuthority: this.customRootCert
+				}
 			})
 			.then(res => {
 				return this.safeJSONParse(res.body).then(token => {
