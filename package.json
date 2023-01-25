@@ -37,7 +37,7 @@
 		"build": "tsc --build src/tsconfig.json",
 		"watch": "tsc --build src/tsconfig.json -w",
 		"watch-docs": "typedoc --watch --tsconfig src/tsconfig.json src/index.ts",
-		"prepare": "husky install",
+		"prepare": "husky install && npm run build",
 		"test": "jest --detectOpenHandles --testPathIgnorePatterns integration local-integration disconnection",
 		"test:integration": "jest --runInBand --testPathIgnorePatterns disconnection --detectOpenHandles --verbose true",
 		"test:local": "jest --runInBand --verbose true --detectOpenHandles local-integration",
