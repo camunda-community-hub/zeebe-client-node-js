@@ -22,7 +22,7 @@ afterEach(async () => {
 		if (wf?.processInstanceKey) {
 			await zbc.cancelProcessInstance(wf.processInstanceKey)
 		}
-	} catch (e) {
+	} catch (e: any) {
 		// console.log('Caught NOT FOUND') // @DEBUG
 	} finally {
 		await zbc.close() // Makes sure we don't forget to close connection
@@ -158,7 +158,7 @@ test('Fails a process when the handler throws and options.failProcessOnException
 			setTimeout(async () => {
 				try {
 					await zbc.cancelProcessInstance(wf!.processInstanceKey) // throws if not found. SHOULD throw in this test
-				} catch (e) {
+				} catch (e: any) {
 					w.close().then(() => done(null))
 				}
 			}, 1500)

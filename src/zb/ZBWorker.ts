@@ -84,7 +84,7 @@ export class ZBWorker<
 						retries,
 						retryBackOff: 0,
 					})
-				} catch (e) {
+				} catch (e: any) {
 					this.logger.logDebug(e)
 				} finally {
 					this.drainOne()

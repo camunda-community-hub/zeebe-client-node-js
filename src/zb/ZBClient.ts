@@ -276,7 +276,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 
 					resolve(jobs)
 				})
-			} catch (e) {
+			} catch (e: any) {
 				reject(e)
 			}
 		})

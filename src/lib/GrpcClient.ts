@@ -408,7 +408,7 @@ export class GrpcClient extends EventEmitter {
 									resolve(dat)
 								}
 							)
-						} catch (e) {
+						} catch (e: any) {
 							reject(e)
 						}
 					})

@@ -25,7 +25,7 @@ const logger = (loglevel: Loglevel): LogFn => (logMessage: string): void => {
 				? JSON.stringify(parsedMessage.message)
 				: parsedMessage.message
 		message = `| zeebe | ${gRPC}${taskType} ${loglevel}: ${msg}`
-	} catch (e) {
+	} catch (e: any) {
 		message = logMessage
 	}
 	const time = dayjs().format('HH:mm:ss.SSS')

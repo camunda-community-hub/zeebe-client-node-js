@@ -8,7 +8,7 @@ test('ZBClient constructor throws an exception when there is no broker and retry
 	expect.assertions(1)
 	try {
 		await zbc.deployProcess('./src/__tests__/testdata/hello-world.bpmn')
-	} catch (e) {
+	} catch (e: any) {
 		expect(e.message.indexOf('14 UNAVAILABLE:')).toEqual(0)
 	}
 })
@@ -18,7 +18,7 @@ test('cancelProcessInstance throws an exception when workflowInstanceKey is malf
 	expect.assertions(1)
 	try {
 		await zbc.cancelProcessInstance('hello-world')
-	} catch (e) {
+	} catch (e: any) {
 		expect(e).toMatchSnapshot()
 	}
 })

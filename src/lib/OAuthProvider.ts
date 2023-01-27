@@ -84,7 +84,7 @@ export class OAuthProvider {
 					fs.mkdirSync(this.cacheDir)
 				}
 				fs.accessSync(this.cacheDir, fs.constants.W_OK)
-			} catch (e) {
+			} catch (e: any) {
 				throw new Error(
 					`FATAL: Cannot write to OAuth cache dir ${cacheDir}\n` +
 						'If you are running on AWS Lambda, set the HOME environment variable of your lambda function to /tmp'
@@ -157,7 +157,7 @@ export class OAuthProvider {
 		return new Promise((resolve, reject) => {
 			try {
 				resolve(JSON.parse(thing))
-			} catch (e) {
+			} catch (e: any) {
 				reject(e)
 			}
 		})

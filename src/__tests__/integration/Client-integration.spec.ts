@@ -73,7 +73,7 @@ test('Can cancel a process', async () => {
 
 	try {
 		await zbc.cancelProcessInstance(wfi) // A call to cancel a process that doesn't exist should throw
-	} catch (e) {
+	} catch (e: any) {
 		expect(1).toBe(1)
 	}
 })
@@ -83,7 +83,7 @@ test("does not retry to cancel a process instance that doesn't exist", async () 
 	// await zbc.cancelProcessInstance('123LoL')
 	try {
 		await zbc.cancelProcessInstance(2251799813686202)
-	} catch (e) {
+	} catch (e: any) {
 		expect(e.message.indexOf('5 NOT_FOUND:')).toBe(0)
 	}
 	expect.assertions(1)

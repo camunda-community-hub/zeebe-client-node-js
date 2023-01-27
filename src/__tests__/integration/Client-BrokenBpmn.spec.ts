@@ -18,7 +18,7 @@ test('does not retry the deployment of a broken BPMN file', async () => {
 		await zbc.deployProcess(
 			'./src/__tests__/testdata/Client-BrokenBpmn.bpmn'
 		)
-	} catch (e) {
+	} catch (e: any) {
 		expect(e.message.indexOf('3 INVALID_ARGUMENT:')).toBe(0)
 	}
 })
