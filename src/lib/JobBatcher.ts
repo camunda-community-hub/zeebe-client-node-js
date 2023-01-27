@@ -57,7 +57,7 @@ export class JobBatcher {
 		)
 		try {
 			this.handler(this.batchedJobs.drain(), this.worker)
-		} catch (e) {
+		} catch (e: any) {
 			this.worker.error(
 				`An unhandled exception occurred in the worker task handler!`
 			)
