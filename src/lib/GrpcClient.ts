@@ -307,7 +307,7 @@ export class GrpcClient extends EventEmitter {
 							metadata
 						)
 						this.setReady()
-					} catch (error) {
+					} catch (error: any) {
 						this.emit(MiddlewareSignals.Log.Error, error.message)
 						this.emit(MiddlewareSignals.Event.Error)
 						this.setNotReady()
@@ -439,7 +439,7 @@ export class GrpcClient extends EventEmitter {
 				this.channelState = gRPC
 					.getChannel()
 					.getConnectivityState(false)
-			} catch (e) {
+			} catch (e: any) {
 				const msg = e.toString()
 				alreadyClosed =
 					isClosed(this.channelState) ||
@@ -477,7 +477,7 @@ export class GrpcClient extends EventEmitter {
 							}`
 						)
 						alreadyClosed = isClosed(this.channelState)
-					} catch (e) {
+					} catch (e: any) {
 						const msg = e.toString()
 						alreadyClosed =
 							msg.includes(

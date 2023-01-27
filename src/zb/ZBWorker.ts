@@ -56,7 +56,7 @@ export class ZBWorker<
 				},
 				this
 			)
-		} catch (e) {
+		} catch (e: any) {
 			this.logger.logError(
 				`Caught an unhandled exception in a task handler for process instance ${job.processInstanceKey}:`
 			)
