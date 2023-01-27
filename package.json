@@ -37,7 +37,7 @@
 		"build": "tsc --build src/tsconfig.json",
 		"watch": "tsc --build src/tsconfig.json -w",
 		"watch-docs": "typedoc --watch --tsconfig src/tsconfig.json src/index.ts",
-		"prepare": "husky install",
+		"prepare": "husky install && npm run build",
 		"test": "jest --detectOpenHandles --testPathIgnorePatterns integration local-integration disconnection",
 		"test:integration": "jest --runInBand --testPathIgnorePatterns disconnection --detectOpenHandles --verbose true",
 		"test:local": "jest --runInBand --verbose true --detectOpenHandles local-integration",
@@ -62,8 +62,8 @@
 		]
 	},
 	"dependencies": {
-		"@grpc/grpc-js": "^1.7.0",
-		"@grpc/proto-loader": "^0.7.2",
+		"@grpc/grpc-js": "1.8.7",
+		"@grpc/proto-loader": "0.7.4",
 		"chalk": "^2.4.2",
 		"console-stamp": "^3.0.2",
 		"dayjs": "^1.8.15",
