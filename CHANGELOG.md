@@ -5,6 +5,7 @@
 _Things that were broken and are now fixed._
 
 -   The @grpc dependencies are now pinned to a specific version - 1.8.7 for grpc-js and 0.7.4 for proto-loader. This is to avoid broken upstream dependencies impacting installs. Previously, with the dependency unpinned, an install on different days could result in a library that worked, or did not work, depending on the state of the upstream libraries. Now, the same dependencies are installed every time, resulting in a consistent experience. Thanks to [@nikku](https://github.com/nikku) and [@barmac](https://github.com/barmac) from the [Camunda Modeler](https://github.com/camunda/camunda-modeler) team for identifying this. See [#290](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/290) for more context.
+-   The `docker` subdirectory is back, with a `docker-compose.yml` file to start a local broker for testing purposes. See [#289](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/289) for more details.
 
 ## New Features
 

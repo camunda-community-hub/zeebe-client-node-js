@@ -1,0 +1,14 @@
+version: "2"
+
+services:
+  zeebe:
+    restart: always
+    container_name: zeebe_broker
+    image: camunda/zeebe:8.1.6
+    environment:
+      - ZEEBE_LOG_LEVEL=debug
+    volumes:
+      - ./application.yaml:/usr/local/zeebe/config/application.yaml
+    ports:
+      - "26500:26500"
+      - "9600:9600"

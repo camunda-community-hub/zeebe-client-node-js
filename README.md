@@ -16,8 +16,6 @@ Comprehensive API documentation is available [online](https://github.com/zeebe-i
 
 See [CHANGELOG.md](./CHANGELOG.md) to see what has changed with each release.
 
-Docker-compose configurations for Zeebe are available at [zeebe-docker-compose](https://github.com/zeebe-io/zeebe-docker-compose).
-
 Get a hosted instance of Zeebe on [Camunda Cloud](https://camunda.io).
 
 ## Table of Contents
@@ -1463,7 +1461,7 @@ And then run them manually:
 npm run test:integration
 ```
 
-For the failure test, you need to run Operate ([docker-compose config](https://github.com/zeebe-io/zeebe-docker-compose/blob/master/operate/docker-compose.yml)) and manually verify that an incident has been raised at [http://localhost:8080](http://localhost:8080).
+For the failure test, you need to run Operate and manually verify that an incident has been raised.
 
 <a name = "writing-tests"></a>
 
