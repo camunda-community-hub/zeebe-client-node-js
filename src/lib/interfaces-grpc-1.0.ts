@@ -1,5 +1,5 @@
 import { MaybeTimeDuration } from 'typed-duration'
-import { IInputVariables, IProcessVariables } from './interfaces-1.0'
+import { IInputVariables, IProcessVariables, JSONDoc } from './interfaces-1.0'
 
 /**
  * Request object to send the broker to request jobs for the worker.
@@ -85,9 +85,30 @@ export interface ActivateJobsResponse {
 }
 
 export interface CreateProcessInstanceRequest<Variables = IProcessVariables> {
+	/** the BPMN process ID of the process definition */
 	bpmnProcessId: string
+	/** the version of the process; if not specified it will use the latest version */
 	version?: number
+	/** JSON document that will instantiate the variables for the root variable scope of the
+  	 * process instance.
+	 */
 	variables: Variables
+	/**
+	 * List of start instructions. If empty (default) the process instance
+	 * will start at the start event. If non-empty the process instance will apply start
+	 * instructions after it has been created
+	 */
+	startInstructions?: ProcessInstanceCreationStartInstruction[]
+}
+
+export interface ProcessInstanceCreationStartInstruction {
+  /** future extensions might include
+   * - different types of start instructions
+   * - ability to set local variables for different flow scopes
+   * for now, however, the start instruction is implicitly a
+   * "startBeforeElement" instruction
+   */
+	elementId: string;
 }
 
 export interface CreateProcessInstanceResponse {
@@ -346,4 +367,152 @@ export interface SetVariablesRequest<Variables = IProcessVariables> {
 
 export interface ResolveIncidentRequest {
 	readonly incidentKey: string
+}
+
+export interface ActivateInstruction  {
+	/** the id of the element that should be activated */
+	elementId: string;
+	/** the key of the ancestor scope the element instance should be created in;
+	 * set to -1 to create the new element instance within an existing element
+	 * instance of the flow scope
+	 */
+	ancestorElementInstanceKey: string;
+	/** instructions describing which variables should be created */
+	variableInstructions: VariableInstruction[];
+}
+
+export interface VariableInstruction {
+	/** JSON document that will instantiate the variables for the root variable scope of the
+	 * process instance; it must be a JSON object, as variables will be mapped in a
+	 * key-value fashion. e.g. { "a": 1, "b": 2 } will create two variables, named "a" and
+	 * "b" respectively, with their associated values. [{ "a": 1, "b": 2 }] would not be a
+	 * valid argument, as the root of the JSON document is an array and not an object.
+	 */
+	variables: JSONDoc;
+	/** the id of the element in which scope the variables should be created;
+	 * leave empty to create the variables in the global scope of the process instance
+	 */
+	scopeId: string;
+}
+
+export interface TerminateInstruction {
+	/** the id of the element that should be terminated */
+	elementInstanceKey: string;
+}
+
+export interface ModifyProcessInstanceRequest {
+	/** the key of the process instance that should be modified */
+	processInstanceKey: string;
+	/** instructions describing which elements should be activated in which scopes,
+	 * and which variables should be created
+	 */
+	activateInstructions?: ActivateInstruction[];
+	/** instructions describing which elements should be terminated */
+	terminateInstructions?: TerminateInstruction[];
+}
+
+export interface ModifyProcessInstanceResponse {
+}
+
+
+export interface EvaluateDecisionRequest {
+	/** the unique key identifying the decision to be evaluated (e.g. returned
+	 * from a decision in the DeployResourceResponse message)
+	 */
+	decisionKey: string;
+	/** the ID of the decision to be evaluated */
+	decisionId: string;
+	/** JSON document that will instantiate the variables for the decision to be
+	 * 	evaluated; it must be a JSON object, as variables will be mapped in a
+	 *  key-value fashion, e.g. { "a": 1, "b": 2 } will create two variables,
+	 *  named "a" and "b" respectively, with their associated values.
+	 *  [{ "a": 1, "b": 2 }] would not be a valid argument, as the root of the
+	 *  JSON document is an array and not an object.
+	 */
+	variables: JSONDoc;
+}
+
+export interface EvaluateDecisionResponse {
+	/** the unique key identifying the decision which was evaluated (e.g. returned
+	 * from a decision in the DeployResourceResponse message)
+	 */
+	decisionKey: string;
+	/** the ID of the decision which was evaluated */
+	decisionId: string;
+	/** the name of the decision which was evaluated */
+	decisionName: string;
+	/** the version of the decision which was evaluated */
+	decisionVersion: number;
+	/** the ID of the decision requirements graph that the decision which was
+	 * evaluated is part of.
+	 */
+	decisionRequirementsId: string;
+	/** the unique key identifying the decision requirements graph that the
+	 * decision which was evaluated is part of.
+	 */
+	decisionRequirementsKey: string;
+	/** JSON document that will instantiate the result of the decision which was
+	 * evaluated; it will be a JSON object, as the result output will be mapped
+	 * in a key-value fashion, e.g. { "a": 1 }.
+	 */
+	decisionOutput: string;
+	/** a list of decisions that were evaluated within the requested decision evaluation */
+	evaluatedDecisions: EvaluatedDecision[];
+	/** an optional string indicating the ID of the decision which
+	 * failed during evaluation
+	 */
+	failedDecisionId: string;
+	/** an optional message describing why the decision which was evaluated failed */
+	failureMessage: string;
+}
+
+export interface EvaluatedDecision {
+	/** the unique key identifying the decision which was evaluated (e.g. returned
+	 * from a decision in the DeployResourceResponse message)
+	 */
+	decisionKey: string;
+	/** the ID of the decision which was evaluated */
+	decisionId: string;
+	/** the name of the decision which was evaluated */
+	decisionName: string;
+	/** the version of the decision which was evaluated */
+	decisionVersion: number;
+	/** the type of the decision which was evaluated */
+	decisionType: string;
+	/** JSON document that will instantiate the result of the decision which was
+	 * evaluated; it will be a JSON object, as the result output will be mapped
+	 * in a key-value fashion, e.g. { "a": 1 }.
+	 */
+	decisionOutput: string;
+	/** the decision rules that matched within this decision evaluation */
+	matchedRules: MatchedDecisionRule[];
+	/** the decision inputs that were evaluated within this decision evaluation */
+	evaluatedInputs: EvaluatedDecisionInput[];
+}
+
+export interface EvaluatedDecisionInput {
+	/** the id of the evaluated decision input */
+	inputId: string;
+	/** the name of the evaluated decision input */
+	inputName: string;
+	/** the value of the evaluated decision input */
+	inputValue: string;
+}
+
+export interface EvaluatedDecisionOutput {
+	/** the id of the evaluated decision output */
+	outputId: string;
+	/** the name of the evaluated decision output */
+	outputName: string;
+	/** the value of the evaluated decision output */
+	outputValue: string;
+}
+
+interface MatchedDecisionRule {
+	/** the id of the matched rule */
+	ruleId: string;
+	/** the index of the matched rule */
+	ruleIndex: number;
+	/** the evaluated decision outputs */
+	evaluatedOutputs: EvaluatedDecisionOutput[];
 }

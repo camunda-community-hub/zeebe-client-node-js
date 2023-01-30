@@ -20,6 +20,10 @@ import {
 	ResolveIncidentRequest,
 	DeployResourceRequest,
 	DeployResourceResponse,
+	EvaluateDecisionRequest,
+	EvaluateDecisionResponse,
+	ModifyProcessInstanceRequest,
+	ModifyProcessInstanceResponse,
 } from './interfaces-grpc-1.0'
 import { Loglevel, ZBCustomLogger } from './interfaces-published-contract'
 
@@ -401,6 +405,9 @@ export interface ZBGrpc extends GrpcClient {
 	deployResourceSync<T>(
 		resource: DeployResourceRequest
 	): Promise<DeployResourceResponse<T>>
+	evaluateDecisionSync(
+		evaluateDecisionRequest: EvaluateDecisionRequest
+	): Promise<EvaluateDecisionResponse>
 	failJobSync(failJobRequest: FailJobRequest): Promise<void>
 	createProcessInstanceSync(
 		createProcessInstanceRequest: CreateProcessInstanceRequest
@@ -411,6 +418,7 @@ export interface ZBGrpc extends GrpcClient {
 	cancelProcessInstanceSync(processInstanceKey: {
 		processInstanceKey: string | number
 	}): Promise<void>
+	modifyProcessInstance(request: ModifyProcessInstanceRequest): Promise<ModifyProcessInstanceResponse>
 	setVariablesSync(request: SetVariablesRequest): Promise<void>
 	resolveIncidentSync(
 		resolveIncidentRequest: ResolveIncidentRequest

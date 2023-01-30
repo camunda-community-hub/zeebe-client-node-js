@@ -892,6 +892,24 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 
 	/**
 	 *
+	 * NOT IMPLEMENTED YET
+	 * @description Evaluates a decision. The decision to evaluate can be specified either by using its unique key (as returned by DeployResource), or using the decision ID. When using the decision ID, the latest deployed version of the decision is used.
+	 * @example
+	 * ```
+	 * const zbc = new ZBClient()
+	 * zbc.evaluateDecision({
+	 *   decisionId: 'my-decision',
+	 *   variables: { season: "Fall" }
+	 * }).then(res => console.log(JSON.stringify(res, null, 2)))
+	 */
+	// public evaluateDecision(evaluateDecisionRequest: Grpc.EvaluateDecisionRequest): Promise<Grpc.EvaluateDecisionResponse> {
+	// 	return this.executeOperation('evaluateDecision', () =>
+	// 		this.grpc.evaluateDecisionSync({...evaluateDecisionRequest, variables:(JSON.stringify(evaluateDecisionRequest.variables) as unknown as ZB.JSONDoc)})
+	// 	)
+	// }
+
+	/**
+	 *
 	 * @description Fail a job. This is useful if you are using the decoupled completion pattern or building your own worker.
 	 * For the retry count, the current count is available in the job metadata.
 	 *
@@ -925,6 +943,21 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	public getServiceTypesFromBpmn(files: string | string[]) {
 		const fileArray = typeof files === 'string' ? [files] : files
 		return BpmnParser.getTaskTypes(BpmnParser.parseBpmn(fileArray))
+	}
+
+	/**
+	 *
+	 * @param modifyProcessInstanceRequest
+	 * @returns
+	 */
+	public modifyProcessInstance(modifyProcessInstanceRequest: Grpc.ModifyProcessInstanceRequest): Promise<Grpc.ModifyProcessInstanceResponse> {
+		return this.executeOperation('modifyProcessInstance', () => {
+			// We accept JSONDoc for the variableInstructions, but the actual gRPC call needs stringified JSON, so transform it with a mutation
+			modifyProcessInstanceRequest?.activateInstructions?.forEach(
+				a => a.variableInstructions.forEach(
+					v => (v.variables = JSON.stringify(v.variables) as any)))
+			return this.grpc.modifyProcessInstance({...modifyProcessInstanceRequest,})
+	})
 	}
 
 	/**

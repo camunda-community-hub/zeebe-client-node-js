@@ -33,3 +33,16 @@ test('Can start a process', async () => {
 	expect(wf.bpmnProcessId).toBe(processId)
 	expect(wf.processInstanceKey).toBeTruthy()
 })
+
+test('Can start a process at an arbitrary point', done => {
+	const res = zbc.deployProcess('./src/__tests__/testdata/Client-SkipFirstTask.bpmn')
+	const id = Math.random()
+	zbc.createWorker({
+		taskType: "second_service_task",
+		taskHandler: job => {
+			expect(job.variables.id).toBe(id)
+			return job.complete().then(() => done())
+		}
+	})
+	zbc.createProcessInstance('SkipFirstTask', { id })
+})
