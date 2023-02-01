@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       zeebe:
-        image: camunda/zeebe:8.0.6
+        image: camunda/zeebe:8.1.6
         ports:
           - 26500:26500
     steps:
