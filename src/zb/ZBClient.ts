@@ -615,49 +615,50 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	 *     customerId: 'uuid-3455'
 	 *   },
 	 *   version: 5 // optional, will use latest by default
-	 * })
+	 * }).then(res => console.log(JSON.stringify(res, null, 2)))
+	 *
+	 * 	zbc.createProcessInstance({
+	 *		bpmnProcessId: 'SkipFirstTask',
+	 *		variables: { id: random },
+	 *		startInstructions: [{elementId: 'second_service_task'}]
+	 *	}).then(res => (id = res.processInstanceKey))
 	 * ```
 	 */
-	public createProcessInstance<Variables = ZB.IProcessVariables>(
+	public createProcessInstance<Variables extends ZB.JSONDoc = ZB.IProcessVariables>(
 		bpmnProcessId: string,
 		variables: Variables
 	): Promise<Grpc.CreateProcessInstanceResponse>
-	public createProcessInstance<Variables = ZB.IProcessVariables>(config: {
-		bpmnProcessId: string
-		variables: Variables
-		version: number
-	}): Promise<Grpc.CreateProcessInstanceResponse>
-	public createProcessInstance<Variables = ZB.IProcessVariables>(
-		configOrbpmnProcessId: string | ZB.CreateProcessInstance<Variables>,
+	public createProcessInstance<Variables extends ZB.JSONDoc = ZB.IProcessVariables>(config:ZB.CreateProcessInstanceReq<Variables>): Promise<Grpc.CreateProcessInstanceResponse>
+	public createProcessInstance<Variables extends ZB.JSONDoc = ZB.IProcessVariables>(
+		configOrbpmnProcessId: string | ZB.CreateProcessInstanceReq<Variables>,
 		variables?: Variables
 	): Promise<Grpc.CreateProcessInstanceResponse> {
 		const isConfigObject = (
-			conf: ZB.CreateProcessInstance<Variables> | string
-		): conf is ZB.CreateProcessInstance<Variables> =>
+			conf: ZB.CreateProcessInstanceReq<Variables> | string
+		): conf is ZB.CreateProcessInstanceReq<Variables> =>
 			typeof conf === 'object'
 
-		const request = isConfigObject(configOrbpmnProcessId)
+		const request: ZB.CreateProcessInstanceReq<Variables> = isConfigObject(configOrbpmnProcessId)
 			? {
 					bpmnProcessId: configOrbpmnProcessId.bpmnProcessId,
 					variables: configOrbpmnProcessId.variables,
 					version: configOrbpmnProcessId.version || -1,
+					startInstructions: configOrbpmnProcessId.startInstructions || []
 			  }
 			: {
 					bpmnProcessId: configOrbpmnProcessId,
-					variables,
+					variables: variables ?? {} as Variables,
 					version: -1,
+					startInstructions: []
 			  }
 
-		const createProcessInstanceRequest: Grpc.CreateProcessInstanceRequest = {
-			bpmnProcessId: request.bpmnProcessId,
-			variables: (request.variables as unknown) as object,
-			version: request.version,
-		}
+		const createProcessInstanceRequest: Grpc.CreateProcessInstanceRequest = stringifyVariables({
+			...request,
+			startInstructions: request.startInstructions!
+		})
 
 		return this.executeOperation('createProcessInstance', () =>
-			this.grpc.createProcessInstanceSync(
-				stringifyVariables(createProcessInstanceRequest)
-			)
+			this.grpc.createProcessInstanceSync(createProcessInstanceRequest)
 		)
 	}
 
@@ -676,37 +677,37 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	 * ```
 	 */
 	public createProcessInstanceWithResult<
-		Variables = ZB.IInputVariables,
+		Variables extends ZB.JSONDoc = ZB.IInputVariables,
 		Result = ZB.IOutputVariables
 	>(
 		bpmnProcessId: string,
 		variables: Variables
 	): Promise<Grpc.CreateProcessInstanceWithResultResponse<Result>>
 	public createProcessInstanceWithResult<
-		Variables = ZB.IProcessVariables,
+		Variables extends ZB.JSONDoc = ZB.IProcessVariables,
 		Result = ZB.IOutputVariables
 	>(
-		config: ZB.CreateProcessInstanceWithResult<Variables>
+		config: ZB.CreateProcessInstanceWithResultReq<Variables>
 	): Promise<Grpc.CreateProcessInstanceWithResultResponse<Result>>
 	public createProcessInstanceWithResult<
-		Variables = ZB.IProcessVariables,
+		Variables extends ZB.JSONDoc = ZB.IProcessVariables,
 		Result = ZB.IOutputVariables
 	>(
 		bpmnProcessId: string,
 		variables: Variables
 	): Promise<Grpc.CreateProcessInstanceWithResultResponse<Result>>
 	public createProcessInstanceWithResult<
-		Variables = ZB.IProcessVariables,
+		Variables extends ZB.JSONDoc = ZB.IProcessVariables,
 		Result = ZB.IOutputVariables
 	>(
 		configOrBpmnProcessId:
-			| ZB.CreateProcessInstanceWithResult<Variables>
+			| ZB.CreateProcessInstanceWithResultReq<Variables>
 			| string,
 		variables?: Variables
 	) {
 		const isConfigObject = (
-			config: ZB.CreateProcessInstanceWithResult<Variables> | string
-		): config is ZB.CreateProcessInstanceWithResult<Variables> =>
+			config: ZB.CreateProcessInstanceWithResultReq<Variables> | string
+		): config is ZB.CreateProcessInstanceWithResultReq<Variables> =>
 			typeof config === 'object'
 
 		const request = isConfigObject(configOrBpmnProcessId)
@@ -725,10 +726,10 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 					version: -1,
 			  }
 
-		const createProcessInstanceRequest: Grpc.CreateProcessInstanceRequest = stringifyVariables(
+		const createProcessInstanceRequest: Grpc.CreateProcessInstanceBaseRequest = stringifyVariables(
 			{
 				bpmnProcessId: request.bpmnProcessId,
-				variables: (request.variables as unknown) as object,
+				variables: request.variables,
 				version: request.version,
 			}
 		)
@@ -892,6 +893,26 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 
 	/**
 	 *
+	 * NOT IMPLEMENTED YET
+	 * @description Evaluates a decision. The decision to evaluate can be specified either by using its unique key (as returned by DeployResource), or using the decision ID. When using the decision ID, the latest deployed version of the decision is used.
+	 * @example
+	 * ```
+	 * const zbc = new ZBClient()
+	 * zbc.evaluateDecision({
+	 *   decisionId: 'my-decision',
+	 *   variables: { season: "Fall" }
+	 * }).then(res => console.log(JSON.stringify(res, null, 2)))
+	 */
+	// public evaluateDecision(evaluateDecisionRequest: Grpc.EvaluateDecisionRequest): Promise<Grpc.EvaluateDecisionResponse> {
+	//  // the gRPC API call needs a JSON string, but we accept a JSON object, so we transform it here
+	//	const variables = JSON.stringify(evaluateDecisionRequest.variables) as unknown as ZB.JSONDoc
+	// 	return this.executeOperation('evaluateDecision', () =>
+	// 		this.grpc.evaluateDecisionSync({...evaluateDecisionRequest, variables})
+	// 	)
+	// }
+
+	/**
+	 *
 	 * @description Fail a job. This is useful if you are using the decoupled completion pattern or building your own worker.
 	 * For the retry count, the current count is available in the job metadata.
 	 *
@@ -925,6 +946,37 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	public getServiceTypesFromBpmn(files: string | string[]) {
 		const fileArray = typeof files === 'string' ? [files] : files
 		return BpmnParser.getTaskTypes(BpmnParser.parseBpmn(fileArray))
+	}
+
+	/**
+	 *
+	 * @description Modify a running process instance. This allows you to move the execution tokens, and change the variables. Added in 8.1.
+	 * See the [gRPC protocol documentation](https://docs.camunda.io/docs/apis-clients/grpc/#modifyprocessinstance-rpc).
+	 * @example
+	 * ```
+	 * zbc.createProcessInstance('SkipFirstTask', {}).then(res =>
+	 *	 zbc.modifyProcessInstance({
+	 *     processInstanceKey: res.processInstanceKey,
+	 *     activateInstructions: [{
+	 *       elementId: 'second_service_task',
+	 *       ancestorElementInstanceKey: "-1",
+	 *       variableInstructions: [{
+	 *         scopeId: '',
+	 *         variables: { second: 1}
+	 *       }]
+	 *     }]
+	 *	 })
+	 * )
+	 * ```
+	 */
+	public modifyProcessInstance(modifyProcessInstanceRequest: Grpc.ModifyProcessInstanceRequest): Promise<Grpc.ModifyProcessInstanceResponse> {
+		return this.executeOperation('modifyProcessInstance', () => {
+			// We accept JSONDoc for the variableInstructions, but the actual gRPC call needs stringified JSON, so transform it with a mutation
+			modifyProcessInstanceRequest?.activateInstructions?.forEach(
+				a => a.variableInstructions.forEach(
+					v => (v.variables = JSON.stringify(v.variables) as any)))
+			return this.grpc.modifyProcessInstanceSync({...modifyProcessInstanceRequest,})
+	})
 	}
 
 	/**

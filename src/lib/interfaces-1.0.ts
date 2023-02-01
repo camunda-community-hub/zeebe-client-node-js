@@ -20,6 +20,11 @@ import {
 	ResolveIncidentRequest,
 	DeployResourceRequest,
 	DeployResourceResponse,
+	EvaluateDecisionRequest,
+	EvaluateDecisionResponse,
+	ModifyProcessInstanceRequest,
+	ModifyProcessInstanceResponse,
+	ProcessInstanceCreationStartInstruction,
 } from './interfaces-grpc-1.0'
 import { Loglevel, ZBCustomLogger } from './interfaces-published-contract'
 
@@ -48,17 +53,34 @@ export interface DeployProcessBuffer {
 	name: string
 }
 
-export interface CreateProcessInstance<T> {
-	bpmnProcessId: string
-	variables: T
-	version: number
+export interface CreateProcessBaseRequest<V extends JSONDoc> {
+		/** the BPMN process ID of the process definition */
+		bpmnProcessId: string
+		/** the version of the process; if not specified it will use the latest version */
+		version?: number
+		/** JSON document that will instantiate the variables for the root variable scope of the
+		   * process instance.
+		 */
+		variables: V
 }
 
-export interface CreateProcessInstanceWithResult<T> {
-	bpmnProcessId: string
-	version?: number
-	variables: T
+export interface CreateProcessInstanceReq<V extends JSONDoc> extends CreateProcessBaseRequest<V> {
+	/**
+	 * List of start instructions. If empty (default) the process instance
+	 * will start at the start event. If non-empty the process instance will apply start
+	 * instructions after it has been created
+	 */
+	startInstructions?: ProcessInstanceCreationStartInstruction[]
+}
+
+export interface CreateProcessInstanceWithResultReq<T extends JSONDoc> extends CreateProcessBaseRequest<T> {
+	/** timeout in milliseconds. the request will be closed if the process is not completed before the requestTimeout.
+	 * if requestTimeout = 0, uses the generic requestTimeout configured in the gateway.
+	 */
 	requestTimeout?: number
+	/** list of names of variables to be included in `CreateProcessInstanceWithResultResponse.variables`.
+	 * If empty, all visible variables in the root scope will be returned.
+	 */
 	fetchVariables?: string[]
 }
 
@@ -383,7 +405,6 @@ export interface ZBWorkerConfig<
 	 */
 	jobBatchMinSize?: number
 }
-
 export interface ZBGrpc extends GrpcClient {
 	completeJobSync: any
 	activateJobsStream: any
@@ -401,6 +422,9 @@ export interface ZBGrpc extends GrpcClient {
 	deployResourceSync<T>(
 		resource: DeployResourceRequest
 	): Promise<DeployResourceResponse<T>>
+	evaluateDecisionSync(
+		evaluateDecisionRequest: EvaluateDecisionRequest
+	): Promise<EvaluateDecisionResponse>
 	failJobSync(failJobRequest: FailJobRequest): Promise<void>
 	createProcessInstanceSync(
 		createProcessInstanceRequest: CreateProcessInstanceRequest
@@ -411,6 +435,7 @@ export interface ZBGrpc extends GrpcClient {
 	cancelProcessInstanceSync(processInstanceKey: {
 		processInstanceKey: string | number
 	}): Promise<void>
+	modifyProcessInstanceSync(request: ModifyProcessInstanceRequest): Promise<ModifyProcessInstanceResponse>
 	setVariablesSync(request: SetVariablesRequest): Promise<void>
 	resolveIncidentSync(
 		resolveIncidentRequest: ResolveIncidentRequest
