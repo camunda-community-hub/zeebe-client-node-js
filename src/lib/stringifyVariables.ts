@@ -19,8 +19,8 @@ export function parseVariablesAndCustomHeadersToJSON<Variables, CustomHeaders>(
 }
 
 export function stringifyVariables<
-	T extends { variables: { [key: string]: any } }
->(request: T): T {
+	K, T extends { variables: K extends { [key: string]: any } ? K : K }, V extends T & {variables: string}
+>(request: T): V {
 	const variables = request.variables || {}
 	const variablesString = JSON.stringify(variables)
 	return (Object as any).assign({}, request, { variables: variablesString })

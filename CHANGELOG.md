@@ -1,3 +1,12 @@
+# Version 8.1.5
+
+## New Features
+
+_New shiny stuff._
+
+-   The ZBClient now implements the `modifyProcessInstance` API, introduced in Zeebe 8.1. This allows you to modify a running process instance, moving execution tokens and changing variables. This can be used, for example, to migrate a running process instance to a new version of the process model. See [#294](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/294) for more details.
+-   The ZBClient `createProcessInstance` method now allows you to specify `startInstructions` (introduced in Zeebe 8.1), allowing you to start a new process instance from an arbitrary point. Along with `modifyProcessInstance`, this is a powerful primitive for building migration functionality. See [[#295](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/295)] for more details.
+
 # Version 8.1.4
 
 ## Fixes

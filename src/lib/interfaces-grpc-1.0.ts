@@ -84,7 +84,7 @@ export interface ActivateJobsResponse {
 	jobs: ActivatedJob[]
 }
 
-export interface CreateProcessInstanceRequest<Variables = IProcessVariables> {
+export interface CreateProcessInstanceBaseRequest {
 	/** the BPMN process ID of the process definition */
 	bpmnProcessId: string
 	/** the version of the process; if not specified it will use the latest version */
@@ -92,13 +92,16 @@ export interface CreateProcessInstanceRequest<Variables = IProcessVariables> {
 	/** JSON document that will instantiate the variables for the root variable scope of the
   	 * process instance.
 	 */
-	variables: Variables
+	variables: string
+}
+
+export interface CreateProcessInstanceRequest extends CreateProcessInstanceBaseRequest {
 	/**
 	 * List of start instructions. If empty (default) the process instance
 	 * will start at the start event. If non-empty the process instance will apply start
 	 * instructions after it has been created
 	 */
-	startInstructions?: ProcessInstanceCreationStartInstruction[]
+	startInstructions: ProcessInstanceCreationStartInstruction[]
 }
 
 export interface ProcessInstanceCreationStartInstruction {
@@ -136,13 +139,14 @@ export interface CreateProcessInstanceResponse {
 }
 
 export interface CreateProcessInstanceWithResultRequest {
-	request: CreateProcessInstanceRequest
-	// timeout in milliseconds. the request will be closed if the process is not completed
-	// before the requestTimeout.
-	// if requestTimeout = 0, uses the generic requestTimeout configured in the gateway.
+	request: CreateProcessInstanceBaseRequest
+	/** timeout in milliseconds. the request will be closed if the process is not completed before the requestTimeout.
+	 * if requestTimeout = 0, uses the generic requestTimeout configured in the gateway.
+	 */
 	requestTimeout: number
-	// list of names of variables to be included in `CreateProcessInstanceWithResultResponse.variables`
-	// if empty, all visible variables in the root scope will be returned.
+	/** list of names of variables to be included in `CreateProcessInstanceWithResultResponse.variables`.
+	 * If empty, all visible variables in the root scope will be returned.
+	 */
 	fetchVariables?: string[]
 }
 
