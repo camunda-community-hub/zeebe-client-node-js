@@ -1,4 +1,4 @@
-name: Tag and publish a new version
+name: Build and publish docs
 
 on:
   workflow_dispatch:
@@ -56,13 +56,7 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          npm version ${{ inputs.version }} -m "Publish v%s"
-      - name: Publish to NPM
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --access=public
-      - name: Push changes
-        run: git push --follow-tags
+          npm version ${{ inputs.version }} -m "Publish docs v%s"
 
       - name: Build Docs
         run: npm run docs
