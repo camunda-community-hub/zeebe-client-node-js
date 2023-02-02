@@ -12,9 +12,9 @@
 
 This is a Node.js gRPC client for [Zeebe](https://zeebe.io), the workflow engine in [Camunda Platform 8](https://camunda.com/platform/). It is written in TypeScript and transpiled to JavaScript in the `dist` directory.
 
-Comprehensive API documentation is available [online](https://github.com/zeebe-io/zeebe-client-node-js).
+Comprehensive API documentation is available [online](https://camunda-community-hub.github.io/zeebe-client-node-js/).
 
-See [CHANGELOG.md](./CHANGELOG.md) to see what has changed with each release.
+See [CHANGELOG.md](https://github.com/camunda-community-hub/zeebe-client-node-js/blob/master/CHANGELOG.md) to see what has changed with each release.
 
 Get a hosted instance of Zeebe on [Camunda Cloud](https://camunda.io).
 
