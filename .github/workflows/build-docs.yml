@@ -56,7 +56,6 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          npm version ${{ inputs.version }} -m "Publish docs v%s"
 
       - name: Build Docs
         run: npm run docs
