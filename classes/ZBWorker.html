@@ -1,0 +1,755 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>ZBWorker | zeebe-node</title>
+	<meta name="description" content="Documentation for zeebe-node">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../assets/css/main.css">
+	<script async src="../assets/js/search.js" id="search-script"></script>
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.json" data-base="..">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="../index.html" class="title">zeebe-node</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+							<input type="checkbox" id="tsd-filter-externals" checked />
+							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="../modules.html">zeebe-node</a>
+				</li>
+				<li>
+					<a href="ZBWorker.html">ZBWorker</a>
+				</li>
+			</ul>
+			<h1>Class ZBWorker&lt;WorkerInputVariables, CustomHeaderShape, WorkerOutputVariables&gt;</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-type-parameters">
+				<h3>Type parameters</h3>
+				<ul class="tsd-type-parameters">
+					<li>
+						<h4>WorkerInputVariables</h4>
+					</li>
+					<li>
+						<h4>CustomHeaderShape</h4>
+					</li>
+					<li>
+						<h4>WorkerOutputVariables</h4>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel tsd-hierarchy">
+				<h3>Hierarchy</h3>
+				<ul class="tsd-hierarchy">
+					<li>
+						<span class="tsd-signature-type">ZBWorkerBase</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">WorkerInputVariables</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">CustomHeaderShape</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">WorkerOutputVariables</span><span class="tsd-signature-symbol">&gt;</span>
+						<ul class="tsd-hierarchy">
+							<li>
+								<span class="target">ZBWorker</span>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel-group tsd-index-group">
+				<h2>Index</h2>
+				<section class="tsd-panel tsd-index-panel">
+					<div class="tsd-index-content">
+						<section class="tsd-index-section ">
+							<h3>Constructors</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-constructor tsd-parent-kind-class tsd-has-type-parameter tsd-is-overwrite"><a href="ZBWorker.html#constructor" class="tsd-kind-icon">constructor</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section tsd-is-inherited">
+							<h3>Properties</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="ZBWorker.html#activeJobs" class="tsd-kind-icon">active<wbr>Jobs</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected"><a href="ZBWorker.html#cancelWorkflowOnException" class="tsd-kind-icon">cancel<wbr>Workflow<wbr>OnException</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="ZBWorker.html#grpcClient" class="tsd-kind-icon">grpc<wbr>Client</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="ZBWorker.html#jobBatchMinSize" class="tsd-kind-icon">job<wbr>Batch<wbr>Min<wbr>Size</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected"><a href="ZBWorker.html#logger" class="tsd-kind-icon">logger</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="ZBWorker.html#maxJobsToActivate" class="tsd-kind-icon">max<wbr>Jobs<wbr>ToActivate</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="ZBWorker.html#pollCount" class="tsd-kind-icon">poll<wbr>Count</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected"><a href="ZBWorker.html#taskHandler" class="tsd-kind-icon">task<wbr>Handler</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="ZBWorker.html#taskType" class="tsd-kind-icon">task<wbr>Type</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="ZBWorker.html#timeout" class="tsd-kind-icon">timeout</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected"><a href="ZBWorker.html#zbClient" class="tsd-kind-icon">zb<wbr>Client</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
+							<h3>Methods</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="ZBWorker.html#close" class="tsd-kind-icon">close</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="ZBWorker.html#debug" class="tsd-kind-icon">debug</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-protected"><a href="ZBWorker.html#drainOne" class="tsd-kind-icon">drain<wbr>One</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited"><a href="ZBWorker.html#emit" class="tsd-kind-icon">emit</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="ZBWorker.html#error" class="tsd-kind-icon">error</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a href="ZBWorker.html#handleJob" class="tsd-kind-icon">handle<wbr>Job</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-protected"><a href="ZBWorker.html#handleJobs" class="tsd-kind-icon">handle<wbr>Jobs</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="ZBWorker.html#log" class="tsd-kind-icon">log</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited tsd-is-protected"><a href="ZBWorker.html#makeCompleteHandlers" class="tsd-kind-icon">make<wbr>Complete<wbr>Handlers</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited"><a href="ZBWorker.html#off" class="tsd-kind-icon">off</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited"><a href="ZBWorker.html#on" class="tsd-kind-icon">on</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="ZBWorker.html#removeAllListeners" class="tsd-kind-icon">remove<wbr>All<wbr>Listeners</a></li>
+							</ul>
+						</section>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Constructors</h2>
+				<section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class tsd-has-type-parameter tsd-is-overwrite">
+					<a name="constructor" class="tsd-anchor"></a>
+					<h3>constructor</h3>
+					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class tsd-has-type-parameter tsd-is-overwrite">
+						<li class="tsd-signature tsd-kind-icon">new ZBWorker&lt;WorkerInputVariables, CustomHeaderShape, WorkerOutputVariables&gt;<span class="tsd-signature-symbol">(</span>config<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ZBWorkerConstructorConfig</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">WorkerInputVariables</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">CustomHeaderShape</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">WorkerOutputVariables</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="ZBWorker.html" class="tsd-signature-type" data-tsd-kind="Class">ZBWorker</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">WorkerInputVariables</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">CustomHeaderShape</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">WorkerOutputVariables</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Overrides ZBWorkerBase&lt;WorkerInputVariables,CustomHeaderShape,WorkerOutputVariables&gt;.constructor</p>
+								<ul>
+									<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/cc68405/src/zb/ZBWorker.ts#L14">src/zb/ZBWorker.ts:14</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>WorkerInputVariables</h4>
+								</li>
+								<li>
+									<h4>CustomHeaderShape</h4>
+								</li>
+								<li>
+									<h4>WorkerOutputVariables</h4>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>config: <span class="tsd-signature-type">ZBWorkerConstructorConfig</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">WorkerInputVariables</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">CustomHeaderShape</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">WorkerOutputVariables</span><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="ZBWorker.html" class="tsd-signature-type" data-tsd-kind="Class">ZBWorker</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">WorkerInputVariables</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">CustomHeaderShape</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">WorkerOutputVariables</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group tsd-is-inherited">
+				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="activeJobs" class="tsd-anchor"></a>
+					<h3>active<wbr>Jobs</h3>
+					<div class="tsd-signature tsd-kind-icon">active<wbr>Jobs<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> = 0</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from ZBWorkerBase.activeJobs</p>
+						<ul>
+							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/cc68405/src/lib/ZBWorkerBase.ts#L72">src/lib/ZBWorkerBase.ts:72</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
+					<a name="cancelWorkflowOnException" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> cancel<wbr>Workflow<wbr>OnException</h3>
+					<div class="tsd-signature tsd-kind-icon">cancel<wbr>Workflow<wbr>OnException<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> = false</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from ZBWorkerBase.cancelWorkflowOnException</p>
+						<ul>
+							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/cc68405/src/lib/ZBWorkerBase.ts#L92">src/lib/ZBWorkerBase.ts:92</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="grpcClient" class="tsd-anchor"></a>
+					<h3>grpc<wbr>Client</h3>
+					<div class="tsd-signature tsd-kind-icon">grpc<wbr>Client<span class="tsd-signature-symbol">:</span> <a href="../interfaces/ZBGrpc.html" class="tsd-signature-type" data-tsd-kind="Interface">ZBGrpc</a></div>
+					<aside class="tsd-sources">
+						<p>Inherited from ZBWorkerBase.grpcClient</p>
+						<ul>
+							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/cc68405/src/lib/ZBWorkerBase.ts#L73">src/lib/ZBWorkerBase.ts:73</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="jobBatchMinSize" class="tsd-anchor"></a>
+					<h3>job<wbr>Batch<wbr>Min<wbr>Size</h3>
+					<div class="tsd-signature tsd-kind-icon">job<wbr>Batch<wbr>Min<wbr>Size<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from ZBWorkerBase.jobBatchMinSize</p>
+						<ul>
+							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/cc68405/src/lib/ZBWorkerBase.ts#L75">src/lib/ZBWorkerBase.ts:75</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
+					<a name="logger" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> logger</h3>
+					<div class="tsd-signature tsd-kind-icon">logger<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">StatefulLogInterceptor</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from ZBWorkerBase.logger</p>
+						<ul>
+							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/cc68405/src/lib/ZBWorkerBase.ts#L80">src/lib/ZBWorkerBase.ts:80</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="maxJobsToActivate" class="tsd-anchor"></a>
+					<h3>max<wbr>Jobs<wbr>ToActivate</h3>
+					<div class="tsd-signature tsd-kind-icon">max<wbr>Jobs<wbr>ToActivate<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from ZBWorkerBase.maxJobsToActivate</p>
+						<ul>
+							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/cc68405/src/lib/ZBWorkerBase.ts#L74">src/lib/ZBWorkerBase.ts:74</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="pollCount" class="tsd-anchor"></a>
+					<h3>poll<wbr>Count</h3>
+					<div class="tsd-signature tsd-kind-icon">poll<wbr>Count<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> = 0</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from ZBWorkerBase.pollCount</p>
+						<ul>
+							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/cc68405/src/lib/ZBWorkerBase.ts#L78">src/lib/ZBWorkerBase.ts:78</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
+					<a name="taskHandler" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> task<wbr>Handler</h3>
+					<div class="tsd-signature tsd-kind-icon">task<wbr>Handler<span class="tsd-signature-symbol">:</span> <a href="../modules.html#ZBBatchWorkerTaskHandler" class="tsd-signature-type" data-tsd-kind="Type alias">ZBBatchWorkerTaskHandler</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">WorkerInputVariables</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">CustomHeaderShape</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">WorkerOutputVariables</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><a href="../modules.html#ZBWorkerTaskHandler" class="tsd-signature-type" data-tsd-kind="Type alias">ZBWorkerTaskHandler</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">WorkerInputVariables</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">CustomHeaderShape</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">WorkerOutputVariables</span><span class="tsd-signature-symbol">&gt;</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from ZBWorkerBase.taskHandler</p>
+						<ul>
+							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/cc68405/src/lib/ZBWorkerBase.ts#L81">src/lib/ZBWorkerBase.ts:81</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="taskType" class="tsd-anchor"></a>
+					<h3>task<wbr>Type</h3>
+					<div class="tsd-signature tsd-kind-icon">task<wbr>Type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from ZBWorkerBase.taskType</p>
+						<ul>
+							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/cc68405/src/lib/ZBWorkerBase.ts#L76">src/lib/ZBWorkerBase.ts:76</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="timeout" class="tsd-anchor"></a>
+					<h3>timeout</h3>
+					<div class="tsd-signature tsd-kind-icon">timeout<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">MaybeTimeDuration</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from ZBWorkerBase.timeout</p>
+						<ul>
+							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/cc68405/src/lib/ZBWorkerBase.ts#L77">src/lib/ZBWorkerBase.ts:77</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
+					<a name="zbClient" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> zb<wbr>Client</h3>
+					<div class="tsd-signature tsd-kind-icon">zb<wbr>Client<span class="tsd-signature-symbol">:</span> <a href="ZBClient.html" class="tsd-signature-type" data-tsd-kind="Class">ZBClient</a></div>
+					<aside class="tsd-sources">
+						<p>Inherited from ZBWorkerBase.zbClient</p>
+						<ul>
+							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/cc68405/src/lib/ZBWorkerBase.ts#L79">src/lib/ZBWorkerBase.ts:79</a></li>
+						</ul>
+					</aside>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Methods</h2>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<a name="close" class="tsd-anchor"></a>
+					<h3>close</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">close<span class="tsd-signature-symbol">(</span>timeout<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from ZBWorkerBase.close</p>
+								<ul>
+									<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/cc68405/src/lib/ZBWorkerBase.ts#L206">src/lib/ZBWorkerBase.ts:206</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Returns a promise that the worker has stopped accepting tasks and
+									has drained all current active tasks. Will reject if you try to call it more than once.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> timeout: <span class="tsd-signature-type">number</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<a name="debug" class="tsd-anchor"></a>
+					<h3>debug</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">debug<span class="tsd-signature-symbol">(</span>msg<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from ZBWorkerBase.debug</p>
+								<ul>
+									<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/cc68405/src/lib/ZBWorkerBase.ts#L239">src/lib/ZBWorkerBase.ts:239</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>msg: <span class="tsd-signature-type">any</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
+					<a name="drainOne" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> drain<wbr>One</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
+						<li class="tsd-signature tsd-kind-icon">drain<wbr>One<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from ZBWorkerBase.drainOne</p>
+								<ul>
+									<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/cc68405/src/lib/ZBWorkerBase.ts#L247">src/lib/ZBWorkerBase.ts:247</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+					<a name="emit" class="tsd-anchor"></a>
+					<h3>emit</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">emit&lt;K&gt;<span class="tsd-signature-symbol">(</span>eventName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">K</span>, params<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-symbol">{ </span>close<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">&quot;close&quot;</span><span class="tsd-signature-symbol">; </span>connectionError<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">&quot;connectionError&quot;</span><span class="tsd-signature-symbol">; </span>ready<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">&quot;ready&quot;</span><span class="tsd-signature-symbol">; </span>unknown<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">&quot;unknown&quot;</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">K</span><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from ZBWorkerBase.emit</p>
+								<ul>
+									<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/cc68405/src/lib/TypedEmitter.ts#L25">src/lib/TypedEmitter.ts:25</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>K<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">EventKey</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">{ </span>close<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">&quot;close&quot;</span><span class="tsd-signature-symbol">; </span>connectionError<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">&quot;connectionError&quot;</span><span class="tsd-signature-symbol">; </span>ready<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">&quot;ready&quot;</span><span class="tsd-signature-symbol">; </span>unknown<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">&quot;unknown&quot;</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">&gt;</span></h4>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>eventName: <span class="tsd-signature-type">K</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> params: <span class="tsd-signature-symbol">{ </span>close<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">&quot;close&quot;</span><span class="tsd-signature-symbol">; </span>connectionError<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">&quot;connectionError&quot;</span><span class="tsd-signature-symbol">; </span>ready<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">&quot;ready&quot;</span><span class="tsd-signature-symbol">; </span>unknown<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">&quot;unknown&quot;</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">K</span><span class="tsd-signature-symbol">]</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<a name="error" class="tsd-anchor"></a>
+					<h3>error</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">error<span class="tsd-signature-symbol">(</span>msg<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from ZBWorkerBase.error</p>
+								<ul>
+									<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/cc68405/src/lib/ZBWorkerBase.ts#L243">src/lib/ZBWorkerBase.ts:243</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>msg: <span class="tsd-signature-type">any</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected">
+					<a name="handleJob" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> handle<wbr>Job</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
+						<li class="tsd-signature tsd-kind-icon">handle<wbr>Job<span class="tsd-signature-symbol">(</span>job<span class="tsd-signature-symbol">: </span><a href="../interfaces/Job.html" class="tsd-signature-type" data-tsd-kind="Interface">Job</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">WorkerInputVariables</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">CustomHeaderShape</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/cc68405/src/zb/ZBWorker.ts#L31">src/zb/ZBWorker.ts:31</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>job: <a href="../interfaces/Job.html" class="tsd-signature-type" data-tsd-kind="Interface">Job</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">WorkerInputVariables</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">CustomHeaderShape</span><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-protected">
+					<a name="handleJobs" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> handle<wbr>Jobs</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-protected">
+						<li class="tsd-signature tsd-kind-icon">handle<wbr>Jobs<span class="tsd-signature-symbol">(</span>jobs<span class="tsd-signature-symbol">: </span><a href="../interfaces/Job.html" class="tsd-signature-type" data-tsd-kind="Interface">Job</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">WorkerInputVariables</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">CustomHeaderShape</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Overrides ZBWorkerBase.handleJobs</p>
+								<ul>
+									<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/cc68405/src/zb/ZBWorker.ts#L24">src/zb/ZBWorker.ts:24</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>jobs: <a href="../interfaces/Job.html" class="tsd-signature-type" data-tsd-kind="Interface">Job</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">WorkerInputVariables</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">CustomHeaderShape</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<a name="log" class="tsd-anchor"></a>
+					<h3>log</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">log<span class="tsd-signature-symbol">(</span>msg<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from ZBWorkerBase.log</p>
+								<ul>
+									<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/cc68405/src/lib/ZBWorkerBase.ts#L235">src/lib/ZBWorkerBase.ts:235</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>msg: <span class="tsd-signature-type">any</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited tsd-is-protected">
+					<a name="makeCompleteHandlers" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> make<wbr>Complete<wbr>Handlers</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited tsd-is-protected">
+						<li class="tsd-signature tsd-kind-icon">make<wbr>Complete<wbr>Handlers&lt;T&gt;<span class="tsd-signature-symbol">(</span>thisJob<span class="tsd-signature-symbol">: </span><a href="../interfaces/Job.html" class="tsd-signature-type" data-tsd-kind="Interface">Job</a><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/IInputVariables.html" class="tsd-signature-type" data-tsd-kind="Interface">IInputVariables</a><span class="tsd-signature-symbol">, </span><a href="../interfaces/ICustomHeaders.html" class="tsd-signature-type" data-tsd-kind="Interface">ICustomHeaders</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/JobCompletionInterface.html" class="tsd-signature-type" data-tsd-kind="Interface">JobCompletionInterface</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from ZBWorkerBase.makeCompleteHandlers</p>
+								<ul>
+									<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/cc68405/src/lib/ZBWorkerBase.ts#L275">src/lib/ZBWorkerBase.ts:275</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>T</h4>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>thisJob: <a href="../interfaces/Job.html" class="tsd-signature-type" data-tsd-kind="Interface">Job</a><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/IInputVariables.html" class="tsd-signature-type" data-tsd-kind="Interface">IInputVariables</a><span class="tsd-signature-symbol">, </span><a href="../interfaces/ICustomHeaders.html" class="tsd-signature-type" data-tsd-kind="Interface">ICustomHeaders</a><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../interfaces/JobCompletionInterface.html" class="tsd-signature-type" data-tsd-kind="Interface">JobCompletionInterface</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+					<a name="off" class="tsd-anchor"></a>
+					<h3>off</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">off&lt;K&gt;<span class="tsd-signature-symbol">(</span>eventName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">K</span>, fn<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">EventReceiver</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from ZBWorkerBase.off</p>
+								<ul>
+									<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/cc68405/src/lib/TypedEmitter.ts#L21">src/lib/TypedEmitter.ts:21</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>K<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">EventKey</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">{ </span>close<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">&quot;close&quot;</span><span class="tsd-signature-symbol">; </span>connectionError<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">&quot;connectionError&quot;</span><span class="tsd-signature-symbol">; </span>ready<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">&quot;ready&quot;</span><span class="tsd-signature-symbol">; </span>unknown<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">&quot;unknown&quot;</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">&gt;</span></h4>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>eventName: <span class="tsd-signature-type">K</span></h5>
+								</li>
+								<li>
+									<h5>fn: <span class="tsd-signature-type">EventReceiver</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+					<a name="on" class="tsd-anchor"></a>
+					<h3>on</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">on&lt;K&gt;<span class="tsd-signature-symbol">(</span>eventName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">K</span>, fn<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">EventReceiver</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="ZBWorker.html" class="tsd-signature-type" data-tsd-kind="Class">ZBWorker</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">WorkerInputVariables</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">CustomHeaderShape</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">WorkerOutputVariables</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from ZBWorkerBase.on</p>
+								<ul>
+									<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/cc68405/src/lib/TypedEmitter.ts#L16">src/lib/TypedEmitter.ts:16</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-type-parameters-title">Type parameters</h4>
+							<ul class="tsd-type-parameters">
+								<li>
+									<h4>K<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">EventKey</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">{ </span>close<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">&quot;close&quot;</span><span class="tsd-signature-symbol">; </span>connectionError<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">&quot;connectionError&quot;</span><span class="tsd-signature-symbol">; </span>ready<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">&quot;ready&quot;</span><span class="tsd-signature-symbol">; </span>unknown<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">&quot;unknown&quot;</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">&gt;</span></h4>
+								</li>
+							</ul>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>eventName: <span class="tsd-signature-type">K</span></h5>
+								</li>
+								<li>
+									<h5>fn: <span class="tsd-signature-type">EventReceiver</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="ZBWorker.html" class="tsd-signature-type" data-tsd-kind="Class">ZBWorker</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">WorkerInputVariables</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">CustomHeaderShape</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">WorkerOutputVariables</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<a name="removeAllListeners" class="tsd-anchor"></a>
+					<h3>remove<wbr>All<wbr>Listeners</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon">remove<wbr>All<wbr>Listeners<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from ZBWorkerBase.removeAllListeners</p>
+								<ul>
+									<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/cc68405/src/lib/TypedEmitter.ts#L29">src/lib/TypedEmitter.ts:29</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+			</section>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class=" ">
+						<a href="../modules.html">Exports</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+				</ul>
+				<ul class="current">
+					<li class="current tsd-kind-class tsd-has-type-parameter">
+						<a href="ZBWorker.html" class="tsd-kind-icon">ZBWorker</a>
+						<ul>
+							<li class=" tsd-kind-constructor tsd-parent-kind-class tsd-has-type-parameter tsd-is-overwrite">
+								<a href="ZBWorker.html#constructor" class="tsd-kind-icon">constructor</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="ZBWorker.html#activeJobs" class="tsd-kind-icon">active<wbr>Jobs</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
+								<a href="ZBWorker.html#cancelWorkflowOnException" class="tsd-kind-icon">cancel<wbr>Workflow<wbr>OnException</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="ZBWorker.html#grpcClient" class="tsd-kind-icon">grpc<wbr>Client</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="ZBWorker.html#jobBatchMinSize" class="tsd-kind-icon">job<wbr>Batch<wbr>Min<wbr>Size</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
+								<a href="ZBWorker.html#logger" class="tsd-kind-icon">logger</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="ZBWorker.html#maxJobsToActivate" class="tsd-kind-icon">max<wbr>Jobs<wbr>ToActivate</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="ZBWorker.html#pollCount" class="tsd-kind-icon">poll<wbr>Count</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
+								<a href="ZBWorker.html#taskHandler" class="tsd-kind-icon">task<wbr>Handler</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="ZBWorker.html#taskType" class="tsd-kind-icon">task<wbr>Type</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="ZBWorker.html#timeout" class="tsd-kind-icon">timeout</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
+								<a href="ZBWorker.html#zbClient" class="tsd-kind-icon">zb<wbr>Client</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+								<a href="ZBWorker.html#close" class="tsd-kind-icon">close</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+								<a href="ZBWorker.html#debug" class="tsd-kind-icon">debug</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
+								<a href="ZBWorker.html#drainOne" class="tsd-kind-icon">drain<wbr>One</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+								<a href="ZBWorker.html#emit" class="tsd-kind-icon">emit</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+								<a href="ZBWorker.html#error" class="tsd-kind-icon">error</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-protected">
+								<a href="ZBWorker.html#handleJob" class="tsd-kind-icon">handle<wbr>Job</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-protected">
+								<a href="ZBWorker.html#handleJobs" class="tsd-kind-icon">handle<wbr>Jobs</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+								<a href="ZBWorker.html#log" class="tsd-kind-icon">log</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited tsd-is-protected">
+								<a href="ZBWorker.html#makeCompleteHandlers" class="tsd-kind-icon">make<wbr>Complete<wbr>Handlers</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+								<a href="ZBWorker.html#off" class="tsd-kind-icon">off</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-has-type-parameter tsd-is-inherited">
+								<a href="ZBWorker.html#on" class="tsd-kind-icon">on</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+								<a href="ZBWorker.html#removeAllListeners" class="tsd-kind-icon">remove<wbr>All<wbr>Listeners</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<ul class="after-current">
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>
