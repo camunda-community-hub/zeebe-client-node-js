@@ -1,4 +1,4 @@
-import parser = require('fast-xml-parser')
+import { XMLParser, XMLValidator as validator } from 'fast-xml-parser'
 import fs = require('fs')
 import * as path from 'path'
 
@@ -36,8 +36,8 @@ export class BpmnParser {
 		}
 		return filenames.map(filename => {
 			const xmlData = fs.readFileSync(filename).toString()
-			if (parser.validate(xmlData)) {
-				return parser.parse(xmlData, BpmnParser.parserOptions)
+			if (validator.validate(xmlData)) {
+				return BpmnParser.parser.parse(xmlData)
 			}
 			return {}
 		})
@@ -46,8 +46,8 @@ export class BpmnParser {
 	// @ TODO: examine Camunda's parse BPMN code
 	// https://github.com/camunda/camunda-bpmn-model/tree/master/src/main/java/org/camunda/bpm/model/bpmn
 	public static getProcessId(bpmnString: string) {
-		const jsonObj = parser.parse(bpmnString, BpmnParser.parserOptions)
-		return jsonObj?.['bpmn:definitions']?.['bpmn:process']?.attr?.['@_id']
+		const jsonObj = BpmnParser.parser.parse(bpmnString)
+		return jsonObj?.['bpmn:definitions']?.['bpmn:process']?.['@_id']
 	}
 
 	// Produce a starter worker file from a BPMN file
@@ -124,14 +124,14 @@ ${workers}`
 								t['bpmn:extensionElements']['zeebe:taskHeaders']
 							const customHeaderNames = taskHeaders
 								? toArray(taskHeaders['zeebe:header']).map(
-										h => h.attr['@_key']
+										h => h['@_key']
 								  )
 								: undefined
 
 							const tasktype =
 								t['bpmn:extensionElements'][
 									'zeebe:taskDefinition'
-								].attr['@_type']
+								]['@_type']
 							const headerInterfaceName = getSafeName(tasktype)
 							if (customHeaderNames) {
 								const headerInterfaceDfnBody = customHeaderNames
@@ -256,6 +256,8 @@ ${messageEnumMembers}
 		trimValues: true,
 	}
 
+	private static parser = new XMLParser(BpmnParser.parserOptions)
+
 	private static mergeDedupeAndSort(arr) {
 		return [...new Set([].concat(...arr).sort())]
 	}
@@ -283,7 +285,7 @@ ${messageEnumMembers}
 								t =>
 									t['bpmn:extensionElements'][
 										'zeebe:taskDefinition'
-									].attr['@_type']
+									]['@_type']
 							)
 						)
 					} else {
@@ -314,7 +316,7 @@ ${messageEnumMembers}
 						const messages = toArray(obj[k])
 
 						messageNames = messageNames.concat(
-							messages.map(m => m.attr['@_name'])
+							messages.map(m => m['@_name'])
 						)
 					} else {
 						// recursive call to scan property
