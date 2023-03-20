@@ -1,3 +1,11 @@
+# Version 8.1.6
+
+## Chores
+
+_Things that shouldn't have a visible impact._
+
+-   Bump `fast-xml-parser` to 4.1.3 to address [SNYK-JS-FASTXMLPARSER-3325616](https://security.snyk.io/vuln/SNYK-JS-FASTXMLPARSER-3325616). Thanks to [@barmac](https://github.com/barmac) for the patch.
+
 # Version 8.1.5
 
 ## New Features
