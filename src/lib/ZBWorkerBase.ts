@@ -8,6 +8,7 @@ import { parseVariablesAndCustomHeadersToJSON } from '../lib'
 import * as ZB from '../lib/interfaces-1.0'
 import { StatefulLogInterceptor } from '../lib/StatefulLogInterceptor'
 import { ConnectionStatusEvent, ZBClient } from '../zb/ZBClient'
+import { GrpcError } from './GrpcError'
 import {
 	ActivateJobsRequest,
 	ActivateJobsResponse,
@@ -479,7 +480,8 @@ You should call only one job action method in the worker handler. This is a bug 
 						1000} seconds`,
 					error
 				)
-				if (error.code === 8) {
+				// Backoff on
+				if (error.code === GrpcError.RESOURCE_EXHAUSTED || error.code === GrpcError.INTERNAL) {
 					setTimeout(
 						() => this.handleStreamEnd(id),
 						1000 * 2 ** this.backPressureRetryCount++

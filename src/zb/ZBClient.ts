@@ -35,6 +35,7 @@ import { decodeCreateZBWorkerSig } from '../lib/ZBWorkerSignature'
 import { ZBBatchWorker } from './ZBBatchWorker'
 import { ZBWorker } from './ZBWorker'
 import { readFileSync } from 'fs'
+import { GrpcError } from '../lib/GrpcError'
 
 const idColors = [
 	chalk.yellow,
@@ -154,15 +155,6 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 
 		this.gatewayAddress = `${this.options.hostname}:${this.options.port}`
 
-		this.oAuth = this.options.oAuth
-			? new OAuthProvider(
-					this.options.oAuth as OAuthProviderConfig & {
-						customRootCert: Buffer
-						cacheDir: string
-						cacheOnDisk: boolean
-					}
-			  )
-			: undefined
 		this.useTLS =
 			this.options.useTLS === true ||
 			(!!this.options.oAuth && this.options.useTLS !== false)
@@ -190,6 +182,17 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 				stdout: this.stdout,
 			},
 		})
+
+		this.oAuth = this.options.oAuth
+		? new OAuthProvider(
+				this.options.oAuth as OAuthProviderConfig & {
+					customRootCert: Buffer
+					cacheDir: string
+					cacheOnDisk: boolean,
+					log
+				}
+		  )
+		: undefined
 
 		grpcClient.on(ConnectionStatusEvent.connectionError, () => {
 			if (this.connected !== false) {
@@ -591,7 +594,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		this.logger.logDebug(withStringifiedVariables)
 		return this.executeOperation('completeJob', () =>
 			this.grpc.completeJobSync(withStringifiedVariables).catch(e => {
-				if (e.code === 5) {
+				if (e.code === GrpcError.NOT_FOUND) {
 					e.details +=
 						'. The process may have been cancelled, the job cancelled by an interrupting event, or the job already completed.' +
 						' For more detail, see: https://forum.zeebe.io/t/command-rejected-with-code-complete/908/17'

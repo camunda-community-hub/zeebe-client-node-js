@@ -2,6 +2,7 @@ import * as fs from 'fs'
 import got from 'got'
 import * as os from 'os'
 import pkg = require('../../package.json')
+import { StatefulLogInterceptor } from './StatefulLogInterceptor'
 const homedir = os.homedir()
 
 const BACKOFF_TOKEN_ENDPOINT_FAILURE = 1000
@@ -43,6 +44,7 @@ export class OAuthProvider {
 	public tokenCache = {}
 	private failed = false
 	userAgentString: string
+	private log: StatefulLogInterceptor
 
 	constructor({
 		/** OAuth Endpoint URL */
@@ -56,6 +58,7 @@ export class OAuthProvider {
 		customRootCert,
 		/** Cache token in memory and on filesystem? */
 		cacheOnDisk,
+		log
 	}: {
 		url: string
 		audience: string
@@ -64,6 +67,7 @@ export class OAuthProvider {
 		clientSecret: string
 		customRootCert?: Buffer
 		cacheOnDisk: boolean
+		log: StatefulLogInterceptor
 	}) {
 		this.url = url
 		this.audience = audience
@@ -72,6 +76,7 @@ export class OAuthProvider {
 		this.customRootCert = customRootCert
 		this.useFileCache = cacheOnDisk
 		this.cacheDir = cacheDir || OAuthProvider.getTokenCacheDirFromEnv()
+		this.log = log
 
 		const CUSTOM_AGENT_STRING = process.env.ZEEBE_CLIENT_CUSTOM_AGENT_STRING
 		this.userAgentString = `zeebe-client-nodejs/${pkg.version}${
@@ -95,11 +100,13 @@ export class OAuthProvider {
 
 	public async getToken(): Promise<string> {
 		if (this.tokenCache[this.clientId]) {
+			this.log.logDebug(`[OAuth] Using cached token from memory...`)
 			return this.tokenCache[this.clientId].access_token
 		}
 		if (this.useFileCache) {
 			const cachedToken = this.fromFileCache(this.clientId)
 			if (cachedToken) {
+				this.log.logDebug(`[OAuth] Using cached token from file...`)
 				return cachedToken.access_token
 			}
 		}
@@ -130,6 +137,7 @@ export class OAuthProvider {
 			grant_type: 'client_credentials',
 		}
 
+		this.log.logDebug(`[OAuth] Requesting token from token endpoint...`)
 		return got
 			.post(this.url, {
 				form,
@@ -166,7 +174,9 @@ export class OAuthProvider {
 	private fromFileCache(clientId: string) {
 		let token: Token
 		const tokenCachedInFile = fs.existsSync(this.cachedTokenFile(clientId))
+		this.log.logDebug(`[OAuth] Checking token cache file...`)
 		if (!tokenCachedInFile) {
+			this.log.logDebug(`[OAuth] No token cache file found...`)
 			return null
 		}
 		try {
@@ -175,11 +185,13 @@ export class OAuthProvider {
 			)
 
 			if (this.isExpired(token)) {
+				this.log.logDebug(`[OAuth] Cached token is expired...`)
 				return null
 			}
 			this.startExpiryTimer(token)
 			return token
-		} catch (_) {
+		} catch (e:any) {
+			this.log.logDebug(`[OAuth] ${e.message}`)
 			return null
 		}
 	}

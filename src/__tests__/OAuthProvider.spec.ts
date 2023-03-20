@@ -2,6 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import { OAuthProvider } from '../lib/OAuthProvider'
 import http from 'http'
+import { StatefulLogInterceptor } from '../lib/StatefulLogInterceptor'
 
 const STORED_ENV = {}
 const ENV_VARS_TO_STORE = ['ZEEBE_TOKEN_CACHE_DIR']
@@ -22,6 +23,17 @@ afterAll(() => {
 	})
 })
 
+const log = new StatefulLogInterceptor({
+	characteristics: {startupTime: 0,
+		_tag: 'VANILLA'
+	},
+	logConfig: {
+		_tag: 'ZBCLIENT',
+		namespace: '[OAuth test]'
+	}
+
+})
+
 test("Creates the token cache dir if it doesn't exist", () => {
 	const tokenCache = path.join(__dirname, '.token-cache')
 	if (fs.existsSync(tokenCache)) {
@@ -35,6 +47,7 @@ test("Creates the token cache dir if it doesn't exist", () => {
 		clientId: 'clientId',
 		clientSecret: 'clientSecret',
 		url: 'url',
+		log
 	})
 	expect(o).toBeTruthy()
 	expect(fs.existsSync(tokenCache)).toBe(true)
@@ -57,6 +70,7 @@ test('Gets the token cache dir from the environment', () => {
 		clientId: 'clientId',
 		clientSecret: 'clientSecret',
 		url: 'url',
+		log
 	})
 	expect(o).toBeTruthy()
 	expect(fs.existsSync(tokenCache)).toBe(true)
@@ -83,6 +97,7 @@ test('Uses an explicit token cache over the environment', () => {
 		clientId: 'clientId',
 		clientSecret: 'clientSecret',
 		url: 'url',
+		log
 	})
 	expect(o).toBeTruthy()
 	expect(fs.existsSync(tokenCache2)).toBe(true)
@@ -113,6 +128,7 @@ test('Throws in the constructor if the token cache is not writable', () => {
 			// file deepcode ignore HardcodedNonCryptoSecret/test: <please specify a reason of ignoring this>
 			clientSecret: 'clientSecret',
 			url: 'url',
+			log
 		})
 		expect(o).toBeTruthy()
 	} catch {
@@ -133,6 +149,7 @@ test('Can set a custom user agent', () => {
 		clientId: 'clientId',
 		clientSecret: 'clientSecret',
 		url: 'url',
+		log
 	})
 	expect(o.userAgentString.includes(' modeler')).toBe(true)
 })
@@ -144,6 +161,7 @@ test('Uses form encoding for request', done => {
 		clientId: 'clientId',
 		clientSecret: 'clientSecret',
 		url: 'http://127.0.0.1:3001',
+		log
 	})
 	const server = http
 		.createServer((req, res) => {
