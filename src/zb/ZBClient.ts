@@ -18,6 +18,7 @@ import { readDefinitionFromFile } from '../lib/deployWorkflow/impure'
 import { bufferOrFiles, mapThese } from '../lib/deployWorkflow/pure'
 import { CustomSSL } from '../lib/GrpcClient'
 import * as ZB from '../lib/interfaces-1.0'
+const debug = require('debug')('client')
 
 import * as Grpc from '../lib/interfaces-grpc-1.0'
 import {
@@ -165,6 +166,15 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		)
 		this.onConnectionError = this.options.onConnectionError
 		this.onReady = this.options.onReady
+		this.oAuth = this.options.oAuth
+		? new OAuthProvider(this.options.oAuth as OAuthProviderConfig & {
+					customRootCert: Buffer
+					cacheDir: string
+					cacheOnDisk: boolean,
+				}
+		  )
+		: undefined
+
 		const { grpcClient, log } = this.constructGrpcClient({
 			grpcConfig: {
 				namespace: this.options.logNamespace || 'ZBClient',
@@ -182,19 +192,6 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 				stdout: this.stdout,
 			},
 		})
-
-		this.oAuth = this.options.oAuth
-		? new OAuthProvider({
-					...this.options.oAuth,
-					log
-				} as OAuthProviderConfig & {
-					customRootCert: Buffer
-					cacheDir: string
-					cacheOnDisk: boolean,
-					log
-				}
-		  )
-		: undefined
 
 		grpcClient.on(ConnectionStatusEvent.connectionError, () => {
 			if (this.connected !== false) {
@@ -481,6 +478,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		CustomHeaderShape,
 		WorkerOutputVariables
 	> {
+		debug(`Creating worker for task type ${config.taskType}`)
 		if (this.closing) {
 			throw new Error('Client is closing. No worker creation allowed!')
 		}

@@ -1,6 +1,5 @@
 import { ClientReadableStreamImpl } from '@grpc/grpc-js/build/src/call'
 import chalk, { Chalk } from 'chalk'
-import * as _debug from 'debug'
 import { EventEmitter } from 'events'
 import { Duration, MaybeTimeDuration } from 'typed-duration'
 import * as uuid from 'uuid'
@@ -16,7 +15,8 @@ import {
 import { ZBClientOptions } from './interfaces-published-contract'
 import { TypedEmitter } from './TypedEmitter'
 
-const debug = _debug.default('worker')
+const debug = require('debug')('worker')
+debug('Loaded ZBWorkerBase')
 
 const MIN_ACTIVE_JOBS_RATIO_BEFORE_ACTIVATING_JOBS = 0.3
 
@@ -198,6 +198,7 @@ export class ZBWorkerBase<
 			() => this.poll(),
 			Duration.milliseconds.from(this.pollInterval)
 		)
+		debug(`Created worker for task type ${taskType}`)
 	}
 
 	/**

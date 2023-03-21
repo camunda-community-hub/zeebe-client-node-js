@@ -8,7 +8,6 @@ import {
 } from '@grpc/grpc-js'
 import { VerifyOptions } from '@grpc/grpc-js/build/src/channel-credentials'
 import { loadSync, Options, PackageDefinition } from '@grpc/proto-loader'
-import * as _debug from 'debug'
 import { EventEmitter } from 'events'
 
 import { Duration, MaybeTimeDuration } from 'typed-duration'
@@ -18,7 +17,7 @@ import { BasicAuthConfig } from './interfaces-1.0'
 import { Loglevel } from './interfaces-published-contract'
 import { OAuthProvider } from './OAuthProvider'
 
-const debug = _debug.default('grpc')
+const debug = require('debug')('grpc')
 
 export interface GrpcClientExtendedOptions {
 	longPoll?: MaybeTimeDuration
@@ -152,6 +151,7 @@ export class GrpcClient extends EventEmitter {
 		customSSL,
 	}: GrpcClientCtor) {
 		super()
+		debug(`Constructing gRPC client...`)
 		this.host = host
 		this.oAuth = oAuth
 		this.basicAuth = basicAuth
@@ -270,6 +270,7 @@ export class GrpcClient extends EventEmitter {
 				this.listNameMethods.push(methodName)
 
 				this[`${methodName}Stream`] = async data => {
+					debug(`Calling ${methodName}Stream...`)
 					if (this.closing) {
 						// tslint:disable-next-line: no-console
 						console.log('Short-circuited on channel closed') // @DEBUG
@@ -359,6 +360,8 @@ export class GrpcClient extends EventEmitter {
 				}
 
 				this[`${methodName}Sync`] = data => {
+					debug(`Calling ${methodName}Sync...`)
+
 					if (this.closing) {
 						return
 					}
