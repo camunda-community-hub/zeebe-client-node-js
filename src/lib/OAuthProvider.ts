@@ -5,7 +5,7 @@ import pkg = require('../../package.json')
 import { StatefulLogInterceptor } from './StatefulLogInterceptor'
 const homedir = os.homedir()
 
-const BACKOFF_TOKEN_ENDPOINT_FAILURE = 1000
+const BACKOFF_TOKEN_ENDPOINT_MAX = 60000 // 60 seconds
 
 interface Token {
 	access_token: string
@@ -42,9 +42,10 @@ export class OAuthProvider {
 	public customRootCert?: Buffer
 	public useFileCache: boolean
 	public tokenCache = {}
-	private failed = false
 	userAgentString: string
 	private log: StatefulLogInterceptor
+	private currentBackoffTime: number = 1
+	private inflightTokenRequest?: Promise<string>
 
 	constructor({
 		/** OAuth Endpoint URL */
@@ -77,6 +78,10 @@ export class OAuthProvider {
 		this.useFileCache = cacheOnDisk
 		this.cacheDir = cacheDir || OAuthProvider.getTokenCacheDirFromEnv()
 		this.log = log
+
+		if (!log) {
+			throw new Error('No logger passed to OAuthProvider component')
+		}
 
 		const CUSTOM_AGENT_STRING = process.env.ZEEBE_CLIENT_CUSTOM_AGENT_STRING
 		this.userAgentString = `zeebe-client-nodejs/${pkg.version}${
@@ -111,22 +116,27 @@ export class OAuthProvider {
 			}
 		}
 
-		return new Promise((resolve, reject) => {
-			setTimeout(
-				() => {
-					this.debouncedTokenRequest()
-						.then(res => {
-							this.failed = false
-							resolve(res)
-						})
-						.catch(e => {
-							this.failed = true
-							reject(e)
-						})
-				},
-				this.failed ? BACKOFF_TOKEN_ENDPOINT_FAILURE : 1
-			)
-		})
+		if (!this.inflightTokenRequest) {
+		 	this.inflightTokenRequest = new Promise((resolve, reject) => {
+				setTimeout(
+					() => {
+						this.debouncedTokenRequest()
+							.then(res => {
+								this.currentBackoffTime = 1
+								this.inflightTokenRequest = undefined
+								resolve(res)
+							})
+							.catch(e => {
+								this.currentBackoffTime = Math.min(this.currentBackoffTime * 2, BACKOFF_TOKEN_ENDPOINT_MAX)
+								this.inflightTokenRequest = undefined
+								reject(e)
+							})
+					},
+					this.currentBackoffTime
+				)
+			})
+		}
+		return this.inflightTokenRequest
 	}
 
 	private debouncedTokenRequest() {

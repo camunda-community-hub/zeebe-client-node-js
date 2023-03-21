@@ -31,7 +31,6 @@ const log = new StatefulLogInterceptor({
 		_tag: 'ZBCLIENT',
 		namespace: '[OAuth test]'
 	}
-
 })
 
 test("Creates the token cache dir if it doesn't exist", () => {
@@ -40,6 +39,7 @@ test("Creates the token cache dir if it doesn't exist", () => {
 		fs.rmdirSync(tokenCache)
 	}
 	expect(fs.existsSync(tokenCache)).toBe(false)
+
 	const o = new OAuthProvider({
 		audience: 'token',
 		cacheDir: tokenCache,
