@@ -20,6 +20,13 @@ Get a hosted instance of Zeebe on [Camunda Cloud](https://camunda.io).
 
 ## Table of Contents
 
+**Quick Start**
+
+-   [ Install ](#install)
+-   [ Get Broker Topology ](#get-topology)
+-   [ Deploy a process ](#deploy-process)
+-   [ Start and service a process](#start-and-service-a-process)
+
 -   [ Versioning ](#versioning)
 -   [ Compatible Node Versions ](#node-versions)
 -   [ Breaking changes in 8.1.0 ](#breaking-8.1.0)
@@ -27,13 +34,6 @@ Get a hosted instance of Zeebe on [Camunda Cloud](https://camunda.io).
 -   [ gRPC Implementation ](#grpc-implementation)
 -   [ Type difference from other Zeebe clients ](#type-difference)
 -   [ A note on representing timeout durations ](#time-duration)
-
-**Quick Start**
-
--   [ Install ](#install)
--   [ Get Broker Topology ](#get-topology)
--   [ Deploy a process ](#deploy-process)
--   [ Start and service a process](#start-and-service-a-process)
 
 **Connection Behaviour**
 
@@ -90,6 +90,120 @@ Get a hosted instance of Zeebe on [Camunda Cloud](https://camunda.io).
     -   [ Tests ](#tests)
     -   [ Writing Tests ](#writing-tests)
 -   [ Contributors ](#contributors)
+
+## Quick Start
+
+<a name = "install"></a>
+
+## Install
+
+### Add the Library to your Project
+
+```bash
+npm i zeebe-node
+```
+
+For Zeebe broker versions prior to 1.0.0:
+
+```bash
+npm i zeebe-node@0
+```
+
+Refer to [here](https://github.com/camunda-community-hub/zeebe-client-node-js/blob/v.0.25.0/README.md) for the documentation for the pre-1.0.0 version of the library.
+
+<a name = "get-topology"></a>
+
+### Get Broker Topology
+
+```javascript
+const ZB = require('zeebe-node')
+
+void (async () => {
+	const zbc = new ZB.ZBClient()
+	const topology = await zbc.topology()
+	console.log(JSON.stringify(topology, null, 2))
+})()
+```
+
+<a name = "deploy-process"></a>
+
+### Deploy a process
+
+```javascript
+const ZB = require('zeebe-node')
+const fs = require('fs')
+
+void (async () => {
+	const zbc = new ZB.ZBClient() // localhost:26500 || ZEEBE_GATEWAY_ADDRESS
+
+	const res = await zbc.deployProcess('./domain-mutation.bpmn')
+	console.log(res)
+
+	// Deploy multiple with an array of filepaths
+	await zbc.deployProcess(['./wf1.bpmn', './wf2.bpmn'])
+
+	const buffer = fs.readFileSync('./wf3.bpmn')
+
+	// Deploy from an in-memory buffer
+	await zbc.deployProcess({ definition: buffer, name: 'wf3.bpmn' })
+})()
+```
+
+<a name = "start-and-service-process"></a>
+
+### Start and service a process
+
+This code demonstrates how to deploy a Zeebe process, create a process instance, and handle a service task using the Zeebe Node.js client. The 'get-customer-record' service task worker checks for the presence of a customerId variable, simulates fetching a customer record from a database, and completes the task with a customerRecordExists variable.
+
+```javascript
+// Import the Zeebe Node.js client and the 'fs' module
+const ZB = require('zeebe-node');
+const fs = require('fs');
+
+// Instantiate a Zeebe client with default localhost settings or environment variables
+const zbc = new ZB.ZBClient();
+
+// Create a Zeebe worker to handle the 'get-customer-record' service task
+const worker = zbc.createWorker({
+    // Define the task type that this worker will process
+    taskType: 'get-customer-record',
+    // Define the task handler to process incoming jobs
+    taskHandler: job => {
+        // Log the job variables for debugging purposes
+        console.log(job.variables);
+
+        // Check if the customerId variable is missing and return an error if so
+        if (!job.variables.customerId) {
+            return job.error('NO_CUSTID', 'Missing customerId in process variables');
+        }
+
+        // Add logic to retrieve the customer record from the database here
+        // ...
+
+        // Complete the job with the 'customerRecordExists' variable set to true
+        return job.complete({
+            customerRecordExists: true
+        });
+    }
+});
+
+// Define an async main function to deploy a process, create a process instance, and log the outcome
+async function main() {
+    // Deploy the 'new-customer.bpmn' process
+    const res = await zbc.deployProcess('./new-customer.bpmn');
+    // Log the deployment result
+    console.log('Deployed process:', JSON.stringify(res, null, 2));
+
+    // Create a process instance of the 'new-customer-process' process, with a customerId variable set
+    // 'createProcessInstanceWithResult' awaits the outcome
+    const outcome = await zbc.createProcessInstanceWithResult('new-customer-process', { customerId: 457 });
+    // Log the process outcome
+    console.log('Process outcome', JSON.stringify(outcome, null, 2));
+}
+
+// Call the main function to execute the script
+main();
+```
 
 <a name = "versioning"></a>
 
@@ -173,119 +287,6 @@ The third is the `longpoll` duration. This is the amount of time that the job wo
 The fourth is the maximum back-off delay in client-side gRPC command retries. See "[Client-side gRPC retry in ZBClient](#client-side-retry)".
 
 Finally, the `connectionTolerance` option for ZBClient can also take a typed duration. This value is used to buffer reporting connection errors while establishing a connection - for example with Camunda SaaS, which requires a token exchange as part of the connection process.
-
-## Quick Start
-
-<a name = "install"></a>
-
-## Install
-
-### Add the Library to your Project
-
-```bash
-npm i zeebe-node
-```
-
-For Zeebe broker versions prior to 1.0.0:
-
-```bash
-npm i zeebe-node@0
-```
-
-Refer to [here](https://github.com/camunda-community-hub/zeebe-client-node-js/blob/v.0.25.0/README.md) for the documentation for the pre-1.0.0 version of the library.
-
-<a name = "get-topology"></a>
-
-### Get Broker Topology
-
-```javascript
-const ZB = require('zeebe-node')
-
-void (async () => {
-	const zbc = new ZB.ZBClient()
-	const topology = await zbc.topology()
-	console.log(JSON.stringify(topology, null, 2))
-})()
-```
-
-<a name = "deploy-process"></a>
-
-### Deploy a process
-
-```javascript
-const ZB = require('zeebe-node')
-const fs = require('fs')
-
-void (async () => {
-	const zbc = new ZB.ZBClient() // localhost:26500 || ZEEBE_GATEWAY_ADDRESS
-
-	const res = await zbc.deployProcess('./domain-mutation.bpmn')
-	console.log(res)
-
-	// Deploy multiple with an array of filepaths
-	await zbc.deployProcess(['./wf1.bpmn', './wf2.bpmn'])
-
-	const buffer = fs.readFileSync('./wf3.bpmn')
-
-	// Deploy from an in-memory buffer
-	await zbc.deployProcess({ definition: buffer, name: 'wf3.bpmn' })
-})()
-```
-<a name = "start-and-service-process"></a>
-
-### Start and service a process
-
-This code demonstrates how to deploy a Zeebe process, create a process instance, and handle a service task using the Zeebe Node.js client. The 'get-customer-record' service task worker checks for the presence of a customerId variable, simulates fetching a customer record from a database, and completes the task with a customerRecordExists variable.
-
-```javascript
-// Import the Zeebe Node.js client and the 'fs' module
-const ZB = require('zeebe-node');
-const fs = require('fs');
-
-// Instantiate a Zeebe client with default localhost settings or environment variables
-const zbc = new ZB.ZBClient();
-
-// Create a Zeebe worker to handle the 'get-customer-record' service task
-const worker = zbc.createWorker({
-    // Define the task type that this worker will process
-    taskType: 'get-customer-record',
-    // Define the task handler to process incoming jobs
-    taskHandler: job => {
-        // Log the job variables for debugging purposes
-        console.log(job.variables);
-
-        // Check if the customerId variable is missing and return an error if so
-        if (!job.variables.customerId) {
-            return job.error('NO_CUSTID', 'Missing customerId in process variables');
-        }
-
-        // Add logic to retrieve the customer record from the database here
-        // ...
-
-        // Complete the job with the 'customerRecordExists' variable set to true
-        return job.complete({
-            customerRecordExists: true
-        });
-    }
-});
-
-// Define an async main function to deploy a process, create a process instance, and log the outcome
-async function main() {
-    // Deploy the 'new-customer.bpmn' process
-    const res = await zbc.deployProcess('./new-customer.bpmn');
-    // Log the deployment result
-    console.log('Deployed process:', JSON.stringify(res, null, 2));
-
-    // Create a process instance of the 'new-customer-process' process, with a customerId variable set
-    // 'createProcessInstanceWithResult' awaits the outcome
-    const outcome = await zbc.createProcessInstanceWithResult('new-customer-process', { customerId: 457 });
-    // Log the process outcome
-    console.log('Process outcome', JSON.stringify(outcome, null, 2));
-}
-
-// Call the main function to execute the script
-main();
-```
 
 ## Connection Behaviour
 
