@@ -1,7 +1,7 @@
 import fs from 'fs'
+import http from 'http'
 import path from 'path'
 import { OAuthProvider } from '../lib/OAuthProvider'
-import http from 'http'
 
 const STORED_ENV = {}
 const ENV_VARS_TO_STORE = ['ZEEBE_TOKEN_CACHE_DIR']
@@ -169,4 +169,50 @@ test('Uses form encoding for request', done => {
 	o.getToken()
 
 	expect(o.userAgentString.includes(' modeler')).toBe(true)
+})
+
+test('In-memory cache is populated and evicted after timeout', done => {
+	const delay = timeout =>
+		new Promise(res => setTimeout(() => res(null), timeout))
+
+	const o = new OAuthProvider({
+		audience: 'token',
+		cacheOnDisk: false,
+		clientId: 'clientId',
+		clientSecret: 'clientSecret',
+		url: 'http://127.0.0.1:3002',
+	})
+	const server = http
+		.createServer((req, res) => {
+			if (req.method === 'POST') {
+				let body = ''
+				req.on('data', chunk => {
+					body += chunk
+				})
+
+				req.on('end', () => {
+					res.writeHead(200, { 'Content-Type': 'application/json' })
+					let expires_in = 2
+					res.end(
+						'{"access_token": "something", "expires_in": ' +
+							expires_in +
+							'}'
+					)
+					server.close()
+					expect(body).toEqual(
+						'audience=token&client_id=clientId&client_secret=clientSecret&grant_type=client_credentials'
+					)
+				})
+			}
+		})
+		.listen(3002)
+
+	o.getToken().then(async _ => {
+		expect(o.tokenCache['clientId']).toBeDefined()
+		await delay(500)
+		expect(o.tokenCache['clientId']).toBeDefined()
+		await delay(1600)
+		expect(o.tokenCache['clientId']).not.toBeDefined()
+		done()
+	})
 })

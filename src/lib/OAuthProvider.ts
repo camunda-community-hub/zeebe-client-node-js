@@ -156,6 +156,8 @@ export class OAuthProvider {
 			})
 			.then(res => {
 				return this.safeJSONParse(res.body).then(token => {
+					const d = new Date()
+					token.expiry = d.setSeconds(d.getSeconds()) + (token.expires_in * 1000)
 					if (this.useFileCache) {
 						this.toFileCache(token)
 					}
@@ -204,15 +206,11 @@ export class OAuthProvider {
 	}
 
 	private toFileCache(token: Token) {
-		const d = new Date()
 		const file = this.cachedTokenFile(this.clientId)
 
 		fs.writeFile(
 			file,
-			JSON.stringify({
-				...token,
-				expiry: d.setSeconds(d.getSeconds() + token.expires_in),
-			}),
+			JSON.stringify(token),
 			e => {
 				if (!e) {
 					return
@@ -233,7 +231,7 @@ export class OAuthProvider {
 	private startExpiryTimer(token: Token) {
 		const d = new Date()
 		const current = d.setSeconds(d.getSeconds())
-		const validityPeriod = token.expiry - current * 1000
+		const validityPeriod = token.expiry - current
 		if (validityPeriod <= 0) {
 			delete this.tokenCache[this.clientId]
 			return
