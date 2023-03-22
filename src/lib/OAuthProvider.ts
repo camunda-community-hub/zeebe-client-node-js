@@ -194,6 +194,7 @@ export class OAuthProvider {
 				debug(`[OAuth] Cached token is expired...`)
 				return null
 			}
+			this.tokenCache[this.clientId] = token
 			this.startExpiryTimer(token)
 			return token
 		} catch (e:any) {
