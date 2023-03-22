@@ -1,6 +1,5 @@
 import { ClientReadableStreamImpl } from '@grpc/grpc-js/build/src/call'
 import chalk, { Chalk } from 'chalk'
-import * as _debug from 'debug'
 import { EventEmitter } from 'events'
 import { Duration, MaybeTimeDuration } from 'typed-duration'
 import * as uuid from 'uuid'
@@ -8,6 +7,7 @@ import { parseVariablesAndCustomHeadersToJSON } from '../lib'
 import * as ZB from '../lib/interfaces-1.0'
 import { StatefulLogInterceptor } from '../lib/StatefulLogInterceptor'
 import { ConnectionStatusEvent, ZBClient } from '../zb/ZBClient'
+import { GrpcError } from './GrpcError'
 import {
 	ActivateJobsRequest,
 	ActivateJobsResponse,
@@ -15,7 +15,8 @@ import {
 import { ZBClientOptions } from './interfaces-published-contract'
 import { TypedEmitter } from './TypedEmitter'
 
-const debug = _debug.default('worker')
+const debug = require('debug')('worker')
+debug('Loaded ZBWorkerBase')
 
 const MIN_ACTIVE_JOBS_RATIO_BEFORE_ACTIVATING_JOBS = 0.3
 
@@ -197,6 +198,7 @@ export class ZBWorkerBase<
 			() => this.poll(),
 			Duration.milliseconds.from(this.pollInterval)
 		)
+		debug(`Created worker for task type ${taskType}`)
 	}
 
 	/**
@@ -479,7 +481,8 @@ You should call only one job action method in the worker handler. This is a bug 
 						1000} seconds`,
 					error
 				)
-				if (error.code === 8) {
+				// Backoff on
+				if (error.code === GrpcError.RESOURCE_EXHAUSTED || error.code === GrpcError.INTERNAL) {
 					setTimeout(
 						() => this.handleStreamEnd(id),
 						1000 * 2 ** this.backPressureRetryCount++

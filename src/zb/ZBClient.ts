@@ -18,6 +18,7 @@ import { readDefinitionFromFile } from '../lib/deployWorkflow/impure'
 import { bufferOrFiles, mapThese } from '../lib/deployWorkflow/pure'
 import { CustomSSL } from '../lib/GrpcClient'
 import * as ZB from '../lib/interfaces-1.0'
+const debug = require('debug')('client')
 
 import * as Grpc from '../lib/interfaces-grpc-1.0'
 import {
@@ -35,6 +36,7 @@ import { decodeCreateZBWorkerSig } from '../lib/ZBWorkerSignature'
 import { ZBBatchWorker } from './ZBBatchWorker'
 import { ZBWorker } from './ZBWorker'
 import { readFileSync } from 'fs'
+import { GrpcError } from '../lib/GrpcError'
 
 const idColors = [
 	chalk.yellow,
@@ -154,15 +156,6 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 
 		this.gatewayAddress = `${this.options.hostname}:${this.options.port}`
 
-		this.oAuth = this.options.oAuth
-			? new OAuthProvider(
-					this.options.oAuth as OAuthProviderConfig & {
-						customRootCert: Buffer
-						cacheDir: string
-						cacheOnDisk: boolean
-					}
-			  )
-			: undefined
 		this.useTLS =
 			this.options.useTLS === true ||
 			(!!this.options.oAuth && this.options.useTLS !== false)
@@ -173,6 +166,15 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		)
 		this.onConnectionError = this.options.onConnectionError
 		this.onReady = this.options.onReady
+		this.oAuth = this.options.oAuth
+		? new OAuthProvider(this.options.oAuth as OAuthProviderConfig & {
+					customRootCert: Buffer
+					cacheDir: string
+					cacheOnDisk: boolean,
+				}
+		  )
+		: undefined
+
 		const { grpcClient, log } = this.constructGrpcClient({
 			grpcConfig: {
 				namespace: this.options.logNamespace || 'ZBClient',
@@ -476,6 +478,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		CustomHeaderShape,
 		WorkerOutputVariables
 	> {
+		debug(`Creating worker for task type ${config.taskType}`)
 		if (this.closing) {
 			throw new Error('Client is closing. No worker creation allowed!')
 		}
@@ -591,7 +594,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		this.logger.logDebug(withStringifiedVariables)
 		return this.executeOperation('completeJob', () =>
 			this.grpc.completeJobSync(withStringifiedVariables).catch(e => {
-				if (e.code === 5) {
+				if (e.code === GrpcError.NOT_FOUND) {
 					e.details +=
 						'. The process may have been cancelled, the job cancelled by an interrupting event, or the job already completed.' +
 						' For more detail, see: https://forum.zeebe.io/t/command-rejected-with-code-complete/908/17'

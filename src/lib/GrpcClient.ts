@@ -8,16 +8,16 @@ import {
 } from '@grpc/grpc-js'
 import { VerifyOptions } from '@grpc/grpc-js/build/src/channel-credentials'
 import { loadSync, Options, PackageDefinition } from '@grpc/proto-loader'
-import * as _debug from 'debug'
 import { EventEmitter } from 'events'
 
 import { Duration, MaybeTimeDuration } from 'typed-duration'
 import pkg = require('../../package.json')
+import { GrpcError } from './GrpcError'
 import { BasicAuthConfig } from './interfaces-1.0'
 import { Loglevel } from './interfaces-published-contract'
 import { OAuthProvider } from './OAuthProvider'
 
-const debug = _debug.default('grpc')
+const debug = require('debug')('grpc')
 
 export interface GrpcClientExtendedOptions {
 	longPoll?: MaybeTimeDuration
@@ -56,26 +56,6 @@ export const MiddlewareSignals = {
 const InternalSignals = {
 	Error: 'INTERNAL_ERROR',
 	Ready: 'INTERNAL_READY',
-}
-
-const GrpcError = {
-	OK: 0 as 0,
-	CANCELLED: 1 as 1,
-	UNKNOWN: 2 as 2,
-	INVALID_ARGUMENT: 3 as 3,
-	DEADLINE_EXCEEDED: 4 as 4,
-	NOT_FOUND: 5 as 5,
-	ALREADY_EXISTS: 6 as 6,
-	PERMISSION_DENIED: 7 as 7,
-	UNAUTHENTICATED: 16 as 16,
-	RESOURCE_EXHAUSTED: 8 as 8,
-	FAILED_PRECONDITION: 9 as 9,
-	ABORTED: 10 as 10,
-	OUT_OF_RANGE: 11 as 11,
-	UNIMPLEMENTED: 12 as 12,
-	INTERNAL: 13 as 13,
-	UNAVAILABLE: 14 as 14,
-	DATA_LOSS: 15 as 15,
 }
 
 const GrpcState = {
@@ -171,6 +151,7 @@ export class GrpcClient extends EventEmitter {
 		customSSL,
 	}: GrpcClientCtor) {
 		super()
+		debug(`Constructing gRPC client...`)
 		this.host = host
 		this.oAuth = oAuth
 		this.basicAuth = basicAuth
@@ -289,6 +270,7 @@ export class GrpcClient extends EventEmitter {
 				this.listNameMethods.push(methodName)
 
 				this[`${methodName}Stream`] = async data => {
+					debug(`Calling ${methodName}Stream...`)
 					if (this.closing) {
 						// tslint:disable-next-line: no-console
 						console.log('Short-circuited on channel closed') // @DEBUG
@@ -378,6 +360,8 @@ export class GrpcClient extends EventEmitter {
 				}
 
 				this[`${methodName}Sync`] = data => {
+					debug(`Calling ${methodName}Sync...`)
+
 					if (this.closing) {
 						return
 					}

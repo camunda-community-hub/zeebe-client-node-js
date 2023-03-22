@@ -3,8 +3,9 @@ import got from 'got'
 import * as os from 'os'
 import pkg = require('../../package.json')
 const homedir = os.homedir()
+const debug = require('debug')('oauth')
 
-const BACKOFF_TOKEN_ENDPOINT_FAILURE = 1000
+const BACKOFF_TOKEN_ENDPOINT_MAX = 60000 // 60 seconds
 
 interface Token {
 	access_token: string
@@ -41,8 +42,9 @@ export class OAuthProvider {
 	public customRootCert?: Buffer
 	public useFileCache: boolean
 	public tokenCache = {}
-	private failed = false
 	userAgentString: string
+	private currentBackoffTime: number = 1
+	private inflightTokenRequest?: Promise<string>
 
 	constructor({
 		/** OAuth Endpoint URL */
@@ -95,31 +97,41 @@ export class OAuthProvider {
 
 	public async getToken(): Promise<string> {
 		if (this.tokenCache[this.clientId]) {
+			debug(`[OAuth] Using cached token from memory...`)
 			return this.tokenCache[this.clientId].access_token
 		}
 		if (this.useFileCache) {
 			const cachedToken = this.fromFileCache(this.clientId)
 			if (cachedToken) {
+				debug(`[OAuth] Using cached token from file...`)
 				return cachedToken.access_token
 			}
 		}
 
-		return new Promise((resolve, reject) => {
-			setTimeout(
-				() => {
-					this.debouncedTokenRequest()
-						.then(res => {
-							this.failed = false
-							resolve(res)
-						})
-						.catch(e => {
-							this.failed = true
-							reject(e)
-						})
-				},
-				this.failed ? BACKOFF_TOKEN_ENDPOINT_FAILURE : 1
-			)
-		})
+		if (!this.inflightTokenRequest) {
+		 	this.inflightTokenRequest = new Promise((resolve, reject) => {
+				setTimeout(
+					() => {
+						this.debouncedTokenRequest()
+							.then(res => {
+								this.currentBackoffTime = 1
+								this.inflightTokenRequest = undefined
+								resolve(res)
+							})
+							.catch(e => {
+								if (this.currentBackoffTime === 1) {
+									this.currentBackoffTime = 1000
+								}
+								this.currentBackoffTime = Math.min(this.currentBackoffTime * 2, BACKOFF_TOKEN_ENDPOINT_MAX)
+								this.inflightTokenRequest = undefined
+								reject(e)
+							})
+					},
+					this.currentBackoffTime
+				)
+			})
+		}
+		return this.inflightTokenRequest
 	}
 
 	private debouncedTokenRequest() {
@@ -130,6 +142,7 @@ export class OAuthProvider {
 			grant_type: 'client_credentials',
 		}
 
+		debug(`[OAuth] Requesting token from token endpoint...`)
 		return got
 			.post(this.url, {
 				form,
@@ -166,20 +179,26 @@ export class OAuthProvider {
 	private fromFileCache(clientId: string) {
 		let token: Token
 		const tokenCachedInFile = fs.existsSync(this.cachedTokenFile(clientId))
+		debug(`[OAuth] Checking token cache file...`)
 		if (!tokenCachedInFile) {
+			debug(`[OAuth] No token cache file found...`)
 			return null
 		}
 		try {
+			debug(`Using token cache file ${this.cachedTokenFile(clientId)}`)
 			token = JSON.parse(
 				fs.readFileSync(this.cachedTokenFile(clientId), 'utf8')
 			)
 
 			if (this.isExpired(token)) {
+				debug(`[OAuth] Cached token is expired...`)
 				return null
 			}
+			this.tokenCache[this.clientId] = token
 			this.startExpiryTimer(token)
 			return token
-		} catch (_) {
+		} catch (e:any) {
+			debug(`[OAuth] ${e.message}`)
 			return null
 		}
 	}
