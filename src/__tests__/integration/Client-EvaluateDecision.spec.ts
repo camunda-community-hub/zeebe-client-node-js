@@ -18,4 +18,6 @@ test("EvaluateDecision", async () => {
 	// })
 	// console.log(JSON.stringify(r, null, 2))
 	// expect(r).toBeTruthy()
+
+	await zbc.close()
 })

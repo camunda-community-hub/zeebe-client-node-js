@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import got from 'got'
 import * as os from 'os'
+import { clearTimeout } from 'timers'
 import pkg = require('../../package.json')
 const homedir = os.homedir()
 const debug = require('debug')('oauth')
@@ -45,6 +46,7 @@ export class OAuthProvider {
 	userAgentString: string
 	private currentBackoffTime: number = 1
 	private inflightTokenRequest?: Promise<string>
+	private expiryTimer?: NodeJS.Timeout
 
 	constructor({
 		/** OAuth Endpoint URL */
@@ -132,6 +134,12 @@ export class OAuthProvider {
 			})
 		}
 		return this.inflightTokenRequest
+	}
+
+	public stopExpiryTimer() {
+		if (this.expiryTimer) {
+			clearTimeout(this.expiryTimer)
+		}
 	}
 
 	private debouncedTokenRequest() {
@@ -236,7 +244,7 @@ export class OAuthProvider {
 			delete this.tokenCache[this.clientId]
 			return
 		}
-		setTimeout(() => delete this.tokenCache[this.clientId], validityPeriod)
+		this.expiryTimer = setTimeout(() => delete this.tokenCache[this.clientId], validityPeriod)
 	}
 
 	private cachedTokenFile = (clientId: string) =>

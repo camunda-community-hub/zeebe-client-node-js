@@ -12,15 +12,14 @@ beforeEach(() => {
 	zbc = new ZBClient()
 })
 
-afterEach(done => {
+afterEach(async() => {
 	if (wf && wf.processInstanceKey) {
-		zbc.cancelProcessInstance(wf.processInstanceKey).catch(e => e) // Cleanup any active processes
+		await zbc.cancelProcessInstance(wf.processInstanceKey).catch(e => e) // Cleanup any active processes
 	}
-	done()
 })
 
-afterAll(done => {
-	zbc.close().then(done)
+afterAll(async() => {
+	await zbc.close()
 })
 
 test('Can get the broker topology', async () => {
@@ -43,14 +42,15 @@ test('Deploys a single process', async () => {
 	expect(res.processes[0].bpmnProcessId).toBe(processId)
 })
 
-test('Can create a worker', done => {
-	const worker = zbc.createWorker({
+test('Can create a worker', async() => {
+	const zb = new ZBClient()
+	const worker = zb.createWorker({
 		taskType: 'TASK_TYPE',
 		taskHandler: job => job.complete(),
 		loglevel: 'NONE',
 	})
 	expect(worker).toBeTruthy()
-	worker.close().then(() => done())
+	await zb.close()
 })
 
 test('Can cancel a process', async () => {

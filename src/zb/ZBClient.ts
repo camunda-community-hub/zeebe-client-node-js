@@ -559,6 +559,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 				this.emit(ConnectionStatusEvent.close)
 				this.grpc.removeAllListeners()
 				this.removeAllListeners()
+				this.oAuth?.stopExpiryTimer()
 				resolve(null)
 			})
 		return this.closePromise

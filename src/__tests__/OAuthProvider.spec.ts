@@ -43,6 +43,7 @@ test("Creates the token cache dir if it doesn't exist", () => {
 		fs.rmdirSync(tokenCache)
 	}
 	expect(fs.existsSync(tokenCache)).toBe(false)
+	o.stopExpiryTimer()
 })
 
 test('Gets the token cache dir from the environment', () => {
@@ -65,6 +66,7 @@ test('Gets the token cache dir from the environment', () => {
 		fs.rmdirSync(tokenCache)
 	}
 	expect(fs.existsSync(tokenCache)).toBe(false)
+	o.stopExpiryTimer()
 })
 
 test('Uses an explicit token cache over the environment', () => {
@@ -94,6 +96,7 @@ test('Uses an explicit token cache over the environment', () => {
 		}
 		expect(fs.existsSync(tokenCache)).toBe(false)
 	})
+	o.stopExpiryTimer()
 })
 
 test('Throws in the constructor if the token cache is not writable', () => {
@@ -116,6 +119,7 @@ test('Throws in the constructor if the token cache is not writable', () => {
 			url: 'url',
 		})
 		expect(o).toBeTruthy()
+		o.stopExpiryTimer()
 	} catch {
 		thrown = true
 	}
@@ -169,6 +173,7 @@ test('Uses form encoding for request', done => {
 	o.getToken()
 
 	expect(o.userAgentString.includes(' modeler')).toBe(true)
+	o.stopExpiryTimer()
 })
 
 test('In-memory cache is populated and evicted after timeout', done => {
@@ -213,6 +218,7 @@ test('In-memory cache is populated and evicted after timeout', done => {
 		expect(o.tokenCache['clientId']).toBeDefined()
 		await delay(1600)
 		expect(o.tokenCache['clientId']).not.toBeDefined()
+		o.stopExpiryTimer()
 		done()
 	})
 })

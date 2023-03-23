@@ -1,3 +1,19 @@
+# Version 8.1.8
+
+## Fixes
+
+_Things that were broken and are now fixed._
+
+-  The OAuth token was being evicted from the in-memory cache immediately, resulting in the file cache being used for every request. This release correctly sets the expiry time for the in-memory token cache. See [#307](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/307) for more details. Thanks to [@walliee](https://github.com/Walliee) for raising this issue.
+
+# Version 8.1.7
+
+## Fixes
+
+_Things that were broken and are now fixed._
+
+-   With `cacheOnDisk` disabled, the OAuthProvider could cause excessive requests to the token endpoint, leading to blacklisting and denial-of-service. This version makes several adjustments to mitigate this: it caches the token in memory, reuses a single inflight request to the token endpoint, and backs off the token endpoint on a request failure. See [#301](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/301) for more details. Thanks to [@nhomble](https://github.com/nhomble) for raising this issue.
+
 # Version 8.1.6
 
 ## Chores

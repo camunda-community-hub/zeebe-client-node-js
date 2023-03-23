@@ -11,6 +11,7 @@ test('ZBClient constructor throws an exception when there is no broker and retry
 	} catch (e: any) {
 		expect(e.message.indexOf('14 UNAVAILABLE:')).toEqual(0)
 	}
+	await zbc.close()
 })
 
 test('cancelProcessInstance throws an exception when workflowInstanceKey is malformed', async () => {
@@ -21,4 +22,5 @@ test('cancelProcessInstance throws an exception when workflowInstanceKey is malf
 	} catch (e: any) {
 		expect(e).toMatchSnapshot()
 	}
+	await zbc.close()
 })
