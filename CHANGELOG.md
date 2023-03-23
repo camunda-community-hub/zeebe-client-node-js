@@ -4,7 +4,7 @@
 
 _Things that were broken and are now fixed._
 
--  The OAuth token was being evicted from the in-memory cache immediately, resulting in the file cache being used for every request. This release correctly sets the expiry time for the in-memory token cache. See [#307](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/307) for more details. Thanks to [@walliee](https://github.com/Walliee) for raising this issue.
+-  The OAuth token was being evicted from the in-memory cache immediately, resulting in the file cache being used for every request. This release correctly sets the expiry time for the in-memory token cache. See [#307](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/307) for more details. Thanks to [@walliee](https://github.com/Walliee) for the fix.
 
 # Version 8.1.7
 
