@@ -907,13 +907,13 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	 *   variables: { season: "Fall" }
 	 * }).then(res => console.log(JSON.stringify(res, null, 2)))
 	 */
-	// public evaluateDecision(evaluateDecisionRequest: Grpc.EvaluateDecisionRequest): Promise<Grpc.EvaluateDecisionResponse> {
-	//  // the gRPC API call needs a JSON string, but we accept a JSON object, so we transform it here
-	//	const variables = JSON.stringify(evaluateDecisionRequest.variables) as unknown as ZB.JSONDoc
-	// 	return this.executeOperation('evaluateDecision', () =>
-	// 		this.grpc.evaluateDecisionSync({...evaluateDecisionRequest, variables})
-	// 	)
-	// }
+	public evaluateDecision(evaluateDecisionRequest: Grpc.EvaluateDecisionRequest): Promise<Grpc.EvaluateDecisionResponse> {
+	 // the gRPC API call needs a JSON string, but we accept a JSON object, so we transform it here
+		const variables = JSON.stringify(evaluateDecisionRequest.variables) as unknown as ZB.JSONDoc
+		return this.executeOperation('evaluateDecision', () =>
+			this.grpc.evaluateDecisionSync({...evaluateDecisionRequest, variables})
+		)
+	}
 
 	/**
 	 *

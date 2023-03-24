@@ -1,3 +1,10 @@
+# Version 8.2.0
+
+## New Features
+
+_New shiny stuff._
+-   Add `ZBClient.evaluateDecision`, enabling a DMN table to be evaluated on a Zeebe 8.2 and later broker. See [#296](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/296) for more details.
+
 # Version 8.1.8
 
 ## Fixes

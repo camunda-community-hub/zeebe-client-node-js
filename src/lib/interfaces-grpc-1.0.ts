@@ -419,11 +419,20 @@ export interface ModifyProcessInstanceResponse {
 }
 
 
-export interface EvaluateDecisionRequest {
+export type EvaluateDecisionRequest = {
 	/** the unique key identifying the decision to be evaluated (e.g. returned
 	 * from a decision in the DeployResourceResponse message)
 	 */
 	decisionKey: string;
+	/** JSON document that will instantiate the variables for the decision to be
+	 * 	evaluated; it must be a JSON object, as variables will be mapped in a
+	 *  key-value fashion, e.g. { "a": 1, "b": 2 } will create two variables,
+	 *  named "a" and "b" respectively, with their associated values.
+	 *  [{ "a": 1, "b": 2 }] would not be a valid argument, as the root of the
+	 *  JSON document is an array and not an object.
+	 */
+	variables: JSONDoc;
+} | {
 	/** the ID of the decision to be evaluated */
 	decisionId: string;
 	/** JSON document that will instantiate the variables for the decision to be
