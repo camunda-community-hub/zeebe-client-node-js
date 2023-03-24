@@ -73,20 +73,30 @@
 				<a href="#table-of-contents" id="table-of-contents" style="color: inherit; text-decoration: none;">
 					<h2>Table of Contents</h2>
 				</a>
-				<ul>
-					<li><a href="#versioning"> Versioning </a></li>
-					<li><a href="#node-versions"> Compatible Node Versions </a></li>
-					<li><a href="#breaking-8.1.0"> Breaking changes in 8.1.0 </a></li>
-					<li><a href="#breaking-1.0.0"> Breaking changes in 1.0.0 </a></li>
-					<li><a href="#grpc-implementation"> gRPC Implementation </a></li>
-					<li><a href="#type-difference"> Type difference from other Zeebe clients </a></li>
-					<li><a href="#time-duration"> A note on representing timeout durations </a></li>
-				</ul>
 				<p><strong>Quick Start</strong></p>
 				<ul>
-					<li><a href="#install"> Install </a></li>
-					<li><a href="#get-topology"> Get Broker Topology </a></li>
-					<li><a href="#deploy-process"> Deploy a process </a></li>
+					<li><p><a href="#install"> Install </a></p>
+					</li>
+					<li><p><a href="#get-topology"> Get Broker Topology </a></p>
+					</li>
+					<li><p><a href="#deploy-process"> Deploy a process </a></p>
+					</li>
+					<li><p><a href="#start-and-service-a-process"> Start and service a process</a></p>
+					</li>
+					<li><p><a href="#versioning"> Versioning </a></p>
+					</li>
+					<li><p><a href="#node-versions"> Compatible Node Versions </a></p>
+					</li>
+					<li><p><a href="#breaking-8.1.0"> Breaking changes in 8.1.0 </a></p>
+					</li>
+					<li><p><a href="#breaking-1.0.0"> Breaking changes in 1.0.0 </a></p>
+					</li>
+					<li><p><a href="#grpc-implementation"> gRPC Implementation </a></p>
+					</li>
+					<li><p><a href="#type-difference"> Type difference from other Zeebe clients </a></p>
+					</li>
+					<li><p><a href="#time-duration"> A note on representing timeout durations </a></p>
+					</li>
 				</ul>
 				<p><strong>Connection Behaviour</strong></p>
 				<ul>
@@ -146,6 +156,109 @@
 					</li>
 					<li><a href="#contributors"> Contributors </a></li>
 				</ul>
+				<a href="#quick-start" id="quick-start" style="color: inherit; text-decoration: none;">
+					<h2>Quick Start</h2>
+				</a>
+				<p><a name = "install"></a></p>
+				<a href="#install" id="install" style="color: inherit; text-decoration: none;">
+					<h2>Install</h2>
+				</a>
+				<a href="#add-the-library-to-your-project" id="add-the-library-to-your-project" style="color: inherit; text-decoration: none;">
+					<h3>Add the Library to your Project</h3>
+				</a>
+				<pre><code class="language-bash"><span style="color: #000000">npm i zeebe-node</span>
+</code></pre>
+				<p>For Zeebe broker versions prior to 1.0.0:</p>
+				<pre><code class="language-bash"><span style="color: #000000">npm i zeebe-node@0</span>
+</code></pre>
+				<p>Refer to <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/v.0.25.0/README.md">here</a> for the documentation for the pre-1.0.0 version of the library.</p>
+				<p><a name = "get-topology"></a></p>
+				<a href="#get-broker-topology" id="get-broker-topology" style="color: inherit; text-decoration: none;">
+					<h3>Get Broker Topology</h3>
+				</a>
+				<pre><code class="language-javascript"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">ZB</span><span style="color: #000000"> = </span><span style="color: #795E26">require</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;zeebe-node&#039;</span><span style="color: #000000">)</span>
+
+<span style="color: #0000FF">void</span><span style="color: #000000"> (</span><span style="color: #0000FF">async</span><span style="color: #000000"> () </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> {</span>
+<span style="color: #000000">    </span><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">zbc</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #0070C1">ZB</span><span style="color: #000000">.</span><span style="color: #795E26">ZBClient</span><span style="color: #000000">()</span>
+<span style="color: #000000">    </span><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">topology</span><span style="color: #000000"> = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">zbc</span><span style="color: #000000">.</span><span style="color: #795E26">topology</span><span style="color: #000000">()</span>
+<span style="color: #000000">    </span><span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #267F99">JSON</span><span style="color: #000000">.</span><span style="color: #795E26">stringify</span><span style="color: #000000">(</span><span style="color: #001080">topology</span><span style="color: #000000">, </span><span style="color: #0000FF">null</span><span style="color: #000000">, </span><span style="color: #098658">2</span><span style="color: #000000">))</span>
+<span style="color: #000000">})()</span>
+</code></pre>
+				<p><a name = "deploy-process"></a></p>
+				<a href="#deploy-a-process" id="deploy-a-process" style="color: inherit; text-decoration: none;">
+					<h3>Deploy a process</h3>
+				</a>
+				<pre><code class="language-javascript"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">ZB</span><span style="color: #000000"> = </span><span style="color: #795E26">require</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;zeebe-node&#039;</span><span style="color: #000000">)</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">fs</span><span style="color: #000000"> = </span><span style="color: #795E26">require</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;fs&#039;</span><span style="color: #000000">)</span>
+
+<span style="color: #0000FF">void</span><span style="color: #000000"> (</span><span style="color: #0000FF">async</span><span style="color: #000000"> () </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> {</span>
+<span style="color: #000000">    </span><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">zbc</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #0070C1">ZB</span><span style="color: #000000">.</span><span style="color: #795E26">ZBClient</span><span style="color: #000000">() </span><span style="color: #008000">// localhost:26500 || ZEEBE_GATEWAY_ADDRESS</span>
+
+<span style="color: #000000">    </span><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">res</span><span style="color: #000000"> = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">zbc</span><span style="color: #000000">.</span><span style="color: #795E26">deployProcess</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;./domain-mutation.bpmn&#039;</span><span style="color: #000000">)</span>
+<span style="color: #000000">    </span><span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #001080">res</span><span style="color: #000000">)</span>
+
+<span style="color: #000000">    </span><span style="color: #008000">// Deploy multiple with an array of filepaths</span>
+<span style="color: #000000">    </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">zbc</span><span style="color: #000000">.</span><span style="color: #795E26">deployProcess</span><span style="color: #000000">([</span><span style="color: #A31515">&#039;./wf1.bpmn&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;./wf2.bpmn&#039;</span><span style="color: #000000">])</span>
+
+<span style="color: #000000">    </span><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">buffer</span><span style="color: #000000"> = </span><span style="color: #001080">fs</span><span style="color: #000000">.</span><span style="color: #795E26">readFileSync</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;./wf3.bpmn&#039;</span><span style="color: #000000">)</span>
+
+<span style="color: #000000">    </span><span style="color: #008000">// Deploy from an in-memory buffer</span>
+<span style="color: #000000">    </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">zbc</span><span style="color: #000000">.</span><span style="color: #795E26">deployProcess</span><span style="color: #000000">({ </span><span style="color: #001080">definition:</span><span style="color: #000000"> </span><span style="color: #001080">buffer</span><span style="color: #000000">, </span><span style="color: #001080">name:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;wf3.bpmn&#039;</span><span style="color: #000000"> })</span>
+<span style="color: #000000">})()</span>
+</code></pre>
+				<p><a name = "start-and-service-process"></a></p>
+				<a href="#start-and-service-a-process" id="start-and-service-a-process" style="color: inherit; text-decoration: none;">
+					<h3>Start and service a process</h3>
+				</a>
+				<p>This code demonstrates how to deploy a Zeebe process, create a process instance, and handle a service task using the Zeebe Node.js client. The &#39;get-customer-record&#39; service task worker checks for the presence of a customerId variable, simulates fetching a customer record from a database, and completes the task with a customerRecordExists variable.</p>
+				<pre><code class="language-javascript"><span style="color: #008000">// Import the Zeebe Node.js client and the &#039;fs&#039; module</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">ZB</span><span style="color: #000000"> = </span><span style="color: #795E26">require</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;zeebe-node&#039;</span><span style="color: #000000">);</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">fs</span><span style="color: #000000"> = </span><span style="color: #795E26">require</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;fs&#039;</span><span style="color: #000000">);</span>
+
+<span style="color: #008000">// Instantiate a Zeebe client with default localhost settings or environment variables</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">zbc</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #0070C1">ZB</span><span style="color: #000000">.</span><span style="color: #795E26">ZBClient</span><span style="color: #000000">();</span>
+
+<span style="color: #008000">// Create a Zeebe worker to handle the &#039;get-customer-record&#039; service task</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">worker</span><span style="color: #000000"> = </span><span style="color: #001080">zbc</span><span style="color: #000000">.</span><span style="color: #795E26">createWorker</span><span style="color: #000000">({</span>
+<span style="color: #000000">    </span><span style="color: #008000">// Define the task type that this worker will process</span>
+<span style="color: #000000">    </span><span style="color: #001080">taskType:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;get-customer-record&#039;</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #008000">// Define the task handler to process incoming jobs</span>
+<span style="color: #000000">    </span><span style="color: #795E26">taskHandler</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #001080">job</span><span style="color: #000000"> </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> {</span>
+<span style="color: #000000">        </span><span style="color: #008000">// Log the job variables for debugging purposes</span>
+<span style="color: #000000">        </span><span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #001080">job</span><span style="color: #000000">.</span><span style="color: #001080">variables</span><span style="color: #000000">);</span>
+
+<span style="color: #000000">        </span><span style="color: #008000">// Check if the customerId variable is missing and return an error if so</span>
+<span style="color: #000000">        </span><span style="color: #AF00DB">if</span><span style="color: #000000"> (!</span><span style="color: #001080">job</span><span style="color: #000000">.</span><span style="color: #001080">variables</span><span style="color: #000000">.</span><span style="color: #001080">customerId</span><span style="color: #000000">) {</span>
+<span style="color: #000000">            </span><span style="color: #AF00DB">return</span><span style="color: #000000"> </span><span style="color: #001080">job</span><span style="color: #000000">.</span><span style="color: #795E26">error</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;NO_CUSTID&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;Missing customerId in process variables&#039;</span><span style="color: #000000">);</span>
+<span style="color: #000000">        }</span>
+
+<span style="color: #000000">        </span><span style="color: #008000">// Add logic to retrieve the customer record from the database here</span>
+<span style="color: #000000">        </span><span style="color: #008000">// ...</span>
+
+<span style="color: #000000">        </span><span style="color: #008000">// Complete the job with the &#039;customerRecordExists&#039; variable set to true</span>
+<span style="color: #000000">        </span><span style="color: #AF00DB">return</span><span style="color: #000000"> </span><span style="color: #001080">job</span><span style="color: #000000">.</span><span style="color: #795E26">complete</span><span style="color: #000000">({</span>
+<span style="color: #000000">            </span><span style="color: #001080">customerRecordExists:</span><span style="color: #000000"> </span><span style="color: #0000FF">true</span>
+<span style="color: #000000">        });</span>
+<span style="color: #000000">    }</span>
+<span style="color: #000000">});</span>
+
+<span style="color: #008000">// Define an async main function to deploy a process, create a process instance, and log the outcome</span>
+<span style="color: #0000FF">async</span><span style="color: #000000"> </span><span style="color: #0000FF">function</span><span style="color: #000000"> </span><span style="color: #795E26">main</span><span style="color: #000000">() {</span>
+<span style="color: #000000">    </span><span style="color: #008000">// Deploy the &#039;new-customer.bpmn&#039; process</span>
+<span style="color: #000000">    </span><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">res</span><span style="color: #000000"> = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">zbc</span><span style="color: #000000">.</span><span style="color: #795E26">deployProcess</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;./new-customer.bpmn&#039;</span><span style="color: #000000">);</span>
+<span style="color: #000000">    </span><span style="color: #008000">// Log the deployment result</span>
+<span style="color: #000000">    </span><span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;Deployed process:&#039;</span><span style="color: #000000">, </span><span style="color: #267F99">JSON</span><span style="color: #000000">.</span><span style="color: #795E26">stringify</span><span style="color: #000000">(</span><span style="color: #001080">res</span><span style="color: #000000">, </span><span style="color: #0000FF">null</span><span style="color: #000000">, </span><span style="color: #098658">2</span><span style="color: #000000">));</span>
+
+<span style="color: #000000">    </span><span style="color: #008000">// Create a process instance of the &#039;new-customer-process&#039; process, with a customerId variable set</span>
+<span style="color: #000000">    </span><span style="color: #008000">// &#039;createProcessInstanceWithResult&#039; awaits the outcome</span>
+<span style="color: #000000">    </span><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">outcome</span><span style="color: #000000"> = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">zbc</span><span style="color: #000000">.</span><span style="color: #795E26">createProcessInstanceWithResult</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;new-customer-process&#039;</span><span style="color: #000000">, { </span><span style="color: #001080">customerId:</span><span style="color: #000000"> </span><span style="color: #098658">457</span><span style="color: #000000"> });</span>
+<span style="color: #000000">    </span><span style="color: #008000">// Log the process outcome</span>
+<span style="color: #000000">    </span><span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;Process outcome&#039;</span><span style="color: #000000">, </span><span style="color: #267F99">JSON</span><span style="color: #000000">.</span><span style="color: #795E26">stringify</span><span style="color: #000000">(</span><span style="color: #001080">outcome</span><span style="color: #000000">, </span><span style="color: #0000FF">null</span><span style="color: #000000">, </span><span style="color: #098658">2</span><span style="color: #000000">));</span>
+<span style="color: #000000">}</span>
+
+<span style="color: #008000">// Call the main function to execute the script</span>
+<span style="color: #795E26">main</span><span style="color: #000000">();</span>
+</code></pre>
 				<p><a name = "versioning"></a></p>
 				<a href="#versioning" id="versioning" style="color: inherit; text-decoration: none;">
 					<h2>Versioning</h2>
@@ -203,56 +316,6 @@
 				<p>The third is the <code>longpoll</code> duration. This is the amount of time that the job worker holds a long poll request to activate jobs open.</p>
 				<p>The fourth is the maximum back-off delay in client-side gRPC command retries. See &quot;<a href="#client-side-retry">Client-side gRPC retry in ZBClient</a>&quot;.</p>
 				<p>Finally, the <code>connectionTolerance</code> option for ZBClient can also take a typed duration. This value is used to buffer reporting connection errors while establishing a connection - for example with Camunda SaaS, which requires a token exchange as part of the connection process.</p>
-				<a href="#quick-start" id="quick-start" style="color: inherit; text-decoration: none;">
-					<h2>Quick Start</h2>
-				</a>
-				<p><a name = "install"></a></p>
-				<a href="#install" id="install" style="color: inherit; text-decoration: none;">
-					<h2>Install</h2>
-				</a>
-				<a href="#add-the-library-to-your-project" id="add-the-library-to-your-project" style="color: inherit; text-decoration: none;">
-					<h3>Add the Library to your Project</h3>
-				</a>
-				<pre><code class="language-bash"><span style="color: #000000">npm i zeebe-node</span>
-</code></pre>
-				<p>For Zeebe broker versions prior to 1.0.0:</p>
-				<pre><code class="language-bash"><span style="color: #000000">npm i zeebe-node@0</span>
-</code></pre>
-				<p>Refer to <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/v.0.25.0/README.md">here</a> for the documentation for the pre-1.0.0 version of the library.</p>
-				<p><a name = "get-topology"></a></p>
-				<a href="#get-broker-topology" id="get-broker-topology" style="color: inherit; text-decoration: none;">
-					<h3>Get Broker Topology</h3>
-				</a>
-				<pre><code class="language-javascript"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">ZB</span><span style="color: #000000"> = </span><span style="color: #795E26">require</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;zeebe-node&#039;</span><span style="color: #000000">)</span>
-
-<span style="color: #0000FF">void</span><span style="color: #000000"> (</span><span style="color: #0000FF">async</span><span style="color: #000000"> () </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> {</span>
-<span style="color: #000000">    </span><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">zbc</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #0070C1">ZB</span><span style="color: #000000">.</span><span style="color: #795E26">ZBClient</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;localhost:26500&#039;</span><span style="color: #000000">)</span>
-<span style="color: #000000">    </span><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">topology</span><span style="color: #000000"> = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">zbc</span><span style="color: #000000">.</span><span style="color: #795E26">topology</span><span style="color: #000000">()</span>
-<span style="color: #000000">    </span><span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #267F99">JSON</span><span style="color: #000000">.</span><span style="color: #795E26">stringify</span><span style="color: #000000">(</span><span style="color: #001080">topology</span><span style="color: #000000">, </span><span style="color: #0000FF">null</span><span style="color: #000000">, </span><span style="color: #098658">2</span><span style="color: #000000">))</span>
-<span style="color: #000000">})()</span>
-</code></pre>
-				<p><a name = "deploy-process"></a></p>
-				<a href="#deploy-a-process" id="deploy-a-process" style="color: inherit; text-decoration: none;">
-					<h3>Deploy a process</h3>
-				</a>
-				<pre><code class="language-javascript"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">ZB</span><span style="color: #000000"> = </span><span style="color: #795E26">require</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;zeebe-node&#039;</span><span style="color: #000000">)</span>
-<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">fs</span><span style="color: #000000"> = </span><span style="color: #795E26">require</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;fs&#039;</span><span style="color: #000000">)</span>
-
-<span style="color: #0000FF">void</span><span style="color: #000000"> (</span><span style="color: #0000FF">async</span><span style="color: #000000"> () </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> {</span>
-<span style="color: #000000">    </span><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">zbc</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #0070C1">ZB</span><span style="color: #000000">.</span><span style="color: #795E26">ZBClient</span><span style="color: #000000">() </span><span style="color: #008000">// localhost:26500 || ZEEBE_GATEWAY_ADDRESS</span>
-
-<span style="color: #000000">    </span><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">res</span><span style="color: #000000"> = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">zbc</span><span style="color: #000000">.</span><span style="color: #795E26">deployProcess</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;./domain-mutation.bpmn&#039;</span><span style="color: #000000">)</span>
-<span style="color: #000000">    </span><span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #001080">res</span><span style="color: #000000">)</span>
-
-<span style="color: #000000">    </span><span style="color: #008000">// Deploy multiple with an array of filepaths</span>
-<span style="color: #000000">    </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">zbc</span><span style="color: #000000">.</span><span style="color: #795E26">deployProcess</span><span style="color: #000000">([</span><span style="color: #A31515">&#039;./wf1.bpmn&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;./wf2.bpmn&#039;</span><span style="color: #000000">])</span>
-
-<span style="color: #000000">    </span><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">buffer</span><span style="color: #000000"> = </span><span style="color: #001080">fs</span><span style="color: #000000">.</span><span style="color: #795E26">readFileSync</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;./wf3.bpmn&#039;</span><span style="color: #000000">)</span>
-
-<span style="color: #000000">    </span><span style="color: #008000">// Deploy from an in-memory buffer</span>
-<span style="color: #000000">    </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">zbc</span><span style="color: #000000">.</span><span style="color: #795E26">deployProcess</span><span style="color: #000000">({ </span><span style="color: #001080">definition:</span><span style="color: #000000"> </span><span style="color: #001080">buffer</span><span style="color: #000000">, </span><span style="color: #001080">name:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;wf3.bpmn&#039;</span><span style="color: #000000"> })</span>
-<span style="color: #000000">})()</span>
-</code></pre>
 				<a href="#connection-behaviour" id="connection-behaviour" style="color: inherit; text-decoration: none;">
 					<h2>Connection Behaviour</h2>
 				</a>
