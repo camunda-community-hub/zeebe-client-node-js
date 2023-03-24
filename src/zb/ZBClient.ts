@@ -555,11 +555,11 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 				// Prevent the creation of more workers
 				this.closing = true
 				await Promise.all(this.workers.map(w => w.close(timeout)))
+				this.oAuth?.stopExpiryTimer()
 				await this.grpc.close(timeout) // close the client GRPC channel
 				this.emit(ConnectionStatusEvent.close)
 				this.grpc.removeAllListeners()
 				this.removeAllListeners()
-				this.oAuth?.stopExpiryTimer()
 				resolve(null)
 			})
 		return this.closePromise

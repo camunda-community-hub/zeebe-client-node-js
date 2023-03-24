@@ -15,7 +15,7 @@ beforeEach(async () => {
 
 afterEach(async () => {
 	if (id) {
-		console.log(`Canceling process id ${id}`)
+		// console.log(`Canceling process id ${id}`)
 		zbc.cancelProcessInstance(id).catch(_ => _)
 	}
 	await zbc.close() // Makes sure we don't forget to close connection

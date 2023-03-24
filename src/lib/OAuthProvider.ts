@@ -2,9 +2,11 @@ import * as fs from 'fs'
 import got from 'got'
 import * as os from 'os'
 import { clearTimeout } from 'timers'
+import uuid = require('uuid')
 import pkg = require('../../package.json')
 const homedir = os.homedir()
 const debug = require('debug')('oauth')
+const trace = require('debug')('oauth:trace')
 
 const BACKOFF_TOKEN_ENDPOINT_MAX = 60000 // 60 seconds
 
@@ -47,6 +49,7 @@ export class OAuthProvider {
 	private currentBackoffTime: number = 1
 	private inflightTokenRequest?: Promise<string>
 	private expiryTimer?: NodeJS.Timeout
+	uuid: string
 
 	constructor({
 		/** OAuth Endpoint URL */
@@ -76,6 +79,7 @@ export class OAuthProvider {
 		this.customRootCert = customRootCert
 		this.useFileCache = cacheOnDisk
 		this.cacheDir = cacheDir || OAuthProvider.getTokenCacheDirFromEnv()
+		this.uuid = uuid.v4()
 
 		const CUSTOM_AGENT_STRING = process.env.ZEEBE_CLIENT_CUSTOM_AGENT_STRING
 		this.userAgentString = `zeebe-client-nodejs/${pkg.version}${
@@ -139,6 +143,7 @@ export class OAuthProvider {
 	public stopExpiryTimer() {
 		if (this.expiryTimer) {
 			clearTimeout(this.expiryTimer)
+			trace(`${this.uuid} stop`)
 		}
 	}
 
@@ -245,6 +250,7 @@ export class OAuthProvider {
 			return
 		}
 		this.expiryTimer = setTimeout(() => delete this.tokenCache[this.clientId], validityPeriod)
+		trace(`${this.uuid} start`)
 	}
 
 	private cachedTokenFile = (clientId: string) =>

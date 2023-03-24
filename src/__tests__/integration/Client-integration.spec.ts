@@ -16,9 +16,6 @@ afterEach(async() => {
 	if (wf && wf.processInstanceKey) {
 		await zbc.cancelProcessInstance(wf.processInstanceKey).catch(e => e) // Cleanup any active processes
 	}
-})
-
-afterAll(async() => {
 	await zbc.close()
 })
 

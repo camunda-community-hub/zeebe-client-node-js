@@ -1,5 +1,7 @@
 import { ZBClient } from '../../index'
 
+process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
+
 test("EvaluateDecision", async () => {
 	const zbc = new ZBClient()
 	const res = await zbc.deployResource({

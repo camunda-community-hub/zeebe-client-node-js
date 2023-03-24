@@ -11,7 +11,6 @@ test('uses an injected stdout', done => {
 	z.createWorker({
 		taskType: 'test',
 		taskHandler: job => {
-			console.log(job)
 			return job.complete()
 		},
 	})

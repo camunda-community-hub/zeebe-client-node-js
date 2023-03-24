@@ -140,6 +140,7 @@ test('Can set a custom user agent', () => {
 		url: 'url',
 	})
 	expect(o.userAgentString.includes(' modeler')).toBe(true)
+	o.stopExpiryTimer()
 })
 
 test('Uses form encoding for request', done => {
@@ -170,10 +171,9 @@ test('Uses form encoding for request', done => {
 			}
 		})
 		.listen(3001)
-	o.getToken()
+	o.getToken().then(() => o.stopExpiryTimer())
 
 	expect(o.userAgentString.includes(' modeler')).toBe(true)
-	o.stopExpiryTimer()
 })
 
 test('In-memory cache is populated and evicted after timeout', done => {
