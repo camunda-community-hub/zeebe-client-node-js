@@ -105,7 +105,6 @@
 								<li class="tsd-kind-interface"><a href="interfaces/DeployProcessResponse.html" class="tsd-kind-icon">Deploy<wbr>Process<wbr>Response</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/DeployResourceRequest.html" class="tsd-kind-icon">Deploy<wbr>Resource<wbr>Request</a></li>
 								<li class="tsd-kind-interface tsd-has-type-parameter"><a href="interfaces/DeployResourceResponse.html" class="tsd-kind-icon">Deploy<wbr>Resource<wbr>Response</a></li>
-								<li class="tsd-kind-interface"><a href="interfaces/EvaluateDecisionRequest.html" class="tsd-kind-icon">Evaluate<wbr>Decision<wbr>Request</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/EvaluateDecisionResponse.html" class="tsd-kind-icon">Evaluate<wbr>Decision<wbr>Response</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/EvaluatedDecision.html" class="tsd-kind-icon">Evaluated<wbr>Decision</a></li>
 								<li class="tsd-kind-interface"><a href="interfaces/EvaluatedDecisionInput.html" class="tsd-kind-icon">Evaluated<wbr>Decision<wbr>Input</a></li>
@@ -161,6 +160,7 @@
 								<li class="tsd-kind-type-alias"><a href="modules.html#ConnectionErrorHandler" class="tsd-kind-icon">Connection<wbr>Error<wbr>Handler</a></li>
 								<li class="tsd-kind-type-alias"><a href="modules.html#DeployProcessFiles" class="tsd-kind-icon">Deploy<wbr>Process<wbr>Files</a></li>
 								<li class="tsd-kind-type-alias"><a href="modules.html#Deployment" class="tsd-kind-icon">Deployment</a></li>
+								<li class="tsd-kind-type-alias"><a href="modules.html#EvaluateDecisionRequest" class="tsd-kind-icon">Evaluate<wbr>Decision<wbr>Request</a></li>
 								<li class="tsd-kind-type-alias"><a href="modules.html#JSON" class="tsd-kind-icon">JSON</a></li>
 								<li class="tsd-kind-type-alias"><a href="modules.html#Loglevel" class="tsd-kind-icon">Loglevel</a></li>
 								<li class="tsd-kind-type-alias"><a href="modules.html#MustReturnJobActionAcknowledgement" class="tsd-kind-icon">Must<wbr>Return<wbr>Job<wbr>Action<wbr>Acknowledgement</a></li>
@@ -190,7 +190,7 @@
 					<div class="tsd-signature tsd-kind-icon">Batched<wbr>Job&lt;Variables, Headers, Output&gt;<span class="tsd-signature-symbol">:</span> <a href="interfaces/Job.html" class="tsd-signature-type" data-tsd-kind="Interface">Job</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Variables</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">Headers</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> &amp; </span><a href="interfaces/JobCompletionInterface.html" class="tsd-signature-type" data-tsd-kind="Interface">JobCompletionInterface</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Output</span><span class="tsd-signature-symbol">&gt;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/58976ae/src/lib/interfaces-1.0.ts#L302">src/lib/interfaces-1.0.ts:302</a></li>
+							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/bf220b2/src/lib/interfaces-1.0.ts#L302">src/lib/interfaces-1.0.ts:302</a></li>
 						</ul>
 					</aside>
 					<h4 class="tsd-type-parameters-title">Type parameters</h4>
@@ -212,7 +212,7 @@
 					<div class="tsd-signature tsd-kind-icon">Connection<wbr>Error<wbr>Handler<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span>error<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/58976ae/src/lib/interfaces-1.0.ts#L220">src/lib/interfaces-1.0.ts:220</a></li>
+							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/bf220b2/src/lib/interfaces-1.0.ts#L220">src/lib/interfaces-1.0.ts:220</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-type-declaration">
@@ -243,7 +243,7 @@
 					<div class="tsd-signature tsd-kind-icon">Deploy<wbr>Process<wbr>Files<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/58976ae/src/lib/interfaces-1.0.ts#L49">src/lib/interfaces-1.0.ts:49</a></li>
+							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/bf220b2/src/lib/interfaces-1.0.ts#L49">src/lib/interfaces-1.0.ts:49</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -253,7 +253,17 @@
 					<div class="tsd-signature tsd-kind-icon">Deployment<span class="tsd-signature-symbol">:</span> <a href="interfaces/ProcessDeployment.html" class="tsd-signature-type" data-tsd-kind="Interface">ProcessDeployment</a><span class="tsd-signature-symbol"> | </span><a href="interfaces/DecisionDeployment.html" class="tsd-signature-type" data-tsd-kind="Interface">DecisionDeployment</a><span class="tsd-signature-symbol"> | </span><a href="interfaces/DecisionRequirementsDeployment.html" class="tsd-signature-type" data-tsd-kind="Interface">DecisionRequirementsDeployment</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/58976ae/src/lib/interfaces-grpc-1.0.ts#L261">src/lib/interfaces-grpc-1.0.ts:261</a></li>
+							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/bf220b2/src/lib/interfaces-grpc-1.0.ts#L261">src/lib/interfaces-grpc-1.0.ts:261</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-type-alias">
+					<a name="EvaluateDecisionRequest" class="tsd-anchor"></a>
+					<h3>Evaluate<wbr>Decision<wbr>Request</h3>
+					<div class="tsd-signature tsd-kind-icon">Evaluate<wbr>Decision<wbr>Request<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span>decisionKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>variables<span class="tsd-signature-symbol">: </span><a href="interfaces/JSONDoc.html" class="tsd-signature-type" data-tsd-kind="Interface">JSONDoc</a><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">{ </span>decisionId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>variables<span class="tsd-signature-symbol">: </span><a href="interfaces/JSONDoc.html" class="tsd-signature-type" data-tsd-kind="Interface">JSONDoc</a><span class="tsd-signature-symbol"> }</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/bf220b2/src/lib/interfaces-grpc-1.0.ts#L422">src/lib/interfaces-grpc-1.0.ts:422</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -263,7 +273,7 @@
 					<div class="tsd-signature tsd-kind-icon">JSON<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> | </span><a href="modules.html#JSON" class="tsd-signature-type" data-tsd-kind="Type alias">JSON</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> | </span><a href="interfaces/JSONDoc.html" class="tsd-signature-type" data-tsd-kind="Interface">JSONDoc</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> | </span><a href="interfaces/JSONDoc.html" class="tsd-signature-type" data-tsd-kind="Interface">JSONDoc</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/58976ae/src/lib/interfaces-1.0.ts#L102">src/lib/interfaces-1.0.ts:102</a></li>
+							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/bf220b2/src/lib/interfaces-1.0.ts#L102">src/lib/interfaces-1.0.ts:102</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -273,7 +283,7 @@
 					<div class="tsd-signature tsd-kind-icon">Loglevel<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">&quot;INFO&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;DEBUG&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;NONE&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;ERROR&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/58976ae/src/lib/interfaces-published-contract.ts#L20">src/lib/interfaces-published-contract.ts:20</a></li>
+							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/bf220b2/src/lib/interfaces-published-contract.ts#L20">src/lib/interfaces-published-contract.ts:20</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -283,7 +293,7 @@
 					<div class="tsd-signature tsd-kind-icon">Must<wbr>Return<wbr>Job<wbr>Action<wbr>Acknowledgement<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">JOB_ACTION_ACKNOWLEDGEMENT</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">JOB_ACTION_ACKNOWLEDGEMENT</span><span class="tsd-signature-symbol">&gt;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/58976ae/src/lib/interfaces-1.0.ts#L310">src/lib/interfaces-1.0.ts:310</a></li>
+							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/bf220b2/src/lib/interfaces-1.0.ts#L310">src/lib/interfaces-1.0.ts:310</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -293,7 +303,7 @@
 					<div class="tsd-signature tsd-kind-icon">Operation<wbr>Options<span class="tsd-signature-symbol">:</span> <a href="interfaces/OperationOptionsWithRetry.html" class="tsd-signature-type" data-tsd-kind="Interface">OperationOptionsWithRetry</a><span class="tsd-signature-symbol"> | </span><a href="interfaces/OperationOptionsNoRetry.html" class="tsd-signature-type" data-tsd-kind="Interface">OperationOptionsNoRetry</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/58976ae/src/lib/interfaces-1.0.ts#L98">src/lib/interfaces-1.0.ts:98</a></li>
+							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/bf220b2/src/lib/interfaces-1.0.ts#L98">src/lib/interfaces-1.0.ts:98</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -303,7 +313,7 @@
 					<div class="tsd-signature tsd-kind-icon">ZBBatch<wbr>Worker<wbr>Task<wbr>Handler&lt;V, H, O&gt;<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span>jobs<span class="tsd-signature-symbol">: </span><a href="modules.html#BatchedJob" class="tsd-signature-type" data-tsd-kind="Type alias">BatchedJob</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">V</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">H</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span>, worker<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ZBBatchWorker</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">V</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">H</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">O</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><a href="modules.html#MustReturnJobActionAcknowledgement" class="tsd-signature-type" data-tsd-kind="Type alias">MustReturnJobActionAcknowledgement</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="modules.html#MustReturnJobActionAcknowledgement" class="tsd-signature-type" data-tsd-kind="Type alias">MustReturnJobActionAcknowledgement</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="modules.html#MustReturnJobActionAcknowledgement" class="tsd-signature-type" data-tsd-kind="Type alias">MustReturnJobActionAcknowledgement</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/58976ae/src/lib/interfaces-1.0.ts#L314">src/lib/interfaces-1.0.ts:314</a></li>
+							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/bf220b2/src/lib/interfaces-1.0.ts#L314">src/lib/interfaces-1.0.ts:314</a></li>
 						</ul>
 					</aside>
 					<h4 class="tsd-type-parameters-title">Type parameters</h4>
@@ -349,7 +359,7 @@
 					<div class="tsd-signature tsd-kind-icon">ZBWorker<wbr>Task<wbr>Handler&lt;WorkerInputVariables, CustomHeaderShape, WorkerOutputVariables&gt;<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span>job<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="interfaces/ZeebeJob.html" class="tsd-signature-type" data-tsd-kind="Interface">ZeebeJob</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">WorkerInputVariables</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">CustomHeaderShape</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">WorkerOutputVariables</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span>, worker<span class="tsd-signature-symbol">: </span><a href="classes/ZBWorker.html" class="tsd-signature-type" data-tsd-kind="Class">ZBWorker</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">WorkerInputVariables</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">CustomHeaderShape</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">WorkerOutputVariables</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><a href="modules.html#MustReturnJobActionAcknowledgement" class="tsd-signature-type" data-tsd-kind="Type alias">MustReturnJobActionAcknowledgement</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/58976ae/src/lib/interfaces-1.0.ts#L189">src/lib/interfaces-1.0.ts:189</a></li>
+							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/bf220b2/src/lib/interfaces-1.0.ts#L189">src/lib/interfaces-1.0.ts:189</a></li>
 						</ul>
 					</aside>
 					<h4 class="tsd-type-parameters-title">Type parameters</h4>
@@ -398,7 +408,7 @@
 					<div class="tsd-signature tsd-kind-icon">Connection<wbr>Status<wbr>Event<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span>close<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">&quot;close&quot;</span><span class="tsd-signature-symbol">; </span>connectionError<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">&quot;connectionError&quot;</span><span class="tsd-signature-symbol">; </span>ready<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">&quot;ready&quot;</span><span class="tsd-signature-symbol">; </span>unknown<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">&quot;unknown&quot;</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol"> = ...</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/58976ae/src/zb/ZBClient.ts#L49">src/zb/ZBClient.ts:49</a></li>
+							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/bf220b2/src/zb/ZBClient.ts#L49">src/zb/ZBClient.ts:49</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-type-declaration">
@@ -664,7 +674,7 @@
 					<div class="tsd-signature tsd-kind-icon">JOB_<wbr>ACTION_<wbr>ACKNOWLEDGEMENT<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">&quot;JOB_ACTION_ACKNOWLEDGEMENT&quot;</span><span class="tsd-signature-symbol"> = ...</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/58976ae/src/lib/interfaces-1.0.ts#L308">src/lib/interfaces-1.0.ts:308</a></li>
+							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/bf220b2/src/lib/interfaces-1.0.ts#L308">src/lib/interfaces-1.0.ts:308</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -674,7 +684,7 @@
 					<div class="tsd-signature tsd-kind-icon">ZBJson<wbr>Logger<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span>debug<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span>message<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">any</span>, <span class="tsd-signature-symbol">...</span>optionalParams<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">; </span>error<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span>message<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">any</span>, <span class="tsd-signature-symbol">...</span>optionalParams<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">; </span>info<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span>message<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">any</span>, <span class="tsd-signature-symbol">...</span>optionalParams<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol"> = ...</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/58976ae/src/lib/ZBJsonLogger.ts#L1">src/lib/ZBJsonLogger.ts:1</a></li>
+							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/bf220b2/src/lib/ZBJsonLogger.ts#L1">src/lib/ZBJsonLogger.ts:1</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-type-declaration">
@@ -776,7 +786,7 @@
 					<div class="tsd-signature tsd-kind-icon">ZBSimple<wbr>Logger<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Logger</span><span class="tsd-signature-symbol"> = ...</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/58976ae/src/lib/SimpleLogger.ts#L49">src/lib/SimpleLogger.ts:49</a></li>
+							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/bf220b2/src/lib/SimpleLogger.ts#L49">src/lib/SimpleLogger.ts:49</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -884,9 +894,6 @@
 					</li>
 					<li class=" tsd-kind-interface tsd-has-type-parameter">
 						<a href="interfaces/DeployResourceResponse.html" class="tsd-kind-icon">Deploy<wbr>Resource<wbr>Response</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/EvaluateDecisionRequest.html" class="tsd-kind-icon">Evaluate<wbr>Decision<wbr>Request</a>
 					</li>
 					<li class=" tsd-kind-interface">
 						<a href="interfaces/EvaluateDecisionResponse.html" class="tsd-kind-icon">Evaluate<wbr>Decision<wbr>Response</a>
@@ -1037,6 +1044,9 @@
 					</li>
 					<li class=" tsd-kind-type-alias">
 						<a href="modules.html#Deployment" class="tsd-kind-icon">Deployment</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#EvaluateDecisionRequest" class="tsd-kind-icon">Evaluate<wbr>Decision<wbr>Request</a>
 					</li>
 					<li class=" tsd-kind-type-alias">
 						<a href="modules.html#JSON" class="tsd-kind-icon">JSON</a>
