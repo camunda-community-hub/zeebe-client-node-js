@@ -301,10 +301,10 @@ export interface PublishMessageRequest<Variables = IInputVariables> {
 	/** The value to match with the field specified as "Subscription Correlation Key" in BPMN */
 	correlationKey: string
 	/** The number of seconds for the message to buffer on the broker, awaiting correlation. Omit or set to zero for no buffering. */
-	timeToLive: MaybeTimeDuration
+	timeToLive?: MaybeTimeDuration
 	/** Unique ID for this message */
 	messageId?: string
-	variables: Variables
+	variables?: Variables
 }
 
 export interface PublishMessageResponse {

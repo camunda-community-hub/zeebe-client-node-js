@@ -1026,7 +1026,10 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	): Promise<Grpc.PublishMessageResponse> {
 		return this.executeOperation('publishMessage', () =>
 			this.grpc.publishMessageSync(
-				stringifyVariables(publishMessageRequest)
+				stringifyVariables({
+					...publishMessageRequest,
+					variables: publishMessageRequest.variables
+				})
 			)
 		)
 	}
@@ -1086,7 +1089,10 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		}
 		return this.executeOperation('publishStartMessage', () =>
 			this.grpc.publishMessageSync(
-				stringifyVariables(publishMessageRequest)
+				stringifyVariables({
+					...publishMessageRequest,
+					variables: publishMessageRequest.variables || {}
+				})
 			)
 		)
 	}
