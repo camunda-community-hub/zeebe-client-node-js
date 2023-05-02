@@ -274,7 +274,6 @@ export class GrpcClient extends EventEmitter {
 					if (this.closing) {
 						// tslint:disable-next-line: no-console
 						console.log('Short-circuited on channel closed') // @DEBUG
-
 						return
 					}
 					let stream
@@ -290,6 +289,7 @@ export class GrpcClient extends EventEmitter {
 						)
 						this.setReady()
 					} catch (error: any) {
+						debug(`${methodName}Stream error: ${error.code}`, error.message)
 						this.emit(MiddlewareSignals.Log.Error, error.message)
 						this.emit(MiddlewareSignals.Event.Error)
 						this.setNotReady()
@@ -324,7 +324,7 @@ export class GrpcClient extends EventEmitter {
 					 */
 					stream.on('error', (error: GrpcStreamError) => {
 						clearTimeout(clientSideTimeout)
-						debug(`Error`, error)
+						debug(`${methodName}Stream error emitted by stream`, error)
 						this.emit(MiddlewareSignals.Event.Error)
 						if (error.message.includes('14 UNAVAILABLE')) {
 							this.emit(
@@ -363,6 +363,7 @@ export class GrpcClient extends EventEmitter {
 					debug(`Calling ${methodName}Sync...`)
 
 					if (this.closing) {
+						debug(`Aborting ${methodName}Sync due to client closing.`)
 						return
 					}
 					const timeNormalisedRequest = replaceTimeValuesWithMillisecondNumber(
@@ -378,6 +379,7 @@ export class GrpcClient extends EventEmitter {
 								(err, dat) => {
 									// This will error on network or business errors
 									if (err) {
+										debug(`${methodName}Sync error: ${err.code}`)
 										const isNetworkError =
 											err.code === GrpcError.UNAVAILABLE
 										if (isNetworkError) {
@@ -389,6 +391,7 @@ export class GrpcClient extends EventEmitter {
 									}
 									this.emit(MiddlewareSignals.Event.Ready)
 									this.setReady()
+									debug(`${methodName}Sync completed`)
 									resolve(dat)
 								}
 							)

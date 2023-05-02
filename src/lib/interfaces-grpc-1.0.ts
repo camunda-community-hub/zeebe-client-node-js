@@ -521,11 +521,25 @@ export interface EvaluatedDecisionOutput {
 	outputValue: string;
 }
 
-interface MatchedDecisionRule {
+export interface MatchedDecisionRule {
 	/** the id of the matched rule */
 	ruleId: string;
 	/** the index of the matched rule */
 	ruleIndex: number;
 	/** the evaluated decision outputs */
 	evaluatedOutputs: EvaluatedDecisionOutput[];
+}
+
+export interface BroadcastSignalRequest {
+	// The name of the signal
+	signalName: string;
+
+	// the signal variables as a JSON document; to be valid, the root of the document must be an
+  	// object, e.g. { "a": "foo" }. [ "foo" ] would not be valid.
+	variables: string;
+}
+
+export interface BroadcastSignalResponse {
+  	// the unique ID of the signal that was broadcasted.
+	key: string
 }

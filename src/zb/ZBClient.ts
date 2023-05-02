@@ -286,6 +286,26 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 
 	/**
 	 *
+	 * @description Broadcast a Signal
+	 * @example
+	 * ```
+	 * const zbc = new ZBClient()
+	 *
+	 * zbc.broadcastSignal({
+	 *   signalName: 'my-signal',
+	 *   variables: { reasonCode: 3 }
+	 * })
+	 */
+	public async broadcastSignal(req: ZB.BroadcastSignalReq): Promise<ZB.BroadcastSignalRes> {
+		const request = {
+			signalName: req.signalName,
+			variables: JSON.stringify(req.variables ?? {})
+		}
+		return this.executeOperation('broadcastSignal', () => this.grpc.broadcastSignalSync(request))
+	}
+
+	/**
+	 *
 	 * @description Cancel a process instance by process instance key.
 	 * @example
 	 * ```

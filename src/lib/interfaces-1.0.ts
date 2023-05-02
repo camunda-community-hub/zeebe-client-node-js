@@ -25,6 +25,8 @@ import {
 	ModifyProcessInstanceRequest,
 	ModifyProcessInstanceResponse,
 	ProcessInstanceCreationStartInstruction,
+	BroadcastSignalResponse,
+	BroadcastSignalRequest,
 } from './interfaces-grpc-1.0'
 import { Loglevel, ZBCustomLogger } from './interfaces-published-contract'
 
@@ -405,6 +407,21 @@ export interface ZBWorkerConfig<
 	 */
 	jobBatchMinSize?: number
 }
+
+export interface BroadcastSignalReq {
+	// The name of the signal
+	signalName: string;
+
+	// the signal variables as a JSON document; to be valid, the root of the document must be an
+  	// object, e.g. { "a": "foo" }. [ "foo" ] would not be valid.
+	variables?: JSONDoc;
+}
+
+export interface BroadcastSignalRes {
+	// the unique ID of the signal that was broadcasted.
+	key: string
+}
+
 export interface ZBGrpc extends GrpcClient {
 	completeJobSync: any
 	activateJobsStream: any
@@ -440,4 +457,5 @@ export interface ZBGrpc extends GrpcClient {
 	resolveIncidentSync(
 		resolveIncidentRequest: ResolveIncidentRequest
 	): Promise<void>
+	broadcastSignalSync(signal: BroadcastSignalRequest): Promise<BroadcastSignalResponse>
 }

@@ -1,3 +1,10 @@
+# Version 8.2.1
+
+## New Features
+
+_New shiny stuff._
+-   Add `ZBClient.broadcastSignal`, enabling the client to broadcast a signal. See [#312](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/312) for more details.
+
 # Version 8.2.0
 
 ## New Features
