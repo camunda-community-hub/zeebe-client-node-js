@@ -301,10 +301,10 @@ export interface PublishMessageRequest<Variables = IInputVariables> {
 	/** The value to match with the field specified as "Subscription Correlation Key" in BPMN */
 	correlationKey: string
 	/** The number of seconds for the message to buffer on the broker, awaiting correlation. Omit or set to zero for no buffering. */
-	timeToLive: MaybeTimeDuration
+	timeToLive?: MaybeTimeDuration
 	/** Unique ID for this message */
 	messageId?: string
-	variables: Variables
+	variables?: Variables
 }
 
 export interface PublishMessageResponse {
@@ -521,11 +521,25 @@ export interface EvaluatedDecisionOutput {
 	outputValue: string;
 }
 
-interface MatchedDecisionRule {
+export interface MatchedDecisionRule {
 	/** the id of the matched rule */
 	ruleId: string;
 	/** the index of the matched rule */
 	ruleIndex: number;
 	/** the evaluated decision outputs */
 	evaluatedOutputs: EvaluatedDecisionOutput[];
+}
+
+export interface BroadcastSignalRequest {
+	// The name of the signal
+	signalName: string;
+
+	// the signal variables as a JSON document; to be valid, the root of the document must be an
+  	// object, e.g. { "a": "foo" }. [ "foo" ] would not be valid.
+	variables: string;
+}
+
+export interface BroadcastSignalResponse {
+  	// the unique ID of the signal that was broadcasted.
+	key: string
 }

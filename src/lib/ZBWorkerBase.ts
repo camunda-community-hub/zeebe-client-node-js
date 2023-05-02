@@ -444,6 +444,11 @@ You should call only one job action method in the worker handler. This is a bug 
 			workerIsClosing ||
 			insufficientCapacityAvailable
 		) {
+			debug('Worker polling blocked', {
+				pollAlreadyInProgress,
+				workerIsClosing,
+				insufficientCapacityAvailable
+			})
 			return
 		}
 
@@ -502,9 +507,11 @@ You should call only one job action method in the worker handler. This is a bug 
 
 	private async activateJobs(id: string) {
 		if (this.stalled) {
+			debug('Stalled')
 			return { stalled: true }
 		}
 		if (this.closing) {
+			debug('Closing')
 			return {
 				closing: true,
 			}
@@ -553,6 +560,7 @@ You should call only one job action method in the worker handler. This is a bug 
 		}
 
 		if (stream.error) {
+			debug(`Stream error`, stream.error)
 			return { error: stream.error }
 		}
 

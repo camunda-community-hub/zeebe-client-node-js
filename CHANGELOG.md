@@ -1,3 +1,16 @@
+# Version 8.2.1
+
+## New Features
+
+_New shiny stuff._
+-   Add `ZBClient.broadcastSignal`, enabling the client to broadcast a signal. See [#312](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/312) for more details.
+
+## Fixes
+
+_Things that were broken and are now fixed._
+
+-   Previously, the `timeToLive` property of `ZBClient.publishMessage` was required, although it was documented as optional. In this release, both `timeToLive` and `variables` have been made optional. If no value is supplied for `timeToLive`, it defaults to 0. Thanks to [@nhomble]() for raising this issue. See [#311](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/311) for more details.
+
 # Version 8.2.0
 
 ## New Features
