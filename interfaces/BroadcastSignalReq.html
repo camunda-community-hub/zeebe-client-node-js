@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>DecisionMetadata | zeebe-node</title>
+	<title>BroadcastSignalReq | zeebe-node</title>
 	<meta name="description" content="Documentation for zeebe-node">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -55,10 +55,10 @@
 					<a href="../modules.html">zeebe-node</a>
 				</li>
 				<li>
-					<a href="DecisionMetadata.html">DecisionMetadata</a>
+					<a href="BroadcastSignalReq.html">BroadcastSignalReq</a>
 				</li>
 			</ul>
-			<h1>Interface DecisionMetadata</h1>
+			<h1>Interface BroadcastSignalReq</h1>
 		</div>
 	</div>
 </header>
@@ -69,7 +69,7 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">DecisionMetadata</span>
+						<span class="target">BroadcastSignalReq</span>
 					</li>
 				</ul>
 			</section>
@@ -80,12 +80,8 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="DecisionMetadata.html#decisionKey" class="tsd-kind-icon">decision<wbr>Key</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="DecisionMetadata.html#decisionRequirementsKey" class="tsd-kind-icon">decision<wbr>Requirements<wbr>Key</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="DecisionMetadata.html#dmnDecisionId" class="tsd-kind-icon">dmn<wbr>Decision<wbr>Id</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="DecisionMetadata.html#dmnDecisionName" class="tsd-kind-icon">dmn<wbr>Decision<wbr>Name</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="DecisionMetadata.html#dmnDecisionRequirementsId" class="tsd-kind-icon">dmn<wbr>Decision<wbr>Requirements<wbr>Id</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="DecisionMetadata.html#version" class="tsd-kind-icon">version</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="BroadcastSignalReq.html#signalName" class="tsd-kind-icon">signal<wbr>Name</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="BroadcastSignalReq.html#variables" class="tsd-kind-icon">variables</a></li>
 							</ul>
 						</section>
 					</div>
@@ -94,62 +90,22 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="decisionKey" class="tsd-anchor"></a>
-					<h3>decision<wbr>Key</h3>
-					<div class="tsd-signature tsd-kind-icon">decision<wbr>Key<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<a name="signalName" class="tsd-anchor"></a>
+					<h3>signal<wbr>Name</h3>
+					<div class="tsd-signature tsd-kind-icon">signal<wbr>Name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/075b21d/src/lib/interfaces-grpc-1.0.ts#L227">src/lib/interfaces-grpc-1.0.ts:227</a></li>
+							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/075b21d/src/lib/interfaces-1.0.ts#L413">src/lib/interfaces-1.0.ts:413</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="decisionRequirementsKey" class="tsd-anchor"></a>
-					<h3>decision<wbr>Requirements<wbr>Key</h3>
-					<div class="tsd-signature tsd-kind-icon">decision<wbr>Requirements<wbr>Key<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+					<a name="variables" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> variables</h3>
+					<div class="tsd-signature tsd-kind-icon">variables<span class="tsd-signature-symbol">:</span> <a href="JSONDoc.html" class="tsd-signature-type" data-tsd-kind="Interface">JSONDoc</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/075b21d/src/lib/interfaces-grpc-1.0.ts#L233">src/lib/interfaces-grpc-1.0.ts:233</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="dmnDecisionId" class="tsd-anchor"></a>
-					<h3>dmn<wbr>Decision<wbr>Id</h3>
-					<div class="tsd-signature tsd-kind-icon">dmn<wbr>Decision<wbr>Id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/075b21d/src/lib/interfaces-grpc-1.0.ts#L220">src/lib/interfaces-grpc-1.0.ts:220</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="dmnDecisionName" class="tsd-anchor"></a>
-					<h3>dmn<wbr>Decision<wbr>Name</h3>
-					<div class="tsd-signature tsd-kind-icon">dmn<wbr>Decision<wbr>Name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/075b21d/src/lib/interfaces-grpc-1.0.ts#L222">src/lib/interfaces-grpc-1.0.ts:222</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="dmnDecisionRequirementsId" class="tsd-anchor"></a>
-					<h3>dmn<wbr>Decision<wbr>Requirements<wbr>Id</h3>
-					<div class="tsd-signature tsd-kind-icon">dmn<wbr>Decision<wbr>Requirements<wbr>Id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/075b21d/src/lib/interfaces-grpc-1.0.ts#L230">src/lib/interfaces-grpc-1.0.ts:230</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="version" class="tsd-anchor"></a>
-					<h3>version</h3>
-					<div class="tsd-signature tsd-kind-icon">version<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/075b21d/src/lib/interfaces-grpc-1.0.ts#L224">src/lib/interfaces-grpc-1.0.ts:224</a></li>
+							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/075b21d/src/lib/interfaces-1.0.ts#L417">src/lib/interfaces-1.0.ts:417</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -168,25 +124,13 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-interface">
-						<a href="DecisionMetadata.html" class="tsd-kind-icon">Decision<wbr>Metadata</a>
+						<a href="BroadcastSignalReq.html" class="tsd-kind-icon">Broadcast<wbr>Signal<wbr>Req</a>
 						<ul>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="DecisionMetadata.html#decisionKey" class="tsd-kind-icon">decision<wbr>Key</a>
+								<a href="BroadcastSignalReq.html#signalName" class="tsd-kind-icon">signal<wbr>Name</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="DecisionMetadata.html#decisionRequirementsKey" class="tsd-kind-icon">decision<wbr>Requirements<wbr>Key</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="DecisionMetadata.html#dmnDecisionId" class="tsd-kind-icon">dmn<wbr>Decision<wbr>Id</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="DecisionMetadata.html#dmnDecisionName" class="tsd-kind-icon">dmn<wbr>Decision<wbr>Name</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="DecisionMetadata.html#dmnDecisionRequirementsId" class="tsd-kind-icon">dmn<wbr>Decision<wbr>Requirements<wbr>Id</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="DecisionMetadata.html#version" class="tsd-kind-icon">version</a>
+								<a href="BroadcastSignalReq.html#variables" class="tsd-kind-icon">variables</a>
 							</li>
 						</ul>
 					</li>
