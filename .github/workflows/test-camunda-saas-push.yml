@@ -2,7 +2,7 @@ name: "Test on Camunda 8 SaaS"
 on: # main branch changes
   push:
 jobs:
-  test:
+  test-on-saas:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
