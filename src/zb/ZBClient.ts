@@ -917,7 +917,6 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 
 	/**
 	 *
-	 * NOT IMPLEMENTED YET
 	 * @description Evaluates a decision. The decision to evaluate can be specified either by using its unique key (as returned by DeployResource), or using the decision ID. When using the decision ID, the latest deployed version of the decision is used.
 	 * @example
 	 * ```
