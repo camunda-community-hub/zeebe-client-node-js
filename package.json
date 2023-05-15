@@ -75,7 +75,7 @@
 		"promise-retry": "^1.1.1",
 		"stack-trace": "0.0.10",
 		"typed-duration": "^1.0.12",
-		"uuid": "^3.3.2"
+		"uuid": "^7.0.3"
 	},
 	"devDependencies": {
 		"@sitapati/testcontainers": "^2.8.1",

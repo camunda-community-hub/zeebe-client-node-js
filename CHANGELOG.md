@@ -1,3 +1,11 @@
+# Version 8.2.2
+
+## Chores
+
+_Things that shouldn't have a visible impact._
+
+-   Updated `uuid` dependency from v3 to v7. This avoids a warning message at install time that "versions prior to 7 may use `Math.random()`".
+
 # Version 8.2.1
 
 ## New Features
