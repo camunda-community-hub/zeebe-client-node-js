@@ -1,3 +1,11 @@
+# Version 8.2.3
+
+## Fixes
+
+_Things that were broken and are now fixed._
+
+-   The object signature for `job.fail()` did not correctly apply an explicit value for `retries`. As a result, job retries would decrement automatically if this signature and option were used. The value is now correctly parsed and applied, and job retry count can be explicitly set in the `job.fail()` command with the object signature. Thanks to [@patozgg](https://github.com/patozgg) for reporting this. See [#316](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/316) for more details.
+
 # Version 8.2.2
 
 ## Chores

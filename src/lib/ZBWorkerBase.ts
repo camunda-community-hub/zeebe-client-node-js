@@ -278,6 +278,11 @@ export class ZBWorkerBase<
 		thisJob: ZB.Job
 	): ZB.JobCompletionInterface<T> & ZB.JobCompletionInterface<T> {
 		let methodCalled: string | undefined
+
+		/**
+		 * This is a wrapper that allows us to throw an error if a job acknowledgement function is called more than once,
+		 * for these functions should be called once only (and only one should be called, but we don't handle that case).
+		 * */
 		const errorMsgOnPriorMessageCall = (
 			thisMethod: string,
 			wrappedFunction: any
@@ -298,26 +303,22 @@ You should call only one job action method in the worker handler. This is a bug 
 				return wrappedFunction(...args)
 			}
 		}
+
 		const cancelWorkflow = (job: ZB.Job) => () =>
 			this.zbClient
 				.cancelProcessInstance(job.processInstanceKey)
 				.then(() => ZB.JOB_ACTION_ACKNOWLEDGEMENT)
 
 		const failJob = (job: ZB.Job) => (
-			errorMessageOrFailureConfig: string | ZB.JobFailureConfiguration,
+			conf: string | ZB.JobFailureConfiguration,
 			retries?: number
 		) => {
-			const errorMessage =
-				typeof errorMessageOrFailureConfig === 'string'
-					? errorMessageOrFailureConfig
-					: (errorMessageOrFailureConfig as ZB.JobFailureConfiguration)
-							.errorMessage
-			const retryBackOff =
-				typeof errorMessageOrFailureConfig === 'string'
-					? 0
-					: (errorMessageOrFailureConfig as ZB.JobFailureConfiguration)
-							.retryBackOff ?? 0
-			return this.failJob({ job, errorMessage, retries, retryBackOff })
+			const isFailureConfig = (_conf: string | ZB.JobFailureConfiguration): _conf is ZB.JobFailureConfiguration =>
+				typeof _conf === 'object'
+			const errorMessage = isFailureConfig(conf) ? conf.errorMessage : conf
+			const retryBackOff = isFailureConfig(conf) ? conf.retryBackOff ?? 0 : 0
+			const _retries = isFailureConfig(conf) ? conf.retries ?? 0 : retries
+			return this.failJob({ job, errorMessage, retries: _retries, retryBackOff })
 		}
 
 		const succeedJob = (job: ZB.Job) => (completedVariables?: T) =>

@@ -164,3 +164,11 @@ test('Fails a process when the handler throws and options.failProcessOnException
 			}, 1500)
 		}
 	}))
+
+test('Decrements the retries count by default', () => {
+
+})
+
+test('Set the retries to a specific number when provided with one', () => {
+
+})
