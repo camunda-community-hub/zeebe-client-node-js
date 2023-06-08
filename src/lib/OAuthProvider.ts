@@ -103,13 +103,13 @@ export class OAuthProvider {
 
 	public async getToken(): Promise<string> {
 		if (this.tokenCache[this.clientId]) {
-			debug(`[OAuth] Using cached token from memory...`)
+			debug(`Using cached token from memory...`)
 			return this.tokenCache[this.clientId].access_token
 		}
 		if (this.useFileCache) {
 			const cachedToken = this.fromFileCache(this.clientId)
 			if (cachedToken) {
-				debug(`[OAuth] Using cached token from file...`)
+				debug(`Using cached token from file...`)
 				return cachedToken.access_token
 			}
 		}
@@ -155,7 +155,7 @@ export class OAuthProvider {
 			grant_type: 'client_credentials',
 		}
 
-		debug(`[OAuth] Requesting token from token endpoint...`)
+		debug(`Requesting token from token endpoint...`)
 		return got
 			.post(this.url, {
 				form,
@@ -169,6 +169,8 @@ export class OAuthProvider {
 			})
 			.then(res => {
 				return this.safeJSONParse(res.body).then(token => {
+					debug(`Received token from token endpoint.`)
+
 					const d = new Date()
 					token.expiry = d.setSeconds(d.getSeconds()) + (token.expires_in * 1000)
 					if (this.useFileCache) {
@@ -194,9 +196,9 @@ export class OAuthProvider {
 	private fromFileCache(clientId: string) {
 		let token: Token
 		const tokenCachedInFile = fs.existsSync(this.cachedTokenFile(clientId))
-		debug(`[OAuth] Checking token cache file...`)
+		debug(`Checking token cache file...`)
 		if (!tokenCachedInFile) {
-			debug(`[OAuth] No token cache file found...`)
+			debug(`No token cache file found...`)
 			return null
 		}
 		try {
@@ -206,14 +208,14 @@ export class OAuthProvider {
 			)
 
 			if (this.isExpired(token)) {
-				debug(`[OAuth] Cached token is expired...`)
+				debug(`Cached token is expired...`)
 				return null
 			}
 			this.tokenCache[this.clientId] = token
 			this.startExpiryTimer(token)
 			return token
 		} catch (e:any) {
-			debug(`[OAuth] ${e.message}`)
+			debug(`Failed to load cached token: ${e.message}`)
 			return null
 		}
 	}
