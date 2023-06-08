@@ -52,6 +52,18 @@ export class ConfigurationHydrator {
 			...ConfigurationHydrator.getEagerStatus(options),
 			...ConfigurationHydrator.getRetryConfiguration(options),
 		}
+
+		// inherit oAuth custom root certificates, unless
+		// others are explicitly provided
+		if (
+			configuration?.oAuth &&
+			!configuration.oAuth.customRootCert &&
+			configuration.customSSL?.rootCerts
+		) {
+			configuration.oAuth.customRootCert =
+				configuration.customSSL.rootCerts
+		}
+
 		return configuration
 	}
 	public static readonly getLogLevelFromEnv = () =>
