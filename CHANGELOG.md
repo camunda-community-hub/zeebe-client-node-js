@@ -1,3 +1,11 @@
+# Version 8.2.4
+
+## Fixes
+
+_Things that were broken and are now fixed._
+
+-   Custom root certificates were not being passed to the Camunda SaaS OAuth provider. This caused a failure to connect when an SSL terminating firewall that uses a custom root certificate sits between the client and Camunda SaaS. Custom root certificates are now passed to the Camunda SaaS OAuth provider, and are used when making the connection. Thanks to [@nikku](https://github.com/nikku) for reporting this and providing the patch. See [#319](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/319) for more details.
+
 # Version 8.2.3
 
 ## Fixes
