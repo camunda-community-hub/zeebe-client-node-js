@@ -360,6 +360,91 @@ test('Uses the explicit region passed in a CamundaCloudConfig', () => {
 	)
 })
 
+describe('Configures secure connection with custom root certs', () => {
+	test('to Camunda Cloud, oAuth inherits <customSSL.rootCerts>', () => {
+		delete process.env.ZEEBE_CAMUNDA_CLOUD_CLUSTER_ID
+		delete process.env.ZEEBE_CLIENT_SECRET
+		delete process.env.ZEEBE_CLIENT_ID
+		delete process.env.ZEEBE_GATEWAY_ADDRESS
+
+		const rootCerts = Buffer.from('CERT', 'utf8')
+
+		// process.env.ZEEBE_GATEWAY_ADDRESS = 'zeebe://localhost:26500'
+		const conf = ConfigurationHydrator.configure('localhost:26600', {
+			camundaCloud: {
+				clientId: 'CLIENT_ID',
+				clientSecret: 'CLIENT_SECRET',
+				clusterId: 'CLUSTER_ID',
+				clusterRegion: 'CLUSTER_REGION',
+			},
+			useTLS: true,
+			customSSL: {
+				rootCerts,
+			},
+		})
+
+		expect(conf.oAuth!.url).toBe(
+			'https://login.cloud.camunda.io/oauth/token'
+		)
+		expect(conf.oAuth!.customRootCert).toBe(rootCerts)
+	})
+
+	test('to Self-managed, oAuth uses <oAuth.customRootCert>', () => {
+		delete process.env.ZEEBE_CAMUNDA_CLOUD_CLUSTER_ID
+		delete process.env.ZEEBE_CLIENT_SECRET
+		delete process.env.ZEEBE_CLIENT_ID
+		delete process.env.ZEEBE_GATEWAY_ADDRESS
+
+		const rootCerts = Buffer.from('CERT', 'utf8')
+		const oAuthRootCerts = Buffer.from('C_CERT', 'utf8')
+
+		// process.env.ZEEBE_GATEWAY_ADDRESS = 'zeebe://localhost:26500'
+		const conf = ConfigurationHydrator.configure('localhost:26600', {
+			oAuth: {
+				audience: 'OAUTH_AUDIENCE',
+				clientId: 'CLIENT_ID',
+				clientSecret: 'CLIENT_SECRET',
+				url: 'OAUTH_URL',
+				customRootCert: oAuthRootCerts,
+			},
+			useTLS: true,
+			customSSL: {
+				rootCerts,
+			},
+		})
+
+		expect(conf.oAuth!.url).toBe('OAUTH_URL')
+		expect(conf.oAuth!.customRootCert).toBe(oAuthRootCerts)
+		expect(conf.customSSL?.rootCerts).toBe(rootCerts)
+	})
+
+	test('to Self-managed, oAuth inherits <customSSL.rootCerts>', () => {
+		delete process.env.ZEEBE_CAMUNDA_CLOUD_CLUSTER_ID
+		delete process.env.ZEEBE_CLIENT_SECRET
+		delete process.env.ZEEBE_CLIENT_ID
+		delete process.env.ZEEBE_GATEWAY_ADDRESS
+
+		const rootCerts = Buffer.from('CERT', 'utf8')
+
+		// process.env.ZEEBE_GATEWAY_ADDRESS = 'zeebe://localhost:26500'
+		const conf = ConfigurationHydrator.configure('localhost:26600', {
+			oAuth: {
+				audience: 'OAUTH_AUDIENCE',
+				clientId: 'CLIENT_ID',
+				clientSecret: 'CLIENT_SECRET',
+				url: 'OAUTH_URL',
+			},
+			useTLS: true,
+			customSSL: {
+				rootCerts,
+			},
+		})
+
+		expect(conf.oAuth!.url).toBe('OAUTH_URL')
+		expect(conf.oAuth!.customRootCert).toBe(rootCerts)
+	})
+})
+
 test('Is insecure by default', () => {
 	delete process.env.ZEEBE_INSECURE_CONNECTION
 	const conf = ConfigurationHydrator.configure('localhost:26600', {})
