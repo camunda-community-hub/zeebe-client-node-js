@@ -2,13 +2,9 @@ import { ZBClient } from '../..'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 
-let zbc: ZBClient
+const zbc = new ZBClient()
 
-beforeEach(async () => {
-	zbc = new ZBClient()
-})
-
-afterEach(async () => {
+afterAll(async () => {
 	await zbc.close() // Makes sure we don't forget to close connection
 })
 

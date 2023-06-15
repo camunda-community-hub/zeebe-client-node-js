@@ -1,3 +1,4 @@
+import { cancelProcesses } from '../ lib/cancelProcesses'
 import { ZBClient } from '../..'
 // import { createUniqueTaskType } from '../../lib/createUniqueTaskType'
 import { CreateProcessInstanceResponse } from '../../lib/interfaces-grpc-1.0'
@@ -6,11 +7,16 @@ process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 jest.setTimeout(60000)
 
 
-let zbc: ZBClient
+const zbc = new ZBClient()
+let pid: string
 let wf: CreateProcessInstanceResponse | undefined
 
-beforeEach(() => {
-	zbc = new ZBClient()
+beforeAll(async () => {
+	const res = await zbc.deployResource({
+		processFilename: `./src/__tests__/testdata/Signal.bpmn`
+	})
+	pid = res.deployments[0].process.bpmnProcessId
+	await cancelProcesses(pid)
 })
 
 afterEach(async () => {
@@ -20,9 +26,12 @@ afterEach(async () => {
 		}
 	} catch (e: any) {
 		// console.log('Caught NOT FOUND') // @DEBUG
-	} finally {
-		await zbc.close() // Makes sure we don't forget to close connection
 	}
+})
+
+afterAll(async () => {
+	await zbc.close()
+	await cancelProcesses(pid)
 })
 
 test('Can start a process with a signal', () => new Promise(async resolve => {

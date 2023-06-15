@@ -1,32 +1,24 @@
 import { v4 as uuid } from 'uuid'
-import { ZBClient } from '../..'
-import { createUniqueTaskType } from '../../lib/createUniqueTaskType'
+import { DeployProcessResponse, ZBClient } from '../..'
+import { cancelProcesses } from '../ lib/cancelProcesses'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 jest.setTimeout(45000)
-let zbc: ZBClient
+let test1: DeployProcessResponse
+const zbc = new ZBClient()
 
-beforeEach(async () => {
-	zbc = new ZBClient()
+beforeAll(async () => {
+	test1 = await zbc.deployProcess('./src/__tests__/testdata/Client-MessageStart.bpmn')
+	await cancelProcesses(test1.processes[0].bpmnProcessId)
 })
 
-afterEach(async () => {
+afterAll(async () => {
 	await zbc.close()
+	await cancelProcesses(test1.processes[0].bpmnProcessId)
 })
 
 test('Can start a process with a message', () =>
 	new Promise(async done => {
-		const { bpmn, taskTypes, processId, messages } = createUniqueTaskType({
-			bpmnFilePath: './src/__tests__/testdata/Client-MessageStart.bpmn',
-			messages: ['MSG-START_JOB'],
-			taskTypes: ['console-log-msg-start'],
-		})
-
-		const deploy = await zbc.deployProcess({
-			definition: bpmn,
-			name: `Client-MessageStart-${processId}.bpmn`,
-		})
-		expect(deploy.key).toBeTruthy()
 
 		const randomId = uuid()
 
@@ -34,7 +26,7 @@ test('Can start a process with a message', () =>
 		await new Promise(res => setTimeout(() => res(null), 1000))
 
 		await zbc.publishStartMessage({
-			name: messages['MSG-START_JOB'],
+			name:'MSG-START_JOB',
 			timeToLive: 2000,
 			variables: {
 				testKey: randomId,
@@ -42,7 +34,7 @@ test('Can start a process with a message', () =>
 		})
 
 		zbc.createWorker({
-			taskType: taskTypes['console-log-msg-start'],
+			taskType: 'console-log-msg-start',
 			taskHandler: async job => {
 				const res = await job.complete()
 				expect(job.variables.testKey).toBe(randomId) // Makes sure the worker isn't responding to another message

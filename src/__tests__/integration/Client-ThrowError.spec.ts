@@ -1,39 +1,33 @@
 import { Duration } from 'typed-duration'
 import { ZBClient } from '../..'
-import { createUniqueTaskType } from '../../lib/createUniqueTaskType'
+import { cancelProcesses } from '../ lib/cancelProcesses'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 jest.setTimeout(25000)
 
-let zbc: ZBClient
+let processId: string
 
-beforeEach(async () => {
-	zbc = new ZBClient()
+const zbc = new ZBClient()
+
+beforeAll(async () => {
+	processId = (await zbc.deployProcess('./src/__tests__/testdata/Client-ThrowError.bpmn')).processes[0].bpmnProcessId
+	cancelProcesses(processId)
 })
 
-afterEach(async () => {
-	await zbc.close() // Makes sure we don't forget to close connection
+afterAll(async () => {
+	await zbc.close()
+	cancelProcesses(processId)
 })
 
 test('Throws a business error that is caught in the process', async () => {
-	const { bpmn, taskTypes, processId } = createUniqueTaskType({
-		bpmnFilePath: './src/__tests__/testdata/Client-ThrowError.bpmn',
-		messages: [],
-		taskTypes: ['throw-bpmn-error-task', 'sad-flow'],
-	})
-
-	await zbc.deployProcess({
-		definition: bpmn,
-		name: `error-throw-bpmn-error-${processId}.bpmn`,
-	})
 	zbc.createWorker({
 		taskHandler: job =>
 			job.error('BUSINESS_ERROR', "Well, that didn't work"),
-		taskType: taskTypes['throw-bpmn-error-task'],
+		taskType: 'throw-bpmn-error-task',
 		timeout: Duration.seconds.of(30),
 	})
 	zbc.createWorker({
-		taskType: taskTypes['sad-flow'],
+		taskType: 'sad-flow',
 		taskHandler: job =>
 			job.complete({
 				bpmnErrorCaught: true,
