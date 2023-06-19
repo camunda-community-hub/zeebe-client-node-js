@@ -7,7 +7,7 @@ jest.setTimeout(30000)
 
 let zbc = new ZBClient()
 let wf: CreateProcessInstanceResponse
-let id: string
+let id: string | null
 let processId: string
 let processId2: string
 
@@ -26,16 +26,18 @@ beforeEach(() => {
 
 afterEach(async () => {
 	if (id) {
-		// console.log(`Canceling process id ${id}`)
+		console.log(`Canceling process id ${id}`)
 		await zbc.cancelProcessInstance(id).catch(_ => _)
+		id = null
 	}
 	await zbc.close()
 })
 
 afterAll(async () => {
 	if (id) {
-		// console.log(`Canceling process id ${id}`)
+		console.log(`Canceling process id ${id}`)
 		zbc.cancelProcessInstance(id).catch(_ => _)
+		id = null
 	}
 	await zbc.close() // Makes sure we don't forget to close connection
 	await cancelProcesses(processId)
