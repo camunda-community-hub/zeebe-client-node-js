@@ -1,8 +1,9 @@
 import { OperateApiClient } from 'operate-api-client'
 
-const operate = new OperateApiClient()
+const operate = createClient()
 
 export async function cancelProcesses(processDefinitionKey: string) {
+	if (!operate) { return }
 	const processes = await operate.searchProcessInstances({
 		filter: {
 			processDefinitionKey: +processDefinitionKey
@@ -17,7 +18,7 @@ export async function cancelProcesses(processDefinitionKey: string) {
 function createClient() {
 	try {
 		return new OperateApiClient()
-	} catch (e) {
+	} catch (e: any) {
 		console.log(e.message)
 		console.log(`Running without access to Operate`)
 		return null

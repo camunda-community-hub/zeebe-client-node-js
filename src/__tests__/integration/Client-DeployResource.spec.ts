@@ -1,4 +1,4 @@
-import { cancelProcesses } from '../ lib/cancelProcesses'
+import { cancelProcesses } from '../../lib/cancelProcesses'
 import { ZBClient, BpmnParser } from '../../index'
 import fs from 'fs'
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'

@@ -1,11 +1,7 @@
+import { cancelProcesses } from '../../lib/cancelProcesses'
 import { ZBClient } from '../..'
 import { CreateProcessInstanceResponse } from '../../lib/interfaces-grpc-1.0'
 
-// const trace = <T>(res: T) => {
-// 	// tslint:disable-next-line: no-console
-// 	console.log(res)
-// 	return res
-// }
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 jest.setTimeout(60000)
 
@@ -30,7 +26,8 @@ afterEach(async () => {
 
 test('Decrements the retries count by default', () =>
 	new Promise(async done => {
-		await zbc.deployProcess('./src/__tests__/testdata/Worker-Failure-Retries.bpmn')
+		const res = await zbc.deployProcess('./src/__tests__/testdata/Worker-Failure-Retries.bpmn')
+		await cancelProcesses(res.processes[0].bpmnProcessId)
 		wf = await zbc.createProcessInstance('worker-failure-retries', {
 			conditionVariable: true,
 		})
@@ -57,7 +54,8 @@ test('Decrements the retries count by default', () =>
 
 test('Set the retries to a specific number when provided with one via simple signature', () =>
 	new Promise(async done => {
-		await zbc.deployProcess('./src/__tests__/testdata/Worker-Failure-Retries.bpmn')
+		const res = await zbc.deployProcess('./src/__tests__/testdata/Worker-Failure-Retries.bpmn')
+		cancelProcesses(res.processes[0].bpmnProcessId)
 		wf = await zbc.createProcessInstance('worker-failure-retries', {
 			conditionVariable: true,
 		})
@@ -84,7 +82,8 @@ test('Set the retries to a specific number when provided with one via simple sig
 
 test('Set the retries to a specific number when provided with one via object signature', () =>
 	new Promise(async done => {
-		await zbc.deployProcess('./src/__tests__/testdata/Worker-Failure-Retries.bpmn')
+		const res = await zbc.deployProcess('./src/__tests__/testdata/Worker-Failure-Retries.bpmn')
+		await cancelProcesses(res.processes[0].bpmnProcessId)
 		wf = await zbc.createProcessInstance('worker-failure-retries', {
 			conditionVariable: true,
 		})

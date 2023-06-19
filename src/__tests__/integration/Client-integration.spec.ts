@@ -1,29 +1,30 @@
-import { cancelProcesses } from '../ lib/cancelProcesses'
+import { cancelProcesses } from '../../lib/cancelProcesses'
 import { ZBClient } from '../../index'
-import { CreateProcessInstanceResponse, DeployProcessResponse } from '../../lib/interfaces-grpc-1.0'
+import { CreateProcessInstanceResponse } from '../../lib/interfaces-grpc-1.0'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 jest.setTimeout(30000)
 
 const zbc = new ZBClient()
 let wf: CreateProcessInstanceResponse
-let test1: DeployProcessResponse
+let processId: string
 
 beforeAll(async () => {
-	test1 = await zbc.deployProcess('./src/__tests__/testdata/hello-world.bpmn')
-	await cancelProcesses(test1.processes[0].bpmnProcessId)
+	const res = await zbc.deployProcess('./src/__tests__/testdata/hello-world.bpmn')
+	processId = res.processes[0].bpmnProcessId
+	await cancelProcesses(processId)
 })
 
 afterEach(async() => {
 	if (wf && wf.processInstanceKey) {
 		await zbc.cancelProcessInstance(wf.processInstanceKey).catch(e => e) // Cleanup any active processes
 	}
-	await cancelProcesses(test1.processes[0].bpmnProcessId)
+	await cancelProcesses(processId)
 })
 
 afterAll(async () => {
 	await zbc.close()
-	await cancelProcesses(test1.processes[0].bpmnProcessId)
+	await cancelProcesses(processId)
 })
 
 test('Can get the broker topology', async () => {
@@ -43,13 +44,12 @@ test('Can create a worker', async() => {
 })
 
 test('Can cancel a process', async () => {
-
-
-	const wf = await zbc.createProcessInstance(test1.processes[0].bpmnProcessId, {})
+	const wf = await zbc.createProcessInstance(processId, {})
 	const wfi = wf.processInstanceKey
 	expect(wfi).toBeTruthy()
 	await zbc.cancelProcessInstance(wfi)
 
+	// expect(async() => await zbc.cancelProcessInstance(wfi)).toThrow()
 	try {
 		await zbc.cancelProcessInstance(wfi) // A call to cancel a process that doesn't exist should throw
 	} catch (e: any) {

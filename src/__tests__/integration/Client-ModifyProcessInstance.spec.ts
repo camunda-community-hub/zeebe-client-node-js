@@ -1,4 +1,4 @@
-import { cancelProcesses } from "../ lib/cancelProcesses";
+import { cancelProcesses } from "../../lib/cancelProcesses";
 import { DeployProcessResponse, ZBClient } from "../../index";
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'

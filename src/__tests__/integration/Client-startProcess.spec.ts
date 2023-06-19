@@ -1,4 +1,4 @@
-import { cancelProcesses } from '../ lib/cancelProcesses'
+import { cancelProcesses } from '../../lib/cancelProcesses'
 import { ZBClient } from '../..'
 import { CreateProcessInstanceResponse } from '../../lib/interfaces-grpc-1.0'
 
@@ -17,6 +17,19 @@ beforeAll(async () => {
 	processId2 = (await zbc.deployProcess('./src/__tests__/testdata/Client-SkipFirstTask.bpmn')).processes[0].bpmnProcessId
 	await cancelProcesses(processId)
 	await cancelProcesses(processId2)
+	await zbc.close()
+})
+
+beforeEach(() => {
+	zbc = new ZBClient()
+})
+
+afterEach(async () => {
+	if (id) {
+		// console.log(`Canceling process id ${id}`)
+		await zbc.cancelProcessInstance(id).catch(_ => _)
+	}
+	await zbc.close()
 })
 
 afterAll(async () => {

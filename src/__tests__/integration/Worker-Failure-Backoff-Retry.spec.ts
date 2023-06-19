@@ -1,20 +1,19 @@
+import { cancelProcesses } from '../../lib/cancelProcesses'
 import { ZBClient } from '../..'
-import { createUniqueTaskType } from '../../lib/createUniqueTaskType'
 import { CreateProcessInstanceResponse } from '../../lib/interfaces-grpc-1.0'
 
-const trace = <T>(res: T) => {
-	// tslint:disable-next-line: no-console
-	console.log(res)
-	return res
-}
+
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 jest.setTimeout(60000)
 
-let zbc: ZBClient
+let zbc = new ZBClient()
 let wf: CreateProcessInstanceResponse | undefined
+let processId: string
 
-beforeEach(() => {
-	zbc = new ZBClient()
+beforeAll(async () => {
+	const res = await zbc.deployProcess('./src/__tests__/testdata/Worker-Failure1.bpmn')
+	processId = res.processes[0].bpmnProcessId
+	await cancelProcesses(processId)
 })
 
 afterEach(async () => {
@@ -25,26 +24,18 @@ afterEach(async () => {
 	} catch (e: any) {
 		// console.log('Caught NOT FOUND') // @DEBUG
 	} finally {
-		await zbc.close() // Makes sure we don't forget to close connection
+
 	}
+})
+
+afterAll(async () => {
+	zbc.close()
+	await cancelProcesses(processId)
 })
 
 test('Can specify a retryBackoff with complete.failure()', () =>
 	new Promise(async resolve => {
-		const { bpmn, processId, taskTypes } = createUniqueTaskType({
-			bpmnFilePath: './src/__tests__/testdata/Worker-Failure1.bpmn',
-			messages: [],
-			taskTypes: ['wait-worker-failure'],
-		})
-		const res = await zbc
-			.deployProcess({
-				definition: bpmn,
-				name: `worker-failure-${processId}.bpmn`,
-			})
-			.catch(trace)
 
-		expect(res.processes.length).toBe(1)
-		expect(res.processes[0].bpmnProcessId).toBe(processId)
 		wf = await zbc.createProcessInstance(processId, {
 			conditionVariable: true,
 		})
@@ -61,7 +52,7 @@ test('Can specify a retryBackoff with complete.failure()', () =>
 
 		let then = new Date()
 		zbc.createWorker({
-			taskType: taskTypes['wait-worker-failure'],
+			taskType: 'wait-worker-failure',
 			taskHandler: async job => {
 				// Succeed on the third attempt
 				if (job.retries === 1) {

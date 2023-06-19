@@ -1,10 +1,12 @@
 import * as uuid from 'uuid'
 import { ZBClient } from '../..'
-import { createUniqueTaskType } from '../../lib/createUniqueTaskType'
+import { cancelProcesses } from '../../lib/cancelProcesses'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 
 jest.setTimeout(40000)
+
+let processId: string
 
 const zbcLongPoll = new ZBClient({
 	longPoll: 60000,
@@ -12,19 +14,15 @@ const zbcLongPoll = new ZBClient({
 
 afterAll(async () => {
 	await zbcLongPoll.close()
+	await cancelProcesses(processId)
 })
 
 beforeAll(async () => {
-	const { processId, bpmn } = createUniqueTaskType({
-		bpmnFilePath: './src/__tests__/testdata/Worker-LongPoll.bpmn',
-		messages: [],
-		taskTypes: [],
-	})
-	await zbcLongPoll.deployProcess({
-		definition: bpmn,
-		name: `worker-longPoll-${processId}.bpmn`,
-	})
+	const res = await zbcLongPoll.deployProcess('./src/__tests__/testdata/Worker-LongPoll.bpmn')
+	processId = res.processes[0].bpmnProcessId
+	await cancelProcesses(processId)
 })
+
 test('Does long poll by default', done => {
 	const worker = zbcLongPoll.createWorker({
 		taskType: uuid.v4(),

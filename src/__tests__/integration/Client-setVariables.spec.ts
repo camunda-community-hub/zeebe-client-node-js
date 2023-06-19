@@ -1,4 +1,4 @@
-import { cancelProcesses } from '../ lib/cancelProcesses'
+import { cancelProcesses } from '../../lib/cancelProcesses'
 import { ZBClient } from '../..'
 import { CreateProcessInstanceResponse, DeployProcessResponse } from '../../lib/interfaces-grpc-1.0'
 

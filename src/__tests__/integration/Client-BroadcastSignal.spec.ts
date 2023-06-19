@@ -1,6 +1,5 @@
-import { cancelProcesses } from '../ lib/cancelProcesses'
+import { cancelProcesses } from '../../lib/cancelProcesses'
 import { ZBClient } from '../..'
-// import { createUniqueTaskType } from '../../lib/createUniqueTaskType'
 import { CreateProcessInstanceResponse } from '../../lib/interfaces-grpc-1.0'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
