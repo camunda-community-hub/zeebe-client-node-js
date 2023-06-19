@@ -1,32 +1,24 @@
+import { cancelProcesses } from '../../lib/cancelProcesses'
 import { Duration, ZBClient } from '../..'
-import { createUniqueTaskType } from '../../lib/createUniqueTaskType'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 jest.setTimeout(30000)
-let zbc: ZBClient
+const zbc = new ZBClient()
+let processId: string
 
-beforeEach(async () => {
-	zbc = new ZBClient()
+beforeAll(async () => {
+	const res = await zbc.deployProcess('./src/__tests__/testdata/hello-world.bpmn')
+	processId = res.processes[0].bpmnProcessId
+	await cancelProcesses(processId)
 })
 
-afterEach(async () => {
+afterAll(async () => {
 	await zbc.close() // Makes sure we don't forget to close connection
+	await cancelProcesses(processId)
 })
 
 test('BatchWorker gets ten jobs', () =>
 	new Promise(async done => {
-		const { bpmn, taskTypes, processId } = createUniqueTaskType({
-			bpmnFilePath: './src/__tests__/testdata/hello-world.bpmn',
-			messages: [],
-			taskTypes: ['console-log'],
-		})
-		const res = await zbc.deployProcess({
-			definition: bpmn,
-			name: `service-hello-world-${processId}.bpmn`,
-		})
-
-		expect(res.processes.length).toBe(1)
-
 		for (let i = 0; i < 10; i++) {
 			await zbc.createProcessInstance(processId, {})
 		}
@@ -41,6 +33,6 @@ test('BatchWorker gets ten jobs', () =>
 				done(null)
 				return res1
 			},
-			taskType: taskTypes['console-log'],
+			taskType: 'console-log',
 		})
 	}))

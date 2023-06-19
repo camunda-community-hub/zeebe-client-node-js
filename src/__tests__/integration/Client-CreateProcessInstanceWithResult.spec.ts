@@ -1,29 +1,32 @@
-import { ZBClient } from '../..'
-import { createUniqueTaskType } from '../../lib/createUniqueTaskType'
+import { cancelProcesses } from '../../lib/cancelProcesses'
+import { DeployProcessResponse, ZBClient } from '../..'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 jest.setTimeout(25000)
 
-let zbc: ZBClient
+const zbc = new ZBClient()
+let test1: DeployProcessResponse
+let test2: DeployProcessResponse
+let test3: DeployProcessResponse
 
-beforeEach(async () => {
-	zbc = new ZBClient()
+beforeAll(async () => {
+	test1 = await zbc.deployProcess('./src/__tests__/testdata/await-outcome.bpmn')
+	test2 = await zbc.deployProcess('./src/__tests__/testdata/await-outcome-long.bpmn')
+	test3 = await zbc.deployProcess('./src/__tests__/testdata/await-outcome.bpmn')
+	await cancelProcesses(test1.processes[0].bpmnProcessId)
+	await cancelProcesses(test2.processes[0].bpmnProcessId)
+	await cancelProcesses(test3.processes[0].bpmnProcessId)
 })
 
-afterEach(async () => {
+afterAll(async () => {
 	await zbc.close() // Makes sure we don't forget to close connection
+	await cancelProcesses(test1.processes[0].bpmnProcessId)
+	await cancelProcesses(test2.processes[0].bpmnProcessId)
+	await cancelProcesses(test3.processes[0].bpmnProcessId)
 })
 
 test('Awaits a process outcome', async () => {
-	const { processId, bpmn } = createUniqueTaskType({
-		bpmnFilePath: './src/__tests__/testdata/await-outcome.bpmn',
-		messages: [],
-		taskTypes: [],
-	})
-	await zbc.deployProcess({
-		definition: bpmn,
-		name: `Await-outcome-${processId}.bpmn`,
-	})
+	const processId = test1.processes[0].bpmnProcessId
 	const result = await zbc.createProcessInstanceWithResult(processId, {
 		sourceValue: 5,
 	})
@@ -31,15 +34,7 @@ test('Awaits a process outcome', async () => {
 })
 
 test('can override the gateway timeout', async () => {
-	const { bpmn, processId } = createUniqueTaskType({
-		bpmnFilePath: './src/__tests__/testdata/await-outcome-long.bpmn',
-		messages: [],
-		taskTypes: [],
-	})
-	await zbc.deployProcess({
-		definition: bpmn,
-		name: `Await-outcome-long-${processId}.bpmn`,
-	})
+	const processId = test2.processes[0].bpmnProcessId
 	const result = await zbc.createProcessInstanceWithResult({
 		bpmnProcessId: processId,
 		requestTimeout: 25000,
@@ -52,16 +47,7 @@ test('can override the gateway timeout', async () => {
 })
 
 test('fetches a subset of variables', async () => {
-	zbc = new ZBClient()
-	const { bpmn, processId } = createUniqueTaskType({
-		bpmnFilePath: './src/__tests__/testdata/await-outcome.bpmn',
-		messages: [],
-		taskTypes: [],
-	})
-	await zbc.deployProcess({
-		definition: bpmn,
-		name: `Await-outcome-${processId}.bpmn`,
-	})
+	const processId = test3.processes[0].bpmnProcessId
 	const result = await zbc.createProcessInstanceWithResult({
 		bpmnProcessId: processId,
 		fetchVariables: ['otherValue'],
@@ -70,7 +56,6 @@ test('fetches a subset of variables', async () => {
 			sourceValue: 5,
 		},
 	})
-	// @TODO - uncomment when https://github.com/zeebe-io/zeebe/pull/3253 gets merged
 	expect(result.variables.sourceValue).toBe(undefined)
 	expect(result.variables.otherValue).toBe('rome')
 })

@@ -1,13 +1,19 @@
-import { ZBClient } from "../../index";
+import { cancelProcesses } from "../../lib/cancelProcesses";
+import { DeployProcessResponse, ZBClient } from "../../index";
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 
-let zbc: ZBClient
+const zbc = new ZBClient()
 let pid: string
-beforeEach(() => (zbc = new ZBClient()))
+let test1: DeployProcessResponse
+
+beforeAll(async () => {
+	test1 = await zbc.deployProcess('./src/__tests__/testdata/Client-SkipFirstTask.bpmn')
+})
 afterEach(async () => {
 	zbc.cancelProcessInstance(pid).catch(_ => _)
 	await zbc.close()
+	await cancelProcesses(test1.processes[0].bpmnProcessId)
 })
 
 test('Modify Process Instance', done =>{

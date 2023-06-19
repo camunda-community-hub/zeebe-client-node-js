@@ -1,20 +1,30 @@
+import { cancelProcesses } from '../../lib/cancelProcesses'
 import { ZBClient } from '../..'
-import { createUniqueTaskType } from '../../lib/createUniqueTaskType'
-import { CreateProcessInstanceResponse } from '../../lib/interfaces-grpc-1.0'
+import { CreateProcessInstanceResponse, DeployProcessResponse } from '../../lib/interfaces-grpc-1.0'
 
-const trace = <T>(res: T) => {
-	// tslint:disable-next-line: no-console
-	console.log(res)
-	return res
-}
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 jest.setTimeout(60000)
 
-let zbc: ZBClient
+const zbc = new ZBClient()
 let wf: CreateProcessInstanceResponse | undefined
 
-beforeEach(() => {
-	zbc = new ZBClient()
+let wf1: DeployProcessResponse
+let wf2: DeployProcessResponse
+let wf3: DeployProcessResponse
+let bpmnProcessId1: string
+let bpmnProcessId2: string
+let bpmnProcessId3: string
+
+beforeAll(async () => {
+	wf1 = await zbc.deployProcess('./src/__tests__/testdata/Worker-Failure1.bpmn')
+	bpmnProcessId1 = wf1.processes[0].bpmnProcessId
+	wf2 = await zbc.deployProcess('./src/__tests__/testdata/Worker-Failure2.bpmn')
+	bpmnProcessId2 = wf2.processes[0].bpmnProcessId
+	wf3 = await zbc.deployProcess('./src/__tests__/testdata/Worker-Failure3.bpmn')
+	bpmnProcessId3 = wf3.processes[0].bpmnProcessId
+	await cancelProcesses(bpmnProcessId1)
+	await cancelProcesses(bpmnProcessId2)
+	await cancelProcesses(bpmnProcessId3)
 })
 
 afterEach(async () => {
@@ -24,28 +34,19 @@ afterEach(async () => {
 		}
 	} catch (e: any) {
 		// console.log('Caught NOT FOUND') // @DEBUG
-	} finally {
-		await zbc.close() // Makes sure we don't forget to close connection
 	}
+})
+
+afterAll(async() => {
+	await zbc.close()
+	await cancelProcesses(bpmnProcessId1)
+	await cancelProcesses(bpmnProcessId2)
+	await cancelProcesses(bpmnProcessId3)
 })
 
 test('Causes a retry with complete.failure()', () =>
 	new Promise(async resolve => {
-		const { bpmn, processId, taskTypes } = createUniqueTaskType({
-			bpmnFilePath: './src/__tests__/testdata/Worker-Failure1.bpmn',
-			messages: [],
-			taskTypes: ['wait-worker-failure'],
-		})
-		const res = await zbc
-			.deployProcess({
-				definition: bpmn,
-				name: `worker-failure-${processId}.bpmn`,
-			})
-			.catch(trace)
-
-		expect(res.processes.length).toBe(1)
-		expect(res.processes[0].bpmnProcessId).toBe(processId)
-		wf = await zbc.createProcessInstance(processId, {
+		wf = await zbc.createProcessInstance(bpmnProcessId1, {
 			conditionVariable: true,
 		})
 		const wfi = wf.processInstanceKey
@@ -60,7 +61,7 @@ test('Causes a retry with complete.failure()', () =>
 		})
 
 		zbc.createWorker({
-			taskType: taskTypes['wait-worker-failure'],
+			taskType: 'wait-worker-failure',
 			taskHandler: async job => {
 				// Succeed on the third attempt
 				if (job.retries === 1) {
@@ -80,25 +81,13 @@ test('Causes a retry with complete.failure()', () =>
 
 test('Does not fail a process when the handler throws, by default', () =>
 	new Promise(async done => {
-		const { bpmn, processId, taskTypes } = createUniqueTaskType({
-			bpmnFilePath: './src/__tests__/testdata/Worker-Failure2.bpmn',
-			messages: [],
-			taskTypes: ['console-log-worker-failure-2'],
-		})
-		const res = await zbc.deployProcess({
-			definition: bpmn,
-			name: `worker-failure-2-${processId}.bpmn`,
-		})
-		expect(res.processes.length).toBe(1)
-		expect(res.processes[0].bpmnProcessId).toBe(processId)
-
-		wf = await zbc.createProcessInstance(processId, {})
+		wf = await zbc.createProcessInstance(bpmnProcessId2, {})
 
 		let alreadyFailed = false
 
 		// Faulty worker - throws an unhandled exception in task handler
 		const w = zbc.createWorker({
-			taskType: taskTypes['console-log-worker-failure-2'],
+			taskType: 'console-log-worker-failure-2',
 			taskHandler: async job => {
 				if (alreadyFailed) {
 					await zbc.cancelProcessInstance(wf!.processInstanceKey) // throws if not found. Should NOT throw in this test
@@ -118,27 +107,14 @@ test('Does not fail a process when the handler throws, by default', () =>
 
 test('Fails a process when the handler throws and options.failProcessOnException is set', () =>
 	new Promise(async done => {
-		const { bpmn, taskTypes, processId } = createUniqueTaskType({
-			bpmnFilePath: './src/__tests__/testdata/Worker-Failure3.bpmn',
-			messages: [],
-			taskTypes: ['console-log-worker-failure-3'],
-		})
 
-		const res = await zbc.deployProcess({
-			definition: bpmn,
-			name: `worker-failure-3-${processId}.bpmn`,
-		})
-
-		expect(res.processes.length).toBe(1)
-		expect(res.processes[0].bpmnProcessId).toBe(processId)
-
-		wf = await zbc.createProcessInstance(processId, {})
+		wf = await zbc.createProcessInstance(bpmnProcessId3, {})
 
 		let alreadyFailed = false
 
 		// Faulty worker
 		const w = zbc.createWorker({
-			taskType: taskTypes['console-log-worker-failure-3'],
+			taskType: 'console-log-worker-failure-3',
 			taskHandler: job => {
 				if (alreadyFailed) {
 					// It polls multiple times a second, and we need it to only throw once
@@ -164,11 +140,3 @@ test('Fails a process when the handler throws and options.failProcessOnException
 			}, 1500)
 		}
 	}))
-
-test('Decrements the retries count by default', () => {
-
-})
-
-test('Set the retries to a specific number when provided with one', () => {
-
-})

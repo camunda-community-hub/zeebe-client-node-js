@@ -1,42 +1,35 @@
+import { cancelProcesses } from '../../lib/cancelProcesses'
 import { ZBClient } from '../../index'
-import { createUniqueTaskType } from '../../lib/createUniqueTaskType'
 import { CreateProcessInstanceResponse } from '../../lib/interfaces-grpc-1.0'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 jest.setTimeout(30000)
 
-let zbc: ZBClient
+const zbc = new ZBClient()
 let wf: CreateProcessInstanceResponse
+let processId: string
 
-beforeEach(() => {
-	zbc = new ZBClient()
+beforeAll(async () => {
+	const res = await zbc.deployProcess('./src/__tests__/testdata/hello-world.bpmn')
+	processId = res.processes[0].bpmnProcessId
+	await cancelProcesses(processId)
 })
 
 afterEach(async() => {
 	if (wf && wf.processInstanceKey) {
 		await zbc.cancelProcessInstance(wf.processInstanceKey).catch(e => e) // Cleanup any active processes
 	}
+	await cancelProcesses(processId)
+})
+
+afterAll(async () => {
 	await zbc.close()
+	await cancelProcesses(processId)
 })
 
 test('Can get the broker topology', async () => {
 	const res = await zbc.topology()
 	expect(res?.brokers).toBeTruthy()
-})
-
-test('Deploys a single process', async () => {
-	const { bpmn, processId } = createUniqueTaskType({
-		bpmnFilePath: './src/__tests__/testdata/hello-world.bpmn',
-		messages: [],
-		taskTypes: ['console-log-complete'],
-	})
-	const res = await zbc.deployProcess({
-		definition: bpmn,
-		name: `single-hello-world-${processId}.bpmn`,
-	})
-
-	expect(res.processes.length).toBe(1)
-	expect(res.processes[0].bpmnProcessId).toBe(processId)
 })
 
 test('Can create a worker', async() => {
@@ -51,23 +44,12 @@ test('Can create a worker', async() => {
 })
 
 test('Can cancel a process', async () => {
-	const { bpmn, processId } = createUniqueTaskType({
-		bpmnFilePath: './src/__tests__/testdata/hello-world.bpmn',
-		messages: [],
-		taskTypes: ['console-log'],
-	})
-	const res = await zbc.deployProcess({
-		definition: bpmn,
-		name: `cancel-hello-world-${processId}.bpmn`,
-	})
-
-	wf = await zbc.createProcessInstance(processId, {})
+	const wf = await zbc.createProcessInstance(processId, {})
 	const wfi = wf.processInstanceKey
 	expect(wfi).toBeTruthy()
-	expect(res.processes.length).toBe(1)
-	expect(res.processes[0].bpmnProcessId).toBe(processId)
 	await zbc.cancelProcessInstance(wfi)
 
+	// expect(async() => await zbc.cancelProcessInstance(wfi)).toThrow()
 	try {
 		await zbc.cancelProcessInstance(wfi) // A call to cancel a process that doesn't exist should throw
 	} catch (e: any) {

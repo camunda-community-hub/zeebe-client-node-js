@@ -1,40 +1,41 @@
-import { ZBClient } from '../../index'
-import { createUniqueTaskType } from '../../lib/createUniqueTaskType'
+import { cancelProcesses } from '../../lib/cancelProcesses'
+import { ZBClient, BpmnParser } from '../../index'
 import fs from 'fs'
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 jest.setTimeout(20000)
-test('deploys a process', async () => {
-	const zbc = new ZBClient()
-	const { bpmn, processId } = createUniqueTaskType({
-		bpmnFilePath: `./src/__tests__/testdata/Client-DeployWorkflow.bpmn`,
-		messages: [],
-		taskTypes: [],
-	})
-	const result = await zbc.deployResource({
-		process: bpmn,
-		name: `Client-DeployProcess-${processId}.bpmn`,
-	})
+
+const zbc = new ZBClient()
+const bpmnString = fs.readFileSync(`./src/__tests__/testdata/Client-DeployWorkflow.bpmn`, 'utf8')
+const expectedPid = BpmnParser.getProcessId(bpmnString)
+
+beforeAll(async () =>
+	await cancelProcesses(expectedPid)
+)
+
+afterAll(async () =>
 	await zbc.close()
-	expect(result.deployments[0].process.bpmnProcessId).toBe(processId)
+)
+
+test('deploys a process', async () => {
+	const result = await zbc.deployResource({
+		process: Buffer.from(bpmnString),
+		name: `Client-DeployWorkflow.bpmn`,
+	})
+	expect(result.deployments[0].process.bpmnProcessId).toBe(expectedPid)
 })
 test('deploys a process from a file', async () => {
-	const zbc = new ZBClient()
 	const result = await zbc.deployResource({
 		processFilename: `./src/__tests__/testdata/Client-DeployWorkflow.bpmn`,
 	})
-	await zbc.close()
 	expect(result.deployments[0].process.version).toBeGreaterThanOrEqual(1)
 })
 test('deploys a DMN table from a filename', async () => {
-	const zbc = new ZBClient()
 	const result = await zbc.deployResource({
 		decisionFilename: './src/__tests__/testdata/quarantine-duration.dmn',
 	})
-	await zbc.close()
 	expect(result.deployments[0].decision.decisionKey).not.toBeNull()
 })
 test('deploys a DMN table', async () => {
-	const zbc = new ZBClient()
 	const decision = fs.readFileSync(
 		'./src/__tests__/testdata/quarantine-duration.dmn'
 	)
@@ -42,6 +43,5 @@ test('deploys a DMN table', async () => {
 		decision,
 		name: 'quarantine-duration.dmn',
 	})
-	await zbc.close()
 	expect(result.deployments[0].decision.decisionKey).not.toBeNull()
 })

@@ -1,16 +1,17 @@
+import { cancelProcesses } from '../../lib/cancelProcesses'
 import { ZBClient } from '../..'
-import { createUniqueTaskType } from '../../lib/createUniqueTaskType'
 import { CreateProcessInstanceResponse } from '../../lib/interfaces-grpc-1.0'
 
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 jest.setTimeout(30000)
-let zbc: ZBClient
+const zbc= new ZBClient()
 let wf: CreateProcessInstanceResponse | undefined
+let processId: string
 
-beforeEach(async () => {
-	// tslint:disable-next-line: no-console
-	// console.log('Creating client...') // @DEBUG
-	zbc = new ZBClient()
+beforeAll(async () => {
+	const res = await zbc.deployProcess('./src/__tests__/testdata/hello-world.bpmn')
+	processId = res.processes[0].bpmnProcessId
+	await cancelProcesses(processId)
 })
 
 afterEach(async () => {
@@ -18,26 +19,18 @@ afterEach(async () => {
 		if (wf?.processInstanceKey) {
 			await zbc.cancelProcessInstance(wf.processInstanceKey).catch(e => e)
 		}
-	} finally {
-		await zbc.close() // Makes sure we don't forget to close connection
+	} catch {
+
 	}
+})
+
+afterAll(async () => {
+	await cancelProcesses(processId)
+	await zbc.close()
 })
 
 test('Can retrieve only specified variables using fetchVariable', () =>
 	new Promise(async done => {
-		const { bpmn, taskTypes, processId } = createUniqueTaskType({
-			bpmnFilePath: './src/__tests__/testdata/hello-world.bpmn',
-			messages: [],
-			taskTypes: ['console-log'],
-		})
-
-		const res = await zbc.deployProcess({
-			definition: bpmn,
-			name: `service-hello-world-${processId}.bpmn`,
-		})
-
-		expect(res.processes.length).toBe(1)
-
 		wf = await zbc.createProcessInstance(processId, {
 			var1: 'foo',
 			var2: 'bar',
@@ -45,7 +38,7 @@ test('Can retrieve only specified variables using fetchVariable', () =>
 
 		zbc.createWorker({
 			fetchVariable: ['var2'],
-			taskType: taskTypes['console-log'],
+			taskType: 'console-log',
 			taskHandler: async job => {
 				expect(job.processInstanceKey).toBe(wf?.processInstanceKey)
 				expect(job.variables.var2).toEqual('bar')

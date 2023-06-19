@@ -1,5 +1,5 @@
+import { cancelProcesses } from '../../lib/cancelProcesses'
 import { ZBClient } from '../..'
-import { createUniqueTaskType } from '../../lib/createUniqueTaskType'
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 
 /**
@@ -9,26 +9,22 @@ jest.setTimeout(30000)
 
 let wfi
 const zbc = new ZBClient()
+let processId: string
+
+beforeAll(async () => {
+	const res = await zbc.deployProcess('./src/__tests__/testdata/Worker-RaiseIncident.bpmn')
+	processId = res.processes[0].bpmnProcessId
+	await cancelProcesses(processId)
+})
 
 afterAll(async () => {
 	zbc.cancelProcessInstance(wfi)
 	await zbc.close()
+	await cancelProcesses(processId)
 })
 
 test('Can raise an Operate incident with complete.failure()', () =>
 	new Promise(async done => {
-		const { bpmn, processId, taskTypes } = createUniqueTaskType({
-			bpmnFilePath: './src/__tests__/testdata/Worker-RaiseIncident.bpmn',
-			messages: [],
-			taskTypes: ['wait-raise-incident', 'pathB-raise-incident'],
-		})
-		const res = await zbc.deployProcess({
-			definition: bpmn,
-			name: `raise-incident-${processId}.bpmn`,
-		})
-		expect(res.processes.length).toBe(1)
-		expect(res.processes[0].bpmnProcessId).toBe(processId)
-
 		const wf = await zbc.createProcessInstance(processId, {
 			conditionVariable: true,
 		})
@@ -44,7 +40,7 @@ test('Can raise an Operate incident with complete.failure()', () =>
 		})
 
 		await zbc.createWorker({
-			taskType: taskTypes['wait-raise-incident'],
+			taskType: 'wait-raise-incident',
 			taskHandler: async job => {
 				expect(job.processInstanceKey).toBe(wfi)
 				return job.complete(job.variables)
@@ -53,7 +49,7 @@ test('Can raise an Operate incident with complete.failure()', () =>
 		})
 
 		await zbc.createWorker({
-			taskType: taskTypes['pathB-raise-incident'],
+			taskType: 'pathB-raise-incident',
 			taskHandler: async job => {
 				expect(job.processInstanceKey).toBe(wfi)
 				expect(job.variables.conditionVariable).toBe(false)
