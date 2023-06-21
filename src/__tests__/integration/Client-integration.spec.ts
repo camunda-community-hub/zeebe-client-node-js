@@ -5,17 +5,24 @@ import { CreateProcessInstanceResponse } from '../../lib/interfaces-grpc-1.0'
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 jest.setTimeout(30000)
 
-const zbc = new ZBClient()
+let zbc: ZBClient
 let wf: CreateProcessInstanceResponse
 let processId: string
 
 beforeAll(async () => {
-	const res = await zbc.deployProcess('./src/__tests__/testdata/hello-world.bpmn')
+	const client = new ZBClient()
+	const res = await client.deployProcess('./src/__tests__/testdata/hello-world.bpmn')
 	processId = res.processes[0].bpmnProcessId
 	await cancelProcesses(processId)
+	await client.close()
+})
+
+beforeEach(() => {
+	zbc = new ZBClient()
 })
 
 afterEach(async() => {
+	await zbc.close()
 	if (wf && wf.processInstanceKey) {
 		await zbc.cancelProcessInstance(wf.processInstanceKey).catch(e => e) // Cleanup any active processes
 	}
@@ -23,7 +30,7 @@ afterEach(async() => {
 })
 
 afterAll(async () => {
-	await zbc.close()
+	await zbc.close() // .then(() => console.log(`ZBClient closed`))
 	await cancelProcesses(processId)
 })
 
@@ -33,28 +40,27 @@ test('Can get the broker topology', async () => {
 })
 
 test('Can create a worker', async() => {
-	const zb = new ZBClient()
-	const worker = zb.createWorker({
+	const worker = zbc.createWorker({
 		taskType: 'TASK_TYPE',
 		taskHandler: job => job.complete(),
 		loglevel: 'NONE',
 	})
 	expect(worker).toBeTruthy()
-	await zb.close()
+	await worker.close()
 })
 
 test('Can cancel a process', async () => {
-	const wf = await zbc.createProcessInstance(processId, {})
-	const wfi = wf.processInstanceKey
-	expect(wfi).toBeTruthy()
-	await zbc.cancelProcessInstance(wfi)
-
-	// expect(async() => await zbc.cancelProcessInstance(wfi)).toThrow()
+	const client = new ZBClient()
+	const process = await client.createProcessInstance(processId, {})
+	const key = process.processInstanceKey
+	expect(key).toBeTruthy()
+	await client.cancelProcessInstance(key)
 	try {
-		await zbc.cancelProcessInstance(wfi) // A call to cancel a process that doesn't exist should throw
+		await client.cancelProcessInstance(key) // A call to cancel a process that doesn't exist should throw
 	} catch (e: any) {
 		expect(1).toBe(1)
 	}
+	await client.close()
 })
 
 test("does not retry to cancel a process instance that doesn't exist", async () => {

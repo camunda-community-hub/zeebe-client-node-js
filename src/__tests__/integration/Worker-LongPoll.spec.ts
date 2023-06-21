@@ -34,5 +34,5 @@ test('Does long poll by default', done => {
 	setTimeout(async () => {
 		expect(worker.pollCount).toBe(1)
 		done()
-	}, 35000)
+	}, 30000)
 })

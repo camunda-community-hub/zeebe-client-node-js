@@ -23,13 +23,14 @@ test('BatchWorker gets ten jobs', () =>
 			await zbc.createProcessInstance(processId, {})
 		}
 
-		zbc.createBatchWorker({
+		const w = zbc.createBatchWorker({
 			jobBatchMaxTime: Duration.seconds.from(120),
 			jobBatchMinSize: 10,
 			loglevel: 'NONE',
 			taskHandler: async jobs => {
 				expect(jobs.length).toBe(10)
 				const res1 = await Promise.all(jobs.map(job => job.complete()))
+				await w.close()
 				done(null)
 				return res1
 			},

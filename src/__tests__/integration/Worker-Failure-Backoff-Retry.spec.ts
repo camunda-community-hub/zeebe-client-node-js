@@ -29,7 +29,7 @@ afterEach(async () => {
 })
 
 afterAll(async () => {
-	zbc.close()
+	await zbc.close()
 	await cancelProcesses(processId)
 })
 
@@ -51,7 +51,7 @@ test('Can specify a retryBackoff with complete.failure()', () =>
 		})
 
 		let then = new Date()
-		zbc.createWorker({
+		const w = zbc.createWorker({
 			taskType: 'wait-worker-failure',
 			taskHandler: async job => {
 				// Succeed on the third attempt
@@ -64,6 +64,7 @@ test('Can specify a retryBackoff with complete.failure()', () =>
 
 					zbc.cancelProcessInstance(wfi)
 					resolve(null)
+					await w.close()
 					return res1
 				}
 				then = new Date()

@@ -22,19 +22,18 @@ beforeAll(async () => {
 	await cancelProcesses(processId)
 })
 
-afterAll(
-	() =>
-		new Promise(async done => {
-			try {
-				if (wf?.processInstanceKey) {
-					zbc.cancelProcessInstance(wf.processInstanceKey) // Cleanup any active processes
-				}
-			} finally {
-				await zbc.close() // Makes sure we don't forget to close connection
-				done(null)
+afterAll(() =>
+	new Promise(async done => {
+		try {
+			if (wf?.processInstanceKey) {
+				zbc.cancelProcessInstance(wf.processInstanceKey) // Cleanup any active processes
 			}
-			await cancelProcesses(processId)
-		})
+		} finally {
+			await zbc.close() // Makes sure we don't forget to close connection
+			done(null)
+		}
+		await cancelProcesses(processId)
+	})
 )
 
 test('Can update process variables with setVariables', () =>

@@ -7,7 +7,7 @@ process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
  */
 jest.setTimeout(30000)
 
-let wfi
+let processInstanceKey: string
 const zbc = new ZBClient()
 let processId: string
 
@@ -18,7 +18,7 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
-	zbc.cancelProcessInstance(wfi)
+	zbc.cancelProcessInstance(processInstanceKey)
 	await zbc.close()
 	await cancelProcesses(processId)
 })
@@ -28,11 +28,11 @@ test('Can raise an Operate incident with complete.failure()', () =>
 		const wf = await zbc.createProcessInstance(processId, {
 			conditionVariable: true,
 		})
-		wfi = wf.processInstanceKey
-		expect(wfi).toBeTruthy()
+		processInstanceKey = wf.processInstanceKey
+		expect(processInstanceKey).toBeTruthy()
 
 		await zbc.setVariables({
-			elementInstanceKey: wfi,
+			elementInstanceKey: processInstanceKey,
 			local: false,
 			variables: {
 				conditionVariable: false,
@@ -42,7 +42,7 @@ test('Can raise an Operate incident with complete.failure()', () =>
 		await zbc.createWorker({
 			taskType: 'wait-raise-incident',
 			taskHandler: async job => {
-				expect(job.processInstanceKey).toBe(wfi)
+				expect(job.processInstanceKey).toBe(processInstanceKey)
 				return job.complete(job.variables)
 			},
 			loglevel: 'NONE',
@@ -51,7 +51,7 @@ test('Can raise an Operate incident with complete.failure()', () =>
 		await zbc.createWorker({
 			taskType: 'pathB-raise-incident',
 			taskHandler: async job => {
-				expect(job.processInstanceKey).toBe(wfi)
+				expect(job.processInstanceKey).toBe(processInstanceKey)
 				expect(job.variables.conditionVariable).toBe(false)
 				const res1 = await job.fail('Raise an incident in Operate', 0)
 				// Manually verify that an incident has been raised

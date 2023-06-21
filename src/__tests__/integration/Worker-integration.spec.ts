@@ -35,6 +35,7 @@ afterAll(async () => {
 	await cancelProcesses(processId1)
 	await cancelProcesses(processId2)
 	await cancelProcesses(processId3)
+	await zbc.close()
 })
 
 test('Can service a task', () =>

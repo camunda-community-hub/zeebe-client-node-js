@@ -26,7 +26,6 @@ beforeEach(() => {
 
 afterEach(async () => {
 	if (id) {
-		console.log(`Canceling process id ${id}`)
 		await zbc.cancelProcessInstance(id).catch(_ => _)
 		id = null
 	}
@@ -35,7 +34,6 @@ afterEach(async () => {
 
 afterAll(async () => {
 	if (id) {
-		console.log(`Canceling process id ${id}`)
 		zbc.cancelProcessInstance(id).catch(_ => _)
 		id = null
 	}
@@ -53,13 +51,15 @@ test('Can start a process', async () => {
 
 test('Can start a process at an arbitrary point', done => {
 	const random = Math.random()
-	zbc.createWorker({
+	const worker = zbc.createWorker({
 		taskType: "second_service_task",
 		taskHandler: job => {
 			expect(job.variables.id).toBe(random)
-			return job.complete().then(() => done())
+			return job.complete().then(finish)
 		}
 	})
+	const finish = () =>
+		worker.close().then(() => done())
 	zbc.createProcessInstance({
 		bpmnProcessId: 'SkipFirstTask',
 		variables: { id: random },
