@@ -325,14 +325,22 @@ You should call only one job action method in the worker handler. This is a bug 
 			this.completeJob(job.key, completedVariables ?? {})
 
 		const errorJob = (job: ZB.Job) => (
-			errorCode: string,
+			e: string | ZB.ErrorJobWithVariables,
 			errorMessage: string = ''
-		) =>
-			this.errorJob({
+		) => {
+			const isErrorJobWithVariables = (s: string | ZB.ErrorJobWithVariables): s is ZB.ErrorJobWithVariables => typeof s === 'object'
+			const errorCode = isErrorJobWithVariables(e) ? e.errorCode : e
+			errorMessage = isErrorJobWithVariables(e) ? e.errorMessage ?? '' : errorMessage
+			const variables = isErrorJobWithVariables(e) ? e.variables : {}
+
+			return this.errorJob({
 				errorCode,
 				errorMessage,
 				job,
+				variables
 			})
+		}
+
 		const fail = failJob(thisJob)
 		const succeed = succeedJob(thisJob)
 		return {
@@ -400,16 +408,19 @@ You should call only one job action method in the worker handler. This is a bug 
 		errorCode,
 		errorMessage,
 		job,
+		variables
 	}: {
 		job: ZB.Job
 		errorCode: string
-		errorMessage: string
+		errorMessage: string,
+		variables: ZB.JSONDoc
 	}) {
 		return this.zbClient
 			.throwError({
 				errorCode,
 				errorMessage,
 				jobKey: job.key,
+				variables
 			})
 			.then(() =>
 				this.logger.logDebug(`Errored job ${job.key} - ${errorMessage}`)

@@ -1229,8 +1229,9 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	 * ```
 	 */
 	public throwError(throwErrorRequest: Grpc.ThrowErrorRequest) {
+		const req = stringifyVariables({...throwErrorRequest, variables: throwErrorRequest.variables ?? {}})
 		return this.executeOperation('throwError', () =>
-			this.grpc.throwErrorSync(throwErrorRequest)
+			this.grpc.throwErrorSync(req)
 		)
 	}
 

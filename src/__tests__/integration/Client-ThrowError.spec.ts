@@ -7,15 +7,24 @@ jest.setTimeout(25000)
 
 let processId: string
 
-const zbc = new ZBClient()
+let zbc: ZBClient
 
 beforeAll(async () => {
-	processId = (await zbc.deployProcess('./src/__tests__/testdata/Client-ThrowError.bpmn')).processes[0].bpmnProcessId
+	const zb = new ZBClient()
+	processId = (await zb.deployProcess('./src/__tests__/testdata/Client-ThrowError.bpmn')).processes[0].bpmnProcessId
 	cancelProcesses(processId)
+	await zb.close()
+})
+
+beforeEach(() => {
+	zbc = new ZBClient()
+})
+
+afterEach(async () => {
+	await zbc.close()
 })
 
 afterAll(async () => {
-	await zbc.close()
 	cancelProcesses(processId)
 })
 
@@ -37,4 +46,30 @@ test('Throws a business error that is caught in the process', async () => {
 		timeout: 20000,
 	})
 	expect(result.variables.bpmnErrorCaught).toBe(true)
+})
+
+test('Can set variables when throwing a BPMN Error', async () => {
+	zbc.createWorker({
+		taskHandler: job =>
+			job.error({
+				errorCode: 'BUSINESS_ERROR',
+				errorMessage: "Well, that didn't work",
+				variables: {something: "someValue"}
+			}),
+		taskType: 'throw-bpmn-error-task',
+		timeout: Duration.seconds.of(30),
+	})
+	zbc.createWorker({
+		taskType: 'sad-flow',
+		taskHandler: job =>
+			job.complete({
+				bpmnErrorCaught: true,
+			}),
+	})
+	const result = await zbc.createProcessInstanceWithResult(processId, {
+		timeout: 20000,
+	})
+	console.log(result.variables)
+	expect(result.variables.bpmnErrorCaught).toBe(true)
+	// expect(result.variables.something).toBe("someValue")
 })
