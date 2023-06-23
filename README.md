@@ -737,6 +737,21 @@ job.fail({
 
 Call `job.error()` to trigger a BPMN error throw event. You must pass in a string error code for the error code, and you can pass an optional error message as the second parameter. If no BPMN error catch event exists for the error code, an incident will be raised.
 
+```javascript
+job.error('RECORD_NOT_FOUND', 'Could not find the customer in the database')
+```
+
+From 8.2.5 of the client, you can update the variables in the workflow when you throw a BPMN error in a worker:
+
+```javascript
+job.error({
+    errorCode: 'RECORD_NOT_FOUND',
+    errorMessage: 'Could not find the customer in the database',
+    variables: {
+        someVariable: 'someValue'
+    }
+})
+
 Call `job.forwarded()` to release worker capacity to handle another job, without completing the job in any way with the Zeebe broker. This method supports the _decoupled job completion_ pattern. In this pattern, the worker forwards the job to another system - a lambda or a RabbitMQ queue. Some other process is ultimately responsible for completing the job.
 
 <a name = "working-with-variables"></a>
