@@ -143,6 +143,17 @@ declare function FailureHandler(
 	failureConfiguration: JobFailureConfiguration
 ): Promise<JOB_ACTION_ACKNOWLEDGEMENT>
 
+export interface ErrorJobWithVariables {
+	variables: JSONDoc,
+	errorCode: string,
+	errorMessage?: string
+}
+
+export type ErrorJobOutcome = (
+	errorCode: string | ErrorJobWithVariables,
+	errorMessage?: string
+) => Promise<JOB_ACTION_ACKNOWLEDGEMENT>
+
 export interface JobCompletionInterface<WorkerOutputVariables> {
 	/**
 	 * Cancel the workflow.
@@ -174,11 +185,9 @@ export interface JobCompletionInterface<WorkerOutputVariables> {
 	 * The error is handled in the process by an error catch event.
 	 * If there is no error catch event with the specified errorCode then an incident will be raised instead.
 	 */
-	error: (
-		errorCode: string,
-		errorMessage?: string
-	) => Promise<JOB_ACTION_ACKNOWLEDGEMENT>
+	error: ErrorJobOutcome
 }
+
 
 export interface ZeebeJob<
 	WorkerInputVariables = IInputVariables,

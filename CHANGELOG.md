@@ -1,3 +1,19 @@
+# Version 8.2.5
+
+## New Features
+
+_New shiny stuff._
+
+-   Throwing a BPMN Error, either from the `ZBClient` or in the job handler of a `ZBWorker`, accepted an error message and an error code. The gRPC API for ThrowError now accepts a `variables` field, but the Node client did not allow you to set variables along with the error code and message. The Node client now accepts an object for `job.error` that includes a `variables` field, as does `ZBClient.throwError`, allowing you to set variables when throwing a BPMN error. See [#323](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/323), the README file, and the [Client API documentation](https://camunda-community-hub.github.io/zeebe-client-node-js/) for more details.
+
+## Chores
+
+_Things that shouldn't have a visible impact._
+
+-   Unit tests used a unique process model for each test run. As a result, the number of deployed process models in a cluster increased over time until a SaaS cluster would fail due to sharding of the ElasticSearch. Unit tests have been refactored to reuse process models. This will have no impact for end-users, but for developers it means that you can use the same cluster for unit tests.
+
+
+
 # Version 8.2.4
 
 ## Fixes
