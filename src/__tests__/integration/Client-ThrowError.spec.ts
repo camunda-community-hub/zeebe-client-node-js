@@ -69,7 +69,6 @@ test('Can set variables when throwing a BPMN Error', async () => {
 	const result = await zbc.createProcessInstanceWithResult(processId, {
 		timeout: 20000,
 	})
-	console.log(result.variables)
 	expect(result.variables.bpmnErrorCaught).toBe(true)
 	// expect(result.variables.something).toBe("someValue")
 })

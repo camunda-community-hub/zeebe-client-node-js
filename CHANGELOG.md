@@ -1,3 +1,11 @@
+# Version 8.2.6
+
+## Chores
+
+_Things that shouldn't have a visible impact._
+
+-   Camunda Platform 8.3-alpha4 introduces new work to support multi-tenancy. To support the development for this feature, the Node.js client adds a `tenantId` parameter to `DeployResource`, `DeployProcess`, `CreateProcessInstance`, and `CreateProcessInstanceWithResult`. At this point, the `tenantId` parameter does not do anything. It is for development purposes. See [#330](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/330) for more details.
+
 # Version 8.2.5
 
 ## New Features
