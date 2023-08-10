@@ -28,8 +28,11 @@ test('Decrements the retries count by default', () =>
 	new Promise(async done => {
 		const res = await zbc.deployProcess('./src/__tests__/testdata/Worker-Failure-Retries.bpmn')
 		await cancelProcesses(res.processes[0].bpmnProcessId)
-		wf = await zbc.createProcessInstance('worker-failure-retries', {
-			conditionVariable: true,
+		wf = await zbc.createProcessInstance({
+			bpmnProcessId: 'worker-failure-retries',
+			variables: {
+			conditionVariable: true
+			}
 		})
 		let called = false
 
@@ -56,8 +59,11 @@ test('Set the retries to a specific number when provided with one via simple sig
 	new Promise(async done => {
 		const res = await zbc.deployProcess('./src/__tests__/testdata/Worker-Failure-Retries.bpmn')
 		cancelProcesses(res.processes[0].bpmnProcessId)
-		wf = await zbc.createProcessInstance('worker-failure-retries', {
-			conditionVariable: true,
+		wf = await zbc.createProcessInstance({
+			bpmnProcessId: 'worker-failure-retries',
+			variables: {
+			conditionVariable: true
+			}
 		})
 		let called = false
 
@@ -84,8 +90,11 @@ test('Set the retries to a specific number when provided with one via object sig
 	new Promise(async done => {
 		const res = await zbc.deployProcess('./src/__tests__/testdata/Worker-Failure-Retries.bpmn')
 		await cancelProcesses(res.processes[0].bpmnProcessId)
-		wf = await zbc.createProcessInstance('worker-failure-retries', {
-			conditionVariable: true,
+		wf = await zbc.createProcessInstance({
+			bpmnProcessId: 'worker-failure-retries',
+			variables: {
+				conditionVariable: true
+			}
 		})
 		let called = false
 

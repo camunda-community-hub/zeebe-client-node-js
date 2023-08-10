@@ -46,8 +46,11 @@ afterAll(async() => {
 
 test('Causes a retry with complete.failure()', () =>
 	new Promise(async resolve => {
-		wf = await zbc.createProcessInstance(bpmnProcessId1, {
-			conditionVariable: true,
+		wf = await zbc.createProcessInstance({
+			bpmnProcessId: bpmnProcessId1,
+			variables: {
+			conditionVariable: true
+			}
 		})
 		const wfi = wf.processInstanceKey
 		expect(wfi).toBeTruthy()
@@ -81,7 +84,10 @@ test('Causes a retry with complete.failure()', () =>
 
 test('Does not fail a process when the handler throws, by default', () =>
 	new Promise(async done => {
-		wf = await zbc.createProcessInstance(bpmnProcessId2, {})
+		wf = await zbc.createProcessInstance({
+			bpmnProcessId: bpmnProcessId2,
+			variables: {}
+		})
 
 		let alreadyFailed = false
 
@@ -108,7 +114,10 @@ test('Does not fail a process when the handler throws, by default', () =>
 test('Fails a process when the handler throws and options.failProcessOnException is set', () =>
 	new Promise(async done => {
 
-		wf = await zbc.createProcessInstance(bpmnProcessId3, {})
+		wf = await zbc.createProcessInstance({
+			bpmnProcessId: bpmnProcessId3,
+			variables: {}
+		})
 
 		let alreadyFailed = false
 

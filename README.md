@@ -193,7 +193,10 @@ async function main() {
 
     // Create a process instance of the 'new-customer-process' process, with a customerId variable set
     // 'createProcessInstanceWithResult' awaits the outcome
-    const outcome = await zbc.createProcessInstanceWithResult('new-customer-process', { customerId: 457 });
+    const outcome = await zbc.createProcessInstanceWithResult({
+        bpmnProcessId: 'new-customer-process',
+        variables: { customerId: 457 }
+    });
     // Log the process outcome
     console.log('Process outcome', JSON.stringify(outcome, null, 2));
 }
@@ -1149,8 +1152,11 @@ const ZB = require('zeebe-node')
 
 ;(async () => {
 	const zbc = new ZB.ZBClient('localhost:26500')
-	const result = await zbc.createProcessInstance('test-process', {
-		testData: 'something',
+	const result = await zbc.createProcessInstance({
+        bpmnProcessId: 'test-process',
+		variables: {
+            testData: 'something'
+        }
 	})
 	console.log(result)
 })()
@@ -1197,8 +1203,11 @@ From version 0.22 of the broker and client, you can await the outcome of a proce
 
 ```typescript
 async function getOutcome() {
-	const result = await zbc.createProcessInstanceWithResult(processId, {
-		sourceValue: 5,
+	const result = await zbc.createProcessInstanceWithResult({
+        bpmnProcessId: processId,
+        variables: {
+		    sourceValue: 5
+        }
 	})
 	return result
 }

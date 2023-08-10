@@ -41,8 +41,11 @@ test('Can update process variables with setVariables', () =>
 		jest.setTimeout(30000)
 
 		wf = await zbc
-			.createProcessInstance(processId, {
-				conditionVariable: true,
+			.createProcessInstance({
+				bpmnProcessId: processId,
+				variables: {
+					conditionVariable: true
+				}
 			})
 			.then(trace)
 

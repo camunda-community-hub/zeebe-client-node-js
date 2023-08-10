@@ -25,8 +25,11 @@ afterAll(async () => {
 
 test('Can raise an Operate incident with complete.failure()', () =>
 	new Promise(async done => {
-		const wf = await zbc.createProcessInstance(processId, {
-			conditionVariable: true,
+		const wf = await zbc.createProcessInstance({
+			bpmnProcessId: processId,
+			variables: {
+			conditionVariable: true
+			}
 		})
 		processInstanceKey = wf.processInstanceKey
 		expect(processInstanceKey).toBeTruthy()

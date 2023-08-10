@@ -648,37 +648,18 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	 *	}).then(res => (id = res.processInstanceKey))
 	 * ```
 	 */
-	public createProcessInstance<Variables extends ZB.JSONDoc = ZB.IProcessVariables>(
-		bpmnProcessId: string,
-		variables: Variables
-	): Promise<Grpc.CreateProcessInstanceResponse>
-	public createProcessInstance<Variables extends ZB.JSONDoc = ZB.IProcessVariables>(config:ZB.CreateProcessInstanceReq<Variables>): Promise<Grpc.CreateProcessInstanceResponse>
-	public createProcessInstance<Variables extends ZB.JSONDoc = ZB.IProcessVariables>(
-		configOrbpmnProcessId: string | ZB.CreateProcessInstanceReq<Variables>,
-		variables?: Variables
-	): Promise<Grpc.CreateProcessInstanceResponse> {
-		const isConfigObject = (
-			conf: ZB.CreateProcessInstanceReq<Variables> | string
-		): conf is ZB.CreateProcessInstanceReq<Variables> =>
-			typeof conf === 'object'
-
-		if (isConfigObject(configOrbpmnProcessId) && !!configOrbpmnProcessId.tenantId) {
+	public createProcessInstance<Variables extends ZB.JSONDoc = ZB.IProcessVariables>(config:ZB.CreateProcessInstanceReq<Variables>): Promise<Grpc.CreateProcessInstanceResponse> {
+		if (!!config.tenantId) {
 			this.logger.logInfo('Multi-tenancy is not yet implemented. The tenantId parameter is provided for development purposes.')
 		}
 
-		const request: ZB.CreateProcessInstanceReq<Variables> = isConfigObject(configOrbpmnProcessId)
-			? {
-					bpmnProcessId: configOrbpmnProcessId.bpmnProcessId,
-					variables: configOrbpmnProcessId.variables,
-					version: configOrbpmnProcessId.version || -1,
-					startInstructions: configOrbpmnProcessId.startInstructions || []
-			  }
-			: {
-					bpmnProcessId: configOrbpmnProcessId,
-					variables: variables ?? {} as Variables,
-					version: -1,
-					startInstructions: []
-			  }
+		const request: ZB.CreateProcessInstanceReq<Variables> = {
+			bpmnProcessId: config.bpmnProcessId,
+			variables: config.variables,
+			version: config.version || -1,
+			startInstructions: config.startInstructions || []
+		}
+
 
 		const createProcessInstanceRequest: Grpc.CreateProcessInstanceRequest = stringifyVariables({
 			...request,
@@ -697,69 +678,36 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	 * ```
 	 * const zbc = new ZBClient()
 	 *
-	 * zbc.createProcessInstanceWithResult('order-process', {
-	 *   customerId: 123,
-	 *   invoiceId: 567
+	 * zbc.createProcessInstanceWithResult({
+	 *   bpmnProcessId: 'order-process',
+	 *   variables: {
+	 *     customerId: 123,
+	 *     invoiceId: 567
+	 *   }
 	 * })
 	 *   .then(console.log)
 	 * ```
 	 */
-	public createProcessInstanceWithResult<
-		Variables extends ZB.JSONDoc = ZB.IInputVariables,
-		Result = ZB.IOutputVariables
-	>(
-		bpmnProcessId: string,
-		variables: Variables
-	): Promise<Grpc.CreateProcessInstanceWithResultResponse<Result>>
 	public createProcessInstanceWithResult<
 		Variables extends ZB.JSONDoc = ZB.IProcessVariables,
 		Result = ZB.IOutputVariables
 	>(
 		config: ZB.CreateProcessInstanceWithResultReq<Variables>
 	): Promise<Grpc.CreateProcessInstanceWithResultResponse<Result>>
-	public createProcessInstanceWithResult<
-		Variables extends ZB.JSONDoc = ZB.IProcessVariables,
-		Result = ZB.IOutputVariables
-	>(
-		bpmnProcessId: string,
-		variables: Variables
-	): Promise<Grpc.CreateProcessInstanceWithResultResponse<Result>>
-	public createProcessInstanceWithResult<
-		Variables extends ZB.JSONDoc = ZB.IProcessVariables,
-		Result = ZB.IOutputVariables
-	>(
-		configOrBpmnProcessId:
-			| ZB.CreateProcessInstanceWithResultReq<Variables>
-			| string,
-		variables?: Variables
-	) {
-		const isConfigObject = (
-			config: ZB.CreateProcessInstanceWithResultReq<Variables> | string
-		): config is ZB.CreateProcessInstanceWithResultReq<Variables> =>
-			typeof config === 'object'
+	{
+		if (!!config.tenantId) {
+			this.logger.logInfo('Multi-tenancy is not yet implemented. The tenantId parameter is provided for development purposes.')
+		}
 
-			if (isConfigObject(configOrBpmnProcessId) && !!configOrBpmnProcessId.tenantId) {
-				this.logger.logInfo('Multi-tenancy is not yet implemented. The tenantId parameter is provided for development purposes.')
-			}
+		const request = {
+			bpmnProcessId: config.bpmnProcessId,
+			fetchVariables: config.fetchVariables,
+			requestTimeout: config.requestTimeout || 0,
+			variables: config.variables,
+			version: config.version || -1,
+		}
 
-		const request = isConfigObject(configOrBpmnProcessId)
-			? {
-					bpmnProcessId: configOrBpmnProcessId.bpmnProcessId,
-					fetchVariables: configOrBpmnProcessId.fetchVariables,
-					requestTimeout: configOrBpmnProcessId.requestTimeout || 0,
-					variables: configOrBpmnProcessId.variables,
-					version: configOrBpmnProcessId.version || -1,
-			  }
-			: {
-					bpmnProcessId: configOrBpmnProcessId,
-					fetchVariables: undefined,
-					requestTimeout: 0,
-					variables,
-					version: -1,
-			  }
-
-		const createProcessInstanceRequest: Grpc.CreateProcessInstanceBaseRequest = stringifyVariables(
-			{
+		const createProcessInstanceRequest: Grpc.CreateProcessInstanceBaseRequest = stringifyVariables({
 				bpmnProcessId: request.bpmnProcessId,
 				variables: request.variables,
 				version: request.version,
@@ -789,23 +737,20 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	 */
 	public async deployResource(
 		resource:
-			| { processFilename: string }
-			| { name: string; process: Buffer },
-			tenantId?: string
+			| { processFilename: string, tenantId?: string }
+			| { name: string; process: Buffer, tenantId?: string },
 	): Promise<Grpc.DeployResourceResponse<Grpc.ProcessDeployment>>
 	public async deployResource(
 		resource:
-			| { decisionFilename: string }
-			| { name: string; decision: Buffer },
-			tenantId?: string
+			| { decisionFilename: string, tenantId?: string }
+			| { name: string; decision: Buffer, tenantId?: string },
 	): Promise<Grpc.DeployResourceResponse<Grpc.DecisionDeployment>>
 	async deployResource(
 		resource:
-			| { processFilename: string }
-			| { name: string; process: Buffer }
-			| { name: string; decision: Buffer }
-			| { decisionFilename: string },
-			tenantId?: string
+			| { processFilename: string, tenantId?: string }
+			| { name: string; process: Buffer, tenantId?: string }
+			| { name: string; decision: Buffer, tenantId?: string }
+			| { decisionFilename: string, tenantId?: string },
 	): Promise<
 		Grpc.DeployResourceResponse<
 			| Grpc.ProcessDeployment
@@ -813,7 +758,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 			| Grpc.DecisionRequirementsDeployment
 		>
 	> {
-		if (!!tenantId) {
+		if (!!resource.tenantId) {
 			this.logger.logInfo('Multi-tenancy is not yet implemented. The tenantId parameter is provided for development purposes.')
 		}
 		const isProcess = (
@@ -903,13 +848,13 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	 * ```
 	 */
 	public async deployProcess(
-		process: ZB.DeployProcessFiles | ZB.DeployProcessBuffer,
-		tenantId?: string
+		process: (ZB.DeployProcessFiles | ZB.DeployProcessBuffer) & { tenantId?: string }
 	): Promise<Grpc.DeployProcessResponse> {
 
-		if (!!tenantId) {
+		if (!!process.tenantId) {
 			this.logger.logInfo('Multi-tenancy is not yet implemented. The tenantId parameter is provided for development purposes.')
 		}
+
 		const deploy = (processes: Grpc.ProcessRequestObject[]) =>
 			this.executeOperation('deployWorkflow', () =>
 				this.grpc.deployProcessSync({
@@ -923,6 +868,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 					', '
 				)}.`
 			)
+
 		return pipe(
 			bufferOrFiles(process),
 			E.fold(deploy, files =>

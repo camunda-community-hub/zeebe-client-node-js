@@ -26,7 +26,10 @@ test('Modify Process Instance', done =>{
 			return job.complete().then(() => done())
 		}
 	})
-	zbc.createProcessInstance('SkipFirstTask', {}).then(res => {
+	zbc.createProcessInstance({
+		bpmnProcessId: 'SkipFirstTask',
+		variables: {}
+	}).then(res => {
 		pid = res.processInstanceKey
 		zbc.modifyProcessInstance({
 			processInstanceKey: res.processInstanceKey,

@@ -51,7 +51,10 @@ test('Can create a worker', async() => {
 
 test('Can cancel a process', async () => {
 	const client = new ZBClient()
-	const process = await client.createProcessInstance(processId, {})
+	const process = await client.createProcessInstance({
+		bpmnProcessId: processId,
+		variables: {}
+	})
 	const key = process.processInstanceKey
 	expect(key).toBeTruthy()
 	await client.cancelProcessInstance(key)

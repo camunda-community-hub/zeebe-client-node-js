@@ -27,8 +27,11 @@ afterAll(async () => {
 
 test('Awaits a process outcome', async () => {
 	const processId = test1.processes[0].bpmnProcessId
-	const result = await zbc.createProcessInstanceWithResult(processId, {
-		sourceValue: 5,
+	const result = await zbc.createProcessInstanceWithResult({
+		bpmnProcessId: processId,
+		variables: {
+		sourceValue: 5
+		}
 	})
 	expect(result.variables.sourceValue).toBe(5)
 })
