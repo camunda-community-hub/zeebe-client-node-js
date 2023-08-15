@@ -1,5 +1,3 @@
-Issue tracker is **ONLY** used for reporting bugs. New features and questions should be discussed on [our slack channel](https://www.camunda.com/slack).
-
 <!--- Provide a general summary of the issue in the Title above -->
 
 ## Expected Behavior
