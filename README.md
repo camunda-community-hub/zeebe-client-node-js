@@ -751,6 +751,7 @@ job.error({
         someVariable: 'someValue'
     }
 })
+```
 
 Call `job.forwarded()` to release worker capacity to handle another job, without completing the job in any way with the Zeebe broker. This method supports the _decoupled job completion_ pattern. In this pattern, the worker forwards the job to another system - a lambda or a RabbitMQ queue. Some other process is ultimately responsible for completing the job.
 
