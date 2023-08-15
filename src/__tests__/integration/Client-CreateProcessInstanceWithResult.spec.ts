@@ -45,6 +45,7 @@ test('can override the gateway timeout', async () => {
 			otherValue: 'rome',
 			sourceValue: 5,
 		},
+		tenantId: 'something'
 	})
 	expect(result.variables.sourceValue).toBe(5)
 })

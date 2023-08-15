@@ -848,12 +848,8 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	 * ```
 	 */
 	public async deployProcess(
-		process: (ZB.DeployProcessFiles | ZB.DeployProcessBuffer) & { tenantId?: string }
+		process: (ZB.DeployProcessFiles | ZB.DeployProcessBuffer)
 	): Promise<Grpc.DeployProcessResponse> {
-
-		if (!!process.tenantId) {
-			this.logger.logInfo('Multi-tenancy is not yet implemented. The tenantId parameter is provided for development purposes.')
-		}
 
 		const deploy = (processes: Grpc.ProcessRequestObject[]) =>
 			this.executeOperation('deployWorkflow', () =>
