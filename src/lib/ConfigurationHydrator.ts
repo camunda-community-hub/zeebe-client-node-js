@@ -32,6 +32,7 @@ export class ConfigurationHydrator {
 			'ZEEBE_CLIENT_SSL_ROOT_CERTS_PATH',
 			'ZEEBE_CLIENT_SSL_PRIVATE_KEY_PATH',
 			'ZEEBE_CLIENT_SSL_CERT_CHAIN_PATH',
+			'ZEEBE_TENANT_ID'
 		])
 
 	public static configure(
@@ -51,6 +52,7 @@ export class ConfigurationHydrator {
 			...ConfigurationHydrator.readTLSFromEnvironment(options),
 			...ConfigurationHydrator.getEagerStatus(options),
 			...ConfigurationHydrator.getRetryConfiguration(options),
+			...ConfigurationHydrator.getTenantId(options)
 		}
 
 		// inherit oAuth custom root certificates, unless
@@ -66,6 +68,7 @@ export class ConfigurationHydrator {
 
 		return configuration
 	}
+	private static readonly getTenantId = (options: ZBClientOptions | undefined) => ({tenantId: options?.tenantId ?? ConfigurationHydrator.ENV().ZEEBE_TENANT_ID })
 	public static readonly getLogLevelFromEnv = () =>
 		ConfigurationHydrator.ENV().ZEEBE_NODE_LOG_LEVEL as Loglevel | undefined
 

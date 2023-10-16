@@ -107,6 +107,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	private useTLS: boolean
 	private stdout: ZBCustomLogger
 	private customSSL?: CustomSSL
+	private tenantId?: string
 
 	/**
 	 *
@@ -153,6 +154,8 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 			gatewayAddress,
 			constructorOptionsWithDefaults
 		)
+
+		this.tenantId = this.options.tenantId
 
 		this.gatewayAddress = `${this.options.hostname}:${this.options.port}`
 
@@ -663,7 +666,8 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 
 		const createProcessInstanceRequest: Grpc.CreateProcessInstanceRequest = stringifyVariables({
 			...request,
-			startInstructions: request.startInstructions!
+			startInstructions: request.startInstructions!,
+			tenantId: this.tenantId
 		})
 
 		return this.executeOperation('createProcessInstance', () =>
@@ -705,12 +709,14 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 			requestTimeout: config.requestTimeout || 0,
 			variables: config.variables,
 			version: config.version || -1,
+			tenantId: config.tenantId ?? this.tenantId
 		}
 
 		const createProcessInstanceRequest: Grpc.CreateProcessInstanceBaseRequest = stringifyVariables({
 				bpmnProcessId: request.bpmnProcessId,
 				variables: request.variables,
 				version: request.version,
+				tenantId: request.tenantId
 			}
 		)
 
@@ -725,7 +731,22 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 
 	/**
 	 *
-	 * @description Deploy a BPMN model or DMN table to the Zeebe cluster.
+	 * @description Deploys one or more resources (e.g. processes or decision models) to Zeebe.
+	 * Note that this is an atomic call, i.e. either all resources are deployed, or none of them are.
+	 *
+	 *  Errors:
+      PERMISSION_DENIED:
+        - if a deployment to an unauthorized tenant is performed
+      INVALID_ARGUMENT:
+        - no resources given.
+        - if at least one resource is invalid. A resource is considered invalid if:
+          - the content is not deserializable (e.g. detected as BPMN, but it's broken XML)
+          - the content is invalid (e.g. an event-based gateway has an outgoing sequence flow to a task)
+        - if multi-tenancy is enabled, and:
+          - a tenant id is not provided
+          - a tenant id with an invalid format is provided
+        - if multi-tenancy is disabled and a tenant id is provided
+
 	 * @example
 	 * ```
 	 * import {join} from 'path'
@@ -784,6 +805,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 							content: process,
 						},
 					],
+					tenantId: resource.tenantId ?? this.tenantId
 				})
 			)
 		} else if (isProcess(resource)) {
@@ -795,6 +817,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 							content: resource.process,
 						},
 					],
+					tenantId: resource.tenantId ?? this.tenantId
 				})
 			)
 		} else if (isDecision(resource)) {
@@ -806,6 +829,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 							content: resource.decision,
 						},
 					],
+					tenantId: resource.tenantId ?? this.tenantId
 				})
 			)
 		} else {
@@ -819,6 +843,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 							content: decision,
 						},
 					],
+					tenantId: resource.tenantId ?? this.tenantId
 				})
 			)
 		}
@@ -891,7 +916,11 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	 // the gRPC API call needs a JSON string, but we accept a JSON object, so we transform it here
 		const variables = JSON.stringify(evaluateDecisionRequest.variables) as unknown as ZB.JSONDoc
 		return this.executeOperation('evaluateDecision', () =>
-			this.grpc.evaluateDecisionSync({...evaluateDecisionRequest, variables})
+			this.grpc.evaluateDecisionSync({
+				...evaluateDecisionRequest,
+				variables,
+				tenantId: evaluateDecisionRequest.tenantId ?? this.tenantId
+			})
 		)
 	}
 
@@ -1046,6 +1075,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		const publishMessageRequest: Grpc.PublishMessageRequest = {
 			correlationKey: uuid(),
 			...publishStartMessageRequest,
+			tenantId: publishStartMessageRequest.tenantId ?? this.tenantId
 		}
 		return this.executeOperation('publishStartMessage', () =>
 			this.grpc.publishMessageSync(

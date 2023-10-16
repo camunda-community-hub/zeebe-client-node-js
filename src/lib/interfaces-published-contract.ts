@@ -57,4 +57,5 @@ export interface ZBClientOptions {
 	onReady?: () => void
 	onConnectionError?: () => void
 	customSSL?: CustomSSL
+	tenantId?: string
 }

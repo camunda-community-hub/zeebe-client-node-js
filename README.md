@@ -562,6 +562,12 @@ With no relevant environment variables set, it will default to localhost on the 
 
 The following environment variable configurations are possible with the Zero-conf constructor:
 
+From 8.3.0, multi-tenancy: 
+
+```bash
+ZEEBE_TENANT_ID
+```
+
 Camunda SaaS:
 
 ```bash

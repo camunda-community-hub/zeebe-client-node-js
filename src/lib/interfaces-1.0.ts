@@ -64,7 +64,7 @@ export interface CreateProcessBaseRequest<V extends JSONDoc> {
 		   * process instance.
 		 */
 		variables: V,
-		/** EXPERIMENTAL. NOT IMPLEMENTED. The tenantId for a multi-tenant enabled cluster. */
+		/** The tenantId for a multi-tenant enabled cluster. */
 		tenantId?: string
 }
 
