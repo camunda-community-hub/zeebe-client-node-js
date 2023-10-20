@@ -20,6 +20,7 @@ const ENV_VARS_TO_STORE = [
 	'ZEEBE_CLIENT_SSL_ROOT_CERTS_PATH',
 	'ZEEBE_CLIENT_SSL_PRIVATE_KEY_PATH',
 	'ZEEBE_CLIENT_SSL_CERT_CHAIN_PATH',
+	'ZEEBE_TENANT_ID'
 ]
 
 beforeAll(() => {
@@ -517,6 +518,28 @@ test('Max Retry Timeout in constructor is overridden by the environment', () => 
 		maxRetryTimeout: 10000,
 	})
 	expect(conf.maxRetryTimeout).toBe(5000)
+})
+test('Tenant ID is picked up from environment', () => {
+	process.env.ZEEBE_TENANT_ID = 'someId'
+	const conf = ConfigurationHydrator.configure(undefined, undefined)
+	expect(conf.tenantId).toBe('someId')
+})
+
+test('Tenant ID is picked up from constructor options', () => {
+	const conf = ConfigurationHydrator.configure(undefined, {tenantId: 'thisOne'})
+	expect(conf.tenantId).toBe('thisOne')
+})
+
+test('Tenant ID from constructor overrides environment', () => {
+	process.env.ZEEBE_TENANT_ID = 'someId'
+	const conf = ConfigurationHydrator.configure(undefined, {tenantId: 'thisOne'})
+	expect(conf.tenantId).toBe('thisOne')
+})
+
+test('When no Tenant ID is specified in the environment or the constructor, no tenant ID is defined', () => {
+	delete process.env.ZEEBE_TENANT_ID
+	const conf = ConfigurationHydrator.configure(undefined, undefined)
+	expect(conf.tenantId).not.toBeDefined()
 })
 // const clientId = process.env.ZEEBE_CLIENT_ID
 // const clientSecret = process.env.ZEEBE_CLIENT_SECRET

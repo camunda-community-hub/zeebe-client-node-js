@@ -1,6 +1,31 @@
 import { MaybeTimeDuration } from 'typed-duration'
 import { IInputVariables, IProcessVariables, JSONDoc } from './interfaces-1.0'
 
+export interface StreamActivatedJobsRequest {
+	/**
+	 * the job type, as defined in the BPMN process (e.g. <zeebe:taskDefinition type="payment-service" />)
+	 */
+	type: string
+	/**
+	 * the name of the worker activating the jobs, mostly used for logging purposes
+	 */
+	worker: string
+	/**
+	 * a job returned after this call will not be activated by another call until the
+	 * timeout (in ms) has been reached
+	 */
+	timeout: number
+	/**
+	 * a list of variables to fetch as the job variables; if empty, all visible variables at
+	 * the time of activation for the scope of the job will be returned
+	 */
+	fetchVariable: string[]
+	/**
+	 * a list of identifiers of tenants for which to stream jobs
+	 */
+	tenantIds: string[]
+  }
+
 /**
  * Request object to send the broker to request jobs for the worker.
  */
@@ -35,6 +60,10 @@ export interface ActivateJobsRequest {
 	 *
 	 */
 	requestTimeout: MaybeTimeDuration
+	/**
+	 * a list of IDs of tenants for which to activate jobs
+	 */
+	tenantIds?: string[]
 }
 
 export interface ActivatedJob {
@@ -78,6 +107,10 @@ export interface ActivatedJob {
 	 * fetchVariables value in the ActivateJobRequest.
 	 */
 	readonly variables: string
+	/**
+	 * the id of the tenant that owns the job
+	 */
+	readonly tenantId : string;
 }
 
 export interface ActivateJobsResponse {
@@ -93,6 +126,10 @@ export interface CreateProcessInstanceBaseRequest {
   	 * process instance.
 	 */
 	variables: string
+	/**
+	 * the tenant id of the process definition
+	 */
+	tenantId?: string
 }
 
 export interface CreateProcessInstanceRequest extends CreateProcessInstanceBaseRequest {
@@ -136,6 +173,10 @@ export interface CreateProcessInstanceResponse {
 	 * valid argument, as the root of the JSON document is an array and not an object.
 	 */
 	readonly processInstanceKey: string
+	/**
+	 * the tenant identifier of the created process instance
+	 */
+	readonly tenantId: string;
 }
 
 export interface CreateProcessInstanceWithResultRequest {
@@ -151,18 +192,32 @@ export interface CreateProcessInstanceWithResultRequest {
 }
 
 export interface CreateProcessInstanceWithResultResponse<Result> {
-	// the key of the process definition which was used to create the process instance
-	processDefinitionKey: string
-	// the BPMN process ID of the process definition which was used to create the process
-	// instance
-	bpmnProcessId: string
-	// the version of the process definition which was used to create the process instance
-	version: number
-	// the unique identifier of the created process instance; to be used wherever a request
-	// needs a process instance key (e.g. CancelProcessInstanceRequest)
-	processInstanceKey: string
-	// consisting of all visible variables to the root scope
-	variables: Result
+	/**
+	 * the key of the process definition which was used to create the process instance
+	 */
+	readonly processDefinitionKey: string
+	/**
+	 * the BPMN process ID of the process definition which was used to create the process
+	 * instance
+	 */
+	readonly bpmnProcessId: string
+	/**
+	 * the version of the process definition which was used to create the process instance
+	 */
+	readonly version: number
+	/**
+	 * the unique identifier of the created process instance; to be used wherever a request
+	 * needs a process instance key (e.g. CancelProcessInstanceRequest)
+	 */
+	readonly processInstanceKey: string
+	/**
+	 * consisting of all visible variables to the root scope
+	 */
+	readonly variables: Result
+	/**
+	 * the tenant identifier of the process definition
+	 */
+	readonly tenantId: string
 }
 
 // Describes the Raft role of the broker for a given partition
@@ -208,10 +263,22 @@ export interface ProcessRequestObject {
 }
 
 export interface ProcessMetadata {
+	/** the bpmn process ID, as parsed during deployment; together with the version forms a
+	 * unique identifier for a specific process definition */
 	readonly bpmnProcessId: string
+	/** the assigned process version */
 	readonly version: number
+	/** the assigned key, which acts as a unique identifier for this process */
 	readonly processDefinitionKey: string
+	/**
+	 * the resource name (see: ProcessRequestObject.name) from which this process was
+	 * parsed
+	 */
 	readonly resourceName: string
+	/**
+	 * the tenant identifier of the deployed process
+	 */
+	tenantId: string
 }
 
 export interface DecisionMetadata {
@@ -231,6 +298,8 @@ export interface DecisionMetadata {
 	// the assigned key of the decision requirements graph that this decision is
 	// part of
 	decisionRequirementsKey: number
+	/** the tenant id of the deployed decision */
+	tenantId: string
 }
 
 export interface DecisionRequirementsMetadata {
@@ -247,6 +316,24 @@ export interface DecisionRequirementsMetadata {
 	// the resource name (see: Resource.name) from which this decision
 	// requirements was parsed
 	resourceName: string
+	//** the tenant id of the deployed decision requirements */
+	tenantId: string
+}
+
+export interface FormMetadata {
+	/**
+	 * the form ID, as parsed during deployment; together with the
+	 * versions forms a unique identifier for a specific form
+	 */
+  	readonly formId: string
+  	/** the assigned form version */
+   	readonly version: number
+	/** the assigned key, which acts as a unique identifier for this form */
+	readonly formKey: number
+  	/** the resource name */
+  	readonly resourceName: string
+ 	/** the tenant id of the deployed form */
+  	readonly tenantId: string
 }
 
 export interface ProcessDeployment {
@@ -258,21 +345,33 @@ export interface DecisionDeployment {
 export interface DecisionRequirementsDeployment {
 	decisionRequirements: DecisionRequirementsMetadata
 }
+
+export interface FormDeployment {
+	form: FormMetadata
+}
+
 export type Deployment =
 	| ProcessDeployment
 	| DecisionDeployment
 	| DecisionRequirementsDeployment
+	| FormDeployment
 
 export interface DeployResourceResponse<T> {
 	// the unique key identifying the deployment
 	readonly key: number
 	// a list of deployed resources, e.g. processes
 	readonly deployments: T[]
+	/** the tenant id of the deployed resources */
+	tenantId: string
 }
 
 export interface DeployResourceRequest {
 	// list of resources to deploy
 	resources: Resource[]
+	/**
+	 * the tenant id of the resources to deploy
+	 */
+	tenantId?: string
 }
 
 export interface Resource {
@@ -282,6 +381,9 @@ export interface Resource {
 	content: Buffer
 }
 
+/**
+ * @deprecated since 8, replaced by DeployResourceResponse
+ */
 export interface DeployProcessResponse {
 	readonly key: string
 	readonly processes: ProcessMetadata[]
@@ -305,11 +407,15 @@ export interface PublishMessageRequest<Variables = IInputVariables> {
 	/** Unique ID for this message */
 	messageId?: string
 	variables?: Variables
+	/** the tenantId of the message */
+	tenantId?: string
 }
 
 export interface PublishMessageResponse {
-	// the unique ID of the message that was published
+	/** the unique ID of the message that was published */
 	key: number
+	/** the tenantId of the message */
+	tenantId: string
 }
 
 export interface PublishStartMessageRequest<Variables = IProcessVariables> {
@@ -321,6 +427,8 @@ export interface PublishStartMessageRequest<Variables = IProcessVariables> {
 	messageId?: string
 	correlationKey?: string
 	variables: Variables
+	/** the tenantId for the message */
+	tenantId?: string
 }
 
 export interface UpdateJobRetriesRequest {
@@ -440,6 +548,10 @@ export type EvaluateDecisionRequest = {
 	 *  JSON document is an array and not an object.
 	 */
 	variables: JSONDoc;
+	/**
+	 * the tenant identifier of the decision
+	 */
+	tenantId?: string
 } | {
 	/** the ID of the decision to be evaluated */
 	decisionId: string;
@@ -451,6 +563,10 @@ export type EvaluateDecisionRequest = {
 	 *  JSON document is an array and not an object.
 	 */
 	variables: JSONDoc;
+	/**
+	 * the tenant identifier of the decision
+	 */
+	tenantId?: string
 }
 
 export interface EvaluateDecisionResponse {
@@ -485,6 +601,8 @@ export interface EvaluateDecisionResponse {
 	failedDecisionId: string;
 	/** an optional message describing why the decision which was evaluated failed */
 	failureMessage: string;
+	/** the tenant identifier of the decision */
+	tenantId?: string
 }
 
 export interface EvaluatedDecision {
@@ -509,6 +627,8 @@ export interface EvaluatedDecision {
 	matchedRules: MatchedDecisionRule[];
 	/** the decision inputs that were evaluated within this decision evaluation */
 	evaluatedInputs: EvaluatedDecisionInput[];
+	/** the tenant identifier of the evaluated decision */
+	tenantId: string
 }
 
 export interface EvaluatedDecisionInput {

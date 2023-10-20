@@ -8,6 +8,22 @@ option go_package = "./;pb";
 // For a more complete documentation, refer to Zeebe documentation at:
 // https://docs.camunda.io/docs/reference/grpc
 
+message StreamActivatedJobsRequest {
+  // the job type, as defined in the BPMN process (e.g. <zeebe:taskDefinition
+  // type="payment-service" />)
+  string type = 1;
+  // the name of the worker activating the jobs, mostly used for logging purposes
+  string worker = 2;
+  // a job returned after this call will not be activated by another call until the
+  // timeout (in ms) has been reached
+  int64 timeout = 3;
+  // a list of variables to fetch as the job variables; if empty, all visible variables at
+  // the time of activation for the scope of the job will be returned
+  repeated string fetchVariable = 5;
+  // a list of identifiers of tenants for which to stream jobs
+  repeated string tenantIds = 6;
+}
+
 message ActivateJobsRequest {
   // the job type, as defined in the BPMN process (e.g. <zeebe:taskDefinition
   // type="payment-service" />)
@@ -26,6 +42,8 @@ message ActivateJobsRequest {
   // if the requestTimeout = 0, a default timeout is used.
   // if the requestTimeout < 0, long polling is disabled and the request is completed immediately, even when no job is activated.
   int64 requestTimeout = 6;
+  // a list of IDs of tenants for which to activate jobs
+  repeated string tenantIds = 7;
 }
 
 message ActivateJobsResponse {
@@ -63,6 +81,8 @@ message ActivatedJob {
   // JSON document, computed at activation time, consisting of all visible variables to
   // the task scope
   string variables = 13;
+  // // the id of the tenant that owns the job
+  string tenantId = 14;
 }
 
 message CancelProcessInstanceRequest {
@@ -102,6 +122,8 @@ message CreateProcessInstanceRequest {
   // will start at the start event. If non-empty the process instance will apply start
   // instructions after it has been created
   repeated ProcessInstanceCreationStartInstruction startInstructions = 5;
+  // the tenant id of the process definition
+  string tenantId = 6;
 }
 
 message ProcessInstanceCreationStartInstruction {
@@ -128,6 +150,8 @@ message CreateProcessInstanceResponse {
   // the unique identifier of the created process instance; to be used wherever a request
   // needs a process instance key (e.g. CancelProcessInstanceRequest)
   int64 processInstanceKey = 4;
+  // the tenant identifier of the created process instance
+  string tenantId = 5;
 }
 
 message CreateProcessInstanceWithResultRequest {
@@ -155,6 +179,8 @@ message CreateProcessInstanceWithResultResponse {
   // JSON document
   // consists of visible variables in the root scope
   string variables = 5;
+  // the tenant identifier of the process definition
+  string tenantId = 6;
 }
 
 message EvaluateDecisionRequest {
@@ -170,6 +196,8 @@ message EvaluateDecisionRequest {
   // [{ "a": 1, "b": 2 }] would not be a valid argument, as the root of the
   // JSON document is an array and not an object.
   string variables = 3;
+  // the tenant identifier of the decision
+  string tenantId = 4;
 }
 
 message EvaluateDecisionResponse {
@@ -199,6 +227,8 @@ message EvaluateDecisionResponse {
   string failedDecisionId = 9;
   // an optional message describing why the decision which was evaluated failed
   string failureMessage = 10;
+  // the tenant identifier of the evaluated decision
+  string tenantId = 11;
 }
 
 message EvaluatedDecision {
@@ -221,6 +251,8 @@ message EvaluatedDecision {
   repeated MatchedDecisionRule matchedRules = 7;
   // the decision inputs that were evaluated within this decision evaluation
   repeated EvaluatedDecisionInput evaluatedInputs = 8;
+  // the tenant identifier of the evaluated decision
+  string tenantId = 9;
 }
 
 message EvaluatedDecisionInput {
@@ -278,6 +310,8 @@ message DeployProcessResponse {
 message DeployResourceRequest {
   // list of resources to deploy
   repeated Resource resources = 1;
+  // the tenant id of the resources to deploy
+  string tenantId = 2;
 }
 
 message Resource {
@@ -292,6 +326,8 @@ message DeployResourceResponse {
   int64 key = 1;
   // a list of deployed resources, e.g. processes
   repeated Deployment deployments = 2;
+  // the tenant id of the deployed resources
+  string tenantId = 3;
 }
 
 message Deployment {
@@ -303,6 +339,8 @@ message Deployment {
     DecisionMetadata decision = 2;
     // metadata of a deployed decision requirements
     DecisionRequirementsMetadata decisionRequirements = 3;
+    // metadata of a deployed form
+    FormMetadata form = 4;
   }
 }
 
@@ -317,6 +355,8 @@ message ProcessMetadata {
   // the resource name (see: ProcessRequestObject.name) from which this process was
   // parsed
   string resourceName = 4;
+  // the tenant id of the deployed process
+  string tenantId = 5;
 }
 
 message DecisionMetadata {
@@ -336,6 +376,8 @@ message DecisionMetadata {
   // the assigned key of the decision requirements graph that this decision is
   // part of
   int64 decisionRequirementsKey = 6;
+  // the tenant id of the deployed decision
+  string tenantId = 7;
 }
 
 message DecisionRequirementsMetadata {
@@ -352,6 +394,22 @@ message DecisionRequirementsMetadata {
   // the resource name (see: Resource.name) from which this decision
   // requirements was parsed
   string resourceName = 5;
+  // the tenant id of the deployed decision requirements
+  string tenantId = 6;
+}
+
+message FormMetadata {
+  // the form ID, as parsed during deployment; together with the
+  // versions forms a unique identifier for a specific form
+  string formId = 1;
+  // the assigned form version
+  int32 version = 2;
+  // the assigned key, which acts as a unique identifier for this form
+  int64 formKey = 3;
+  // the resource name
+  string resourceName = 4;
+  // the tenant id of the deployed form
+  string tenantId = 5;
 }
 
 message FailJobRequest {
@@ -407,11 +465,15 @@ message PublishMessageRequest {
   // the message variables as a JSON document; to be valid, the root of the document must be an
   // object, e.g. { "a": "foo" }. [ "foo" ] would not be valid.
   string variables = 5;
+  // the tenant id of the message
+  string tenantId = 6;
 }
 
 message PublishMessageResponse {
   // the unique ID of the message that was published
   int64 key = 1;
+  // the tenant id of the message
+  string tenantId = 2;
 }
 
 message ResolveIncidentRequest {
@@ -589,6 +651,18 @@ service Gateway {
   }
 
   /*
+   Registers client to a job stream that will stream jobs back to the client as
+   they become activatable.
+
+   Errors:
+     INVALID_ARGUMENT:
+      - type is blank (empty string, null)
+      - timeout less than 1
+  */
+  rpc StreamActivatedJobs (StreamActivatedJobsRequest) returns (stream ActivatedJob) {
+  }
+
+  /*
     Cancels a running process instance
 
     Errors:
@@ -679,11 +753,17 @@ service Gateway {
     Note that this is an atomic call, i.e. either all resources are deployed, or none of them are.
 
     Errors:
+      PERMISSION_DENIED:
+        - if a deployment to an unauthorized tenant is performed
       INVALID_ARGUMENT:
         - no resources given.
         - if at least one resource is invalid. A resource is considered invalid if:
           - the content is not deserializable (e.g. detected as BPMN, but it's broken XML)
           - the content is invalid (e.g. an event-based gateway has an outgoing sequence flow to a task)
+        - if multi-tenancy is enabled, and:
+          - a tenant id is not provided
+          - a tenant id with an invalid format is provided
+        - if multi-tenancy is disabled and a tenant id is provided
   */
   rpc DeployResource (DeployResourceRequest) returns (DeployResourceResponse) {
   }

@@ -31,9 +31,12 @@ afterAll(async () => {
 
 test('Can retrieve only specified variables using fetchVariable', () =>
 	new Promise(async done => {
-		wf = await zbc.createProcessInstance(processId, {
+		wf = await zbc.createProcessInstance({
+			bpmnProcessId: processId,
+			variables: {
 			var1: 'foo',
-			var2: 'bar',
+			var2: 'bar'
+			}
 		})
 
 		zbc.createWorker({

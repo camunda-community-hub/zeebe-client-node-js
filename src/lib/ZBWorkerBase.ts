@@ -109,6 +109,7 @@ export class ZBWorkerBase<
 	private pollMutex: boolean = false
 	private backPressureRetryCount: number = 0
 	private fetchVariable: (keyof WorkerInputVariables)[] | undefined
+	private tenantId?: string
 
 	constructor({
 		grpcClient,
@@ -137,6 +138,7 @@ export class ZBWorkerBase<
 		if (!taskHandler) {
 			throw new Error('Missing taskHandler')
 		}
+		this.tenantId = options.tenantId
 		this.taskHandler = taskHandler
 		this.taskType = taskType
 		this.maxJobsToActivate =
@@ -545,6 +547,7 @@ You should call only one job action method in the worker handler. This is a bug 
 			type: this.taskType,
 			worker: this.id,
 			fetchVariable: this.fetchVariable as string[],
+			tenantIds: this.tenantId ? [this.tenantId] : undefined
 		}
 
 		this.logger.logDebug(

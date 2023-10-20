@@ -42,8 +42,10 @@ test('Throws a business error that is caught in the process', async () => {
 				bpmnErrorCaught: true,
 			}),
 	})
-	const result = await zbc.createProcessInstanceWithResult(processId, {
-		timeout: 20000,
+	const result = await zbc.createProcessInstanceWithResult({
+		bpmnProcessId: processId,
+		requestTimeout: 20000,
+		variables: {}
 	})
 	expect(result.variables.bpmnErrorCaught).toBe(true)
 })
@@ -66,10 +68,11 @@ test('Can set variables when throwing a BPMN Error', async () => {
 				bpmnErrorCaught: true,
 			}),
 	})
-	const result = await zbc.createProcessInstanceWithResult(processId, {
-		timeout: 20000,
+	const result = await zbc.createProcessInstanceWithResult({
+		bpmnProcessId: processId,
+		requestTimeout: 20000,
+		variables: {}
 	})
-	console.log(result.variables)
 	expect(result.variables.bpmnErrorCaught).toBe(true)
 	// expect(result.variables.something).toBe("someValue")
 })

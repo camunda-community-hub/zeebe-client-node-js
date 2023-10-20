@@ -43,7 +43,10 @@ afterAll(async () => {
 })
 
 test('Can start a process', async () => {
-	wf = await zbc.createProcessInstance(processId, {})
+	wf = await zbc.createProcessInstance({
+		bpmnProcessId: processId,
+		variables: {}
+	})
 	await zbc.cancelProcessInstance(wf.processInstanceKey)
 	expect(wf.bpmnProcessId).toBe(processId)
 	expect(wf.processInstanceKey).toBeTruthy()

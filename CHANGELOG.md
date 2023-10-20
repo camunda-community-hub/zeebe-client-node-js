@@ -1,3 +1,17 @@
+# 8.3.0
+
+## Breaking changes
+
+_Changes in APIs or behaviour that may affect existing applications that use zeebe-node._
+
+-   Several method signatures for `CreateProcessInstance` and `CreateProcessInstanceWithResult` have been removed, leaving only the method that takes an object parameter. See [#330](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/330#issuecomment-1672535320) for more details.
+
+## New Features
+
+_New shiny stuff._
+
+-   Camunda Platform 8.3.0 introduces multi-tenancy. To support this, the Node.js client adds an optional `tenantId` parameter to `DeployResource`, `DeployProcess`, `CreateProcessInstance`, `CreateProcessInstanceWithResult`, and `PublishMessage`. You can also specify a `tenantId` in the ZBClient constructor or via the environment variable `ZEEBE_TENANT_ID`. This will be transparently added to all method invocations. See [#330](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/330) for more details.
+
 # Version 8.2.5
 
 ## New Features

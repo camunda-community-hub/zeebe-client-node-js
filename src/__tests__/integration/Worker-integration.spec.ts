@@ -40,7 +40,10 @@ afterAll(async () => {
 
 test('Can service a task', () =>
 	new Promise(async done => {
-		wf = await zbc.createProcessInstance(processId1, {})
+		wf = await zbc.createProcessInstance({
+			bpmnProcessId: processId1,
+			variables: {}
+		})
 		zbc.createWorker({
 			taskType: 'console-log',
 			taskHandler: async job => {
@@ -55,7 +58,10 @@ test('Can service a task', () =>
 
 test('Can service a task with complete.success', () =>
 	new Promise(async done => {
-		wf = await zbc.createProcessInstance(processId2, {})
+		wf = await zbc.createProcessInstance({
+			bpmnProcessId: processId2,
+			variables: {}
+		})
 		zbc.createWorker({
 			taskType: 'console-log-complete',
 			taskHandler: async job => {
@@ -70,8 +76,11 @@ test('Can service a task with complete.success', () =>
 
 test('Can update process variables with complete.success()', () =>
 	new Promise(async done => {
-		wf = await zbc.createProcessInstance(processId3, {
-			conditionVariable: true,
+		wf = await zbc.createProcessInstance({
+			bpmnProcessId: processId3,
+			variables: {
+			conditionVariable: true
+			}
 		})
 		const wfi = wf?.processInstanceKey
 		expect(wfi).toBeTruthy()

@@ -36,8 +36,11 @@ afterAll(async () => {
 test('Can specify a retryBackoff with complete.failure()', () =>
 	new Promise(async resolve => {
 
-		wf = await zbc.createProcessInstance(processId, {
-			conditionVariable: true,
+		wf = await zbc.createProcessInstance({
+			bpmnProcessId: processId,
+			variables: {
+				conditionVariable: true
+			}
 		})
 		const wfi = wf.processInstanceKey
 		expect(wfi).toBeTruthy()

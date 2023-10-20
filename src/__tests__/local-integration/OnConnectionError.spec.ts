@@ -141,7 +141,10 @@ xtest(`Does not call the onConnectionError handler if there is a business error`
 			},
 		})
 
-		zbc2.createProcessInstance(wf, {}).catch(() => {
+		zbc2.createProcessInstance({
+			bpmnProcessId: wf,
+			variables: {}
+		}).catch(() => {
 			wf = 'throw error away'
 		})
 		setTimeout(async () => {

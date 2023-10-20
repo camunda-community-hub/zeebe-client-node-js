@@ -20,7 +20,10 @@ afterAll(async () => {
 test('BatchWorker gets ten jobs', () =>
 	new Promise(async done => {
 		for (let i = 0; i < 10; i++) {
-			await zbc.createProcessInstance(processId, {})
+			await zbc.createProcessInstance({
+				bpmnProcessId: processId,
+				variables: {}
+			})
 		}
 
 		const w = zbc.createBatchWorker({

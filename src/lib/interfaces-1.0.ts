@@ -63,7 +63,9 @@ export interface CreateProcessBaseRequest<V extends JSONDoc> {
 		/** JSON document that will instantiate the variables for the root variable scope of the
 		   * process instance.
 		 */
-		variables: V
+		variables: V,
+		/** The tenantId for a multi-tenant enabled cluster. */
+		tenantId?: string
 }
 
 export interface CreateProcessInstanceReq<V extends JSONDoc> extends CreateProcessBaseRequest<V> {

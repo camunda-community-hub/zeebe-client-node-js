@@ -193,7 +193,10 @@ async function main() {
 
     // Create a process instance of the 'new-customer-process' process, with a customerId variable set
     // 'createProcessInstanceWithResult' awaits the outcome
-    const outcome = await zbc.createProcessInstanceWithResult('new-customer-process', { customerId: 457 });
+    const outcome = await zbc.createProcessInstanceWithResult({
+        bpmnProcessId: 'new-customer-process',
+        variables: { customerId: 457 }
+    });
     // Log the process outcome
     console.log('Process outcome', JSON.stringify(outcome, null, 2));
 }
@@ -402,11 +405,11 @@ zbWorker.on('connectionError', () => console.log(`Worker disconnected!`))
 
 ### Initial Connection Tolerance
 
-Some broker connections can initially emit error messages - for example: when connecting to Camunda Cloud, during TLS negotiation and OAuth authentication, the eager commands used to detect connection status will fail, and the library will report connection errors.
+Some broker connections can initially emit error messages - for example: when connecting to Camunda SaaS, during TLS negotiation and OAuth authentication, the eager commands used to detect connection status will fail, and the library will report connection errors.
 
 Since this is expected behaviour - a _characteristic of that particular connection_ - the library has a configurable "_initial connection tolerance_". This is a number of milliseconds representing the expected window in which these errors will occur on initial connection.
 
-If the library detects that you are connecting to Camunda Cloud, it sets this window to five seconds (5000 milliseconds). In some environments and under some conditions this may not be sufficient (like connecting to Camunda Cloud from your apartment Wi-fi in South Brisbane, Australia on a rainy day while the microwave link to the next suburb's ADSL exchange is degraded).
+If the library detects that you are connecting to Camunda SaaS, it sets this window to five seconds (5000 milliseconds). In some environments and under some conditions this may not be sufficient.
 
 You can set an explicit value for this using the environment variable `ZEEBE_INITIAL_CONNECTION_TOLERANCE`, set to a number of milliseconds.
 
@@ -518,11 +521,11 @@ Basic Auth will also work without TLS.
 
 <a name = "camunda-cloud"></a>
 
-### Camunda Cloud
+### Camunda 8 SaaS
 
-[Camunda Cloud](https://camunda.io) is a hosted SaaS instance of Zeebe. The easiest way to connect is to use the [Zero-conf constructor](#zero-conf) with the Client Credentials from the Camunda Cloud console as environment variables.
+[Camunda 8 SaaS](https://camunda.io) is a hosted SaaS instance of Zeebe. The easiest way to connect is to use the [Zero-conf constructor](#zero-conf) with the Client Credentials from the Camunda SaaS console as environment variables.
 
-You can also connect to Camunda Cloud by using the `camundaCloud` configuration option, using the `clusterId`, `clientSecret`, and `clientId` from the Camunda Cloud Console, like this:
+You can also connect to Camunda SaaS by using the `camundaCloud` configuration option, using the `clusterId`, `clientSecret`, and `clientId` from the Camunda SaaS Console, like this:
 
 ```typescript
 const { ZBClient } = require('zeebe-node')
@@ -537,7 +540,7 @@ const zbc = new ZBClient({
 })
 ```
 
-That's it! Under the hood, the client lib will construct the OAuth configuration for Camunda Cloud and set the gateway address and port for you.
+That's it! Under the hood, the client lib will construct the OAuth configuration for Camunda SaaS and set the gateway address and port for you.
 
 We recommend the [Zero-conf constructor](#zero-conf) with the configuration passed in via environment variables. This allows you to run your application against different environments via configuration.
 
@@ -559,12 +562,20 @@ With no relevant environment variables set, it will default to localhost on the 
 
 The following environment variable configurations are possible with the Zero-conf constructor:
 
+From 8.3.0, multi-tenancy: 
+
+```bash
+ZEEBE_TENANT_ID
+```
+
 Camunda SaaS:
 
 ```bash
 ZEEBE_ADDRESS
 ZEEBE_CLIENT_SECRET
 ZEEBE_CLIENT_ID
+ZEEBE_TOKEN_AUDIENCE
+ZEEBE_AUTHORIZATION_SERVER_URL
 ```
 
 Self-hosted or local broker (no TLS or OAuth):
@@ -590,6 +601,20 @@ ZEEBE_CLIENT_SECRET
 ZEEBE_TOKEN_AUDIENCE
 ZEEBE_AUTHORIZATION_SERVER_URL
 ZEEBE_ADDRESS
+```
+
+Multi-tenant self-hosted or local broker with OAuth and no TLS:
+
+```bash
+ZEEBE_TENANT_ID='<default>'
+ZEEBE_SECURE_CONNECTION=false
+ZEEBE_ADDRESS='localhost:26500'
+ZEEBE_CLIENT_ID='zeebe'
+ZEEBE_CLIENT_SECRET='zecret'
+ZEEBE_AUTHORIZATION_SERVER_URL='http://localhost:18080/auth/realms/camunda-platform/protocol/openid-connect/token'
+ZEEBE_TOKEN_AUDIENCE='zeebe.camunda.io'
+CAMUNDA_CREDENTIALS_SCOPES='Zeebe'
+CAMUNDA_OAUTH_URL='http://localhost:18080/auth/realms/camunda-platform/protocol/openid-connect/token'
 ```
 
 Basic Auth:
@@ -1150,8 +1175,11 @@ const ZB = require('zeebe-node')
 
 ;(async () => {
 	const zbc = new ZB.ZBClient('localhost:26500')
-	const result = await zbc.createProcessInstance('test-process', {
-		testData: 'something',
+	const result = await zbc.createProcessInstance({
+        bpmnProcessId: 'test-process',
+		variables: {
+            testData: 'something'
+        }
 	})
 	console.log(result)
 })()
@@ -1198,8 +1226,11 @@ From version 0.22 of the broker and client, you can await the outcome of a proce
 
 ```typescript
 async function getOutcome() {
-	const result = await zbc.createProcessInstanceWithResult(processId, {
-		sourceValue: 5,
+	const result = await zbc.createProcessInstanceWithResult({
+        bpmnProcessId: processId,
+        variables: {
+		    sourceValue: 5
+        }
 	})
 	return result
 }
