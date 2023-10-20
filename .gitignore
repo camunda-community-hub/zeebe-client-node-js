@@ -12,3 +12,4 @@ tsconfig.tsbuildinfo
 ignore-this
 .dccache
 target/npmlist.json
+*.env
