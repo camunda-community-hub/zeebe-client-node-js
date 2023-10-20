@@ -1017,7 +1017,8 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 			this.grpc.publishMessageSync(
 				stringifyVariables({
 					...publishMessageRequest,
-					variables: publishMessageRequest.variables
+					variables: publishMessageRequest.variables,
+					tenantId: publishMessageRequest.tenantId ?? this.tenantId
 				})
 			)
 		)
