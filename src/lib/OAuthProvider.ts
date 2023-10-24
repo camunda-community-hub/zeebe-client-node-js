@@ -251,8 +251,19 @@ export class OAuthProvider {
 			delete this.tokenCache[this.clientId]
 			return
 		}
-		this.expiryTimer = setTimeout(() => delete this.tokenCache[this.clientId], validityPeriod)
-		trace(`${this.uuid} start`)
+		// renew token 1s before it expires to avoid race conditions on the wire
+		// evict disk cache at same time as in-memory cache
+		// See: https://github.com/camunda-community-hub/zeebe-client-node-js/issues/336
+		const minimumCacheLifetime = 0; // Minimum cache lifetime in milliseconds
+		const renewTokenAfterMs = Math.max(validityPeriod - 1000, minimumCacheLifetime)
+		this.expiryTimer = setTimeout(() => {
+			trace(`${this.uuid} token expired`)
+			delete this.tokenCache[this.clientId]
+			if (this.useFileCache && fs.existsSync(this.cachedTokenFile(this.clientId))) {
+				fs.unlinkSync(this.cachedTokenFile(this.clientId))
+			}
+		}, renewTokenAfterMs)
+		trace(`${this.uuid} token expiry timer start: ${renewTokenAfterMs}ms`)
 	}
 
 	private cachedTokenFile = (clientId: string) =>

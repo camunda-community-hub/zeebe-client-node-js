@@ -197,7 +197,7 @@ test('In-memory cache is populated and evicted after timeout', done => {
 
 				req.on('end', () => {
 					res.writeHead(200, { 'Content-Type': 'application/json' })
-					let expires_in = 2
+					let expires_in = 2 // seconds
 					res.end(
 						'{"access_token": "something", "expires_in": ' +
 							expires_in +
