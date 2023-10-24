@@ -45,3 +45,14 @@ test('deploys a DMN table', async () => {
 	})
 	expect(result.deployments[0].decision.decisionKey).not.toBeNull()
 })
+test('deploys a Form', async () => {
+	const form = fs.readFileSync(
+		'./src/__tests__/testdata/form_1.form'
+	)
+	const result = await zbc.deployResource({
+		form,
+		name: 'form_1.form',
+	})
+	expect(result.deployments[0].form).not.toBeNull()
+	console.log(result.deployments[0].form)
+})
