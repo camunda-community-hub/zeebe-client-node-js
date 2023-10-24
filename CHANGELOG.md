@@ -17,6 +17,7 @@ _New shiny stuff._
 _Things that were broken and are now fixed._
 
 -   An error message "Grpc Stream Error: 16 UNAUTHENTICATED: Failed to parse bearer token, see cause for details" would be logged intermittently. This was because under particular conditions an expired token cached on disk could be used for API calls. To prevent this, the disk-cached token is evicted at the same time as the in-memory token. See [#336](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/336) for more details.
+-   The `onReady` and `onConnection` event tests now pass, so these events should be usable. See [#215](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/215) for more details.
 
 # Version 8.2.5
 

@@ -3,8 +3,7 @@ import { ZBClient } from '../..'
 jest.setTimeout(40000)
 process.env.ZEEBE_NODE_LOG_LEVEL = process.env.ZEEBE_NODE_LOG_LEVEL || 'NONE'
 
-// Currently broken. See #215
-xtest(`Worker calls the onReady handler once if there is a broker`, done => {
+test(`Worker calls the onReady handler once if there is a broker`, done => {
 	let called = 0
 	const zbc2 = new ZBClient()
 	zbc2.createWorker({
@@ -74,7 +73,7 @@ test(`Does not call the onReady handler if there is no broker`, done => {
 	}, 5000)
 })
 
-xtest(`Does not emit the ready event if there is no broker`, done => {
+test(`Does not emit the ready event if there is no broker`, done => {
 	let called = 0
 	const zbc2 = new ZBClient('nobroker')
 	zbc2.createWorker({
