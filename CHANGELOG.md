@@ -1,3 +1,11 @@
+# 8.4.0
+
+## New Features
+
+_New shiny stuff_
+
+-   You can now deploy forms to the Zeebe broker using `ZBClient.deployResource()`. See [#332](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/332) for more details.
+
 # 8.3.0
 
 ## Breaking changes
