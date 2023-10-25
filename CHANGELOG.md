@@ -17,7 +17,7 @@ _New shiny stuff._
 _Things that were broken and are now fixed._
 
 -   An error message "Grpc Stream Error: 16 UNAUTHENTICATED: Failed to parse bearer token, see cause for details" would be logged intermittently. This was because under particular conditions an expired token cached on disk could be used for API calls. To prevent this, the disk-cached token is evicted at the same time as the in-memory token. See [#336](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/336) for more details.
--   The `onReady` and `onConnection` event tests now pass, so these events should be usable. See [#215](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/215) for more details.
+-   The `onReady` and `onConnection` event tests now pass for Camunda SaaS and Self-Managed started with docker-compose, so these events should be usable in these scenarios. These events do not work against a broker running in Docker. YMMV. See [#215](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/215) for more details.
 
 # Version 8.2.5
 
@@ -32,8 +32,6 @@ _New shiny stuff._
 _Things that shouldn't have a visible impact._
 
 -   Unit tests used a unique process model for each test run. As a result, the number of deployed process models in a cluster increased over time until a SaaS cluster would fail due to sharding of the ElasticSearch. Unit tests have been refactored to reuse process models. This will have no impact for end-users, but for developers it means that you can use the same cluster for unit tests.
-
-
 
 # Version 8.2.4
 

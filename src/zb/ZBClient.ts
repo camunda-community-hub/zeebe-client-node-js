@@ -652,22 +652,18 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	 * ```
 	 */
 	public createProcessInstance<Variables extends ZB.JSONDoc = ZB.IProcessVariables>(config:ZB.CreateProcessInstanceReq<Variables>): Promise<Grpc.CreateProcessInstanceResponse> {
-		if (!!config.tenantId) {
-			this.logger.logInfo('Multi-tenancy is not yet implemented. The tenantId parameter is provided for development purposes.')
-		}
-
 		const request: ZB.CreateProcessInstanceReq<Variables> = {
 			bpmnProcessId: config.bpmnProcessId,
 			variables: config.variables,
 			version: config.version || -1,
-			startInstructions: config.startInstructions || []
+			startInstructions: config.startInstructions || [],
 		}
 
 
 		const createProcessInstanceRequest: Grpc.CreateProcessInstanceRequest = stringifyVariables({
 			...request,
 			startInstructions: request.startInstructions!,
-			tenantId: this.tenantId
+			tenantId: config.tenantId ?? this.tenantId
 		})
 
 		return this.executeOperation('createProcessInstance', () =>
@@ -699,10 +695,6 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		config: ZB.CreateProcessInstanceWithResultReq<Variables>
 	): Promise<Grpc.CreateProcessInstanceWithResultResponse<Result>>
 	{
-		if (!!config.tenantId) {
-			this.logger.logInfo('Multi-tenancy is not yet implemented. The tenantId parameter is provided for development purposes.')
-		}
-
 		const request = {
 			bpmnProcessId: config.bpmnProcessId,
 			fetchVariables: config.fetchVariables,
@@ -716,7 +708,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 				bpmnProcessId: request.bpmnProcessId,
 				variables: request.variables,
 				version: request.version,
-				tenantId: request.tenantId
+				tenantId: request.tenantId ?? this.tenantId
 			}
 		)
 
@@ -779,9 +771,6 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 			| Grpc.DecisionRequirementsDeployment
 		>
 	> {
-		if (!!resource.tenantId) {
-			this.logger.logInfo('Multi-tenancy is not yet implemented. The tenantId parameter is provided for development purposes.')
-		}
 		const isProcess = (
 			maybeProcess: any
 		): maybeProcess is { process: Buffer; name: string } =>
