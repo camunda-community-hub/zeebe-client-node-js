@@ -18,7 +18,7 @@ jobs:
         with:
           node-version: 16.17.0
       - run: npm install
-      - run: npm run test:integration --testPathIgnorePatterns onConnectionError 
+      - run: npm run test:docker 
     # env:
     #   ZEEBE_ADDRESS: ${{ secrets.ZEEBE_ADDRESS }}
     #   ZEEBE_CLIENT_ID: ${{ secrets.ZEEBE_CLIENT_ID }}
