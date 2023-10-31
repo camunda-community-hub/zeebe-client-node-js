@@ -19,8 +19,8 @@ function createClient() {
 	try {
 		return new OperateApiClient()
 	} catch (e: any) {
-		console.log(e.message)
-		console.log(`Running without access to Operate`)
+		// console.log(e.message)
+		// console.log(`Running without access to Operate`)
 		return null
 	}
 }

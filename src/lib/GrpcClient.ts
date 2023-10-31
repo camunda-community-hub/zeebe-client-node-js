@@ -223,7 +223,7 @@ export class GrpcClient extends EventEmitter {
 			 * Int valued, milliseconds.
 			 */
 			'grpc.keepalive_time_ms':
-				process.env.GRPC_KEEPALIVE_TIME_MS ?? 180000,
+				process.env.GRPC_KEEPALIVE_TIME_MS ?? 360000,
 			/**
 			 * After waiting for a duration of this time,
 			 * if the keepalive ping sender does

@@ -82,7 +82,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	public gatewayAddress: string
 	public loglevel: Loglevel
 	public onReady?: () => void
-	public onConnectionError?: () => void
+	public onConnectionError?: (err: Error) => void
 	private logger: StatefulLogInterceptor
 	private closePromise?: Promise<any>
 	private closing = false
@@ -196,9 +196,9 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 			},
 		})
 
-		grpcClient.on(ConnectionStatusEvent.connectionError, () => {
+		grpcClient.on(ConnectionStatusEvent.connectionError, (err: Error) => {
 			if (this.connected !== false) {
-				this.onConnectionError?.()
+				this.onConnectionError?.(err)
 				this.emit(ConnectionStatusEvent.connectionError)
 			}
 			this.connected = false
@@ -1337,7 +1337,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 			: operation()
 	}
 
-	private _onConnectionError() {
+	private _onConnectionError(err: Error) {
 		if (!this.connected) {
 			return
 		}
@@ -1347,7 +1347,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		// 	new Date().valueOf() - this.lastConnectionError.valueOf() >
 		// 		this.connectionTolerance / 2
 		// if (!debounce) {
-		this.onConnectionError?.()
+		this.onConnectionError?.(err)
 		this.emit(ConnectionStatusEvent.connectionError)
 		// }
 		// this.lastConnectionError = new Date()
@@ -1384,7 +1384,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 						err.message.indexOf('8') === 0 || err.code === 8
 					if (isNetworkError) {
 						if (connectionErrorCount < 0) {
-							this._onConnectionError()
+							this._onConnectionError(err)
 						}
 						connectionErrorCount++
 					}
