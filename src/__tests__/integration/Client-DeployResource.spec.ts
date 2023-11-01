@@ -54,5 +54,4 @@ test('deploys a Form', async () => {
 		name: 'form_1.form',
 	})
 	expect(result.deployments[0].form).not.toBeNull()
-	console.log(result.deployments[0].form)
 })
