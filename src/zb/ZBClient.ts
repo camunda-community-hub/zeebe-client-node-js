@@ -758,17 +758,25 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 			| { decisionFilename: string, tenantId?: string }
 			| { name: string; decision: Buffer, tenantId?: string },
 	): Promise<Grpc.DeployResourceResponse<Grpc.DecisionDeployment>>
+	public async deployResource(
+		resource:
+		| { formFilename: string, tenantId?: string }
+		| { name: string; form: Buffer, tenantId?: string }
+	): Promise<Grpc.DeployResourceResponse<Grpc.FormDeployment>>
 	async deployResource(
 		resource:
-			| { processFilename: string, tenantId?: string }
 			| { name: string; process: Buffer, tenantId?: string }
+			| { processFilename: string, tenantId?: string }
 			| { name: string; decision: Buffer, tenantId?: string }
-			| { decisionFilename: string, tenantId?: string },
+			| { decisionFilename: string, tenantId?: string }
+			| { name: string; form: Buffer, tenantId?: string }
+			| { formFilename: string, tenantId?: string }
 	): Promise<
 		Grpc.DeployResourceResponse<
 			| Grpc.ProcessDeployment
 			| Grpc.DecisionDeployment
 			| Grpc.DecisionRequirementsDeployment
+			| Grpc.FormDeployment
 		>
 	> {
 		const isProcess = (
@@ -783,6 +791,19 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 			maybeDecision: any
 		): maybeDecision is { decision: Buffer; name: string } =>
 			!!maybeDecision.decision
+		const isDecisionFilename = (
+			maybeDecisionFilename: any
+		): maybeDecisionFilename is { decisionFilename: string } =>
+			!!maybeDecisionFilename.decisionFilename
+		// default fall-through
+		/* const isForm = ( maybeForm: any ): maybeForm is { form: Buffer; name: string } =>
+			!!maybeForm.form
+			*/
+		const isFormFilename = (
+			maybeFormFilename: any
+		): maybeFormFilename is {formFilename: string} =>
+			!!maybeFormFilename.formFilename
+
 		if (isProcessFilename(resource)) {
 			const filename = resource.processFilename
 			const process = readFileSync(filename)
@@ -809,6 +830,20 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 					tenantId: resource.tenantId ?? this.tenantId
 				})
 			)
+		} else if (isDecisionFilename(resource)) {
+			const filename = resource.decisionFilename
+			const decision = readFileSync(filename)
+			return this.executeOperation('deployResource', () =>
+				this.grpc.deployResourceSync({
+					resources: [
+						{
+							name: filename,
+							content: decision,
+						},
+					],
+					tenantId: resource.tenantId ?? this.tenantId
+				})
+			)
 		} else if (isDecision(resource)) {
 			return this.executeOperation('deployResource', () =>
 				this.grpc.deployResourceSync({
@@ -821,16 +856,29 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 					tenantId: resource.tenantId ?? this.tenantId
 				})
 			)
-		} else {
-			const filename = resource.decisionFilename
-			const decision = readFileSync(filename)
+		} else if (isFormFilename(resource)) {
+			const filename = resource.formFilename
+			const form = readFileSync(filename)
 			return this.executeOperation('deployResource', () =>
 				this.grpc.deployResourceSync({
 					resources: [
 						{
 							name: filename,
-							content: decision,
+							content: form,
 						},
+					],
+					tenantId: resource.tenantId ?? this.tenantId
+				})
+			)
+		} else /* if (isForm(resource)) */ {
+		// default fall-through
+			return this.executeOperation('deployResource', () =>
+				this.grpc.deployResourceSync({
+					resources: [
+						{
+							name: resource.name,
+							content: resource.form
+						}
 					],
 					tenantId: resource.tenantId ?? this.tenantId
 				})

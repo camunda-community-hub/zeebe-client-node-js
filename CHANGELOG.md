@@ -1,3 +1,11 @@
+# 8.3.1
+
+## New Features
+
+_New shiny stuff_
+
+-   You can now deploy forms to the Zeebe broker using `ZBClient.deployResource()`. See [#332](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/332) for more details.
+
 # 8.3.0
 
 ## Breaking changes
@@ -18,6 +26,10 @@ _New shiny stuff._
 
 -   Camunda Platform 8.3.0 introduces multi-tenancy. To support this, the Node.js client adds an optional `tenantId` parameter to `DeployResource`, `DeployProcess`, `CreateProcessInstance`, `CreateProcessInstanceWithResult`, and `PublishMessage`. You can also specify a `tenantId` in the ZBClient constructor or via the environment variable `ZEEBE_TENANT_ID`. In the case that you specify it via the environment or constructor, it will be transparently added to all method invocations. See [#330](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/330) for more details.
 -   `@grpc/grpc-js` has been updated to 1.9.7, and `@grpc/proto-loader` has been updated to 0.7.10.
+
+_Things that were broken and are now fixed._
+
+-   The `onReady` and `onConnection` event tests now pass, so these events should be usable. See [#215](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/215) for more details.
 
 ## Fixes
 
