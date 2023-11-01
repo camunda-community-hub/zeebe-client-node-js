@@ -1166,6 +1166,23 @@ async function deploy() {
 }
 ```
 
+### Deploy Form
+
+From 8.3.1, you can deploy a form to the Zeebe broker:
+
+```javascript
+async function deploy() {
+    const zbc = new ZBClient()
+    const form = fs.readFileSync(
+		'./src/__tests__/testdata/form_1.form'
+	)
+	const result = await zbc.deployResource({
+		form,
+		name: 'form_1.form',
+	})
+}
+```
+
 <a name = "start-process"></a>
 
 ### Start a Process Instance
