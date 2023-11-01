@@ -83,6 +83,7 @@
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="CreateProcessInstanceResponse.html#bpmnProcessId" class="tsd-kind-icon">bpmn<wbr>Process<wbr>Id</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="CreateProcessInstanceResponse.html#processDefinitionKey" class="tsd-kind-icon">process<wbr>Definition<wbr>Key</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="CreateProcessInstanceResponse.html#processInstanceKey" class="tsd-kind-icon">process<wbr>Instance<wbr>Key</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="CreateProcessInstanceResponse.html#tenantId" class="tsd-kind-icon">tenant<wbr>Id</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="CreateProcessInstanceResponse.html#version" class="tsd-kind-icon">version</a></li>
 							</ul>
 						</section>
@@ -97,7 +98,7 @@
 					<div class="tsd-signature tsd-kind-icon">bpmn<wbr>Process<wbr>Id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/477867c/src/lib/interfaces-grpc-1.0.ts#L126">src/lib/interfaces-grpc-1.0.ts:126</a></li>
+							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/20d13ec/src/lib/interfaces-grpc-1.0.ts#L163">src/lib/interfaces-grpc-1.0.ts:163</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -112,7 +113,7 @@
 					<div class="tsd-signature tsd-kind-icon">process<wbr>Definition<wbr>Key<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/477867c/src/lib/interfaces-grpc-1.0.ts#L122">src/lib/interfaces-grpc-1.0.ts:122</a></li>
+							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/20d13ec/src/lib/interfaces-grpc-1.0.ts#L159">src/lib/interfaces-grpc-1.0.ts:159</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -128,7 +129,7 @@
 					<div class="tsd-signature tsd-kind-icon">process<wbr>Instance<wbr>Key<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/477867c/src/lib/interfaces-grpc-1.0.ts#L138">src/lib/interfaces-grpc-1.0.ts:138</a></li>
+							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/20d13ec/src/lib/interfaces-grpc-1.0.ts#L175">src/lib/interfaces-grpc-1.0.ts:175</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -141,12 +142,27 @@
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="tenantId" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> tenant<wbr>Id</h3>
+					<div class="tsd-signature tsd-kind-icon">tenant<wbr>Id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/20d13ec/src/lib/interfaces-grpc-1.0.ts#L179">src/lib/interfaces-grpc-1.0.ts:179</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>the tenant identifier of the created process instance</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 					<a name="version" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> version</h3>
 					<div class="tsd-signature tsd-kind-icon">version<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/477867c/src/lib/interfaces-grpc-1.0.ts#L130">src/lib/interfaces-grpc-1.0.ts:130</a></li>
+							<li>Defined in <a href="https://github.com/camunda-community-hub/zeebe-client-node-js/blob/20d13ec/src/lib/interfaces-grpc-1.0.ts#L167">src/lib/interfaces-grpc-1.0.ts:167</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -180,6 +196,9 @@
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
 								<a href="CreateProcessInstanceResponse.html#processInstanceKey" class="tsd-kind-icon">process<wbr>Instance<wbr>Key</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface">
+								<a href="CreateProcessInstanceResponse.html#tenantId" class="tsd-kind-icon">tenant<wbr>Id</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
 								<a href="CreateProcessInstanceResponse.html#version" class="tsd-kind-icon">version</a>
