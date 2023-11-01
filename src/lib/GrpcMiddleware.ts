@@ -29,7 +29,7 @@ export class GrpcMiddleware {
 				this.blocking = false
 				log.logDebug(`Grpc Middleware state: ${this.state}`)
 				if (this.state === 'ERROR') {
-					this.emitError()
+					this.emitError(new Error(`Did not establish connection before deadline ${this.characteristics.startupTime}ms`))
 				} else if (this.state === 'CONNECTED') {
 					this.emitReady()
 				} else if (this.state === 'UNKNOWN') {
@@ -56,11 +56,11 @@ export class GrpcMiddleware {
 		grpcClient.on(MiddlewareSignals.Log.Debug, logInterceptor.logDebug)
 		grpcClient.on(MiddlewareSignals.Log.Info, logInterceptor.logInfo)
 		grpcClient.on(MiddlewareSignals.Log.Error, logInterceptor.logError)
-		grpcClient.on(MiddlewareSignals.Event.Error, () => {
+		grpcClient.on(MiddlewareSignals.Event.Error, (err) => {
 			this.state = 'ERROR'
 			logInterceptor.connectionError()
 			if (!this.blocking) {
-				this.emitError()
+				this.emitError(err)
 			}
 		})
 		grpcClient.on(MiddlewareSignals.Event.Ready, () => {
@@ -80,8 +80,8 @@ export class GrpcMiddleware {
 		return grpcClient
 	}
 
-	private emitError = () =>
-		this.grpcClient.emit(ConnectionStatusEvent.connectionError)
+	private emitError = (err: Error) =>
+		this.grpcClient.emit(ConnectionStatusEvent.connectionError, err)
 	private emitReady = () => this.grpcClient.emit(ConnectionStatusEvent.ready)
 	private handleExceptionalGrpc = ({
 		callStatus,

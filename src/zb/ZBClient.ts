@@ -82,7 +82,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	public gatewayAddress: string
 	public loglevel: Loglevel
 	public onReady?: () => void
-	public onConnectionError?: () => void
+	public onConnectionError?: (err: Error) => void
 	private logger: StatefulLogInterceptor
 	private closePromise?: Promise<any>
 	private closing = false
@@ -196,9 +196,9 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 			},
 		})
 
-		grpcClient.on(ConnectionStatusEvent.connectionError, () => {
+		grpcClient.on(ConnectionStatusEvent.connectionError, (err: Error) => {
 			if (this.connected !== false) {
-				this.onConnectionError?.()
+				this.onConnectionError?.(err)
 				this.emit(ConnectionStatusEvent.connectionError)
 			}
 			this.connected = false
@@ -652,22 +652,18 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 	 * ```
 	 */
 	public createProcessInstance<Variables extends ZB.JSONDoc = ZB.IProcessVariables>(config:ZB.CreateProcessInstanceReq<Variables>): Promise<Grpc.CreateProcessInstanceResponse> {
-		if (!!config.tenantId) {
-			this.logger.logInfo('Multi-tenancy is not yet implemented. The tenantId parameter is provided for development purposes.')
-		}
-
 		const request: ZB.CreateProcessInstanceReq<Variables> = {
 			bpmnProcessId: config.bpmnProcessId,
 			variables: config.variables,
 			version: config.version || -1,
-			startInstructions: config.startInstructions || []
+			startInstructions: config.startInstructions || [],
 		}
 
 
 		const createProcessInstanceRequest: Grpc.CreateProcessInstanceRequest = stringifyVariables({
 			...request,
 			startInstructions: request.startInstructions!,
-			tenantId: this.tenantId
+			tenantId: config.tenantId ?? this.tenantId
 		})
 
 		return this.executeOperation('createProcessInstance', () =>
@@ -699,10 +695,6 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		config: ZB.CreateProcessInstanceWithResultReq<Variables>
 	): Promise<Grpc.CreateProcessInstanceWithResultResponse<Result>>
 	{
-		if (!!config.tenantId) {
-			this.logger.logInfo('Multi-tenancy is not yet implemented. The tenantId parameter is provided for development purposes.')
-		}
-
 		const request = {
 			bpmnProcessId: config.bpmnProcessId,
 			fetchVariables: config.fetchVariables,
@@ -716,7 +708,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 				bpmnProcessId: request.bpmnProcessId,
 				variables: request.variables,
 				version: request.version,
-				tenantId: request.tenantId
+				tenantId: request.tenantId ?? this.tenantId
 			}
 		)
 
@@ -787,9 +779,6 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 			| Grpc.FormDeployment
 		>
 	> {
-		if (!!resource.tenantId) {
-			this.logger.logInfo('Multi-tenancy is not yet implemented. The tenantId parameter is provided for development purposes.')
-		}
 		const isProcess = (
 			maybeProcess: any
 		): maybeProcess is { process: Buffer; name: string } =>
@@ -1396,7 +1385,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 			: operation()
 	}
 
-	private _onConnectionError() {
+	private _onConnectionError(err: Error) {
 		if (!this.connected) {
 			return
 		}
@@ -1406,7 +1395,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 		// 	new Date().valueOf() - this.lastConnectionError.valueOf() >
 		// 		this.connectionTolerance / 2
 		// if (!debounce) {
-		this.onConnectionError?.()
+		this.onConnectionError?.(err)
 		this.emit(ConnectionStatusEvent.connectionError)
 		// }
 		// this.lastConnectionError = new Date()
@@ -1443,7 +1432,7 @@ export class ZBClient extends TypedEmitter<typeof ConnectionStatusEvent> {
 						err.message.indexOf('8') === 0 || err.code === 8
 					if (isNetworkError) {
 						if (connectionErrorCount < 0) {
-							this._onConnectionError()
+							this._onConnectionError(err)
 						}
 						connectionErrorCount++
 					}

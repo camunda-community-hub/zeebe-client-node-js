@@ -14,11 +14,18 @@ _Changes in APIs or behaviour that may affect existing applications that use zee
 
 -   Several method signatures for `CreateProcessInstance` and `CreateProcessInstanceWithResult` have been removed, leaving only the method that takes an object parameter. See [#330](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/330#issuecomment-1672535320) for more details.
 
+## Known Issues
+
+_Things that don't work or don't work as expected, and which will be addressed in a future release_
+
+-   The `onConnectionError` event fires correctly for Camunda SaaS, but fires a false positive when connecting to a Self-Managed instance. See [#340](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/340) for more details.
+
 ## New Features
 
 _New shiny stuff._
 
 -   Camunda Platform 8.3.0 introduces multi-tenancy. To support this, the Node.js client adds an optional `tenantId` parameter to `DeployResource`, `DeployProcess`, `CreateProcessInstance`, `CreateProcessInstanceWithResult`, and `PublishMessage`. You can also specify a `tenantId` in the ZBClient constructor or via the environment variable `ZEEBE_TENANT_ID`. In the case that you specify it via the environment or constructor, it will be transparently added to all method invocations. See [#330](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/330) for more details.
+-   `@grpc/grpc-js` has been updated to 1.9.7, and `@grpc/proto-loader` has been updated to 0.7.10.
 
 _Things that were broken and are now fixed._
 
@@ -29,6 +36,7 @@ _Things that were broken and are now fixed._
 _Things that were broken and are now fixed._
 
 -   An error message "Grpc Stream Error: 16 UNAUTHENTICATED: Failed to parse bearer token, see cause for details" would be logged intermittently. This was because under particular conditions an expired token cached on disk could be used for API calls. To prevent this, the disk-cached token is evicted at the same time as the in-memory token. See [#336](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/336) for more details.
+-   The `onReady` and `onConnection` event tests now pass for Camunda SaaS. The `onReady` event fires correctly for Self-Managed started with docker-compose. See [#215](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/215) and [#340](https://github.com/camunda-community-hub/zeebe-client-node-js/issues/340) for more details.
 
 # Version 8.2.5
 
@@ -43,8 +51,6 @@ _New shiny stuff._
 _Things that shouldn't have a visible impact._
 
 -   Unit tests used a unique process model for each test run. As a result, the number of deployed process models in a cluster increased over time until a SaaS cluster would fail due to sharding of the ElasticSearch. Unit tests have been refactored to reuse process models. This will have no impact for end-users, but for developers it means that you can use the same cluster for unit tests.
-
-
 
 # Version 8.2.4
 

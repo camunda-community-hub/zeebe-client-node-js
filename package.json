@@ -1,6 +1,6 @@
 {
 	"name": "zeebe-node",
-	"version": "8.3.0-alpha9",
+	"version": "8.3.0",
 	"description": "The Node.js client library for the Zeebe Workflow Automation Engine.",
 	"keywords": [
 		"zeebe",
@@ -41,6 +41,7 @@
 		"test": "jest --detectOpenHandles --testPathIgnorePatterns integration local-integration disconnection",
 		"test:integration": "jest --runInBand --testPathIgnorePatterns disconnection --detectOpenHandles --verbose true",
 		"test:local": "jest --runInBand --verbose true --detectOpenHandles local-integration",
+		"test:docker": "jest --runInBand --testPathIgnorePatterns disconnection local-integration --detectOpenHandles --verbose true",
 		"test:disconnect": "jest --runInBand --verbose true --detectOpenHandles disconnection",
 		"test&docs": "npm test && npm run docs",
 		"dev": "tsc-watch --onSuccess \"npm run test&docs\" -p tsconfig.json --outDir dist"
@@ -62,8 +63,8 @@
 		]
 	},
 	"dependencies": {
-		"@grpc/grpc-js": "1.8.7",
-		"@grpc/proto-loader": "0.7.4",
+		"@grpc/grpc-js": "1.9.7",
+		"@grpc/proto-loader": "0.7.10",
 		"chalk": "^2.4.2",
 		"console-stamp": "^3.0.2",
 		"dayjs": "^1.8.15",
