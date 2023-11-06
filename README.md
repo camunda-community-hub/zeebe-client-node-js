@@ -660,7 +660,7 @@ const zbWorker = zbc.createWorker({
 })
 
 function handler(job) {
-	worker.log('Task variables', job.variables)
+	zbWorker.log('Task variables', job.variables)
 
 	// Task worker business logic goes here
 	const updateToBrokerVariables = {
