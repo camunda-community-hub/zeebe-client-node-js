@@ -21,6 +21,7 @@ export class ConfigurationHydrator {
 			'ZEEBE_CLIENT_SECRET',
 			'ZEEBE_SECURE_CONNECTION',
 			'ZEEBE_TOKEN_AUDIENCE',
+			'ZEEBE_TOKEN_SCOPE',
 			'ZEEBE_AUTHORIZATION_SERVER_URL',
 			'ZEEBE_CAMUNDA_CLOUD_CLUSTER_ID',
 			'ZEEBE_BASIC_AUTH_PASSWORD',
@@ -32,7 +33,7 @@ export class ConfigurationHydrator {
 			'ZEEBE_CLIENT_SSL_ROOT_CERTS_PATH',
 			'ZEEBE_CLIENT_SSL_PRIVATE_KEY_PATH',
 			'ZEEBE_CLIENT_SSL_CERT_CHAIN_PATH',
-			'ZEEBE_TENANT_ID'
+			'ZEEBE_TENANT_ID',
 		])
 
 	public static configure(
@@ -52,7 +53,7 @@ export class ConfigurationHydrator {
 			...ConfigurationHydrator.readTLSFromEnvironment(options),
 			...ConfigurationHydrator.getEagerStatus(options),
 			...ConfigurationHydrator.getRetryConfiguration(options),
-			...ConfigurationHydrator.getTenantId(options)
+			...ConfigurationHydrator.getTenantId(options),
 		}
 
 		// inherit oAuth custom root certificates, unless
@@ -128,6 +129,7 @@ export class ConfigurationHydrator {
 		const clientId = ConfigurationHydrator.getClientIdFromEnv()
 		const clientSecret = ConfigurationHydrator.getClientSecretFromEnv()
 		const audience = ConfigurationHydrator.ENV().ZEEBE_TOKEN_AUDIENCE
+		const scope = ConfigurationHydrator.ENV().ZEEBE_TOKEN_SCOPE
 		const authServerUrl = ConfigurationHydrator.ENV()
 			.ZEEBE_AUTHORIZATION_SERVER_URL
 		const clusterId = ConfigurationHydrator.ENV()
@@ -144,6 +146,7 @@ export class ConfigurationHydrator {
 			? {
 					oAuth: {
 						audience,
+						scope,
 						cacheOnDisk: true,
 						clientId: clientId!,
 						clientSecret,

@@ -13,6 +13,7 @@ const ENV_VARS_TO_STORE = [
 	'ZEEBE_GATEWAY_ADDRESS',
 	'ZEEBE_ADDRESS',
 	'ZEEBE_TOKEN_AUDIENCE',
+	'ZEEBE_TOKEN_SCOPE',
 	'ZEEBE_AUTHORIZATION_SERVER_URL',
 	'ZEEBE_CLIENT_MAX_RETRIES',
 	'ZEEBE_CLIENT_RETRY',
@@ -20,7 +21,7 @@ const ENV_VARS_TO_STORE = [
 	'ZEEBE_CLIENT_SSL_ROOT_CERTS_PATH',
 	'ZEEBE_CLIENT_SSL_PRIVATE_KEY_PATH',
 	'ZEEBE_CLIENT_SSL_CERT_CHAIN_PATH',
-	'ZEEBE_TENANT_ID'
+	'ZEEBE_TENANT_ID',
 ]
 
 beforeAll(() => {
@@ -97,6 +98,29 @@ test('Takes an explicit Gateway address over the environment ZEEBE_GATEWAY_ADDRE
 })
 
 /**
+ * Self-managed
+ */
+test('Constructs the self-managed connection with oauth credentials', () => {
+	process.env.ZEEBE_CLIENT_SECRET = 'CLIENT_SECRET'
+	process.env.ZEEBE_CLIENT_ID = 'CLIENT_ID'
+	process.env.ZEEBE_GATEWAY_ADDRESS = 'zeebe://my-server:26600'
+	process.env.ZEEBE_TOKEN_AUDIENCE = 'TOKEN_AUDIENCE'
+	process.env.ZEEBE_TOKEN_SCOPE = 'TOKEN_SCOPE'
+	process.env.ZEEBE_AUTHORIZATION_SERVER_URL = 'https://auz'
+
+	const conf = ConfigurationHydrator.configure(undefined, undefined)
+
+	expect(conf.hostname).toBe('my-server')
+	expect(conf.port).toBe('26600')
+	expect(conf.oAuth!.audience).toBe('TOKEN_AUDIENCE')
+	expect(conf.oAuth!.scope).toBe('TOKEN_SCOPE')
+	expect(conf.oAuth!.clientId).toBe('CLIENT_ID')
+	expect(conf.oAuth!.audience).toBe('TOKEN_AUDIENCE')
+	expect(conf.oAuth!.clientSecret).toBe('CLIENT_SECRET')
+	expect(conf.oAuth!.url).toBe('https://auz')
+})
+
+/**
  * Camunda Cloud
  */
 test('Constructs the Camunda Cloud connection from the environment with clusterId', () => {
@@ -105,7 +129,13 @@ test('Constructs the Camunda Cloud connection from the environment with clusterI
 	process.env.ZEEBE_CLIENT_SECRET =
 		'WZahIGHjyj0-oQ7DZ_aH2wwNuZt5O8Sq0ZJTz0OaxfO7D6jaDBZxM_Q-BHRsiGO_'
 	process.env.ZEEBE_CLIENT_ID = 'yStuGvJ6a1RQhy8DQpeXJ80yEpar3pXh'
+
 	delete process.env.ZEEBE_GATEWAY_ADDRESS
+	delete process.env.ZEEBE_TOKEN_AUDIENCE
+	delete process.env.ZEEBE_TOKEN_SCOPE
+	delete process.env.ZEEBE_AUTHORIZATION_SERVER_URL
+	delete process.env.ZEEBE_GATEWAY_ADDRESS
+
 	// process.env.ZEEBE_GATEWAY_ADDRESS = 'zeebe://localhost:26500'
 	const conf = ConfigurationHydrator.configure(undefined, undefined)
 	expect(conf.hostname).toBe(
@@ -526,13 +556,17 @@ test('Tenant ID is picked up from environment', () => {
 })
 
 test('Tenant ID is picked up from constructor options', () => {
-	const conf = ConfigurationHydrator.configure(undefined, {tenantId: 'thisOne'})
+	const conf = ConfigurationHydrator.configure(undefined, {
+		tenantId: 'thisOne',
+	})
 	expect(conf.tenantId).toBe('thisOne')
 })
 
 test('Tenant ID from constructor overrides environment', () => {
 	process.env.ZEEBE_TENANT_ID = 'someId'
-	const conf = ConfigurationHydrator.configure(undefined, {tenantId: 'thisOne'})
+	const conf = ConfigurationHydrator.configure(undefined, {
+		tenantId: 'thisOne',
+	})
 	expect(conf.tenantId).toBe('thisOne')
 })
 

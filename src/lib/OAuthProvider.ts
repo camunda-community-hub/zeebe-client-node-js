@@ -23,6 +23,8 @@ export interface OAuthProviderConfig {
 	url: string
 	/** OAuth Audience */
 	audience: string
+	/** OAuth Scope */
+	scope?: string
 	clientId: string
 	clientSecret: string
 	/** Custom TLS certificate for OAuth */
@@ -39,6 +41,7 @@ export class OAuthProvider {
 		process.env.ZEEBE_TOKEN_CACHE_DIR || OAuthProvider.defaultTokenCache
 	public cacheDir: string
 	public audience: string
+	public scope?: string
 	public url: string
 	public clientId: string
 	public clientSecret: string
@@ -56,6 +59,8 @@ export class OAuthProvider {
 		url,
 		/** OAuth Audience */
 		audience,
+		/** OAuth Scope */
+		scope,
 		cacheDir,
 		clientId,
 		clientSecret,
@@ -66,6 +71,7 @@ export class OAuthProvider {
 	}: {
 		url: string
 		audience: string
+		scope?: string
 		cacheDir?: string
 		clientId: string
 		clientSecret: string
@@ -74,6 +80,7 @@ export class OAuthProvider {
 	}) {
 		this.url = url
 		this.audience = audience
+		this.scope = scope
 		this.clientId = clientId
 		this.clientSecret = clientSecret
 		this.customRootCert = customRootCert
@@ -153,6 +160,9 @@ export class OAuthProvider {
 			client_id: this.clientId,
 			client_secret: this.clientSecret,
 			grant_type: 'client_credentials',
+			...(
+				this.scope && { scope: this.scope } || {}
+			)
 		}
 
 		debug(`Requesting token from token endpoint...`)
