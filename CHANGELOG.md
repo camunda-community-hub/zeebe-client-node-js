@@ -1,3 +1,11 @@
+# 8.3.2
+
+## New Features
+
+_New shiny stuff_
+
+-   Added support for providing a value for a `scope` field in the OAuth request. This can be set with environment variable `ZEEBE_TOKEN_SCOPE`, or by passing a `scope` field as part of the `oAuth` config options for a `ZBClient`. This is needed to support OIDC / EntraID. Thanks to [@nikku](https://github.com/nikku) for the implementation. See PR [#363](https://github.com/camunda-community-hub/zeebe-client-node-js/pull/363) for more details.
+
 # 8.3.1
 
 ## New Features
