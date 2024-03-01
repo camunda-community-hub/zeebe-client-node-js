@@ -476,6 +476,7 @@
 <span style="color: #000000">    </span><span style="color: #001080">oAuth:</span><span style="color: #000000"> {</span>
 <span style="color: #000000">        </span><span style="color: #001080">url:</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;https://your-auth-endpoint/oauth/token&quot;</span><span style="color: #000000">,</span>
 <span style="color: #000000">        </span><span style="color: #001080">audience:</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;my-secure-broker.io&quot;</span><span style="color: #000000">,</span>
+<span style="color: #000000">        </span><span style="color: #001080">scope:</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;myScope&quot;</span><span style="color: #000000">,</span>
 <span style="color: #000000">        </span><span style="color: #001080">clientId:</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;myClientId&quot;</span><span style="color: #000000">,</span>
 <span style="color: #000000">        </span><span style="color: #001080">clientSecret:</span><span style="color: #000000"> </span><span style="color: #A31515">&quot;randomClientSecret&quot;</span><span style="color: #000000">,</span>
 <span style="color: #000000">        </span><span style="color: #001080">customRootCert:</span><span style="color: #000000"> </span><span style="color: #001080">fs</span><span style="color: #000000">.</span><span style="color: #795E26">readFileSync</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;./my_CA.pem&#039;</span><span style="color: #000000">),</span>
@@ -556,6 +557,7 @@
 				<pre><code class="language-bash"><span style="color: #000000">ZEEBE_CLIENT_ID</span>
 <span style="color: #000000">ZEEBE_CLIENT_SECRET</span>
 <span style="color: #000000">ZEEBE_TOKEN_AUDIENCE</span>
+<span style="color: #000000">ZEEBE_TOKEN_SCOPE</span>
 <span style="color: #000000">ZEEBE_AUTHORIZATION_SERVER_URL</span>
 <span style="color: #000000">ZEEBE_ADDRESS</span>
 </code></pre>
@@ -567,6 +569,7 @@
 <span style="color: #000000">ZEEBE_CLIENT_SECRET=</span><span style="color: #A31515">&#039;zecret&#039;</span>
 <span style="color: #000000">ZEEBE_AUTHORIZATION_SERVER_URL=</span><span style="color: #A31515">&#039;http://localhost:18080/auth/realms/camunda-platform/protocol/openid-connect/token&#039;</span>
 <span style="color: #000000">ZEEBE_TOKEN_AUDIENCE=</span><span style="color: #A31515">&#039;zeebe.camunda.io&#039;</span>
+<span style="color: #000000">ZEEBE_TOKEN_SCOPE=</span><span style="color: #A31515">&#039;not needed&#039;</span>
 <span style="color: #000000">CAMUNDA_CREDENTIALS_SCOPES=</span><span style="color: #A31515">&#039;Zeebe&#039;</span>
 <span style="color: #000000">CAMUNDA_OAUTH_URL=</span><span style="color: #A31515">&#039;http://localhost:18080/auth/realms/camunda-platform/protocol/openid-connect/token&#039;</span>
 </code></pre>
@@ -605,7 +608,7 @@
 <span style="color: #000000">})</span>
 
 <span style="color: #0000FF">function</span><span style="color: #000000"> </span><span style="color: #795E26">handler</span><span style="color: #000000">(</span><span style="color: #001080">job</span><span style="color: #000000">) {</span>
-<span style="color: #000000">    </span><span style="color: #001080">worker</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;Task variables&#039;</span><span style="color: #000000">, </span><span style="color: #001080">job</span><span style="color: #000000">.</span><span style="color: #001080">variables</span><span style="color: #000000">)</span>
+<span style="color: #000000">    </span><span style="color: #001080">zbWorker</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;Task variables&#039;</span><span style="color: #000000">, </span><span style="color: #001080">job</span><span style="color: #000000">.</span><span style="color: #001080">variables</span><span style="color: #000000">)</span>
 
 <span style="color: #000000">    </span><span style="color: #008000">// Task worker business logic goes here</span>
 <span style="color: #000000">    </span><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">updateToBrokerVariables</span><span style="color: #000000"> = {</span>
