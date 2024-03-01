@@ -22,6 +22,7 @@ const ENV_VARS_TO_STORE = [
 	'ZEEBE_CLIENT_SSL_PRIVATE_KEY_PATH',
 	'ZEEBE_CLIENT_SSL_CERT_CHAIN_PATH',
 	'ZEEBE_TENANT_ID',
+	'ZEEBE_SECURE_CONNECTION',
 ]
 
 beforeAll(() => {
@@ -477,7 +478,7 @@ describe('Configures secure connection with custom root certs', () => {
 })
 
 test('Is insecure by default', () => {
-	delete process.env.ZEEBE_INSECURE_CONNECTION
+	delete process.env.ZEEBE_SECURE_CONNECTION
 	const conf = ConfigurationHydrator.configure('localhost:26600', {})
 	expect(conf.useTLS).toBeFalsy()
 })
