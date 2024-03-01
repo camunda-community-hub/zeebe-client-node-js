@@ -485,6 +485,7 @@ const zbc = new ZBClient("my-secure-broker.io:443", {
 	oAuth: {
 		url: "https://your-auth-endpoint/oauth/token",
 		audience: "my-secure-broker.io",
+        scope: "myScope",
 		clientId: "myClientId",
 		clientSecret: "randomClientSecret",
 		customRootCert: fs.readFileSync('./my_CA.pem'),
@@ -599,6 +600,7 @@ Self-hosted or local broker with OAuth + TLS:
 ZEEBE_CLIENT_ID
 ZEEBE_CLIENT_SECRET
 ZEEBE_TOKEN_AUDIENCE
+ZEEBE_TOKEN_SCOPE
 ZEEBE_AUTHORIZATION_SERVER_URL
 ZEEBE_ADDRESS
 ```
@@ -613,6 +615,7 @@ ZEEBE_CLIENT_ID='zeebe'
 ZEEBE_CLIENT_SECRET='zecret'
 ZEEBE_AUTHORIZATION_SERVER_URL='http://localhost:18080/auth/realms/camunda-platform/protocol/openid-connect/token'
 ZEEBE_TOKEN_AUDIENCE='zeebe.camunda.io'
+ZEEBE_TOKEN_SCOPE='not needed'
 CAMUNDA_CREDENTIALS_SCOPES='Zeebe'
 CAMUNDA_OAUTH_URL='http://localhost:18080/auth/realms/camunda-platform/protocol/openid-connect/token'
 ```

@@ -52,7 +52,7 @@ export interface ZBClientOptions {
 	longPoll?: MaybeTimeDuration
 	pollInterval?: MaybeTimeDuration
 	camundaCloud?: CamundaCloudConfig
-	hostname?: string
+	hostname?: string | null
 	port?: string
 	onReady?: () => void
 	onConnectionError?: () => void
