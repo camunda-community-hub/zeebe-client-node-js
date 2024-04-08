@@ -1288,7 +1288,8 @@ const result = await zbc.createProcessInstanceWithResult({
 You can publish a message to the Zeebe broker that will be correlated with a running process instance:
 
 ```javascript
-const { ZBClient, Duration } = require('zeebe-node')
+const { ZBClient, Duration } = require('zeebe-node');
+const uuid = require('uuid');
 
 const zbc = new ZBClient()
 
@@ -1333,15 +1334,17 @@ In this case, the correlation key is optional, and all Message Start events that
 You can use the `publishStartMessage()` method to publish a message with no correlation key (it will be set to a random uuid in the background):
 
 ```javascript
-const { ZBClient, Duration } = require('zeebe-node')
+const { ZBClient, Duration } = require('zeebe-node');
+const uuid = require('uuid');
 
-const zbc = new ZB.ZBClient('localhost:26500')
+const zbc = new ZBClient('localhost:26500');
 zbc.publishStartMessage({
-	messageId: uuid.v4(),
-	name: 'message-name',
-	variables: { initialProcessVariable: 'here' },
-	timeToLive: Duration.seconds.of(10), // seconds
-})
+  messageId: uuid.v4(),
+  name: 'message-name',
+  variables: { initialProcessVariable: 'here' },
+  timeToLive: Duration.seconds.of(10), // seconds
+});
+
 ```
 
 Both normal messages and start messages can be published idempotently by setting both the `messageId` and the `correlationKey`. They will only ever be correlated once. See: [A message can be published idempotent](https://github.com/zeebe-io/zeebe/issues/1012).
