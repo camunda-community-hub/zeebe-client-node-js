@@ -6,6 +6,10 @@
 ![Lifecycle](https://img.shields.io/badge/Lifecycle-Stable-brightgreen)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
+# DEPRECATED
+
+This package is deprecated. Please use the official SDK package @camunda8/sdk. See: https://github.com/camunda/camunda-8-js-sdk
+---
 
 This is a Node.js gRPC client for [Zeebe](https://zeebe.io), the workflow engine in [Camunda Platform 8](https://camunda.com/platform/). It is written in TypeScript and transpiled to JavaScript in the `dist` directory.
 
